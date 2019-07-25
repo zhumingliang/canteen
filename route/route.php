@@ -9,12 +9,13 @@
 // | Author: liu21st <liu21st@gmail.com>
 // +----------------------------------------------------------------------
 
-Route::get('think', function () {
-    return 'hello,ThinkPHP5!';
-});
+Route::rule('/', 'api/v1.Index/index');
+Route::rule('api/:version/index', 'api/:version.Index/index');
 
-Route::get('hello/:name', 'index/hello');
+Route::post('api/:version/token/admin', 'api/:version.Token/getAdminToken');
 
-return [
-
-];
+Route::post('api/:version/module/system/save', 'api/:version.Module/saveSystem');
+Route::post('api/:version/module/system/canteen/save', 'api/:version.Module/saveSystemCanteen');
+Route::post('api/:version/module/system/shop/save', 'api/:version.Module/saveSystemShop');
+Route::post('api/:version/module/system/handel', 'api/:version.Module/handelSystem');
+Route::get('api/:version/modules', 'api/:version.Module/systemModules');

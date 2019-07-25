@@ -8,7 +8,7 @@ class Token extends BaseValidate
 {
     protected $rule = [
         'account' => 'require|isNotEmpty',
-        'pwd' => 'require|isNotEmpty',
+        'passwd' => 'require|isNotEmpty',
         'type' => 'require|in:driver,manager',
         'code' => 'require|isNotEmpty',
         'username' => 'require|isNotEmpty',
@@ -18,8 +18,8 @@ class Token extends BaseValidate
     ];
 
     protected $scene = [
-        'getAdminToken' => ['account', 'pwd'],
-        'getAndroidToken' => ['account', 'pwd', 'code','type'],
+        'getAdminToken' => ['account', 'passwd'],
+        'getAndroidToken' => ['account', 'passwd', 'code','type'],
         'getMINIToken' => ['code'],
         'handel' => ['id', 'state'],
         'distribution' => ['id', 'belong_ids'],
