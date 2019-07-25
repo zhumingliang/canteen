@@ -20,7 +20,8 @@ class Module extends BaseValidate
         'saveSystemCanteen' => ['name', 'url', 'parent_id','type','default'],
         'saveSystemShop' => ['name', 'url', 'parent_id','type','default'],
         'modules' => ['type'],
-        'handel' => ['id', 'state']
+        'handelSystem' => ['id', 'state'],
+        'updateModule' => ['id', 'type']
     ];
 
 }

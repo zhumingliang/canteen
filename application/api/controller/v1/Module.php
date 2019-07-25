@@ -175,10 +175,10 @@ class Module extends BaseController
     }
 
     /**
-     * @api {POST} /api/v1/module/system/save CMS管理端-新增系统功能模块
+     * @api {POST} /api/v1/module/update CMS管理端-修改系统模块/系统饭堂模块/系统小卖部模块
      * @apiGroup   CMS
      * @apiVersion 3.0.0
-     * @apiDescription    CMS管理端-新增系统功能模块
+     * @apiDescription   CMS管理端-修改系统模块/系统饭堂模块/系统小卖部模块
      * @apiExample {post}  请求样例:
      *    {
      *       "id": 1,
