@@ -7,6 +7,7 @@ namespace app\api\service;
 use app\api\model\SystemCanteenModuleT;
 use app\api\model\SystemModuleT;
 use app\api\model\SystemShopModuleT;
+use app\lib\enum\AdminEnum;
 use app\lib\enum\CommonEnum;
 use app\lib\enum\ModuleEnum;
 use app\lib\exception\SaveException;
@@ -84,7 +85,8 @@ class ModuleService
     }
 
 
-    public function updateModule($params){
+    public function updateModule($params)
+    {
 
         $type = $params['type'];
         $res = null;
@@ -118,6 +120,25 @@ class ModuleService
             }
         }
         return $tree;
+    }
+
+
+    public function adminModules()
+    {
+        $grade = Token::getCurrentTokenVar('grade');
+        if ($grade == AdminEnum::SYSTEM_SUPER) {
+            $modules = $this->getSuperModules();
+        }
+
+        return $this->getTree($modules);
+
+    }
+
+    private function getSuperModules()
+    {
+        $modules = SystemModuleT::getSuperModules();
+        return $modules;
+
     }
 
 }

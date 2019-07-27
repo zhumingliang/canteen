@@ -46,16 +46,15 @@ class AdminToken extends Token
                     'errorCode' => 30000
                 ]);
             }
-            var_dump($admin);
             /**
              * 获取缓存参数
              */
-          //  $cachedValue = $this->prepareCachedValue($admin);
+            $cachedValue = $this->prepareCachedValue($admin);
             /**
              * 缓存数据
              */
-          //  $token = $this->saveToCache('', $cachedValue);
-          //  return $token;
+            $token = $this->saveToCache('', $cachedValue);
+            return $token;
 
         } catch (Exception $e) {
             throw $e;
@@ -87,6 +86,7 @@ class AdminToken extends Token
 
         return [
             'token' => $key,
+            'role'=>$cachedValue['role'],
             'grade' => $cachedValue['grade']
         ];
     }
@@ -96,11 +96,9 @@ class AdminToken extends Token
 
         $cachedValue = [
             'u_id' => $admin->id,
-            'phone' => $admin->phone,
-            'username' => $admin->username,
+            'role' => $admin->role,
             'account' => $admin->account,
-            'grade' => $admin->grade,
-            'type' => $admin->grade == 1 ? 'manager' : 'insurance'
+            'grade' => $admin->grade
         ];
         return $cachedValue;
     }

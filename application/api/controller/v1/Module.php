@@ -201,5 +201,10 @@ class Module extends BaseController
 
     }
 
+    public function adminModules()
+    {
+        $modules = (new ModuleService())->adminModules();
+        return json(new SuccessMessageWithData(['data' => $modules]));
+    }
 
 }
