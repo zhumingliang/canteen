@@ -12,4 +12,8 @@ class ModuleEnum
 
     const SHOP = 3;
 
+    const PC = 1;
+
+    const MOBILE = 2;
+
 }

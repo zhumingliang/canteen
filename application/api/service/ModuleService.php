@@ -4,6 +4,9 @@
 namespace app\api\service;
 
 
+use app\api\model\CanteenModuleT;
+use app\api\model\CanteenModuleV;
+use app\api\model\ShopModuleV;
 use app\api\model\SystemCanteenModuleT;
 use app\api\model\SystemModuleT;
 use app\api\model\SystemShopModuleT;
@@ -58,7 +61,7 @@ class ModuleService
         }
     }
 
-    public function systemModules($type)
+    public function systemModules($type, $tree = 1)
     {
         $modules = array();
         if ($type == ModuleEnum::CANTEEN) {
@@ -79,6 +82,9 @@ class ModuleService
                 ->order('create_time desc')
                 ->select()
                 ->toArray();
+        }
+        if (!$tree){
+            return $modules;
         }
         return $this->getTree($modules);
 
@@ -140,5 +146,53 @@ class ModuleService
         return $modules;
 
     }
+
+    public function companyModules($c_id)
+    {
+        return [
+            'canteen' => $this->canteenModules($c_id),
+            'shop' => $this->shopModules($c_id)
+        ];
+
+
+    }
+
+    private function canteenModules($c_id)
+    {
+        $modules = CanteenModuleV::modules($c_id);
+        $system = $this->systemModules(ModuleEnum::CANTEEN,0);
+        $modules = $this->prefixModules($modules, $system);
+        $modules = $this->getTree($modules);
+        return $modules;
+
+    }
+
+
+    private function shopModules($c_id)
+    {
+        $modules = ShopModuleV::modules($c_id);
+        $system = $this->systemModules(ModuleEnum::SHOP,0);
+        $modules = $this->prefixModules($modules, $system);
+        $modules = $this->getTree($modules);
+        return $modules;
+    }
+
+    private function prefixModules($modules, $system)
+    {
+        foreach ($system as $k => $v) {
+            $system[$k]['have'] = CommonEnum::STATE_IS_FAIL;
+            foreach ($modules as $k2 => $v2) {
+                if ($v2['id'] == $v['id']) {
+                    $system[$k]['have'] = CommonEnum::STATE_IS_OK;
+                    unset($modules[$k2]);
+                    continue;
+                }
+            }
+        }
+
+        return $system;
+
+    }
+
 
 }
