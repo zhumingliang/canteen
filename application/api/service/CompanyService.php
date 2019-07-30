@@ -20,6 +20,9 @@ class CompanyService
             Db::startTrans();
             $params['state'] = CommonEnum::STATE_IS_OK;
             $params['admin_id'] = Token::getCurrentUid();
+            $parent = $this->getParentCompany($params['parent_id']);
+            $params['parent_name'] =$parent['name'];
+            $params['grade'] =$parent['grade'];
             $company = CompanyT::create($params);
             if (!$company) {
                 throw  new SaveException();
@@ -41,6 +44,29 @@ class CompanyService
             throw $e;
 
         }
+
+    }
+
+    private function getParentCompany($c_id)
+    {
+        if (!$c_id) {
+            $company = CompanyT::get($c_id);
+            return [
+                'name' => $company->name,
+                'grade' => $company->grade + 1
+            ];
+
+        }
+        return [
+            'name' => '',
+            'grade' => 1
+        ];;
+    }
+
+    public function companies($page, $size,$name,$create_time)
+    {
+        $companies=CompanyT::companies($page, $size,$name,$create_time);
+        return $companies;
 
     }
 

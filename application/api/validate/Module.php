@@ -9,6 +9,7 @@ class Module extends BaseValidate
     protected $rule = [
         'id' => 'require|isPositiveInteger',
         'c_id' => 'require|isPositiveInteger',
+        'company_id' => 'require|isPositiveInteger',
         'name' => 'require|isNotEmpty',
         'url' => 'require|isNotEmpty',
         'shop' => 'require',
@@ -26,7 +27,7 @@ class Module extends BaseValidate
         'handelSystem' => ['id', 'state'],
         'updateModule' => ['id', 'type'],
         'canteenModule' => ['c_id'],
-        'updateCompanyModule' => ['shop', 'canteen']
+        'updateCompanyModule' => ['company_id','shop', 'canteen']
     ];
 
 }

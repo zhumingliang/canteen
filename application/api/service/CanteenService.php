@@ -11,13 +11,11 @@ use app\api\model\DinnerT;
 use app\api\model\SystemCanteenModuleT;
 use app\lib\enum\CommonEnum;
 use app\lib\enum\ModuleEnum;
-use app\lib\exception\AuthException;
 use app\lib\exception\ParameterException;
 use app\lib\exception\SaveException;
 use app\lib\exception\UpdateException;
 use think\Db;
 use think\Exception;
-use think\Model;
 
 class CanteenService
 {

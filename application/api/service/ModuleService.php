@@ -8,6 +8,7 @@ use app\api\model\CanteenModuleT;
 use app\api\model\CanteenModuleV;
 use app\api\model\ShopModuleT;
 use app\api\model\ShopModuleV;
+use app\api\model\ShopT;
 use app\api\model\SystemCanteenModuleT;
 use app\api\model\SystemModuleT;
 use app\api\model\SystemShopModuleT;
@@ -204,11 +205,12 @@ class ModuleService
         try {
             $canteen = $params['canteen'];
             $shop = $params['shop'];
+            $company_id = $params['company_id'];
             if (strlen($canteen)) {
                 $this->updateCanteenModule($canteen);
             }
             if (strlen($shop)) {
-                $this->updateShopModule($shop);
+                $this->updateShopModule($company_id, $shop);
             }
             Db::commit();
         } catch (Exception $e) {
@@ -261,13 +263,16 @@ class ModuleService
 
     }
 
-    private function updateShopModule($shop)
+    private function updateShopModule($company_id, $shop)
     {
         $shop = json_decode($shop, true);
         if (!key_exists('s_id', $shop)) {
-            throw  new ParameterException();
+            $shopModel = ShopT::create(['state' => CommonEnum::STATE_IS_OK, 'c_id' => $company_id]);
+            $s_id = $shopModel->id;
+        } else {
+            $s_id = $shop['s_id'];
         }
-        $s_id = $shop['s_id'];
+
         if (key_exists('add_modules', $shop) && count($shop['add_modules'])) {
             $add_data = [];
             $add_modules = $shop['add_modules'];

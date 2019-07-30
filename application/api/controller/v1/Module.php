@@ -273,13 +273,15 @@ class Module extends BaseController
      * @apiDescription   CMS管理端-修改系统模块/系统饭堂模块/系统小卖部模块
      * @apiExample {post}  请求样例:
      *    {
+     *       "company_id":1,
      *       "canteen":{"c_id":1,"add_modules":[{"m_id":1,"order":4},{"m_id":2,"order":5}],"cancel_modules":"3,4"},
      *       "shop": {"s_id":1,"add_modules":[{"m_id":1,"order":4},{"m_id":2,"order":5}],"cancel_modules":"3,4"}
      *     }
+     * @apiParam (请求参数说明) {int} company_id  企业id
      * @apiParam (请求参数说明) {string} canteen  饭堂修改模块信息
      * @apiParam (请求参数说明) {string} shop  小卖部修改模块信息
      * @apiParam (请求参数说明) {int} c_id  饭堂id
-     * @apiParam (请求参数说明) {int} s_id  小卖部id
+     * @apiParam (请求参数说明) {int} s_id  小卖部id(首次新增时，无需传入该字段)
      * @apiParam (请求参数说明) {string} add_modules  新增模块信息
      * @apiParam (请求参数说明) {int} m_id  模块id
      * @apiParam (请求参数说明) {int} order  新增模块排序
