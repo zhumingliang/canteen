@@ -19,9 +19,13 @@ Route::post('api/:version/module/system/canteen/save', 'api/:version.Module/save
 Route::post('api/:version/module/system/shop/save', 'api/:version.Module/saveSystemShop');
 Route::post('api/:version/module/system/handel', 'api/:version.Module/handelSystem');
 Route::post('api/:version/module/update', 'api/:version.Module/updateModule');
+Route::post('api/:version/module/company/update', 'api/:version.Module/updateCompanyModule');
 Route::get('api/:version/modules', 'api/:version.Module/systemModules');
 Route::get('api/:version/modules/company', 'api/:version.Module/companyModules');
 
 Route::post('api/:version/company/save', 'api/:version.Company/save');
 
 Route::post('api/:version/canteen/save', 'api/:version.Canteen/save');
+Route::post('api/:version/canteen/configuration/save', 'api/:version.Canteen/saveConfiguration');
+Route::post('api/:version/canteen/configuration/update', 'api/:version.Canteen/updateConfiguration');
+Route::get('api/:version/canteen/configuration', 'api/:version.Canteen/configuration');

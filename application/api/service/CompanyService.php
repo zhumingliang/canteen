@@ -14,8 +14,6 @@ use think\Exception;
 
 class CompanyService
 {
-
-
     public function saveDefault($params)
     {
         try {

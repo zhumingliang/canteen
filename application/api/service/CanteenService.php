@@ -4,14 +4,20 @@
 namespace app\api\service;
 
 
+use app\api\model\CanteenAccountT;
 use app\api\model\CanteenModuleT;
 use app\api\model\CanteenT;
+use app\api\model\DinnerT;
 use app\api\model\SystemCanteenModuleT;
 use app\lib\enum\CommonEnum;
 use app\lib\enum\ModuleEnum;
+use app\lib\exception\AuthException;
+use app\lib\exception\ParameterException;
 use app\lib\exception\SaveException;
+use app\lib\exception\UpdateException;
 use think\Db;
 use think\Exception;
+use think\Model;
 
 class CanteenService
 {
@@ -92,6 +98,94 @@ class CanteenService
         }
 
 
+    }
+
+    public function saveConfiguration($params)
+    {
+        try {
+            $c_id = $params['c_id'];
+            $dinners = json_decode($params['dinners'], true);
+            $account = json_decode($params['account'], true);
+            $this->prefixDinner($c_id, $dinners);
+            $this->prefixCanteenAccount($c_id, $account);
+            Db::commit();
+        } catch (Exception $e) {
+            Db::rollback();
+            throw  $e;
+
+        }
+    }
+
+    private function prefixDinner($c_id, $dinners)
+    {
+        foreach ($dinners as $k => $v) {
+            $dinners[$k]['c_id'] = $c_id;
+            $dinners[$k]['state'] = CommonEnum::STATE_IS_OK;
+        }
+        $res = (new DinnerT())->saveAll($dinners);
+        if (!$res) {
+            throw new SaveException();
+        }
+
+    }
+
+    private function prefixCanteenAccount($c_id, $account)
+    {
+        $account['state'] = CommonEnum::STATE_IS_OK;
+        $account['c_id'] = $c_id;
+        $res = CanteenAccountT::create($c_id);
+        if (!$res) {
+            throw new SaveException();
+        }
+    }
+
+    public function configuration($c_id)
+    {
+        return [
+            'dinners' => DinnerT::dinners($c_id),
+            'account' => CanteenAccountT::account($c_id)
+        ];
+
+    }
+
+    public function updateConfiguration($params)
+    {
+        try {
+            $c_id = $params['c_id'];
+            if (key_exists('dinners', $params) && strlen($params['dinners'])) {
+                $dinners = $params['dinners'];
+                $dinners = json_decode($dinners, true);
+                foreach ($dinners as $k => $v) {
+                    if (!key_exists('id', $v)) {
+                        $dinners[$k]['c_id'] = $c_id;
+                        $dinners[$k]['state'] = CommonEnum::STATE_IS_OK;
+                        $add_data[] = $dinners[$k];
+                    }
+
+                }
+                if (count($dinners)) {
+                    $res = (new DinnerT())->saveAll($dinners);
+                    if (!$res) {
+                        throw new SaveException();
+                    }
+                }
+
+            }
+            if (key_exists('account', $params) && strlen($params['account'])) {
+                $account = json_decode($params['account'], true);
+
+                if (!key_exists('id', $account)) {
+                    throw new ParameterException();
+                }
+                $res = CanteenAccountT::update($account);
+                if (!$res) {
+                    throw new UpdateException();
+                }
+            }
+        } catch (Exception$e) {
+            Db::rollback();
+            throw  $e;
+        }
     }
 
 }

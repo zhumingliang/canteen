@@ -266,4 +266,35 @@ class Module extends BaseController
 
     }
 
+    /**
+     * @api {POST} /api/v1/module/company/update CMS管理端-修改系统模块/系统饭堂模块/系统小卖部模块
+     * @apiGroup   CMS
+     * @apiVersion 3.0.0
+     * @apiDescription   CMS管理端-修改系统模块/系统饭堂模块/系统小卖部模块
+     * @apiExample {post}  请求样例:
+     *    {
+     *       "canteen":{"c_id":1,"add_modules":[{"m_id":1,"order":4},{"m_id":2,"order":5}],"cancel_modules":"3,4"},
+     *       "shop": {"s_id":1,"add_modules":[{"m_id":1,"order":4},{"m_id":2,"order":5}],"cancel_modules":"3,4"}
+     *     }
+     * @apiParam (请求参数说明) {string} canteen  饭堂修改模块信息
+     * @apiParam (请求参数说明) {string} shop  小卖部修改模块信息
+     * @apiParam (请求参数说明) {int} c_id  饭堂id
+     * @apiParam (请求参数说明) {int} s_id  小卖部id
+     * @apiParam (请求参数说明) {string} add_modules  新增模块信息
+     * @apiParam (请求参数说明) {int} m_id  模块id
+     * @apiParam (请求参数说明) {int} order  新增模块排序
+     * @apiParam (请求参数说明) {string} cancel_modules  取消模块id，多个模块用,分隔id
+     * @apiSuccessExample {json} 返回样例:
+     *{"msg":"ok","errorCode":0}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {String} msg 信息描述
+     */
+    public function updateCompanyModule()
+    {
+        $params = $this->request->param();
+        (new ModuleService())->updateCompanyModule($params);
+        return json(new SuccessMessage());
+    }
+
+
 }
