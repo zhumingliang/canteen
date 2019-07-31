@@ -10,6 +10,8 @@ class AdminEnum
 
     const COMPANY_SUPER = 2;
 
+    const COMPANY_OTHER = 3;
+
     const DEFAULT_ACCOUNT = 'admin';
 
     const DEFAULT_PASSWD = 'admin123';

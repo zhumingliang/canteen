@@ -13,4 +13,48 @@ use think\Model;
 
 class AdminT extends Model
 {
+
+    public function canteen()
+    {
+        return $this->hasMany('AdminCanteenT', 'admin_id', 'id');
+
+    }
+
+    public function shop()
+    {
+        return $this->hasMany('AdminShopT', 'admin_id', 'id');
+
+    }
+
+    public static function roles($page, $size, $state, $key, $c_name)
+    {
+        $list = self::with([
+            'canteen' => function ($query) use ($key) {
+                $query->field('id,admin_id,name');
+            },
+            'shop' => function ($query) use ($key) {
+                $query->field('id,admin_id,name');
+            }
+        ])
+            ->where(function ($query) use ($key) {
+                if (strlen($key)) {
+                    $query->where('role', 'like', '%' . $key . '%');
+                }
+            })
+            ->where(function ($query) use ($state) {
+                if ($state != 3) {
+                    $query->where('state', $state);
+                }
+            })
+            ->where(function ($query) use ($c_name) {
+                if (strlen($c_name) && $c_name != "全部") {
+                    $query->where('company', 'like', '%' . $c_name . '%');
+                }
+            })
+            ->field('id,company,role,account,remark,state,create_time')
+            ->paginate($size, false, ['page' => $page]);
+        return $list;
+
+    }
+
 }

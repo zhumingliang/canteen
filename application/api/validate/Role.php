@@ -4,24 +4,22 @@
 namespace app\api\validate;
 
 
-class Admin extends BaseValidate
+class Role extends BaseValidate
 {
     protected $rule = [
-        'id' => 'require',
-        'phone' => 'require|isMobile',
-        'pwd' => 'require|isNotEmpty',
+        'id' => 'require|isPositiveInteger',
         'account' => 'require|isNotEmpty',
-        'username' => 'require|isNotEmpty',
-        'grade' => 'require|in:2,3,4,5',
+        'passwd' => 'require|isNotEmpty',
+        'role' => 'require|isNotEmpty',
+        'c_id' => 'require|isPositiveInteger',
         'state' => 'require|in:1,2',
         'belong_ids' => 'require|isNotEmpty',
     ];
 
     protected $scene = [
-        'save' => ['phone', 'pwd', 'account', 'username', 'grade'],
+        'save' => ['account', 'passwd', 'role'],
         'handel' => ['id', 'state'],
         'distribution' => ['id', 'belong_ids'],
         'distributionHandel' => ['id', 'state'],
     ];
-
 }

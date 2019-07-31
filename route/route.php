@@ -30,3 +30,7 @@ Route::post('api/:version/canteen/save', 'api/:version.Canteen/save');
 Route::post('api/:version/canteen/configuration/save', 'api/:version.Canteen/saveConfiguration');
 Route::post('api/:version/canteen/configuration/update', 'api/:version.Canteen/updateConfiguration');
 Route::get('api/:version/canteen/configuration', 'api/:version.Canteen/configuration');
+
+Route::get('api/:version/roles', 'api/:version.Role/roles');
+Route::post('api/:version/role/save', 'api/:version.Role/save');
+Route::post('api/:version/role/update', 'api/:version.Role/update');
