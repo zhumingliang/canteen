@@ -8,6 +8,7 @@ use app\api\model\AdminCanteenT;
 use app\api\model\AdminModuleT;
 use app\api\model\AdminShopT;
 use app\api\model\AdminT;
+use app\api\model\StaffTypeT;
 use app\lib\enum\AdminEnum;
 use app\lib\enum\CommonEnum;
 use app\lib\exception\AuthException;
@@ -209,6 +210,12 @@ class AdminService
         }
 
 
+    }
+
+    public function roleTypes($page, $size, $key)
+    {
+        $types = StaffTypeT::roleTypes($page, $size, $key);
+        return $types;
     }
 
 

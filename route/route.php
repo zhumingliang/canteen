@@ -35,6 +35,11 @@ Route::get('api/:version/roles', 'api/:version.Role/roles');
 Route::post('api/:version/role/save', 'api/:version.Role/save');
 Route::post('api/:version/role/update', 'api/:version.Role/update');
 Route::post('api/:version/role/handel', 'api/:version.Role/handel');
+Route::get('api/:version/role/types', 'api/:version.Role/roleTypes');
+Route::post('api/:version/role/type/save', 'api/:version.Role/saveRoleType');
+Route::post('api/:version/role/type/update', 'api/:version.Role/updateRoleType');
+Route::post('api/:version/role/handel/type', 'api/:version.Role/handelType');
+
 
 Route::post('api/:version/department/save', 'api/:version.Department/save');
 Route::post('api/:version/department/update', 'api/:version.Department/update');

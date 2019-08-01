@@ -16,6 +16,9 @@ class Department extends BaseValidate
     protected $scene = [
         'save' => ['name', 'parent_id'],
         'update' => ['name', 'id'],
+        'delete' => ['id'],
+        'departments' => ['c_id'],
+        'addStaff' => ['c_id'],
     ];
 
 }

@@ -5,8 +5,10 @@ namespace app\api\controller\v1;
 
 
 use app\api\controller\BaseController;
+use app\api\model\StaffTypeT;
 use app\api\service\AdminService;
 use app\lib\enum\AdminEnum;
+use app\lib\enum\CommonEnum;
 use app\lib\exception\SuccessMessage;
 use app\lib\exception\SuccessMessageWithData;
 use think\facade\Request;
@@ -154,6 +156,104 @@ class Role extends BaseController
     {
         $params = Request::only(['id', 'state']);
         (new AdminService())->handel($params);
+        return json(new SuccessMessage());
+
+    }
+
+
+    /**
+     * @api {POST} /api/v1/role/type/save CMS管理端-新增角色类型
+     * @apiGroup   CMS
+     * @apiVersion 3.0.0
+     * @apiDescription   CMS管理端-新增角色类型
+     * @apiExample {post}  请求样例:
+     *    {
+     *       "name": "局长"
+     *     }
+     * @apiParam (请求参数说明) {string} name  角色类型名称
+     * @apiSuccessExample {json} 返回样例:
+     *{"msg":"ok","errorCode":0,"data":{"id":"1"}}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {String} msg 信息描述
+     */
+    public function saveRoleType()
+    {
+        $params = $this->request->param();
+        $params['state'] = CommonEnum::STATE_IS_OK;
+        $type = StaffTypeT::create($params);
+        return json(new SuccessMessageWithData(['data' => ['id' => $type->id]]));
+    }
+
+    /**
+     * @api {POST} /api/v1/role/type/update CMS管理端-修改角色类型信息
+     * @apiGroup   CMS
+     * @apiVersion 3.0.0
+     * @apiDescription    CMS管理端-修改角色类型信息
+     * @apiExample {post}  请求样例:
+     *    {
+     *       "id":2,
+     *       "name": "员工"
+     *     }
+     * @apiParam (请求参数说明) {int} id  角色类型id
+     * @apiParam (请求参数说明) {string} name  角色类型
+     * @apiSuccessExample {json} 返回样例:
+     *{"msg":"ok","errorCode":0}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {String} msg 信息描述
+     */
+    public function updateRoleType()
+    {
+        $params = $this->request->param();
+        StaffTypeT::update($params);
+        return json(new SuccessMessage());
+    }
+
+    /**
+     *  * @api {GET} /api/v1/role/types CMS管理端-获取角色类型列表
+     * @apiGroup  CMS
+     * @apiVersion 3.0.0
+     * @apiDescription CMS管理端-设置-角色列表
+     * @apiExample {get}  请求样例:
+     * https://tonglingok.com/api/v1/role/types?&page=1&size=10&key=""
+     * @apiParam (请求参数说明) {int} page 当前页码
+     * @apiParam (请求参数说明) {int} size 每页多少条数据
+     * @apiParam (请求参数说明) {string} key 关键词查询
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"total":4,"per_page":10,"current_page":1,"last_page":1,"data":[{"id":1,"name":"局长","create_time":"2019-08-01 17:10:25"},{"id":2,"name":"领导","create_time":"2019-08-01 17:10:49"},{"id":3,"name":"员工","create_time":"2019-08-01 17:10:56"},{"id":4,"name":"员工","create_time":"2019-08-01 17:11:02"}]}}
+     * @apiSuccess (返回参数说明) {int} total 数据总数
+     * @apiSuccess (返回参数说明) {int} per_page 每页多少条数据
+     * @apiSuccess (返回参数说明) {int} current_page 当前页码
+     * @apiSuccess (返回参数说明) {int} last_page 最后页码
+     * @apiSuccess (返回参数说明) {int} id 角色类型id
+     * @apiSuccess (返回参数说明) {string} name  角色类型
+     * @apiSuccess (返回参数说明) {string} create_time  创建时间
+     */
+    public function roleTypes($page = 1, $size = 10, $key = '')
+    {
+        $roles = (new AdminService())->roleTypes($page, $size, $key);
+        return json(new SuccessMessageWithData(['data' => $roles]));
+
+    }
+
+    /**
+     * @api {POST} /api/v1/role/handel CMS管理端-角色类型删除
+     * @apiGroup   CMS
+     * @apiVersion 3.0.0
+     * @apiDescription    CMS管理端-角色类型删除
+     * @apiExample {post}  请求样例:
+     *    {
+     *       "id": 1
+     *     }
+     * @apiParam (请求参数说明) {int} id  角色类型ID
+     * @apiSuccessExample {json} 返回样例:
+     *{"msg":"ok","errorCode":0}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {String} msg 信息描述
+     */
+    public function handelType()
+    {
+        $id = Request::param('id');
+        StaffTypeT::update(['state' => CommonEnum::STATE_IS_FAIL], ['id' => $id]);
         return json(new SuccessMessage());
 
     }

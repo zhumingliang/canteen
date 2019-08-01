@@ -12,6 +12,8 @@ class ComposerStaticInit70d40b73347312909d23055a672be9f9
         'c964ee0ededf28c96ebd9db5099ef910' => __DIR__ . '/..' . '/guzzlehttp/promises/src/functions_include.php',
         'a0edc8309cc5e1d60e3047b5df6b7052' => __DIR__ . '/..' . '/guzzlehttp/psr7/src/functions_include.php',
         '37a3dc5111fe8f707ab4c132ef1dbc62' => __DIR__ . '/..' . '/guzzlehttp/guzzle/src/functions_include.php',
+        '320cde22f66dd4f5d3fd621d3e88b98f' => __DIR__ . '/..' . '/symfony/polyfill-ctype/bootstrap.php',
+        'a9ed0d27b5a698798a89181429f162c5' => __DIR__ . '/..' . '/khanamiryan/qrcode-detector-decoder/lib/Common/customFunctions.php',
         'f0e7e63bbb278a92db02393536748c5f' => __DIR__ . '/..' . '/overtrue/wechat/src/Kernel/Support/Helpers.php',
         '6747f579ad6817f318cc3a7e7a0abb93' => __DIR__ . '/..' . '/overtrue/wechat/src/Kernel/Helpers.php',
     );
@@ -25,11 +27,19 @@ class ComposerStaticInit70d40b73347312909d23055a672be9f9
         array (
             'app\\' => 4,
         ),
+        'Z' => 
+        array (
+            'Zxing\\' => 6,
+        ),
         'S' => 
         array (
             'Symfony\\Polyfill\\Mbstring\\' => 26,
+            'Symfony\\Polyfill\\Ctype\\' => 23,
             'Symfony\\Contracts\\' => 18,
             'Symfony\\Component\\VarExporter\\' => 30,
+            'Symfony\\Component\\PropertyAccess\\' => 33,
+            'Symfony\\Component\\OptionsResolver\\' => 34,
+            'Symfony\\Component\\Inflector\\' => 28,
             'Symfony\\Component\\HttpFoundation\\' => 33,
             'Symfony\\Component\\Cache\\' => 24,
             'Symfony\\Bridge\\PsrHttpMessage\\' => 30,
@@ -48,6 +58,7 @@ class ComposerStaticInit70d40b73347312909d23055a672be9f9
         ),
         'M' => 
         array (
+            'MyCLabs\\Enum\\' => 13,
             'Monolog\\' => 8,
         ),
         'G' => 
@@ -58,8 +69,18 @@ class ComposerStaticInit70d40b73347312909d23055a672be9f9
         ),
         'E' => 
         array (
+            'Endroid\\QrCode\\' => 15,
+            'Endroid\\Installer\\' => 18,
             'EasyWeChat\\' => 11,
             'EasyWeChatComposer\\' => 19,
+        ),
+        'D' => 
+        array (
+            'DASPRiD\\Enum\\' => 13,
+        ),
+        'B' => 
+        array (
+            'BaconQrCode\\' => 12,
         ),
     );
 
@@ -72,9 +93,17 @@ class ComposerStaticInit70d40b73347312909d23055a672be9f9
         array (
             0 => __DIR__ . '/../..' . '/application',
         ),
+        'Zxing\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/khanamiryan/qrcode-detector-decoder/lib',
+        ),
         'Symfony\\Polyfill\\Mbstring\\' => 
         array (
             0 => __DIR__ . '/..' . '/symfony/polyfill-mbstring',
+        ),
+        'Symfony\\Polyfill\\Ctype\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/polyfill-ctype',
         ),
         'Symfony\\Contracts\\' => 
         array (
@@ -83,6 +112,18 @@ class ComposerStaticInit70d40b73347312909d23055a672be9f9
         'Symfony\\Component\\VarExporter\\' => 
         array (
             0 => __DIR__ . '/..' . '/symfony/var-exporter',
+        ),
+        'Symfony\\Component\\PropertyAccess\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/property-access',
+        ),
+        'Symfony\\Component\\OptionsResolver\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/options-resolver',
+        ),
+        'Symfony\\Component\\Inflector\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/symfony/inflector',
         ),
         'Symfony\\Component\\HttpFoundation\\' => 
         array (
@@ -120,6 +161,10 @@ class ComposerStaticInit70d40b73347312909d23055a672be9f9
         array (
             0 => __DIR__ . '/..' . '/overtrue/socialite/src',
         ),
+        'MyCLabs\\Enum\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/myclabs/php-enum/src',
+        ),
         'Monolog\\' => 
         array (
             0 => __DIR__ . '/..' . '/monolog/monolog/src/Monolog',
@@ -136,6 +181,14 @@ class ComposerStaticInit70d40b73347312909d23055a672be9f9
         array (
             0 => __DIR__ . '/..' . '/guzzlehttp/guzzle/src',
         ),
+        'Endroid\\QrCode\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/endroid/qr-code/src',
+        ),
+        'Endroid\\Installer\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/endroid/installer/src',
+        ),
         'EasyWeChat\\' => 
         array (
             0 => __DIR__ . '/..' . '/overtrue/wechat/src',
@@ -143,6 +196,14 @@ class ComposerStaticInit70d40b73347312909d23055a672be9f9
         'EasyWeChatComposer\\' => 
         array (
             0 => __DIR__ . '/..' . '/easywechat-composer/easywechat-composer/src',
+        ),
+        'DASPRiD\\Enum\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/dasprid/enum/src',
+        ),
+        'BaconQrCode\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/bacon/bacon-qr-code/src',
         ),
     );
 
