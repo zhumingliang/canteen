@@ -18,8 +18,6 @@ class Role extends BaseValidate
 
     protected $scene = [
         'save' => ['account', 'passwd', 'role'],
-        'handel' => ['id', 'state'],
-        'distribution' => ['id', 'belong_ids'],
-        'distributionHandel' => ['id', 'state'],
+        'handel' => ['id', 'state']
     ];
 }

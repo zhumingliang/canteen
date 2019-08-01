@@ -39,7 +39,7 @@ class Company extends BaseController
     /**
      * @api {GET} /api/v1/companies CMS管理端-企业明细-企业列表
      * @apiGroup  CMS
-     * @apiVersion 1.0.1
+     * @apiVersion 3.0.0
      * @apiDescription CMS管理端-企业明细-企业列表
      * @apiExample {get}  请求样例:
      * https://tonglingok.com/api/v1/companies?name="大企业"&create_time="2019-06-29"&page=1&size=10
@@ -63,8 +63,8 @@ class Company extends BaseController
      * @apiSuccess (返回参数说明) {int} canteen|id 饭堂id
      * @apiSuccess (返回参数说明) {int} canteen|name 饭堂名称
      * @apiSuccess (返回参数说明) {obj} shop 企业小卖部信息
-     * @apiSuccess (返回参数说明) {int} canteen|id 小卖部id
-     * @apiSuccess (返回参数说明) {int} canteen|name 小卖部名称
+     * @apiSuccess (返回参数说明) {int} shop|id 小卖部id
+     * @apiSuccess (返回参数说明) {int} shop|name 小卖部名称
      */
     public function companies($page = 1, $size = 10, $name = '', $create_time = '')
     {

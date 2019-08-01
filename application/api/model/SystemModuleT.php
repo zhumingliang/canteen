@@ -9,7 +9,7 @@ use think\Model;
 
 class SystemModuleT extends Model
 {
-    public function getSuperModules()
+    public static function getSuperModules()
     {
         $modules = self::where('state', CommonEnum::STATE_IS_OK)
             ->field('id,name,url,parent_id')

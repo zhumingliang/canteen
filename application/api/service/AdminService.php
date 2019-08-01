@@ -8,7 +8,9 @@ use app\api\model\AdminCanteenT;
 use app\api\model\AdminModuleT;
 use app\api\model\AdminShopT;
 use app\api\model\AdminT;
+use app\lib\enum\AdminEnum;
 use app\lib\enum\CommonEnum;
+use app\lib\exception\AuthException;
 use app\lib\exception\SaveException;
 use app\lib\exception\UpdateException;
 use think\Db;
@@ -32,6 +34,7 @@ class AdminService
                 $shops = json_decode($params['shops'], true);
             }
             //新增账户信息
+            $params['parent_id'] = Token::getCurrentUid();
             $admin = AdminT::create($params);
             $admin_id = $admin->id;
             //新增账户可见模块信息
@@ -57,12 +60,10 @@ class AdminService
         if (!count($data)) {
             return true;
         }
-
-        foreach ($data as $k => $k) {
+        foreach ($data as $k => $v) {
             $data[$k]['state'] = CommonEnum::STATE_IS_OK;
             $data[$k]['admin_id'] = $admin_id;
         }
-
         if ($type == "canteen") {
             $res = (new AdminCanteenT())->saveAll($data);
 
@@ -80,7 +81,7 @@ class AdminService
     {
         if (key_exists('add', $data) && count($data['add'])) {
             $add = $data['add'];
-            foreach ($add as $k => $k) {
+            foreach ($add as $k => $v) {
                 $add[$k]['state'] = CommonEnum::STATE_IS_OK;
                 $add[$k]['admin_id'] = $admin_id;
             }
@@ -193,6 +194,20 @@ class AdminService
     {
         $roles = AdminT::roles($page, $size, $state, $key, $c_name);
         return $roles;
+    }
+
+    public function handel($params)
+    {
+        if ($params['state'] = CommonEnum::STATE_IS_OK) {
+            if (Token::getCurrentTokenVar('grade') != AdminEnum::COMPANY_SUPER) {
+                throw new AuthException();
+            }
+        }
+        $res = AdminT::update($params);
+        if (!$res) {
+            throw  new UpdateException();
+        }
+
 
     }
 
