@@ -7,9 +7,15 @@ namespace app\api\service;
 use app\api\model\CompanyDepartmentT;
 use app\api\model\CompanyStaffT;
 use app\api\model\DepartmentV;
+use app\api\model\StaffQrcodeT;
 use app\lib\enum\CommonEnum;
 use app\lib\exception\DeleteException;
+use app\lib\exception\ParameterException;
 use app\lib\exception\SaveException;
+use think\Db;
+use think\Exception;
+use think\Request;
+use function GuzzleHttp\Psr7\str;
 
 class DepartmentService
 {
@@ -57,7 +63,210 @@ class DepartmentService
 
     public function addStaff($params)
     {
+        try {
+            Db::startTrans();;
+            $params['state'] = CommonEnum::STATE_IS_OK;
+            $staff = CompanyStaffT::create($params);
+            if (!$staff) {
+                throw new SaveException();
+            }
+            //保存二维码
+            $this->saveQrcode($staff->id);
+            Db::commit();
+        } catch (Exception $e) {
+            Db::rollback();
+            throw $e;
+        }
 
+
+    }
+
+    public function uploadStaffs($company_id, $staffs_excel)
+    {
+        $date = (new ExcelService())->saveExcel($staffs_excel);
+        $res = $this->prefixStaffs($company_id, $date);
+        return $res;
+    }
+
+    private function prefixStaffs($company_id, $data)
+    {
+        $types = (new AdminService())->allTypes();
+        $canteens = (new CanteenService())->companyCanteens($company_id);
+        $departments = $this->companyDepartments($company_id);
+        $fail = array();
+        $success = array();
+        $param_key = array();
+        if (count($data) < 2) {
+            return [];
+        }
+        foreach ($data as $k => $v) {
+            if ($k == 1) {
+                $param_key = $data[$k];
+            } else if ($k > 1) {
+                $check = $this->validateParams($param_key, $data[$k], $types, $canteens, $departments);
+                if (!$check['res']) {
+                    $fail[] = $check['info'];
+                    continue;
+                }
+                $success[] = $check['info'];
+            }
+
+        }
+
+        if (count($success)) {
+            $all = (new CompanyStaffT())->saveAll($success);
+            if (!$all) {
+                throw  new SaveException();
+            }
+
+            $qrcodeInfo = $this->getUploadStaffQrcodeInfo($all);
+            $qrcods = (new StaffQrcodeT())->saveAll($qrcodeInfo);
+            if (!$qrcods) {
+                throw  new SaveException();
+            }
+
+        }
+
+        return [
+            'fail' => $fail
+        ];
+
+
+    }
+
+    private function validateParams($param_key, $data, $types, $canteens, $departments)
+    {
+        foreach ($data as $k => $v) {
+            if (!strlen($v)) {
+                $fail = [
+                    'name' => $data[4],
+                    'msg' => "参数：$param_key[$k]" . " 为空"
+                ];
+                return [
+                    'res' => false,
+                    'info' => $fail
+                ];
+                break;
+            }
+        }
+        $canteen = $data[0];
+        $department = $data[1];
+        $staffType = $data[2];
+        $code = $data[3];
+        $name = $data[4];
+        $phone = $data[5];
+        $card_num = $data[6];
+
+        //判断人员类型是否存在
+        $t_id = $this->checkParamExits($types, $staffType);
+        if (!$t_id) {
+            $fail = [
+                'name' => $name,
+                'msg' => '系统中不存在该人员类型：' . $staffType
+            ];
+            return [
+                'res' => false,
+                'info' => $fail
+            ];
+        }
+        //判断饭堂是否存在
+        $c_id = $this->checkParamExits($canteens, $canteen);
+        if (!$c_id) {
+            $fail = [
+                'name' => $name,
+                'msg' => '企业中不存在该饭堂：' . $canteen
+            ];
+            return [
+                'res' => false,
+                'info' => $fail
+            ];
+        }
+        //检测部门是否存在
+        $d_id = $this->checkParamExits($departments, $department);
+        if (!$d_id) {
+            $fail = [
+                'name' => $name,
+                'msg' => '企业中不存在该部门：' . $department
+            ];
+            return [
+                'res' => false,
+                'info' => $fail
+            ];
+        }
+
+        return [
+            'res' => true,
+            'info' => [
+                'c_id' => $c_id,
+                'd_id' => $d_id,
+                't_id' => $t_id,
+                'code' => $code,
+                'username' => $name,
+                'phone' => $phone,
+                'card_num' => $card_num
+
+            ]
+        ];
+    }
+
+    private function checkParamExits($list, $current_data)
+    {
+        if (!count($list)) {
+            return 0;
+        }
+        foreach ($list as $k => $v) {
+            if ($v['name'] == $current_data) {
+                return $v['id'];
+            }
+        }
+        return 0;
+
+    }
+
+
+    private function companyDepartments($company_id)
+    {
+        $departs = CompanyDepartmentT::where('c_id', $company_id)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->field('id,name')
+            ->select()->toArray();
+        return $departs;
+    }
+
+
+    private function getUploadStaffQrcodeInfo($staffs)
+    {
+        $list = array();
+        foreach ($staffs as $k => $v) {
+            $code = getRandChar(12);
+            $url = sprintf(config("setting.qrcode_url"), $code);
+            $qrcode_url = (new QrcodeService())->qr_code($url);
+            $list[] = [
+                'code' => $code,
+                's_id' => $v->id,
+                'expiry_date' => date('Y-m-d H:i:s', strtotime('+' . config("setting.qrcode_expire_in") . 'minute')),
+                'url' => $qrcode_url
+            ];
+        }
+        return $list;
+
+    }
+
+    private function saveQrcode($s_id)
+    {
+        $code = getRandChar(12);
+        $url = sprintf(config("setting.qrcode_url"), $code);
+        $qrcode_url = (new QrcodeService())->qr_code($url);
+        $data = [
+            'code' => $code,
+            's_id' => $s_id,
+            'expiry_date' => date('Y-m-d H:i:s', strtotime('+' . config("setting.qrcode_expire_in") . 'minute')),
+            'url' => $qrcode_url
+        ];
+        $qrcode = StaffQrcodeT::create($data);
+        if (!$qrcode) {
+            throw new SaveException();
+        }
     }
 
 }

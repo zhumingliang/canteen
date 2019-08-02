@@ -208,13 +208,17 @@ class AdminService
         if (!$res) {
             throw  new UpdateException();
         }
-
-
     }
 
     public function roleTypes($page, $size, $key)
     {
         $types = StaffTypeT::roleTypes($page, $size, $key);
+        return $types;
+    }
+
+    public function allTypes()
+    {
+        $types = StaffTypeT::allTypes();
         return $types;
     }
 

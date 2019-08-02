@@ -186,4 +186,12 @@ class CanteenService
         }
     }
 
+    public function companyCanteens($company_id)
+    {
+        $canteens = CanteenT::where('c_id', $company_id)
+            ->field('id,name')->select()->toArray();
+        return $canteens;
+    }
+
+
 }

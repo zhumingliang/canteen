@@ -17,8 +17,16 @@ class StaffTypeT extends Model
                     $query->where('name', 'like', '%' . $key . '%');
                 }
             })
-            ->hidden(['update_time','state'])
+            ->hidden(['update_time', 'state'])
             ->paginate($size, false, ['page' => $page]);
+        return $types;
+    }
+
+    public  static function allTypes()
+    {
+        $types = self::where('state', CommonEnum::STATE_IS_OK)
+            ->field('id,name')
+            ->select()->toArray();
         return $types;
     }
 
