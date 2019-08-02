@@ -164,9 +164,9 @@ class Department extends BaseController
     public function uploadStaffs()
     {
         $staffs_excel = request()->file('staffs');
-        /*if (is_null($staffs_excel)) {
+        if (is_null($staffs_excel)) {
             throw  new ParameterException(['msg'=>'缺少excel文件']);
-        }*/
+        }
         $company_id = Request::param('c_id');
         $res = (new DepartmentService())->uploadStaffs($company_id, $staffs_excel);
         return json(new SuccessMessageWithData(['data' => $res]));

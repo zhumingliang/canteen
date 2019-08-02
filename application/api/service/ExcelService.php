@@ -15,12 +15,12 @@ class ExcelService
      */
     public function saveExcel($excel)
     {
-       /* $path = dirname($_SERVER['SCRIPT_FILENAME']) . '/static/excel';
+        $path = dirname($_SERVER['SCRIPT_FILENAME']) . '/static/excel';
         if (!is_dir($path)) {
             mkdir(iconv("UTF-8", "GBK", $path), 0777, true);
         }
         $info = $excel->move($path);
-        $file_name = $info->getPathname();*/
+        $file_name = $info->getPathname();
          $file_name = dirname($_SERVER['SCRIPT_FILENAME']) . '/static/excel/template/上传部门员工信息模板.xlsx';
         $result_excel = $this->import_excel($file_name);
         return $result_excel;
