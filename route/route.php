@@ -45,6 +45,11 @@ Route::post('api/:version/department/save', 'api/:version.Department/save');
 Route::post('api/:version/department/update', 'api/:version.Department/update');
 Route::get('api/:version/departments', 'api/:version.Department/departments');
 Route::post('api/:version/department/staff/save', 'api/:version.Department/addStaff');
+Route::post('api/:version/department/staff/update', 'api/:version.Department/updateStaff');
+Route::post('api/:version/department/staff/delete', 'api/:version.Department/deleteStaff');
 Route::post('api/:version/department/staff/upload', 'api/:version.Department/uploadStaffs');
+Route::post('api/:version/department/staff/move', 'api/:version.Department/moveStaffDepartment');
+Route::get('api/:version/staffs', 'api/:version.Department/staffs');
+Route::post('api/:version/staff/qrcode/save', 'api/:version.Department/createStaffQrcode');
 
 Route::rule('api/:version/consumption/staff', 'api/:version.Consumption/staff');

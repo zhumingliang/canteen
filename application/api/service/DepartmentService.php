@@ -6,12 +6,15 @@ namespace app\api\service;
 
 use app\api\model\CompanyDepartmentT;
 use app\api\model\CompanyStaffT;
+use app\api\model\CompanyStaffV;
 use app\api\model\DepartmentV;
 use app\api\model\StaffQrcodeT;
 use app\lib\enum\CommonEnum;
 use app\lib\exception\DeleteException;
 use app\lib\exception\ParameterException;
 use app\lib\exception\SaveException;
+use app\lib\exception\UpdateException;
+use http\Params;
 use think\Db;
 use think\Exception;
 use think\Request;
@@ -27,6 +30,20 @@ class DepartmentService
             throw new SaveException();
         }
         return $department->id;
+    }
+
+    public function updateStaff($params)
+    {
+        if (key_exists('expiry_date', $params)) {
+            $qrcode = StaffQrcodeT::update(['expiry_date' => $params['expiry_date']], ['s_id' => $params['id']]);
+            if (!$qrcode) {
+                throw new UpdateException(['msg' => '更新二维码有效期失败']);
+            }
+        }
+        $staff = CompanyStaffT::update($params);
+        if (!$staff) {
+            throw new UpdateException();
+        }
     }
 
     public function deleteDepartment($id)
@@ -252,7 +269,7 @@ class DepartmentService
 
     }
 
-    private function saveQrcode($s_id)
+    public function saveQrcode($s_id)
     {
         $code = getRandChar(12);
         $url = sprintf(config("setting.qrcode_url"), $code);
@@ -260,13 +277,56 @@ class DepartmentService
         $data = [
             'code' => $code,
             's_id' => $s_id,
-            'expiry_date' => date('Y-m-d H:i:s', strtotime('+' . config("setting.qrcode_expire_in") . 'minute')),
+            'minute' => config("setting.qrcode_expire_in"),
             'url' => $qrcode_url
         ];
         $qrcode = StaffQrcodeT::create($data);
         if (!$qrcode) {
             throw new SaveException();
         }
+    }
+
+    public function updateQrcode($params)
+    {
+        $code = getRandChar(12);
+        $url = sprintf(config("setting.qrcode_url"), $code);
+        $qrcode_url = (new QrcodeService())->qr_code($url);
+        $s_id = $params['id'];
+        $params['code'] = $code;
+        $params['url'] = $qrcode_url;
+        $expiry_date = date('Y-m-d H:i:s', time());
+        $params['create_time'] = $expiry_date;
+        $params['expiry_date'] = $this->prefixQrcodeExpiryDate($expiry_date, $params);
+        $qrcode = StaffQrcodeT::update($params, ['s' => $s_id]);
+        if (!$qrcode) {
+            throw new SaveException();
+        }
+        $staff=CompanyStaffT::get($s_id);
+        return [
+            'usernmae' => $staff->username,
+            'url' =>  config('setting.domain') . $qrcode->url,
+            'create_time' => $qrcode->create_time,
+            'expiry_date' => $qrcode->expiry_date
+        ];
+    }
+
+    public function companyStaffs($page, $size, $c_id, $d_id)
+    {
+        $staffs = CompanyStaffV::companyStaffs($page, $size, $c_id, $d_id);
+        return $staffs;
+
+    }
+
+    private function prefixQrcodeExpiryDate($expiry_date, $params)
+    {
+        $type = ['minute', 'hour', 'day', 'month', 'year'];
+        foreach ($type as $k => $v) {
+            if (key_exists($v, $params)) {
+                $expiry_date = date('Y-m-d H:i:s', strtotime("+" . $params[$v] . "$v", strtotime($expiry_date)));
+            }
+        }
+        return $expiry_date;
+
     }
 
 }

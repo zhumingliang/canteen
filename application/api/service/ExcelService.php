@@ -21,7 +21,7 @@ class ExcelService
         }
         $info = $excel->move($path);
         $file_name = $info->getPathname();
-       //  $file_name = dirname($_SERVER['SCRIPT_FILENAME']) . '/static/excel/template/上传部门员工信息模板.xlsx';
+        //  $file_name = dirname($_SERVER['SCRIPT_FILENAME']) . '/static/excel/template/上传部门员工信息模板.xlsx';
         $result_excel = $this->import_excel($file_name);
         return $result_excel;
 

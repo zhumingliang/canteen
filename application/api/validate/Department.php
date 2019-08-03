@@ -25,6 +25,11 @@ class Department extends BaseValidate
         'delete' => ['id'],
         'departments' => ['c_id'],
         'addStaff' => ['c_id', 'd_id', 't_id', 'username', 'code', 'phone', 'card_num'],
+        'updateStaff' => ['id'],
+        'deleteStaff' => ['id'],
+        'uploadStaffs' => ['c_id'],
+        'staffs' => ['c_id','d_id'],
+        'moveStaffDepartment' => ['id','d_id'],
     ];
 
 }
