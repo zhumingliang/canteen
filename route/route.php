@@ -34,6 +34,7 @@ Route::get('api/:version/canteen/configuration', 'api/:version.Canteen/configura
 Route::get('api/:version/roles', 'api/:version.Role/roles');
 Route::post('api/:version/role/save', 'api/:version.Role/save');
 Route::post('api/:version/role/update', 'api/:version.Role/update');
+Route::post('api/:version/role/passwd/update', 'api/:version.Role/updatePasswd');
 Route::post('api/:version/role/handel', 'api/:version.Role/handel');
 Route::get('api/:version/role/types', 'api/:version.Role/roleTypes');
 Route::post('api/:version/role/type/save', 'api/:version.Role/saveRoleType');

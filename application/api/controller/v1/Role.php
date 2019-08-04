@@ -160,7 +160,6 @@ class Role extends BaseController
 
     }
 
-
     /**
      * @api {POST} /api/v1/role/type/save CMS管理端-新增角色类型
      * @apiGroup   CMS
@@ -256,5 +255,29 @@ class Role extends BaseController
         StaffTypeT::update(['state' => CommonEnum::STATE_IS_FAIL], ['id' => $id]);
         return json(new SuccessMessage());
 
+    }
+
+    /**
+     * @api {POST} /api/v1/role/passwd/update CMS管理端-修改账号密码
+     * @apiGroup   CMS
+     * @apiVersion 3.0.0
+     * @apiDescription    CMS管理端-修改账号密码
+     * @apiExample {post}  请求样例:
+     *    {
+     *       "oldPasswd": "a111111"
+     *       "newPasswd": "1123121"
+     *     }
+     * @apiParam (请求参数说明) {string} oldPasswd  旧密码
+     * @apiParam (请求参数说明) {string} newPasswd  新密码
+     * @apiSuccessExample {json} 返回样例:
+     *{"msg":"ok","errorCode":0}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {String} msg 信息描述
+     */
+    public function updatePasswd()
+    {
+        $params = Request::param();
+        (new AdminService())->updatePasswd($params);
+        return json(new SuccessMessage());
     }
 }

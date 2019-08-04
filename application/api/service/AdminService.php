@@ -222,5 +222,21 @@ class AdminService
         return $types;
     }
 
+    public function updatePasswd($params)
+    {
+        $old_passwd = $params['oldPasswd'];
+        $new_passwd = $params['newPasswd'];
+        $id = Token::getCurrentUid();
+        $admin = AdminT::get($id);
+        if (sha1($old_passwd) != $admin->passwd) {
+            throw new UpdateException(['msg' => '密码不正确']);
+        }
+        $admin->passwd = sha1($new_passwd);
+        $res = $admin->save();
+        if (!$res) {
+            throw new UpdateException();
+        }
+    }
+
 
 }
