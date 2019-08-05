@@ -7,6 +7,7 @@ namespace app\api\service;
 use app\api\model\CanteenAccountT;
 use app\api\model\CanteenModuleT;
 use app\api\model\CanteenT;
+use app\api\model\ConsumptionStrategyT;
 use app\api\model\DinnerT;
 use app\api\model\SystemCanteenModuleT;
 use app\lib\enum\CommonEnum;
@@ -191,6 +192,45 @@ class CanteenService
         $canteens = CanteenT::where('c_id', $company_id)
             ->field('id,name')->select()->toArray();
         return $canteens;
+    }
+
+    public function saveConsumptionStrategy($params)
+    {
+        $c_id = $params['c_id'];
+        //获取饭堂餐次
+        $dinners = $this->getDinners($c_id);
+        if (!count($dinners)) {
+            throw new SaveException(['msg' => '新增消费策略失败，该饭堂没有设置餐次']);
+        }
+        $data = array();
+        foreach ($dinners as $k => $v) {
+            $data[] = [
+                'c_id' => $c_id,
+                't_id' => $params['t_id'],
+                'd_id' => $v['id'],
+                'unordered_meals' => $params['unordered_meals'],
+                'consumption_count' => $params['consumption_count'],
+                'ordered_count' => $params['ordered_count'],
+                'state' => CommonEnum::STATE_IS_OK
+            ];
+        }
+        $strategies = (new ConsumptionStrategyT())->saveAll($data);
+        if (!$strategies) {
+            throw  new SaveException();
+        }
+        return $this->consumptionStrategy($c_id);
+    }
+
+    public function consumptionStrategy($c_id)
+    {
+        $info = ConsumptionStrategyT::info($c_id);
+        return $info;
+    }
+
+    private function getDinners($c_id)
+    {
+        return DinnerT::dinners($c_id);
+
     }
 
 
