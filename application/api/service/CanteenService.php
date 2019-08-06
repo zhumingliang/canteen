@@ -81,6 +81,7 @@ class CanteenService
                     'state' => CommonEnum::STATE_IS_OK,
                     'm_id' => $v->id,
                     'type' => $v->type,
+                    'category' => CommonEnum::STATE_IS_OK,
                     'order' => $order
                 ];
 

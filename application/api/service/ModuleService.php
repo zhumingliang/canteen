@@ -134,12 +134,24 @@ class ModuleService
 
     }
 
-    public function companyModules($c_id)
+    public function canteenModulesWithSystem($c_id)
     {
-        return [
+        return $this->canteenModules($c_id);
+       /* return [
             'canteen' => $this->canteenModules($c_id),
             'shop' => $this->shopModules($c_id)
-        ];
+        ];*/
+
+
+    }
+
+    public function shopModulesWithSystem($s_id)
+    {
+        return $this->shopModules($s_id);
+        /* return [
+             'canteen' => $this->canteenModules($c_id),
+             'shop' => $this->shopModules($c_id)
+         ];*/
 
 
     }
@@ -155,9 +167,9 @@ class ModuleService
     }
 
 
-    private function shopModules($c_id)
+    private function shopModules($s_id)
     {
-        $modules = ShopModuleV::modules($c_id);
+        $modules = ShopModuleV::modules($s_id);
         $system = $this->systemModules(ModuleEnum::SHOP, 0);
         $modules = $this->prefixModules($modules, $system);
         $modules = getTree($modules);
@@ -286,6 +298,12 @@ class ModuleService
 
         }
 
+    }
+
+    public function canteenModulesWithoutSystem($c_id)
+    {
+        $modules = CanteenModuleV::canteenModules($c_id);
+        return getTree($modules);
     }
 
 

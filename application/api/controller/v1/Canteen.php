@@ -154,15 +154,11 @@ class Canteen extends BaseController
      *    {
      *       "c_id": ,
      *       "t_id": 2,
-     *       "unordered_meals": 1,
-     *       "consumption_count": 1,
-     *       "ordered_count": 1,
+     *       "unordered_meals": 1
      *     }
      * @apiParam (请求参数说明) {int} c_id 饭堂id
      * @apiParam (请求参数说明) {int} t_id  人员类型id
      * @apiParam (请求参数说明) {int} unordered_meals  是否未订餐允许就餐：1|是；2|否
-     * @apiParam (请求参数说明) {int} consumption_count  允许消费次数
-     * @apiParam (请求参数说明) {int} ordered_count  订餐数量
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200,"data":[{"id":14,"unordered_meals":1,"detail":"","consumption_count":1,"ordered_count":1,"dinner":{"id":5,"name":"早餐"},"role":{"id":1,"name":"局长"},"canteen":{"id":1,"name":"大饭堂"}},{"id":15,"unordered_meals":1,"detail":"","consumption_count":1,"ordered_count":1,"dinner":{"id":6,"name":"中餐"},"role":{"id":1,"name":"局长"},"canteen":{"id":1,"name":"大饭堂"}},{"id":16,"unordered_meals":1,"detail":"","consumption_count":1,"ordered_count":1,"dinner":{"id":7,"name":"晚餐"},"role":{"id":1,"name":"局长"},"canteen":{"id":1,"name":"大饭堂"}}]}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误

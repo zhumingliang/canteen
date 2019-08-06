@@ -36,7 +36,7 @@ class Token extends Controller
      *       "account": "18956225230",
      *       "passwd": "a123456"
      *     }
-     * @apiParam (请求参数说明) {String} phone    用户账号
+     * @apiParam (请求参数说明) {String} account    用户账号
      * @apiParam (请求参数说明) {String} pwd   用户密码
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200,"data":{"token":"fe6ed7b4a89aab3a31d0606a55116a49","role":"系统超级管理员","grade":1}}

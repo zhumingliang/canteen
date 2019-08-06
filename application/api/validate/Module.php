@@ -27,6 +27,7 @@ class Module extends BaseValidate
         'handelSystem' => ['id', 'state'],
         'updateModule' => ['id', 'type'],
         'canteenModule' => ['c_id'],
+        'canteenModules' => ['c_id'],
         'updateCompanyModule' => ['company_id','shop', 'canteen']
     ];
 
