@@ -14,6 +14,7 @@ class Company extends BaseValidate
 
     protected $scene = [
         'save' => ['name', 'parent_id'],
+        'managerCompanies' => ['name'],
     ];
 
 }

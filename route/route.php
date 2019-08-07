@@ -27,6 +27,7 @@ Route::get('api/:version/modules/canteen/withoutSystem', 'api/:version.Module/ca
 
 Route::post('api/:version/company/save', 'api/:version.Company/save');
 Route::get('api/:version/companies', 'api/:version.Company/companies');
+Route::get('api/:version/manager/companies', 'api/:version.Company/managerCompanies');
 
 Route::post('api/:version/canteen/save', 'api/:version.Canteen/save');
 Route::post('api/:version/canteen/configuration/save', 'api/:version.Canteen/saveConfiguration');

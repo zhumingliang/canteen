@@ -47,6 +47,24 @@ class CompanyT extends Model
             ->paginate($size, false, ['page' => $page]);
         return $list;
 
+    }
+
+    public static function managerCompanies($name)
+    {
+
+        $list = self::where('state', CommonEnum::STATE_IS_OK)
+            ->with([
+                'canteen' => function ($query) {
+                    $query->where('state', '=', CommonEnum::STATE_IS_OK)->field('id,c_id,name');
+                },
+                'shop' => function ($query) {
+                    $query->where('state', '=', CommonEnum::STATE_IS_OK)->field('id,c_id,name');
+                }
+            ])
+            ->where('name', $name)
+            ->field('id,name,parent_id')
+            ->find();
+        return $list;
 
     }
 

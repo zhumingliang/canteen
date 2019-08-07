@@ -163,7 +163,8 @@ function curl_file_get_contents($durl,$headers){
         $newList = [];
         foreach ($list as $k => $v) {
             $newList[$v['id']] = $v;
-        }        //然后开始组装成特殊格式
+        }
+        //然后开始组装成特殊格式
         foreach ($newList as $value) {
             if ($pid == $value['parent_id']) {//先取出顶级
                 $tree[] = &$newList[$value['id']];

@@ -21,8 +21,8 @@ class CompanyService
             $params['state'] = CommonEnum::STATE_IS_OK;
             $params['admin_id'] = Token::getCurrentUid();
             $parent = $this->getParentCompany($params['parent_id']);
-            $params['parent_name'] =$parent['name'];
-            $params['grade'] =$parent['grade'];
+            $params['parent_name'] = $parent['name'];
+            $params['grade'] = $parent['grade'];
             $company = CompanyT::create($params);
             if (!$company) {
                 throw  new SaveException();
@@ -63,11 +63,19 @@ class CompanyService
         ];;
     }
 
-    public function companies($page, $size,$name,$create_time)
+    public function companies($page, $size, $name, $create_time)
     {
-        $companies=CompanyT::companies($page, $size,$name,$create_time);
+        $companies = CompanyT::companies($page, $size, $name, $create_time);
         return $companies;
 
+    }
+
+
+    public function managerCompanies($name)
+    {
+        $companies = CompanyT::managerCompanies( $name);
+        $companies=getTree($companies);
+        return $companies;
     }
 
 }
