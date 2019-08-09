@@ -63,6 +63,9 @@ Route::post('api/:version/staff/qrcode/save', 'api/:version.Department/createSta
 
 Route::rule('api/:version/consumption/staff', 'api/:version.Consumption/staff');
 
+Route::rule('api/:version/image/upload', 'api/:version.Image/upload');
+
 Route::post('api/:version/menu/save', 'api/:version.Menu/save');
 Route::get('api/:version/menus/company', 'api/:version.Menu/companyMenus');
+Route::get('api/:version/menus/canteen', 'api/:version.Menu/canteenMenus');
 

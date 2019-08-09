@@ -5,6 +5,7 @@ namespace app\api\service;
 
 
 use app\api\model\CanteenT;
+use app\api\model\DinnerT;
 use app\api\model\MenuDetailT;
 use app\api\model\MenuT;
 use app\lib\enum\CommonEnum;
@@ -69,5 +70,12 @@ class MenuService
         $menus = CanteenT::canteensMenu($page, $size, $canteen_id);
         return $menus;
     }
+
+    public function canteenMenus($canteen_id)
+    {
+        $menus = DinnerT::canteenDinnerMenus($canteen_id);
+        return $menus;
+    }
+
 
 }

@@ -84,9 +84,30 @@ class Menu extends BaseController
         return json(new SuccessMessageWithData(['data' => $menus]));
     }
 
+    /**
+     * @api {GET} /api/v1/menus/canteen CMS管理端-获取指定饭堂菜单信息
+     * @apiGroup  CMS
+     * @apiVersion 3.0.0
+     * @apiDescription  CMS管理端-菜单设置-菜单设
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/menus/canteen?canteen_id=6
+     * @apiParam (请求参数说明) {String} canteen_id 饭堂id
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":[{"id":5,"name":"早餐","menus":[]},{"id":6,"name":"中餐","menus":[{"id":1,"d_id":6,"category":"荤菜","status":1,"count":3},{"id":2,"d_id":6,"category":"汤","status":2,"count":0}]},{"id":7,"name":"晚餐","menus":[]}]}
+     * @apiSuccess (返回参数说明) {int} id 餐次id
+     * @apiSuccess (返回参数说明) {string} name 餐次名称
+     * @apiSuccess (返回参数说明) {obj} menus 餐次菜单设置信息
+     * @apiSuccess (返回参数说明) {int} menus|id 餐次菜单设置id
+     * @apiSuccess (返回参数说明) {int} menus|d_id 餐次id
+     * @apiSuccess (返回参数说明) {string} menus|category 菜单设置分类
+     * @apiSuccess (返回参数说明) {int}  menus|status 菜品状态:1|固定；2|动态
+     * @apiSuccess (返回参数说明) {int}  menus|count 数量
+     */
     public function canteenMenus()
     {
-        $canteen_id = Request::param('c_id');
+        $canteen_id = Request::param('canteen_id');
+        $menus = (new MenuService())->canteenMenus($canteen_id);
+        return json(new SuccessMessageWithData(['data' => $menus]));
     }
 
 }
