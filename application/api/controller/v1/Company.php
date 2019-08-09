@@ -79,7 +79,7 @@ class Company extends BaseController
      * @apiVersion 3.0.0
      * @apiDescription CMS管理端-企业管理-企业列表
      * @apiExample {get}  请求样例:
-     * https://tonglingok.com/api/v1/companies?name="企业A"
+     * http://canteen.tonglingok.com/api/v1/companies?name="企业A"
      * @apiParam (请求参数说明) {String} name 名称
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200,"data":[{"id":3,"name":"企业A","parent_id":2,"canteen":[{"id":6,"c_id":3,"name":"饭堂1"},{"id":7,"c_id":3,"name":"饭堂2"}],"shop":null,"items":[{"id":4,"name":"企业A1","parent_id":3,"canteen":[],"shop":null,"items":[{"id":6,"name":"企业A11","parent_id":4,"canteen":[],"shop":null}]},{"id":5,"name":"企业A2","parent_id":3,"canteen":[],"shop":null}]}]}

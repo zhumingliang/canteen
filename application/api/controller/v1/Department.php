@@ -100,7 +100,7 @@ class Department extends BaseController
      * @apiVersion 3.0.0
      * @apiDescription CMS管理端-获取企业部门列表
      * @apiExample {get}  请求样例:
-     * https://tonglingok.com/api/v1/departments?c_id=2
+     * http://canteen.tonglingok.com/api/v1/departments?c_id=2
      * @apiParam (请求参数说明) {int} c_id 企业id
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200,"data":[{"id":3,"parent_id":0,"name":"董事会-修改","count":"0","items":[{"id":5,"parent_id":3,"name":"B部门","count":"0","items":[{"id":8,"parent_id":5,"name":"B1部门","count":"0"},{"id":9,"parent_id":5,"name":"B2部门","count":"0"}]},{"id":4,"parent_id":3,"name":"A部门","count":"0","items":[{"id":7,"parent_id":4,"name":"A2部门","count":"0"},{"id":6,"parent_id":4,"name":"A1部门","count":"0"}]}]}]}
@@ -219,7 +219,7 @@ class Department extends BaseController
      * @apiVersion 3.0.0
      * @apiDescription CMS管理端-企业员工列表
      * @apiExample {get}  请求样例:
-     * https://tonglingok.com/api/v1/staffs?page=1&size=10&c_id=2&d_id=4
+     * http://canteen.tonglingok.com/api/v1/staffs?page=1&size=10&c_id=2&d_id=4
      * @apiParam (请求参数说明) {int} page 当前页码
      * @apiParam (请求参数说明) {int} size 每页多少条数据
      * @apiParam (请求参数说明) {int} c_id 企业id

@@ -58,7 +58,7 @@ class Token extends Controller
      * @apiVersion 3.0.0
      * @apiDescription CMS退出当前账号登陆。
      * @apiExample {get}  请求样例:
-     * https://tonglingok.com/api/v1/token/loginOut
+     * http://canteen.tonglingok.com/api/v1/token/loginOut
      * @apiSuccessExample {json} 返回样例:
      *{"msg":"ok","errorCode":0}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
@@ -67,7 +67,6 @@ class Token extends Controller
      */
     public function loginOut()
     {
-
         $token = Request::header('token');
         Cache::rm($token);
         return json(new SuccessMessage());

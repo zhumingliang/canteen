@@ -271,7 +271,7 @@ class Canteen extends BaseController
      * @apiVersion 3.0.0
      * @apiDescription CMS管理端-获取用户可查看饭堂信息
      * @apiExample {get}  请求样例:
-     * https://tonglingok.com/api/v1/canteens/role
+     * http://canteen.tonglingok.com/api/v1/canteens/role
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200,"data":[{"id":3,"name":"企业A","parent_id":2,"canteen":[{"id":6,"c_id":3,"name":"饭堂1"},{"id":7,"c_id":3,"name":"饭堂2"}]},{"id":4,"name":"企业A1","parent_id":3,"canteen":[]},{"id":5,"name":"企业A2","parent_id":3,"canteen":[]},{"id":6,"name":"企业A11","parent_id":4,"canteen":[]}]}
      * @apiSuccess (返回参数说明) {int} id 企业id

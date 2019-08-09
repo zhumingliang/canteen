@@ -102,7 +102,7 @@ class Role extends BaseController
      * @apiVersion 3.0.0
      * @apiDescription CMS管理端-设置-角色列表
      * @apiExample {get}  请求样例:
-     * https://tonglingok.com/api/v1/roles?&page=1&size=10&state=3&c_name="A企业"&key=""
+     * http://canteen.tonglingok.com/api/v1/roles?&page=1&size=10&state=3&c_name="A企业"&key=""
      * @apiParam (请求参数说明) {int} page 当前页码
      * @apiParam (请求参数说明) {int} size 每页多少条数据
      * @apiParam (请求参数说明) {int} state 状态：1|正常；2|停用；3|获取全部
@@ -213,7 +213,7 @@ class Role extends BaseController
      * @apiVersion 3.0.0
      * @apiDescription CMS管理端-设置-角色列表
      * @apiExample {get}  请求样例:
-     * https://tonglingok.com/api/v1/role/types?&page=1&size=10&key=""
+     * http://canteen.tonglingok.com/api/v1/role/types?&page=1&size=10&key=""
      * @apiParam (请求参数说明) {int} page 当前页码
      * @apiParam (请求参数说明) {int} size 每页多少条数据
      * @apiParam (请求参数说明) {string} key 关键词查询

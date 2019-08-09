@@ -49,7 +49,7 @@ class Menu extends BaseController
      * @apiVersion 3.0.0
      * @apiDescription  CMS管理端-菜单设置-菜单设置列表
      * @apiExample {get}  请求样例:
-     * https://tonglingok.com/api/v1/menus/company?page=1&size=10&canteen_id="1,2,3"
+     * http://canteen.tonglingok.com/api/v1/menus/company?page=1&size=10&canteen_id="1,2,3"
      * @apiParam (请求参数说明) {int} page 当前页码
      * @apiParam (请求参数说明) {int} size 每页多少条数据
      * @apiParam (请求参数说明) {String} canteen_id 饭堂id，多个用逗号分隔
@@ -83,4 +83,10 @@ class Menu extends BaseController
         $menus = (new MenuService())->companyMenus($page, $size, $canteen_id);
         return json(new SuccessMessageWithData(['data' => $menus]));
     }
+
+    public function canteenMenus()
+    {
+        $canteen_id = Request::param('c_id');
+    }
+
 }
