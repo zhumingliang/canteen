@@ -4,14 +4,18 @@
 namespace app\api\service;
 
 
+use app\api\model\AdminCanteenV;
 use app\api\model\CanteenAccountT;
 use app\api\model\CanteenModuleT;
 use app\api\model\CanteenT;
+use app\api\model\CompanyT;
 use app\api\model\ConsumptionStrategyT;
 use app\api\model\DinnerT;
 use app\api\model\SystemCanteenModuleT;
+use app\lib\enum\AdminEnum;
 use app\lib\enum\CommonEnum;
 use app\lib\enum\ModuleEnum;
+use app\lib\exception\AuthException;
 use app\lib\exception\ParameterException;
 use app\lib\exception\SaveException;
 use app\lib\exception\UpdateException;
@@ -232,6 +236,57 @@ class CanteenService
     {
         return DinnerT::dinners($c_id);
 
+    }
+
+    public function roleCanteens()
+    {
+        $grade = Token::getCurrentTokenVar('grade');
+        $admin_id = Token::getCurrentUid();
+        if ($grade == AdminEnum::COMPANY_SUPER) {
+            $c_id = Token::getCurrentTokenVar('c_id');
+            if (!$c_id) {
+                return null;
+            }
+            return $this->superCompanyMangerCanteens($c_id);
+
+        } else {
+            $canteens = $this->companyManagerCanteens($admin_id);
+            return $canteens;
+        }
+
+    }
+
+    private function superCompanyMangerCanteens($c_id)
+    {
+
+        $canteens = (new CompanyService())->superManagerCompanies($c_id);
+        return $canteens;
+
+    }
+
+    private function companyManagerCanteens($admin_id)
+    {
+        $canteens = AdminCanteenV::companyRoleCanteens($admin_id);
+        if (empty($canteens)) {
+            return $canteens;
+        }
+        foreach ($canteens as $k => $v) {
+            $ids = $v['canteen_ids'];
+            $names = $v['canteen_names'];
+            unset($canteens[$k]['canteen_ids'], $canteens [$k]['canteen_names']);
+            $ids = explode(',', $ids);
+            $names = explode(',', $names);
+            $data = [];
+            foreach ($ids as $k2 => $v2) {
+                $data = [
+                    'id' => $v2,
+                    'name' => $names[$k2],
+                ];
+            }
+            $canteens[$k]['canteen'] = $data;
+        }
+
+        return $canteens;
     }
 
 

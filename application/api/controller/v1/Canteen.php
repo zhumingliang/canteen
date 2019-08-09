@@ -265,4 +265,26 @@ class Canteen extends BaseController
         return json(new SuccessMessageWithData(['data' => $strategies]));
     }
 
+    /**
+     * @api {GET} /api/v1/canteens/role CMS管理端-获取用户可查看饭堂信息（企业管理端）
+     * @apiGroup  CMS
+     * @apiVersion 3.0.0
+     * @apiDescription CMS管理端-获取用户可查看饭堂信息
+     * @apiExample {get}  请求样例:
+     * https://tonglingok.com/api/v1/canteens/role
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":[{"id":3,"name":"企业A","parent_id":2,"canteen":[{"id":6,"c_id":3,"name":"饭堂1"},{"id":7,"c_id":3,"name":"饭堂2"}]},{"id":4,"name":"企业A1","parent_id":3,"canteen":[]},{"id":5,"name":"企业A2","parent_id":3,"canteen":[]},{"id":6,"name":"企业A11","parent_id":4,"canteen":[]}]}
+     * @apiSuccess (返回参数说明) {int} id 企业id
+     * @apiSuccess (返回参数说明) {String} name  企业名称
+     * @apiSuccess (返回参数说明) {obj} canteen 企业饭堂信息
+     * @apiSuccess (返回参数说明) {int} canteen|id 饭堂id
+     * @apiSuccess (返回参数说明) {int} canteen|name 饭堂名称
+     */
+    public function roleCanteens()
+    {
+        $canteens = (new CanteenService())->roleCanteens();
+        return json(new SuccessMessageWithData(['data' => $canteens]));
+
+    }
+
 }

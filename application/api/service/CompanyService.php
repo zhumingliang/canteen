@@ -73,9 +73,55 @@ class CompanyService
 
     public function managerCompanies($name)
     {
-        $companies = CompanyT::managerCompanies( $name);
-        $companies=getTree($companies);
+        $ids = [];
+        $company = CompanyT::getCompanyWithName($name);
+        if (!$company) {
+            return array();
+        }
+        $parent_id = $company->parent_id;
+        array_push($ids, $company->id);
+        $ids = $this->getSonID($ids, $company->id);
+        if (!count($ids)) {
+            return array();
+        }
+        $ids = implode(',', $ids);
+        $companies = CompanyT::managerCompanies($ids);
+        return getTree($companies, $parent_id);
+
+
+    }
+
+    public function superManagerCompanies($c_id)
+    {
+        $ids = [];
+        $company = CompanyT::getCompanyWitID($c_id);
+        if (!$company) {
+            return array();
+        }
+        $parent_id = $company->parent_id;
+        array_push($ids, $company->id);
+        $ids = $this->getSonID($ids, $company->id);
+        if (!count($ids)) {
+            return array();
+        }
+        $ids = implode(',', $ids);
+        $companies = CompanyT::superManagerCompanies($ids);
         return $companies;
     }
+
+
+    private function getSonID($ids, $id)
+    {
+        $company = CompanyT::where('parent_id', $id)->select();
+        if (!count($company)) {
+            return $ids;
+        }
+        foreach ($company as $k => $v) {
+            array_push($ids, $v->id);
+            $ids = $this->getSonID($ids, $v->id);
+        }
+        return $ids;
+    }
+
 
 }

@@ -37,6 +37,7 @@ Route::post('api/:version/canteen/consumptionStrategy/update', 'api/:version.Can
 Route::post('api/:version/canteen/model/category', 'api/:version.Canteen/canteenModuleCategoryHandel');
 Route::get('api/:version/canteen/consumptionStrategy', 'api/:version.Canteen/consumptionStrategy');
 Route::get('api/:version/canteen/configuration', 'api/:version.Canteen/configuration');
+Route::get('api/:version/canteens/role', 'api/:version.Canteen/roleCanteens');
 
 Route::get('api/:version/roles', 'api/:version.Role/roles');
 Route::post('api/:version/role/save', 'api/:version.Role/save');
@@ -61,3 +62,7 @@ Route::get('api/:version/staffs', 'api/:version.Department/staffs');
 Route::post('api/:version/staff/qrcode/save', 'api/:version.Department/createStaffQrcode');
 
 Route::rule('api/:version/consumption/staff', 'api/:version.Consumption/staff');
+
+Route::post('api/:version/menu/save', 'api/:version.Menu/save');
+Route::get('api/:version/menus/company', 'api/:version.Menu/companyMenus');
+

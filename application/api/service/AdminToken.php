@@ -86,7 +86,7 @@ class AdminToken extends Token
 
         return [
             'token' => $key,
-            'role'=>$cachedValue['role'],
+            'role' => $cachedValue['role'],
             'grade' => $cachedValue['grade']
         ];
     }
@@ -98,7 +98,8 @@ class AdminToken extends Token
             'u_id' => $admin->id,
             'role' => $admin->role,
             'account' => $admin->account,
-            'grade' => $admin->grade
+            'grade' => $admin->grade,
+            'c_id' => $admin->c_id
         ];
         return $cachedValue;
     }

@@ -49,10 +49,10 @@ class CompanyT extends Model
 
     }
 
-    public static function managerCompanies($name)
+    public static function managerCompanies($ids)
     {
 
-        $list = self::where('state', CommonEnum::STATE_IS_OK)
+        $list = self::whereIn('id', $ids)
             ->with([
                 'canteen' => function ($query) {
                     $query->where('state', '=', CommonEnum::STATE_IS_OK)->field('id,c_id,name');
@@ -61,10 +61,46 @@ class CompanyT extends Model
                     $query->where('state', '=', CommonEnum::STATE_IS_OK)->field('id,c_id,name');
                 }
             ])
+            ->field('id,name,parent_id')
+            ->select()->toArray();
+        return $list;
+
+    }
+
+    public static function superManagerCompanies($ids)
+    {
+
+        $list = self::whereIn('id', $ids)
+            ->with([
+                'canteen' => function ($query) {
+                    $query->where('state', '=', CommonEnum::STATE_IS_OK)->field('id,c_id,name');
+                }
+            ])
+            ->field('id,name,parent_id')
+            ->select()->toArray();
+        return $list;
+
+    }
+
+    public static function getCompanyWithName($name)
+    {
+
+        $company = self::where('state', CommonEnum::STATE_IS_OK)
             ->where('name', $name)
             ->field('id,name,parent_id')
             ->find();
-        return $list;
+        return $company;
+
+    }
+
+    public static function getCompanyWitID($id)
+    {
+
+        $company = self::where('id', $id)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->field('id,name,parent_id')
+            ->find();
+        return $company;
 
     }
 
