@@ -43,7 +43,7 @@ class Company extends BaseController
      * @apiVersion 3.0.0
      * @apiDescription CMS管理端-企业明细-企业列表
      * @apiExample {get}  请求样例:
-     * https://tonglingok.com/api/v1/companies?name="大企业"&create_time="2019-06-29"&page=1&size=10
+     * http://canteen.tonglingok.com/api/v1/companies?name="大企业"&create_time="2019-06-29"&page=1&size=10
      * @apiParam (请求参数说明) {int} page 当前页码
      * @apiParam (请求参数说明) {int} size 每页多少条数据
      * @apiParam (请求参数说明) {String} name 名称

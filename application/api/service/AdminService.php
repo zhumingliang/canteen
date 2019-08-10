@@ -27,10 +27,10 @@ class AdminService
             Db::startTrans();
             $canteens = [];
             $shops = [];
-            if (key_exists('canteens', $params) && strlen($params['canteens'])) {
+            if (!empty($params['canteens'])) {
                 $canteens = json_decode($params['canteens'], true);
             }
-            if (key_exists('shops', $params) && strlen($params['shops'])) {
+            if (!empty($params['shops'])) {
 
                 $shops = json_decode($params['shops'], true);
             }

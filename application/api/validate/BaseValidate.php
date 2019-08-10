@@ -89,13 +89,13 @@ class BaseValidate extends Validate
 
     public function isLat($value)
     {
-/*        $rule = "^(([1-8]\\d?)|([1-8]\\d))(\\.\\d{1,6})|90|0(\\.\\d{1,6})?$";
-        $result = preg_match($rule, $value);
-        if ($result) {
-            return true;
-        } else {
-            return false;
-        }*/
+        /*        $rule = "^(([1-8]\\d?)|([1-8]\\d))(\\.\\d{1,6})|90|0(\\.\\d{1,6})?$";
+                $result = preg_match($rule, $value);
+                if ($result) {
+                    return true;
+                } else {
+                    return false;
+                }*/
 
     }
 

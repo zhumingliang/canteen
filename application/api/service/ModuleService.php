@@ -305,6 +305,4 @@ class ModuleService
         $modules = CanteenModuleV::canteenModules($c_id);
         return getTree($modules);
     }
-
-
 }

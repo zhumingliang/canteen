@@ -88,7 +88,7 @@ class Menu extends BaseController
      * @api {GET} /api/v1/menus/canteen CMS管理端-获取指定饭堂菜单信息
      * @apiGroup  CMS
      * @apiVersion 3.0.0
-     * @apiDescription  CMS管理端-菜单设置-菜单设
+     * @apiDescription  CMS管理端-菜单设置-获取指定饭堂菜单信息
      * @apiExample {get}  请求样例:
      * http://canteen.tonglingok.com/api/v1/menus/canteen?canteen_id=6
      * @apiParam (请求参数说明) {String} canteen_id 饭堂id

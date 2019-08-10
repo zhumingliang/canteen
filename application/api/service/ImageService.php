@@ -18,7 +18,7 @@ class ImageService
         if (!$info) {
             throw new SaveException();
         }
-        return ['url' => '/static/image/' . $info->getExtension()];
+        return ['url' => '/static/image/' . $info->getSaveName()];
     }
 
 }
