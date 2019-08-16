@@ -15,25 +15,20 @@ class ExcelService
      */
     public function saveExcel($excel)
     {
-        $path = dirname($_SERVER['SCRIPT_FILENAME']) . '/static/excel';
+        $path = dirname($_SERVER['SCRIPT_FILENAME']) . '/static/excel/upload';
         if (!is_dir($path)) {
             mkdir(iconv("UTF-8", "GBK", $path), 0777, true);
         }
         $info = $excel->move($path);
         $file_name = $info->getPathname();
-        //  $file_name = dirname($_SERVER['SCRIPT_FILENAME']) . '/static/excel/template/上传部门员工信息模板.xlsx';
-        $result_excel = $this->import_excel($file_name);
+        // $file_name = dirname($_SERVER['SCRIPT_FILENAME']) . '/static/excel/template/批量上传材料价格明细模板.xlsx';
+        $result_excel = $this->importExcel($file_name);
         return $result_excel;
 
     }
 
-    /**
-     * @param $file
-     * @return array
-     * @throws \PHPExcel_Exception
-     * @throws \PHPExcel_Reader_Exception
-     */
-    public function import_excel($file)
+
+    public function importExcel($file)
     {
         // 判断文件是什么格式
         $extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
@@ -76,5 +71,56 @@ class ExcelService
         return $data;
     }
 
+
+    function makeExcel($columName, $list, $fileName, $excel2007 = false)
+    {
+        if (empty($fileName)) $fileName = time();
+
+        if (empty($columName) || empty($list)) {
+            return '列名或者内容不能为空';
+        }
+
+        if (count($list[0]) != count($columName)) {
+            return '列名跟数据的列不一致';
+        }
+
+        //实例化PHPExcel类
+        $PHPExcel = new \PHPExcel();
+        //设置保存版本格式
+        if ($excel2007) {
+            $PHPWriter = new \PHPExcel_Writer_Excel2007($PHPExcel);
+            $fileName = $fileName . date('_YmdHis') . '.xlsx';
+        } else {
+            $PHPWriter = new \PHPExcel_Writer_Excel5($PHPExcel);
+            $fileName = $fileName . date('_YmdHis') . '.xls';
+        }
+
+        //获得当前sheet对象
+        $PHPSheet = $PHPExcel->getActiveSheet();
+        //定义sheet名称
+        $PHPSheet->setTitle('Sheet1');
+
+        //excel的列 这么多够用了吧？不够自个加 AA AB AC ……
+        $letter = [
+            'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
+            'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'
+        ];
+        //把列名写入第1行 A1 B1 C1 ...
+        for ($i = 0; $i < count($list[0]); $i++) {
+            //$letter[$i]1 = A1 B1 C1  $letter[$i] = 列1 列2 列3
+            $PHPSheet->setCellValue("$letter[$i]1", "$columName[$i]");
+        }
+        //内容第2行开始
+        foreach ($list as $key => $val) {
+            //array_values 把一维数组的键转为0 1 2 3 ..
+            foreach (array_values($val) as $key2 => $val2) {
+                //$letter[$key2].($key+2) = A2 B2 C2 ……
+                $PHPSheet->setCellValue($letter[$key2] . ($key + 2), $val2);
+            }
+        }
+        $savePath = dirname($_SERVER['SCRIPT_FILENAME']) . '/static/excel/download/' . $fileName;
+        $PHPWriter->save($savePath);
+        return '/static/excel/download/' . $fileName;
+    }
 
 }

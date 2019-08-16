@@ -75,4 +75,12 @@ Route::post('api/:version/food/handel', 'api/:version.Food/handel');
 Route::get('api/:version/foods', 'api/:version.Food/foods');
 Route::get('api/:version/food', 'api/:version.Food/food');
 
+Route::post('api/:version/material/save', 'api/:version.Material/save');
+Route::post('api/:version/material/update', 'api/:version.Material/update');
+Route::post('api/:version/material/handel', 'api/:version.Material/handel');
+Route::post('api/:version/material/upload', 'api/:version.Material/uploadMaterials');
+Route::get('api/:version/material/export', 'api/:version.Material/export');
+Route::get('api/:version/materials', 'api/:version.Material/materials');
+Route::get('api/:version/material', 'api/:version.Material/material');
+
 

@@ -193,6 +193,11 @@ class Department extends BaseController
      * @apiGroup  CMS
      * @apiVersion 3.0.0
      * @apiDescription  用file控件上传excel ，文件名称为：staffs
+     * @apiExample {post}  请求样例:
+     *    {
+     *       "c_id": 1
+     *     }
+     * @apiParam (请求参数说明) {string} c_id 企业id
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200,"data":{"fail":[{"name":"奥斯","msg":"系统中不存在该人员类型：员工1"}]}}
      * @apiSuccess (返回参数说明) {int} error_code 错误代码 0 表示没有错误

@@ -17,7 +17,7 @@ use think\Db;
 use think\Exception;
 use think\Model;
 
-class FoodService
+class FoodService extends BaseService
 {
     public function save($params)
     {
@@ -96,49 +96,24 @@ class FoodService
 
     private function checkCanteenHasMaterialModule($c_id)
     {
-        return 1;
-        /* $name = "材料管理";
-         $count = CanteenModuleV::where('name', $name)
-             ->where('canteen_id', $c_id)
-             ->count('c_m_id');
-         return $count;*/
+
+        $name = "材料管理";
+        $count = CanteenModuleV::where('name', $name)
+            ->where('canteen_id', $c_id)
+            ->count('c_m_id');
+        return $count;
 
     }
 
     public function foods($page, $size, $params)
     {
         $f_type = $params['f_type'];
-        $selectField = $this->prefixSelectFoodsFiled($params);
+        $selectField = $this->prefixSelectFiled($params);
         $foods = FoodV::foods($page, $size, $f_type, $selectField['field'], $selectField['value']);
         return $foods;
 
     }
 
-    private function prefixSelectFoodsFiled($params)
-    {
-        if (!empty($params['menu_ids'])) {
-            return [
-                'field' => 'menu_id',
-                'value' => $params['menu_ids']
-            ];
-        } else if (!empty($params['dinner_ids'])) {
-            return [
-                'field' => 'dinner_id',
-                'value' => $params['dinner_ids']
-            ];
-        } else if (!empty($params['canteen_ids'])) {
-            return [
-                'field' => 'canteen_id',
-                'value' => $params['canteen_ids']
-            ];
-        } else if (!empty($params['company_ids'])) {
-            return [
-                'field' => 'company_id',
-                'value' => $params['company_ids']
-            ];
-        }
-        throw  new ParameterException();
-    }
 
     public function food($id)
     {
