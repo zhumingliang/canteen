@@ -42,7 +42,7 @@ class FoodV extends BaseModel
         $info = self::where('id', $id)
             ->with([
                 'material' => function ($query) {
-                    $query->where('state',CommonEnum::STATE_IS_OK)
+                    $query->where('state', CommonEnum::STATE_IS_OK)
                         ->field('id,f_id,name,count');
                 }
             ])
@@ -51,5 +51,28 @@ class FoodV extends BaseModel
         return $info;
     }
 
+    public static function foodMaterials($page, $size, $selectField, $selectValue)
+    {
+
+        $list = self::where('f_type', 2)
+            ->where(function ($query) use ($selectField, $selectValue) {
+                if (strpos($selectValue, ',') !== false) {
+                    $query->whereIn($selectField, $selectValue);
+                } else {
+                    $query->where($selectField, $selectValue);
+                }
+            })
+            ->with([
+                'material' => function ($query) {
+                    $query->where('state', CommonEnum::STATE_IS_OK)
+                        ->field('id,f_id,name,count,unit');
+                }
+            ])
+            ->where('state', '<>', CommonEnum::STATE_IS_DELETE)
+            ->order('create_time desc')
+            ->field('id,company,canteen,dinner,name')
+            ->paginate($size, false, ['page' => $page]);
+        return $list;
+    }
 
 }

@@ -81,6 +81,6 @@ Route::post('api/:version/material/handel', 'api/:version.Material/handel');
 Route::post('api/:version/material/upload', 'api/:version.Material/uploadMaterials');
 Route::get('api/:version/material/export', 'api/:version.Material/export');
 Route::get('api/:version/materials', 'api/:version.Material/materials');
-Route::get('api/:version/material', 'api/:version.Material/material');
+Route::get('api/:version/materials/food', 'api/:version.Material/foodMaterials');
 
 

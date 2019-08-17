@@ -121,4 +121,21 @@ class FoodService extends BaseService
         return $info;
     }
 
+
+    public function foodMaterials($page, $size, $params)
+    {
+        $selectField = $this->prefixSelectFiled($params);
+        $foods = FoodV::foodMaterials($page, $size, $selectField['field'], $selectField['value']);
+
+        return $foods;
+    }
+
+    public function updateMaterial($params)
+    {
+        $id = $params['id'];
+        $material=$params['material'];
+        $this->prefixMaterial($material,$id);
+
+    }
+
 }

@@ -6,6 +6,7 @@ namespace app\api\controller\v1;
 
 use app\api\controller\BaseController;
 use app\api\model\MaterialPriceT;
+use app\api\service\FoodService;
 use app\api\service\MaterialService;
 use app\lib\enum\CommonEnum;
 use app\lib\exception\DeleteException;
@@ -180,7 +181,7 @@ class Material extends BaseController
      * @apiParam (请求参数说明) {string} canteen_ids 饭堂ids，选择全部时传入所有id并逗号分隔，选择此选择项其他筛选字段（company_ids）无需上传无需上传
      * @apiParam (请求参数说明) {string} company_ids 公司ids，选择全部时传入所有id并逗号分隔，选择此选择项其他筛选字段（canteen_ids）无需上传无需上传
      * @apiSuccessExample {json} 返回样例:
-    {"msg":"ok","errorCode":0,"code":200,"data":{"url":"http:\/\/canteen.tonglingok.com\/static\/excel\/download\/材料价格明细_20190817005931.xls"}}     * @apiSuccess (返回参数说明) {int} total 数据总数
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"url":"http:\/\/canteen.tonglingok.com\/static\/excel\/download\/材料价格明细_20190817005931.xls"}}     * @apiSuccess (返回参数说明) {int} total 数据总数
      * @apiSuccess (返回参数说明) {int} error_code 错误代码 0 表示没有错误
      * @apiSuccess (返回参数说明) {string} msg 操作结果描述
      * @apiSuccess (返回参数说明) {string} url 下载地址
@@ -190,6 +191,42 @@ class Material extends BaseController
         $params = Request::param();
         $url = (new MaterialService())->exportMaterials($key, $params);
         return json(new SuccessMessageWithData(["data" => ['url' => $url]]));
+    }
+
+    /**
+     * @api {GET} /api/v1/materials/food CMS管理端-菜品列表
+     * @apiGroup  CMS
+     * @apiVersion 3.0.0
+     * @apiDescription CMS管理端-菜品列表
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/materials/food?&page=1&size=10&dinner_ids='1'&canteen_ids='1'&company_ids='1'
+     * @apiParam (请求参数说明) {int} page 当前页码
+     * @apiParam (请求参数说明) {int} size 每页多少条数据
+     * @apiParam (请求参数说明) {String} dinner_ids 餐次ids，选择全部时传入所有id并逗号分隔，选择此选择项其他筛选字段（canteen_ids/company_ids）无需上传无需上传
+     * @apiParam (请求参数说明) {String} canteen_ids 饭堂ids，选择全部时传入所有id并逗号分隔，选择此选择项其他筛选字段（dinner_ids/company_ids）无需上传无需上传
+     * @apiParam (请求参数说明) {String} company_ids 公司ids，选择全部时传入所有id并逗号分隔，选择此选择项其他筛选字段（dinner_ids/canteen_ids）无需上传无需上传
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"total":2,"per_page":"10","current_page":1,"last_page":1,"data":[{"id":3,"company":"企业A","canteen":"饭堂1","dinner":"中餐","name":"西红柿牛肉","material":[{"id":1,"f_id":3,"name":"牛肉","count":15,"unit":""},{"id":3,"f_id":3,"name":"西红柿","count":10,"unit":""}]},{"id":1,"company":"企业A","canteen":"饭堂1","dinner":"中餐","name":"红烧牛肉","material":[]}]}}
+     * @apiSuccess (返回参数说明) {int} total 数据总数
+     * @apiSuccess (返回参数说明) {int} per_page 每页多少条数据
+     * @apiSuccess (返回参数说明) {int} current_page 当前页码
+     * @apiSuccess (返回参数说明) {int} last_page 最后页码
+     * @apiSuccess (返回参数说明) {int} id 菜品id
+     * @apiSuccess (返回参数说明) {string} canteen 饭堂名称
+     * @apiSuccess (返回参数说明) {string} company 企业名称
+     * @apiSuccess (返回参数说明) {string} dinner  餐次
+     * @apiSuccess (返回参数说明) {string} name  菜品名称
+     * @apiSuccess (返回参数说明) {obj} material  菜品材料明细
+     * @apiSuccess (返回参数说明) {int} material|id  明细ID
+     * @apiSuccess (返回参数说明) {string} material|name  名称
+     * @apiSuccess (返回参数说明) {string} material|count  数量
+     * @apiSuccess (返回参数说明) {string} material|unit  单位
+     */
+    public function foodMaterials($page = 1, $size = 10)
+    {
+        $params = Request::param();
+        $foodMaterials = (new FoodService())->foodMaterials($page, $size, $params);
+        return json(new SuccessMessageWithData(['data' => $foodMaterials]));
     }
 
 }
