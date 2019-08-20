@@ -13,6 +13,7 @@ Route::rule('/', 'api/v1.Index/index');
 Route::rule('api/:version/index', 'api/:version.Index/index');
 
 Route::post('api/:version/token/admin', 'api/:version.Token/getAdminToken');
+Route::rule('api/:version/token/official', 'api/:version.Token/getOfficialToken');
 
 Route::post('api/:version/module/system/save', 'api/:version.Module/saveSystem');
 Route::post('api/:version/module/system/canteen/save', 'api/:version.Module/saveSystemCanteen');
@@ -84,5 +85,7 @@ Route::get('api/:version/materials', 'api/:version.Material/materials');
 Route::get('api/:version/materials/food', 'api/:version.Material/foodMaterials');
 
 Route::rule('api/:version/weixin/server', 'api/:version.WeiXin/server');
+Route::rule('api/:version/weixin/menu/save', 'api/:version.WeiXin/createMenu');
+
 
 

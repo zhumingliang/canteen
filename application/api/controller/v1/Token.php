@@ -14,6 +14,7 @@ use app\api\model\TestT;
 use app\api\model\UserT;
 use app\api\service\AdminToken;
 use app\api\service\DriverToken;
+use app\api\service\LogService;
 use app\api\service\UserToken;
 use app\api\validate\TokenGet;
 use app\lib\enum\CommonEnum;
@@ -70,6 +71,13 @@ class Token extends Controller
         $token = Request::header('token');
         Cache::rm($token);
         return json(new SuccessMessage());
+    }
+
+    public function getOfficialToken()
+    {
+       var_dump(session('wechat_oauth_user_default'));
+        LogService::save(json_encode(session('wechat_oauth_user_default')));
+
     }
 
 
