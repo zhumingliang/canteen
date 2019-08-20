@@ -82,6 +82,16 @@ class CompanyT extends Model
 
     }
 
+    public static function superManagerCompaniesWithoutCanteen($ids)
+    {
+
+        $list = self::whereIn('id', $ids)
+            ->field('id,name,parent_id')
+            ->select()->toArray();
+        return $list;
+
+    }
+
     public static function getCompanyWithName($name)
     {
 

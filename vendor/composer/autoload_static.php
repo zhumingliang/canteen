@@ -16,6 +16,7 @@ class ComposerStaticInit70d40b73347312909d23055a672be9f9
         'a9ed0d27b5a698798a89181429f162c5' => __DIR__ . '/..' . '/khanamiryan/qrcode-detector-decoder/lib/Common/customFunctions.php',
         'f0e7e63bbb278a92db02393536748c5f' => __DIR__ . '/..' . '/overtrue/wechat/src/Kernel/Support/Helpers.php',
         '6747f579ad6817f318cc3a7e7a0abb93' => __DIR__ . '/..' . '/overtrue/wechat/src/Kernel/Helpers.php',
+        '0e1a642d4bee6d131ff3aa76738d7d2c' => __DIR__ . '/..' . '/naixiaoxin/think-wechat/src/helper.php',
     );
 
     public static $prefixLengthsPsr4 = array (
@@ -55,6 +56,10 @@ class ComposerStaticInit70d40b73347312909d23055a672be9f9
         'O' => 
         array (
             'Overtrue\\Socialite\\' => 19,
+        ),
+        'N' => 
+        array (
+            'Naixiaoxin\\ThinkWechat\\' => 23,
         ),
         'M' => 
         array (
@@ -160,6 +165,10 @@ class ComposerStaticInit70d40b73347312909d23055a672be9f9
         'Overtrue\\Socialite\\' => 
         array (
             0 => __DIR__ . '/..' . '/overtrue/socialite/src',
+        ),
+        'Naixiaoxin\\ThinkWechat\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/naixiaoxin/think-wechat/src',
         ),
         'MyCLabs\\Enum\\' => 
         array (

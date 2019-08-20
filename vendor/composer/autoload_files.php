@@ -15,4 +15,5 @@ return array(
     'a9ed0d27b5a698798a89181429f162c5' => $vendorDir . '/khanamiryan/qrcode-detector-decoder/lib/Common/customFunctions.php',
     'f0e7e63bbb278a92db02393536748c5f' => $vendorDir . '/overtrue/wechat/src/Kernel/Support/Helpers.php',
     '6747f579ad6817f318cc3a7e7a0abb93' => $vendorDir . '/overtrue/wechat/src/Kernel/Helpers.php',
+    '0e1a642d4bee6d131ff3aa76738d7d2c' => $vendorDir . '/naixiaoxin/think-wechat/src/helper.php',
 );

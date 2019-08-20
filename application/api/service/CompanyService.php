@@ -49,7 +49,7 @@ class CompanyService
 
     private function getParentCompany($c_id)
     {
-        if (!$c_id) {
+        if ($c_id) {
             $company = CompanyT::get($c_id);
             return [
                 'name' => $company->name,
@@ -106,6 +106,24 @@ class CompanyService
         }
         $ids = implode(',', $ids);
         $companies = CompanyT::superManagerCompanies($ids);
+        return $companies;
+    }
+
+    public function superManagerCompaniesWithoutCanteen($c_id)
+    {
+        $ids = [];
+        $company = CompanyT::getCompanyWitID($c_id);
+        if (!$company) {
+            return array();
+        }
+        $parent_id = $company->parent_id;
+        array_push($ids, $company->id);
+        $ids = $this->getSonID($ids, $company->id);
+        if (!count($ids)) {
+            return array();
+        }
+        $ids = implode(',', $ids);
+        $companies = CompanyT::superManagerCompaniesWithoutCanteen($ids);
         return $companies;
     }
 
