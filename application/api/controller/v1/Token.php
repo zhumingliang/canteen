@@ -76,7 +76,7 @@ class Token extends Controller
     public function getOfficialToken()
     {
        var_dump(session('wechat_oauth_user_default'));
-        LogService::save(json_encode(session('wechat_oauth_user_default')));
+        //LogService::save(json_encode(session('wechat_oauth_user_default')));
 
     }
 
