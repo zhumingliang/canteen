@@ -83,6 +83,6 @@ Route::get('api/:version/material/export', 'api/:version.Material/export');
 Route::get('api/:version/materials', 'api/:version.Material/materials');
 Route::get('api/:version/materials/food', 'api/:version.Material/foodMaterials');
 
-Route::rule('api/:version/weixin/server', 'api/:version.Weixin/server');
+Route::rule('api/:version/weixin/server', 'api/:version.WeiXin/server');
 
 
