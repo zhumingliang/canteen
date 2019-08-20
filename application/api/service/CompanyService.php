@@ -34,7 +34,10 @@ class CompanyService
             // (new ShopService())->save($c_id);
             //新增默认企业超级管理员账号
             $account = $c_id . '-' . AdminEnum::DEFAULT_ACCOUNT;
-            $admin_id = (new AdminService())->save($account, AdminEnum::DEFAULT_PASSWD, '企业系统管理员', AdminEnum::COMPANY_SUPER, $c_id);
+            $admin_id = (new AdminService())->save($account, AdminEnum::DEFAULT_PASSWD,
+                '企业系统管理员',
+                AdminEnum::COMPANY_SUPER,
+                $c_id,'');
             Db::commit();
             return [
                 'company_id' => $c_id,
