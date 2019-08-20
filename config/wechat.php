@@ -52,8 +52,7 @@ return [
             'oauth' => [
                 'scopes'   => array_map('trim',
                     explode(',', env('WECHAT_OFFICIAL_ACCOUNT_OAUTH_SCOPES', 'snsapi_userinfo'))),
-                //'callback' => env('WECHAT_OFFICIAL_ACCOUNT_OAUTH_CALLBACK', ),
-                'callback' => \think\facade\Route::rule('api/:version/token/official', 'api/:version.Token/getOfficialToken')->middleware(\Naixiaoxin\ThinkWechat\Middleware\OauthMiddleware::class),
+                'callback' => env('WECHAT_OFFICIAL_ACCOUNT_OAUTH_CALLBACK', ''),
             ],
         ],
     ],
