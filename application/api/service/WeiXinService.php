@@ -24,7 +24,7 @@ class WeiXinService
                 "sub_button" => [
                     ["type" => "view",
                         "name" => "获取Info",
-                        "url" => "http://canteen.tonglingok/api/v1/token/official"
+                        "url" => "http://canteen.tonglingok.com/api/v1/token/official"
                     ]
                 ]
             ]
