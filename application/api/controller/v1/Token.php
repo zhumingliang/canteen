@@ -65,7 +65,7 @@ class Token extends Controller
      *{"msg":"ok","errorCode":0}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
      * @apiSuccess (返回参数说明) {String} msg 信息描述
-     *
+     * @apiSuccess (返回参数说明) {string} token 口令令牌，每次请求接口需要传入，有效期 24 hours
      */
     public function loginOut()
     {
@@ -74,6 +74,20 @@ class Token extends Controller
         return json(new SuccessMessage());
     }
 
+    /**
+     * @api {GET} /api/v1/token/official 公众号-获取登录token
+     * @apiGroup  Official
+     * @apiVersion 3.0.0
+     * @apiDescription  公众号获取登录token
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/token/official
+     * @apiSuccessExample {json} 返回样例:
+     *{"msg":"ok","errorCode":0}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {String} msg 信息描述
+     * @apiSuccess (返回参数说明) {string} phone 用户是否绑定手机号:1|绑定；2|未绑定
+     * @apiSuccess (返回参数说明) {string} canteens 用户属于可进入饭堂
+     */
     public function getOfficialToken()
     {
         $info = session('wechat_oauth_user_default');

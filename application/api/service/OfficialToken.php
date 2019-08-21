@@ -4,19 +4,21 @@
 namespace app\api\service;
 
 
+use app\api\model\UserT;
 use app\lib\exception\TokenException;
+use think\facade\Cache;
 
 class OfficialToken extends Token
 {
 
     public function get($info)
     {
-
-        $user = UserPublicT::where('openid', $this->openid)->find();
+        $openid = $info->openid;
+        $user = UserT::where('openid', $openid)->find();
 
         if (!$user) {
-            $userPublic = UserPublicT::create(['openid' => $this->openid]);
-            $u_id = $userPublic->id;
+            $user = UserT::create($info);
+            $u_id = $user->id;
         } else {
             $u_id = $user->id;
         }
@@ -24,20 +26,9 @@ class OfficialToken extends Token
 
         $cachedValue = $this->prepareCachedValue($u_id);
         $token = $this->saveToCache($cachedValue);
-
-        if (!strlen($cachedValue['nickName']) && !strlen($cachedValue['province'])) {
-            return [
-                'token' => $token,
-                'type' => $this->USER_MSG_IS_NULL,
-            ];
-
-        }
-
-
         return [
             'token' => $token,
-            'type' => $this->USER_MSG_IS_OK,
-            'phone' => $cachedValue['phone']
+            'phone' => empty($cachedValue['phone']) ? 2 : 1
         ];
     }
 
@@ -51,7 +42,7 @@ class OfficialToken extends Token
     {
         $key = self::generateToken();
         $value = json_encode($cachedValue);
-        $expire_in = config('setting.token_expire_in');
+        $expire_in = config('setting.token_official_expire_in');
         $request = Cache::remember($key, $value, $expire_in);
         //$request = Redis::instance()->set($key, $value, $expire_in);
         if (!$request) {
@@ -67,16 +58,15 @@ class OfficialToken extends Token
     private function prepareCachedValue($u_id)
     {
         $cachedValue = [];
-        $user = UserPublicT::where('id', $u_id)
+        $user = UserT::where('id', $u_id)
             ->find()->toArray();
 
+        $cachedValue['u_id'] = $u_id;
         $cachedValue['phone'] = $user['phone'];
         $cachedValue['openId'] = $user['openid'];
         $cachedValue['province'] = $user['province'];
         $cachedValue['nickName'] = $user['nickname'];
-        $cachedValue['type'] = 'public';
-        $cachedValue['scene'] = 2;
-        $cachedValue['u_id'] = $u_id;
+        $cachedValue['type'] = 'official';
         return $cachedValue;
     }
 

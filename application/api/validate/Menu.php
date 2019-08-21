@@ -17,7 +17,7 @@ class Menu extends BaseValidate
 
     protected $scene = [
         'save' => ['c_id', 'd_id', 'detail'],
-        'companyMenus' => ['company_id', 'canteen_id'],
+        'companyMenus' => ['canteen_id'],
         'canteenMenus' => ['canteen_id'],
     ];
 }

@@ -98,7 +98,8 @@ class AdminToken extends Token
             'role' => $admin->role,
             'account' => $admin->account,
             'grade' => $admin->grade,
-            'c_id' => $admin->c_id
+            'c_id' => $admin->c_id,
+            'type' => 'cms'
         ];
         return $cachedValue;
     }
