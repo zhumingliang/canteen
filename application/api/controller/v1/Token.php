@@ -82,17 +82,19 @@ class Token extends Controller
      * @apiExample {get}  请求样例:
      * http://canteen.tonglingok.com/api/v1/token/official
      * @apiSuccessExample {json} 返回样例:
-     *{"msg":"ok","errorCode":0}
+     *{"msg":"ok","errorCode":0,"code":200,"data":{"token":"26837cbfd8c9c55d830d3f726927bfed","phone":1,"companies":[{"id":9,"company_id":2,"company":"一级企业"}]}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
      * @apiSuccess (返回参数说明) {String} msg 信息描述
      * @apiSuccess (返回参数说明) {string} phone 用户是否绑定手机号:1|绑定；2|未绑定
-     * @apiSuccess (返回参数说明) {string} canteens 用户属于可进入饭堂
+     * @apiSuccess (返回参数说明) {string} companies 用户归属企业
+     * @apiSuccess (返回参数说明) {int} companies|company_id 企业id
+     * @apiSuccess (返回参数说明) {string} company|company_id 企业名称
      */
     public function getOfficialToken()
     {
         $info = session('wechat_oauth_user_default');
         $token = (new OfficialToken())->get($info);
-        return json(new SuccessMessageWithData(['data'=>$token]));
+        return json(new SuccessMessageWithData(['data' => $token]));
 
     }
 

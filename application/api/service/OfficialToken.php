@@ -30,7 +30,7 @@ class OfficialToken extends Token
         return [
             'token' => $token,
             'phone' => empty($cachedValue['phone']) ? 2 : 1,
-            'company' => empty($cachedValue['phone']) ? null : StaffV::get($cachedValue['phone'])];
+            'companies' => empty($cachedValue['phone']) ? null : StaffV::get($cachedValue['phone'])];
     }
 
 
