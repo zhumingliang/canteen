@@ -9,6 +9,7 @@ use app\api\model\CompanyStaffT;
 use app\api\model\CompanyStaffV;
 use app\api\model\DepartmentV;
 use app\api\model\StaffQrcodeT;
+use app\api\model\StaffV;
 use app\lib\enum\CommonEnum;
 use app\lib\exception\DeleteException;
 use app\lib\exception\ParameterException;
@@ -301,10 +302,10 @@ class DepartmentService
         if (!$qrcode) {
             throw new SaveException();
         }
-        $staff=CompanyStaffT::get($s_id);
+        $staff = CompanyStaffT::get($s_id);
         return [
             'usernmae' => $staff->username,
-            'url' =>  config('setting.domain') . $qrcode->url,
+            'url' => config('setting.domain') . $qrcode->url,
             'create_time' => $qrcode->create_time,
             'expiry_date' => $qrcode->expiry_date
         ];
@@ -326,7 +327,7 @@ class DepartmentService
             }
         }
         return $expiry_date;
-
     }
+
 
 }

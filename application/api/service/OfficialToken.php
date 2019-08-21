@@ -4,6 +4,7 @@
 namespace app\api\service;
 
 
+use app\api\model\StaffV;
 use app\api\model\UserT;
 use app\lib\exception\TokenException;
 use think\facade\Cache;
@@ -28,8 +29,8 @@ class OfficialToken extends Token
         $token = $this->saveToCache($cachedValue);
         return [
             'token' => $token,
-            'phone' => empty($cachedValue['phone']) ? 2 : 1
-        ];
+            'phone' => empty($cachedValue['phone']) ? 2 : 1,
+            'company' => empty($cachedValue['phone']) ? null : StaffV::get($cachedValue['phone'])];
     }
 
 
