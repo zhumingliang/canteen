@@ -37,7 +37,7 @@ class CompanyService
             $admin_id = (new AdminService())->save($account, AdminEnum::DEFAULT_PASSWD,
                 '企业系统管理员',
                 AdminEnum::COMPANY_SUPER,
-                $c_id,'');
+                $c_id, '');
             Db::commit();
             return [
                 'company_id' => $c_id,
@@ -143,7 +143,6 @@ class CompanyService
         }
         return $ids;
     }
-
 
 
 }
