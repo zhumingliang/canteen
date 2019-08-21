@@ -13,6 +13,7 @@ class OfficialToken extends Token
 
     public function get($info)
     {
+        print_r($info);
         $openid = $info->openid;
         $user = UserT::where('openid', $openid)->find();
 
