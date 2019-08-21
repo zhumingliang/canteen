@@ -62,7 +62,6 @@ class AdminToken extends Token
 
     }
 
-
     /**
      * @param $key
      * @param $cachedValue

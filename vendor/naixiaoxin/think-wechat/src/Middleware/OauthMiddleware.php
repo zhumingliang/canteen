@@ -28,7 +28,6 @@ class OauthMiddleware
      */
     public function handle(Request $request, \Closure $next, $param = null)
     {
-        LogService::save('1');
         $params  = $this->getParam($param);
         $account = $params["account"];
         $scopes  = $params["scopes"];
