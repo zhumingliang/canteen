@@ -91,7 +91,7 @@ class Token extends Controller
     public function getOfficialToken()
     {
         $info = session('wechat_oauth_user_default');
-        print_r($info);
+        $info->getid();
 
         /*  (new OfficialToken())->get($info);*/
 
