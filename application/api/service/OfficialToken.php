@@ -13,12 +13,11 @@ class OfficialToken extends Token
 
     public function get($info)
     {
-        print_r($info);
-        $openid = $info->openid;
+        $user_info = $info->getOriginal();
+        $openid = $user_info['openid'];
         $user = UserT::where('openid', $openid)->find();
-
         if (!$user) {
-            $user = UserT::create($info);
+            $user = UserT::create($user_info);
             $u_id = $user->id;
         } else {
             $u_id = $user->id;
