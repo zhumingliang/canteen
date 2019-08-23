@@ -5,9 +5,11 @@ namespace app\api\service;
 
 
 use app\api\model\CompanyT;
+use app\api\model\StaffV;
 use app\lib\enum\AdminEnum;
 use app\lib\enum\CanteenEnum;
 use app\lib\enum\CommonEnum;
+use app\lib\exception\AuthException;
 use app\lib\exception\SaveException;
 use think\Db;
 use think\Exception;
@@ -142,6 +144,20 @@ class CompanyService
             $ids = $this->getSonID($ids, $v->id);
         }
         return $ids;
+    }
+
+    public function userCompanies()
+    {
+        if (Token::getCurrentTokenVar('type') != "official") {
+            throw new AuthException();
+
+        }
+        $phone = Token::getCurrentTokenVar('phone');
+        if (empty($phone)) {
+            throw new AuthException(['phone' => '用户没有进行手机号验证']);
+        }
+        $companies = StaffV::get($phone);
+        return $companies;
     }
 
 

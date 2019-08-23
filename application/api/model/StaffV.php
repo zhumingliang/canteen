@@ -13,7 +13,7 @@ class StaffV extends Model
         $info = self::where('phone', $phone)
             ->field('id,company_id,company')
             ->group('phone,company_id')
-            ->select();
+            ->select()->toArray();
         return $info;
 
     }

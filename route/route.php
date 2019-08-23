@@ -29,6 +29,7 @@ Route::get('api/:version/modules/canteen/withoutSystem', 'api/:version.Module/ca
 Route::post('api/:version/company/save', 'api/:version.Company/save');
 Route::get('api/:version/companies', 'api/:version.Company/companies');
 Route::get('api/:version/manager/companies', 'api/:version.Company/managerCompanies');
+Route::get('api/:version/user/companies', 'api/:version.Company/userCompanies');
 
 Route::post('api/:version/canteen/save', 'api/:version.Canteen/save');
 Route::post('api/:version/canteen/configuration/save', 'api/:version.Canteen/saveConfiguration');
@@ -87,5 +88,9 @@ Route::get('api/:version/materials/food', 'api/:version.Material/foodMaterials')
 Route::rule('api/:version/weixin/server', 'api/:version.WeiXin/server');
 Route::rule('api/:version/weixin/menu/save', 'api/:version.WeiXin/createMenu');
 
+Route::post('api/:version/sms/send', 'api/:version.SendSMS/sendCode');
+
+Route::post('api/:version/user/bindPhone', 'api/:version.User/bindPhone');
+Route::post('api/:version/user/bindCompany', 'api/:version.User/bindCompany');
 
 

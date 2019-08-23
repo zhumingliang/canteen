@@ -8,6 +8,7 @@ use app\api\model\StaffV;
 use app\api\model\UserT;
 use app\lib\exception\TokenException;
 use think\facade\Cache;
+use think\facade\Request;
 
 class OfficialToken extends Token
 {
@@ -69,6 +70,24 @@ class OfficialToken extends Token
         $cachedValue['nickName'] = $user['nickname'];
         $cachedValue['type'] = 'official';
         return $cachedValue;
+    }
+
+    public function updatePhone($phone)
+    {
+        $token = Request::header('token');
+        $user = Cache::get($token);
+        if (empty($user)) {
+        }
+        $user_arr = json_decode($user, true);
+        $user_arr['phone'] = $phone;
+        $expire_in = config('setting.token_official_expire_in');
+
+        $res = Cache::set($token, json_encode($user_arr), $expire_in);
+        if (!$res) {
+            throw  new TokenException(['msg' => '更新缓存失败']);
+
+        }
+
     }
 
 

@@ -79,7 +79,7 @@ class Company extends BaseController
      * @apiVersion 3.0.0
      * @apiDescription CMS管理端-企业管理-企业列表
      * @apiExample {get}  请求样例:
-     * http://canteen.tonglingok.com/api/v1/companies?name="企业A"
+     * http://canteen.tonglingok.com/api/v1/manager/companies?name="企业A"
      * @apiParam (请求参数说明) {String} name 名称
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200,"data":[{"id":3,"name":"企业A","parent_id":2,"canteen":[{"id":6,"c_id":3,"name":"饭堂1"},{"id":7,"c_id":3,"name":"饭堂2"}],"shop":null,"items":[{"id":4,"name":"企业A1","parent_id":3,"canteen":[],"shop":null,"items":[{"id":6,"name":"企业A11","parent_id":4,"canteen":[],"shop":null}]},{"id":5,"name":"企业A2","parent_id":3,"canteen":[],"shop":null}]}]}
@@ -97,8 +97,29 @@ class Company extends BaseController
     public function managerCompanies()
     {
         $name = Request::param('name');
-        $company = (new CompanyService())->managerCompanies($name);
-        return json(new SuccessMessageWithData(['data' => $company]));
+        $companies = (new CompanyService())->managerCompanies($name);
+        return json(new SuccessMessageWithData(['data' => $companies]));
+    }
+
+    /**
+     * @api {GET} /api/v1/user/companies 微信端-获取当前用户所属企业列表
+     * @apiGroup  Official
+     * @apiVersion 3.0.0
+     * @apiDescription 微信端-获取当前用户所属企业列表
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/user/companies
+     * @apiParam (请求参数说明) {String} name 名称
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":[{"id":9,"company_id":2,"company":"一级企业"}]}
+     * @apiSuccess (返回参数说明) {int} id 企业id
+     * @apiSuccess (返回参数说明) {int} company_id  企业ID
+     * @apiSuccess (返回参数说明) {String} company  企业名称
+     */
+    public function userCompanies()
+    {
+        $companies = (new CompanyService())->userCompanies();
+        return json(new SuccessMessageWithData(['data' => $companies]));
+
     }
 
 
