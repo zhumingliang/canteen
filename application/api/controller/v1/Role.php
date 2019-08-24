@@ -24,6 +24,7 @@ class Role extends BaseController
      *    {
      *       "account": "admin123",
      *       "passwd": "a111111",
+     *       "phone": "18956225230",
      *       "role": "饭堂管理员",
      *       "canteens":[{"c_id":1,"name":"饭堂1"},{"c_id":2,"name":"饭堂2"}],
      *       "shops":[{"s_id":1,"name":"小卖部1"},{"s_id":2,"name":"小卖部2"}],
@@ -33,6 +34,7 @@ class Role extends BaseController
      *     }
      * @apiParam (请求参数说明) {string} account  账号
      * @apiParam (请求参数说明) {string} passwd  密码
+     * @apiParam (请求参数说明) {string} phone  手机号
      * @apiParam (请求参数说明) {string} role  角色名称
      * @apiParam (请求参数说明) {string} remark  角色说明
      * @apiParam (请求参数说明) {string} canteens 管理饭堂列表
@@ -61,6 +63,7 @@ class Role extends BaseController
      *    {
      *       "id":2,
      *       "account": "admin123",
+     *       "phone": "18956225230",
      *       "passwd": "a111111",
      *       "role": "饭堂管理员",
      *       "canteens":{"add":[{"c_id":1,"name":"饭堂"}],"cancel":"1,2"},
@@ -71,6 +74,7 @@ class Role extends BaseController
      * @apiParam (请求参数说明) {int} id  角色id
      * @apiParam (请求参数说明) {string} account  账号
      * @apiParam (请求参数说明) {string} passwd  密码
+     * @apiParam (请求参数说明) {string} phone  手机号
      * @apiParam (请求参数说明) {string} role  角色名称
      * @apiParam (请求参数说明) {string} remark  角色说明
      * @apiParam (请求参数说明) {string} canteens 饭堂信息
@@ -117,6 +121,7 @@ class Role extends BaseController
      * @apiSuccess (返回参数说明) {int} id 用户id
      * @apiSuccess (返回参数说明) {string} company 归属企业
      * @apiSuccess (返回参数说明) {string} role  名称角色
+     * @apiSuccess (返回参数说明) {string} phone  手机号
      * @apiSuccess (返回参数说明) {string} account 账号
      * @apiSuccess (返回参数说明) {string} remark 备注
      * @apiSuccess (返回参数说明) {int} state 状态：1|正常；2|停用

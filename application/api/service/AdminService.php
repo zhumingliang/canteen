@@ -80,7 +80,7 @@ class AdminService
 
     public function updateAdminCS($admin_id, $data, $type)
     {
-        if (key_exists('add', $data) && count($data['add'])) {
+        if (!empty($data['add'])) {
             $add = $data['add'];
             foreach ($add as $k => $v) {
                 $add[$k]['state'] = CommonEnum::STATE_IS_OK;
@@ -99,7 +99,7 @@ class AdminService
 
         }
 
-        if (key_exists('cancel', $data) && strlen($data['cancel'])) {
+        if (!empty($data['cancel'])) {
             if ($type == "canteen") {
                 $res = AdminCanteenT::update(['state' => CommonEnum::STATE_IS_FAIL], ['id' => [
                     'in', $data['cancel']]]);
@@ -123,19 +123,19 @@ class AdminService
         try {
             Db::startTrans();
             $admin_id = $params['id'];
-            if (key_exists('canteens', $params) && strlen($params['canteens'])) {
+            if (!empty($params['canteens'])) {
                 $canteens = json_decode($params['canteens'], true);
                 //修改角色-饭堂关联
                 $this->updateAdminCS($admin_id, $canteens, 'canteen');
             }
-            if (key_exists('shops', $params) && strlen($params['shops'])) {
+            if (!empty($params['shops'])) {
                 $shops = json_decode($params['shops'], true);
                 //修改角色-小卖部关联
                 $this->updateAdminCS($admin_id, $shops, 'shop');
             }
 
             //修改账户信息
-            if (key_exists('passwd', $params)) {
+            if (!empty($params['passwd'])) {
                 $params['passwd'] = sha1($params['passwd']);
             }
             $admin_res = AdminT::update($params);
@@ -144,7 +144,7 @@ class AdminService
             }
 
             //修改账户可见模块信息
-            if (key_exists('rules', $params) && strlen($params['rules'])) {
+            if (!empty($params['rules'])) {
                 $adminModule = AdminModuleT::where('admin_id', $admin_id)->find();
                 if (!$adminModule) {
                     $res = AdminModuleT::create(['admin_id' => $admin_id, 'rules' => $params['rules']]);

@@ -8,6 +8,7 @@ class Role extends BaseValidate
 {
     protected $rule = [
         'id' => 'require|isPositiveInteger',
+        'phone' => 'require|isMobile',
         'account' => 'require|isNotEmpty',
         'passwd' => 'require|isNotEmpty',
         'role' => 'require|isNotEmpty',
@@ -17,7 +18,7 @@ class Role extends BaseValidate
     ];
 
     protected $scene = [
-        'save' => ['account', 'passwd', 'role'],
+        'save' => ['account', 'passwd', 'role', 'phone'],
         'handel' => ['id', 'state']
     ];
 }
