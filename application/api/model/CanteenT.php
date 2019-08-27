@@ -43,5 +43,4 @@ class CanteenT extends Model
     }
 
 
-
 }

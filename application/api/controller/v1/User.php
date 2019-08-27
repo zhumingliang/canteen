@@ -5,6 +5,7 @@ namespace app\api\controller\v1;
 
 
 use app\api\controller\BaseController;
+use app\api\service\CanteenService;
 use app\api\service\UserService;
 use app\lib\exception\SuccessMessage;
 use app\lib\exception\SuccessMessageWithData;
@@ -64,5 +65,36 @@ class User extends BaseController
         return json(new SuccessMessage());
     }
 
+    public function mealCard()
+    {
+        $card = (new UserService())->mealCard();
+
+    }
+
+    /**
+     * @api {GET} /api/v1/user/canteenMenus 微信端-菜单管理-获取用户管理饭堂信息
+     * @apiGroup  Official
+     * @apiVersion 3.0.0
+     * @apiDescription  微信端-菜单管理-获取用户管理饭堂信息
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/user/canteenMenus
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":[{"c_id":6,"name":"饭堂1","dinners":[{"id":5,"name":"早餐","menus":[]},{"id":6,"name":"中餐","menus":[{"id":1,"d_id":6,"category":"荤菜"},{"id":2,"d_id":6,"category":"汤"}]},{"id":7,"name":"晚餐","menus":[]}]}]}
+     * @apiSuccess (返回参数说明) {int} c_id 饭堂id
+     * @apiSuccess (返回参数说明) {obj} name  饭堂名称
+     * @apiSuccess (返回参数说明) {obj} dinner 餐次信息
+     * @apiSuccess (返回参数说明) {int} dinner|id 餐次id
+     * @apiSuccess (返回参数说明) {int} dinner|name 餐次名称
+     * @apiSuccess (返回参数说明) {obj} dinner|menus 餐次菜单设置信息
+     * @apiSuccess (返回参数说明) {int} dinner|menus|id 餐次菜单设置id
+     * @apiSuccess (返回参数说明) {int} dinner|menus|d_id 餐次id
+     * @apiSuccess (返回参数说明) {string} dinner|menus|category 分类信息
+     */
+    public function userCanteenMenus()
+    {
+        $canteens = (new CanteenService())->userCanteens();
+        return json(new SuccessMessageWithData(['data' => $canteens]));
+
+    }
 
 }

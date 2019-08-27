@@ -4,13 +4,16 @@
 namespace app\api\service;
 
 
+use app\api\model\AdminCanteenT;
 use app\api\model\AdminCanteenV;
 use app\api\model\CanteenAccountT;
 use app\api\model\CanteenModuleT;
 use app\api\model\CanteenT;
+use app\api\model\CompanyStaffV;
 use app\api\model\CompanyT;
 use app\api\model\ConsumptionStrategyT;
 use app\api\model\DinnerT;
+use app\api\model\MenuT;
 use app\api\model\SystemCanteenModuleT;
 use app\lib\enum\AdminEnum;
 use app\lib\enum\CommonEnum;
@@ -286,6 +289,27 @@ class CanteenService
             $canteens[$k]['canteen'] = $data;
         }
 
+        return $canteens;
+    }
+
+
+    public function userCanteens()
+    {
+        $admin_id = (new UserService())->checkUserAdminID();
+        if (empty($admin_id)) {
+            throw  new AuthException();
+        }
+        //获取归属饭堂
+        $canteens = AdminCanteenT::where('admin_id', $admin_id)
+            ->field('c_id,name')
+            ->select();
+        if (!count($canteens)) {
+            throw  new AuthException(['msg' => '用户没有可管理饭堂']);
+        }
+
+        foreach ($canteens as $k => $v) {
+            $canteens[$k]['dinners'] = DinnerT::dinnerMenusForFoodManager($v['c_id']);
+        }
         return $canteens;
     }
 

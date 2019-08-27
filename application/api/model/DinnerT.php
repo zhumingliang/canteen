@@ -41,5 +41,20 @@ class DinnerT extends Model
         return $menus;
     }
 
+    public static function dinnerMenusForFoodManager($canteen_id)
+    {
+        $menus = self::where('c_id', $canteen_id)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->with([
+                'menus' => function ($query) {
+                    $query->where('state', '=', CommonEnum::STATE_IS_OK)
+                        ->field('id,d_id,category');
+                }
+            ])
+            ->field('id,name')
+            ->select();
+
+        return $menus;
+    }
 
 }

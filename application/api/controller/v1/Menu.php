@@ -5,6 +5,7 @@ namespace app\api\controller\v1;
 
 
 use app\api\controller\BaseController;
+use app\api\service\CanteenService;
 use app\api\service\MenuService;
 use app\lib\exception\SuccessMessage;
 use app\lib\exception\SuccessMessageWithData;
@@ -109,5 +110,7 @@ class Menu extends BaseController
         $menus = (new MenuService())->canteenMenus($canteen_id);
         return json(new SuccessMessageWithData(['data' => $menus]));
     }
+
+
 
 }

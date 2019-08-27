@@ -23,10 +23,18 @@ class CompanyStaffV extends BaseModel
                     $query->where('d_id', '=', $d_id);
                 }
             })
-            ->hidden([ 'company_id', 'state'])
+            ->hidden(['company_id', 'state'])
             ->order('create_time desc')
             ->paginate($size, false, ['page' => $page]);
         return $list;
 
+    }
+
+    public static function userCanteens($company_id, $phone)
+    {
+        $canteens = self::where('phone', $phone)->where('company_id', $company_id)
+            ->field('c_id as canteen_id,canteen')
+            ->select();
+        return $canteens;
     }
 }

@@ -5,6 +5,7 @@ namespace app\api\service;
 
 
 use app\api\model\AdminT;
+use app\api\model\StaffQrcodeT;
 use app\api\model\UserT;
 use app\lib\enum\CommonEnum;
 use app\lib\exception\AuthException;
@@ -116,6 +117,21 @@ class UserService
             return $admin->id;
         }
         return 0;
+
+    }
+
+    //获取用户电子饭卡
+    public function mealCard()
+    {
+        //$cart = StaffQrcodeT::where('s_id',)
+
+
+    }
+
+    private function getUserStaffID()
+    {
+        $phone = Token::getCurrentTokenVar('phone');
+
 
     }
 }
