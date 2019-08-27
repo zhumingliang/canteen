@@ -4,6 +4,7 @@
 namespace app\api\model;
 
 
+use app\lib\enum\ModuleEnum;
 use think\Model;
 
 class CanteenModuleV extends Model
@@ -14,10 +15,34 @@ class CanteenModuleV extends Model
             ->select()->toArray();
         return $modules;
     }
+
     public static function canteenModules($c_id)
     {
         $modules = self::where('canteen_id', $c_id)
-            ->hidden(['canteen_id','company_id'])
+            ->hidden(['canteen_id', 'company_id'])
+            ->select()->toArray();
+        return $modules;
+    }
+
+    public static function mobileModulesWithID($ids)
+    {
+        $modules = self::whereIn('c_m_id', $ids)
+            ->where('type', ModuleEnum::MOBILE)
+            ->where('parent_id', '>', 0)
+            ->field('category,name,url,icon')
+            ->select()->toArray();
+        return $modules;
+    }
+
+    public static function companyNormalMobileModules($company_id)
+    {
+
+        $modules = self::where('company_id', $company_id)
+            ->where('type', ModuleEnum::MOBILE)
+            ->where('category', ModuleEnum::NORMAL)
+            ->where('parent_id', '>', 0)
+            ->field('category,name,url,icon')
+            ->group('c_m_id')
             ->select()->toArray();
         return $modules;
     }

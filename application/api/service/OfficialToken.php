@@ -68,26 +68,14 @@ class OfficialToken extends Token
         $cachedValue['openId'] = $user['openid'];
         $cachedValue['province'] = $user['province'];
         $cachedValue['nickName'] = $user['nickname'];
+        $cachedValue['current_company_id'] = $user['current_company_id'];
         $cachedValue['type'] = 'official';
         return $cachedValue;
     }
 
     public function updatePhone($phone)
     {
-        $token = Request::header('token');
-        $user = Cache::get($token);
-        if (empty($user)) {
-        }
-        $user_arr = json_decode($user, true);
-        $user_arr['phone'] = $phone;
-        $expire_in = config('setting.token_official_expire_in');
-
-        $res = Cache::set($token, json_encode($user_arr), $expire_in);
-        if (!$res) {
-            throw  new TokenException(['msg' => '更新缓存失败']);
-
-        }
-
+        self::updateCurrentTokenVar('phone', $phone);
     }
 
 

@@ -25,6 +25,7 @@ Route::get('api/:version/modules', 'api/:version.Module/systemModules');
 Route::get('api/:version/modules/canteen/withSystem', 'api/:version.Module/canteenModulesWithSystem');
 Route::get('api/:version/modules/shop/withSystem', 'api/:version.Module/shopModulesWithSystem');
 Route::get('api/:version/modules/canteen/withoutSystem', 'api/:version.Module/canteenModulesWithoutSystem');
+Route::get('api/:version/modules/user', 'api/:version.Module/userMobileModules');
 
 Route::post('api/:version/company/save', 'api/:version.Company/save');
 Route::get('api/:version/companies', 'api/:version.Company/companies');

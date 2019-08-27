@@ -4,7 +4,10 @@
 namespace app\api\service;
 
 
+use app\api\model\AdminT;
 use app\api\model\UserT;
+use app\lib\enum\CommonEnum;
+use app\lib\exception\AuthException;
 use app\lib\exception\UpdateException;
 use think\facade\Request;
 use zml\tp_tools\Redis;
@@ -79,8 +82,40 @@ class UserService
                 break;
             }
         }
-        if (!$bind){
+        if (!$bind) {
             throw  new UpdateException(['msg' => '绑定失败']);
         }
+        //更新用户缓存
+        Token::updateCurrentTokenVar('current_company_id', $company_id);
+    }
+
+    public function getUserCurrentCompanyID()
+    {
+        $company_id = Token::getCurrentTokenVar('current_company_id');
+        if (!empty($company_id)) {
+            return $company_id;
+        }
+        $user = UserT::get(Token::getCurrentUid());
+        if (empty($user->current_company_id)) {
+            throw new AuthException(['msg' => '该用户无归属企业']);
+        }
+        Token::updateCurrentTokenVar('current_company_id', $user->current_company_id);
+        return $user->current_company_id;
+    }
+
+    //检查用户是否为管理员
+    public function checkUserAdminID()
+    {
+        $phone = Token::getCurrentTokenVar('phone');
+        if (empty($phone)) {
+            throw new AuthException(['msg' => '用户状态异常，未绑定手机号']);
+        }
+        $admin = AdminT::where('phone', $phone)->where('state', CommonEnum::STATE_IS_OK)
+            ->find();
+        if ($admin) {
+            return $admin->id;
+        }
+        return 0;
+
     }
 }

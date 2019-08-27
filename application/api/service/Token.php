@@ -56,31 +56,25 @@ class Token
     }
 
 
-    /**
-     * @param string $key
-     * @param $token
-     * @return mixed
-     * @throws Exception
-     * @throws TokenException
-     */
-    public static function getCurrentTokenVarWithToken($key = '', $token)
+    public static function updateCurrentTokenVar($key = '', $value = '')
     {
 
+        $token = Request::header('token');
+        //$vars = Redis::instance()->get($token);
         $vars = \think\facade\Cache::get($token);
         if (!$vars) {
             throw new TokenException();
         } else {
-            if ($key == '') {
-                return $vars;
+            $vars = json_decode($vars, true);
+            $vars[$key] = $value;
+            $expire_in = config('setting.token_official_expire_in');
+
+            $res = \think\facade\Cache::set($token, json_encode($vars), $expire_in);
+            if (!$res) {
+                throw  new TokenException(['msg' => '更新缓存失败']);
+
             }
-            if (!is_array($vars)) {
-                $vars = json_decode($vars, true);
-            }
-            if (array_key_exists($key, $vars)) {
-                return $vars[$key];
-            } else {
-                throw new Exception('尝试获取的Token变量并不存在');
-            }
+
         }
     }
 

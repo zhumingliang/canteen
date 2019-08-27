@@ -16,4 +16,8 @@ class ModuleEnum
 
     const MOBILE = 2;
 
+    const NORMAL = 1;
+
+    const SPECIAL = 1;
+
 }

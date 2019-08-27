@@ -4,6 +4,7 @@
 namespace app\api\service;
 
 
+use app\api\model\AdminCanteenT;
 use app\api\model\CanteenModuleT;
 use app\api\model\CanteenModuleV;
 use app\api\model\ShopModuleT;
@@ -137,10 +138,10 @@ class ModuleService
     public function canteenModulesWithSystem($c_id)
     {
         return $this->canteenModules($c_id);
-       /* return [
-            'canteen' => $this->canteenModules($c_id),
-            'shop' => $this->shopModules($c_id)
-        ];*/
+        /* return [
+             'canteen' => $this->canteenModules($c_id),
+             'shop' => $this->shopModules($c_id)
+         ];*/
 
 
     }
@@ -304,5 +305,35 @@ class ModuleService
     {
         $modules = CanteenModuleV::canteenModules($c_id);
         return getTree($modules);
+    }
+
+    public function userMobileModules()
+    {
+        $admin_id = (new UserService())->checkUserAdminID();
+        //当前用户为管理员
+        if ($admin_id) {
+            $modules = $this->getAdminMobileModules($admin_id);
+            return $modules;
+        }
+        //当前用户为普通用户
+        $company_id = (new UserService())->getUserCurrentCompanyID();
+        $modules = $this->companyNormalMobileModules($company_id);
+        return $modules;
+    }
+
+    private function getAdminMobileModules($admin_id)
+    {
+        $adminModules = AdminCanteenT::where('admin_id', $admin_id)->find();
+        $rules = $adminModules->rules;
+        $modules = CanteenModuleV::mobileModulesWithID($rules);
+        return $modules;
+
+    }
+
+    private function companyNormalMobileModules($company_id)
+    {
+
+        $modules = CanteenModuleV::companyNormalMobileModules($company_id);
+        return $modules;
     }
 }
