@@ -38,10 +38,10 @@ class UserService
             throw new UpdateException(['msg' => '绑定用户手机号失败']);
         }
         (new OfficialToken())->updatePhone($phone);
-        return $this->prefixUserCompany();
+        return $this->prefixUserCanteen();
     }
 
-    private function prefixUserCompany()
+    private function prefixUserCanteen()
     {
         $companies = (new CompanyService())->userCompanies();
         if (empty($companies)) {

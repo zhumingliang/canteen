@@ -31,7 +31,8 @@ class OfficialToken extends Token
         return [
             'token' => $token,
             'phone' => empty($cachedValue['phone']) ? 2 : 1,
-            'companies' => empty($cachedValue['phone']) ? null : StaffV::get($cachedValue['phone'])];
+            'canteen_selected' => empty($cachedValue['current_canteen_id']) ? 2 : 1
+        ];
     }
 
 
@@ -68,7 +69,7 @@ class OfficialToken extends Token
         $cachedValue['openId'] = $user['openid'];
         $cachedValue['province'] = $user['province'];
         $cachedValue['nickName'] = $user['nickname'];
-        $cachedValue['current_company_id'] = $user['current_company_id'];
+        $cachedValue['current_canteen_id'] = $user['current_canteen_id'];
         $cachedValue['type'] = 'official';
         return $cachedValue;
     }

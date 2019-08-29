@@ -72,7 +72,6 @@ class CompanyService
     {
         $companies = CompanyT::companies($page, $size, $name, $create_time);
         return $companies;
-
     }
 
 

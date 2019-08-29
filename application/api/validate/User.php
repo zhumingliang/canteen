@@ -10,11 +10,11 @@ class User extends BaseValidate
         'id' => 'require|isPositiveInteger',
         'phone' => 'require|isMobile',
         'code' => 'require|isNotEmpty',
-        'company_id' => 'require|isPositiveInteger',
+        'canteen_id' => 'require|isPositiveInteger',
     ];
 
     protected $scene = [
         'bindPhone' => ['phone', 'code'],
-        'bindCompany' => ['company_id']
+        'bindCanteen' => ['canteen_id']
     ];
 }

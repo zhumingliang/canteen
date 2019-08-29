@@ -18,4 +18,15 @@ class StaffV extends Model
 
     }
 
+
+    public static function getStaffCanteens($phone)
+    {
+        $info = self::where('phone', $phone)
+            ->field('id,company_parent_id,company_id,company,canteen_id,canteen')
+            ->select()
+            ->toArray();
+        return $info;
+
+    }
+
 }

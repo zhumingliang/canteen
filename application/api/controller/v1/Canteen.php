@@ -185,7 +185,6 @@ class Canteen extends BaseController
         return json(new SuccessMessageWithData(['data' => $strategies]));
     }
 
-
     /**
      * @api {POST} /api/v1/canteen/consumptionStrategy/update CMS管理端-修改消费策略
      * @apiGroup   CMS
@@ -223,7 +222,6 @@ class Canteen extends BaseController
         }
         return json(new SuccessMessage());
     }
-
 
     /**
      * @api {GET} /api/v1/canteen/consumptionStrategy  CMS管理端-获取饭堂消费策略设置
@@ -286,7 +284,5 @@ class Canteen extends BaseController
         return json(new SuccessMessageWithData(['data' => $canteens]));
 
     }
-
-
 
 }

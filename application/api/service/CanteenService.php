@@ -14,6 +14,7 @@ use app\api\model\CompanyT;
 use app\api\model\ConsumptionStrategyT;
 use app\api\model\DinnerT;
 use app\api\model\MenuT;
+use app\api\model\StaffV;
 use app\api\model\SystemCanteenModuleT;
 use app\lib\enum\AdminEnum;
 use app\lib\enum\CommonEnum;
@@ -293,7 +294,8 @@ class CanteenService
     }
 
 
-    public function userCanteens()
+    //获取管理员可管理的饭堂和对应饭堂的菜单信息
+    public function adminCanteens()
     {
         $admin_id = (new UserService())->checkUserAdminID();
         if (empty($admin_id)) {
@@ -310,6 +312,17 @@ class CanteenService
         foreach ($canteens as $k => $v) {
             $canteens[$k]['dinners'] = DinnerT::dinnerMenusForFoodManager($v['c_id']);
         }
+        return $canteens;
+    }
+
+
+
+    //获取当前用户归属饭堂和企业信息
+    public function userCanteens()
+    {
+        $phone = Token::getCurrentTokenVar('phone');
+        //获取用户所有饭堂
+        $canteens = StaffV::getStaffCanteens($phone);
         return $canteens;
     }
 
