@@ -5,6 +5,7 @@ namespace app\api\service;
 
 
 use app\api\model\AdminT;
+use app\api\model\CompanyStaffT;
 use app\api\model\StaffQrcodeT;
 use app\api\model\UserT;
 use app\lib\enum\CommonEnum;
@@ -38,56 +39,23 @@ class UserService
             throw new UpdateException(['msg' => '绑定用户手机号失败']);
         }
         (new OfficialToken())->updatePhone($phone);
-        return $this->prefixUserCanteen();
+        return (new CanteenService())->userCanteens();
     }
 
-    private function prefixUserCanteen()
+
+    public function bindCanteen($canteen_id)
     {
-        $companies = (new CompanyService())->userCompanies();
-        if (empty($companies)) {
-            return [
-                'count' => 0
-            ];
+        $staff = CompanyStaffT::where('phone', Token::updateCurrentTokenVar('phone'))
+            ->where('c_id', $canteen_id)->count('id');
+        if (!$staff) {
+            throw  new AuthException(['msg' => '绑定失败,用户不属于该饭堂']);
         }
-        if (count($companies) == 1) {
-            //直接绑定用户当前企业
-            $company_id = $companies[0]['company_id'];
-            UserT::update(['current_company_id', $company_id], ['id', Token::getCurrentUid()]);
-            return [
-                'count' => 1
-            ];
-        } else {
-            return [
-                'count' => 2,
-                'companies' => $companies
-            ];
-
-        }
-
-    }
-
-    public function bindCompany($company_id)
-    {
-        //获取用户归属企业
-        $companies = (new CompanyService())->userCompanies();
-        if (!count($companies)) {
-            throw new UpdateException(['msg' => '当前用户不属于任何企业']);
-        }
-        $bind = false;
-        foreach ($companies as $k => $v) {
-            if ($company_id == $v['company_id']) {
-                $res = UserT::update(['current_company_id', $company_id], ['id', Token::getCurrentUid()]);
-                if ($res) {
-                    $bind = true;
-                }
-                break;
-            }
-        }
-        if (!$bind) {
+        $res = UserT::update(['current_canteen_id', $canteen_id], ['id', Token::getCurrentUid()]);
+        if (!$res) {
             throw  new UpdateException(['msg' => '绑定失败']);
         }
         //更新用户缓存
-        Token::updateCurrentTokenVar('current_company_id', $company_id);
+        Token::updateCurrentTokenVar('current_canteen_id', $canteen_id);
     }
 
     public function getUserCurrentCompanyID()
