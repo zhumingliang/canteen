@@ -10,12 +10,15 @@ class Food extends BaseValidate
         'id' => 'require|isPositiveInteger',
         'c_id' => 'require|isPositiveInteger',
         'f_type' => 'require|in:1,2',
+        'food_type' => 'require|in:1,2',
+        'menu_id' => 'require|isPositiveInteger',
         'm_d_id' => 'require|isPositiveInteger',
         'name' => 'require|isNotEmpty',
         'price' => 'require|isNotEmpty',
         'chef' => 'require|isNotEmpty',
         'des' => 'require|isNotEmpty',
-        'img_url' => 'require|isNotEmpty'
+        'img_url' => 'require|isNotEmpty',
+        'day' => 'require|isNotEmpty'
     ];
 
     protected $scene = [
@@ -23,5 +26,6 @@ class Food extends BaseValidate
         'foods' => ['f_type'],
         'update' => ['id'],
         'food' => ['id'],
+        'foodsForOfficialManager' => ['food_type','menu_id','day'],
     ];
 }

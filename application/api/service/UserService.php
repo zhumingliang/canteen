@@ -91,15 +91,25 @@ class UserService
     //获取用户电子饭卡
     public function mealCard()
     {
-        //$cart = StaffQrcodeT::where('s_id',)
+        $phone = "998";//Token::getCurrentTokenVar('phone');
+        $current_canteen_id = 1;//Token::getCurrentTokenVar('current_canteen_id');
+        $staff = CompanyStaffT::staff($current_canteen_id, $phone);
+        if (!$staff) {
+            throw  new  AuthException(['msg' => '用户信息不存在']);
+        }
+        if (empty($staff->qrcode)) {
 
+            return  (new DepartmentService())->saveQrcode($staff->id);
 
+        }
+        $qrcode = $staff->qrcode;
+        if (strtotime($qrcode->expiry_date) >= time()) {
+            return ['url' => $qrcode->url];
+        }
+
+       $newQrode= (new DepartmentService())->updateQrcode($qrcode->toArray());
+
+        return ['url' => $newQrode->url];
     }
 
-    private function getUserStaffID()
-    {
-        $phone = Token::getCurrentTokenVar('phone');
-
-
-    }
 }

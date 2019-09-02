@@ -48,7 +48,7 @@ class DinnerT extends Model
             ->with([
                 'menus' => function ($query) {
                     $query->where('state', '=', CommonEnum::STATE_IS_OK)
-                        ->field('id,d_id,category');
+                        ->field('id,d_id,category,status,count');
                 }
             ])
             ->field('id,name')

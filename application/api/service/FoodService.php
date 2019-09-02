@@ -8,7 +8,6 @@ use app\api\model\CanteenModuleV;
 use app\api\model\FoodMaterialT;
 use app\api\model\FoodT;
 use app\api\model\FoodV;
-use app\lib\enum\AdminEnum;
 use app\lib\enum\CommonEnum;
 use app\lib\exception\ParameterException;
 use app\lib\exception\SaveException;
@@ -114,13 +113,11 @@ class FoodService extends BaseService
 
     }
 
-
     public function food($id)
     {
         $info = FoodV::foodInfo($id);
         return $info;
     }
-
 
     public function foodMaterials($page, $size, $params)
     {
@@ -133,9 +130,24 @@ class FoodService extends BaseService
     public function updateMaterial($params)
     {
         $id = $params['id'];
-        $material=$params['material'];
-        $this->prefixMaterial($material,$id);
+        $material = $params['material'];
+        $this->prefixMaterial($material, $id);
 
+    }
+
+    public function foodsForOfficialManager($menu_id, $food_type,$day, $page, $size)
+    {
+        $foods = FoodT::foodsForOfficialManager($menu_id, $food_type, $page, $size);
+        $foods['data'] = $this->prefixFoodDayStatus($foods['data']);
+        return $foods;
+    }
+
+    private function prefixFoodDayStatus($foods,$day)
+    {
+        if (!count($foods)) {
+            return $foods;
+        }
+        //获取指定时间菜品状态
     }
 
 }

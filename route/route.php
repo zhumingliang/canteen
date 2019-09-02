@@ -76,6 +76,7 @@ Route::post('api/:version/food/save', 'api/:version.Food/save');
 Route::post('api/:version/food/update', 'api/:version.Food/update');
 Route::post('api/:version/food/handel', 'api/:version.Food/handel');
 Route::get('api/:version/foods', 'api/:version.Food/foods');
+Route::get('api/:version/foods/officialManager', 'api/:version.Food/foodsForOfficialManager');
 Route::get('api/:version/food', 'api/:version.Food/food');
 
 Route::post('api/:version/material/save', 'api/:version.Material/save');
@@ -95,5 +96,6 @@ Route::post('api/:version/user/bindPhone', 'api/:version.User/bindPhone');
 Route::post('api/:version/user/bindCanteen', 'api/:version.User/bindCompany');
 Route::get('api/:version/user/canteenMenus', 'api/:version.User/userCanteenMenus');
 Route::get('api/:version/user/canteens', 'api/:version.User/userCanteens');
+Route::get('api/:version/user/card', 'api/:version.User/mealCard');
 
 

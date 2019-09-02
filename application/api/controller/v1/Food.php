@@ -216,5 +216,13 @@ class Food extends BaseController
 
     }
 
+    public function foodsForOfficialManager($page=1,$size=100){
+        $menu_id=Request::param('menu_id');
+        $food_type=Request::param('food_type');
+        $day=Request::param('day');
+        $foods=(new FoodService())->foodsForOfficialManager($menu_id,$food_type,$day,$page,$size);
+        return json(new SuccessMessageWithData(['data'=>$foods]));
+    }
+
 
 }

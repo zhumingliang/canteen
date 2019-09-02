@@ -69,18 +69,19 @@ class User extends BaseController
     public function mealCard()
     {
         $card = (new UserService())->mealCard();
+        return json(new SuccessMessageWithData(['data' => $card]));
 
     }
 
     /**
-     * @api {GET} /api/v1/user/canteenMenus 微信端-菜单管理-获取用户管理饭堂信息
+     * @api {GET} /api/v1/user/canteenMenus 微信端-菜品管理-获取用户管理饭堂信息
      * @apiGroup  Official
      * @apiVersion 3.0.0
-     * @apiDescription  微信端-菜单管理-获取用户管理饭堂信息
+     * @apiDescription  微信端-菜品管理-获取用户管理饭堂信息
      * @apiExample {get}  请求样例:
      * http://canteen.tonglingok.com/api/v1/user/canteenMenus
      * @apiSuccessExample {json} 返回样例:
-     * {"msg":"ok","errorCode":0,"code":200,"data":[{"c_id":6,"name":"饭堂1","dinners":[{"id":5,"name":"早餐","menus":[]},{"id":6,"name":"中餐","menus":[{"id":1,"d_id":6,"category":"荤菜"},{"id":2,"d_id":6,"category":"汤"}]},{"id":7,"name":"晚餐","menus":[]}]}]}
+     * {"msg":"ok","errorCode":0,"code":200,"data":[{"c_id":4,"name":"饭堂1","dinners":[]},{"c_id":5,"name":"饭堂2","dinners":[]},{"c_id":1,"name":"饭堂","dinners":[]},{"c_id":6,"name":"饭堂","dinners":[{"id":5,"name":"早餐","menus":[]},{"id":6,"name":"中餐","menus":[{"id":1,"d_id":6,"category":"荤菜","status":1,"count":3},{"id":2,"d_id":6,"category":"汤","status":2,"count":0}]},{"id":7,"name":"晚餐","menus":[]}]},{"c_id":7,"name":"饭堂","dinners":[]}]}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
      * @apiSuccess (返回参数说明) {string} msg 信息描述
      * @apiSuccess (返回参数说明) {int} c_id 饭堂id
@@ -92,6 +93,8 @@ class User extends BaseController
      * @apiSuccess (返回参数说明) {int} dinner|menus|id 餐次菜单设置id
      * @apiSuccess (返回参数说明) {int} dinner|menus|d_id 餐次id
      * @apiSuccess (返回参数说明) {string} dinner|menus|category 分类信息
+     * @apiSuccess (返回参数说明) {string} dinner|menus|status 1|固定；2|动态
+     * @apiSuccess (返回参数说明) {string} dinner|menus|count 可选菜品数量
      */
     public function userCanteenMenus()
     {

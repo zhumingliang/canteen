@@ -4,9 +4,12 @@
 namespace app\api\model;
 
 
-use think\Model;
 
-class StaffQrcodeT extends Model
+class StaffQrcodeT extends BaseModel
 {
+    public function getUrlAttr($value){
+        return $this->prefixImgUrl($value);
+    }
+
 
 }
