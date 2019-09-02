@@ -95,17 +95,15 @@ class Food extends BaseController
     }
 
     /**
-     * @api {POST} /api/v1/module/food/handel CMS管理端-菜品状态设置
+     * @api {POST} /api/v1/food/handel CMS管理端-菜品状态设置
      * @apiGroup   CMS
      * @apiVersion 3.0.0
      * @apiDescription   CMS管理端-菜品状态设置
      * @apiExample {post}  请求样例:
      *    {
-     *       "id": 1,
-     *       "state":1
+     *       "id": 1
      *     }
-     * @apiParam (请求参数说明) {int} id  模块ID
-     * @apiParam (请求参数说明) {int} state  1|上架；2|下架；3|删除
+     * @apiParam (请求参数说明) {int} id  菜品ID
      * @apiSuccessExample {json} 返回样例:
      *{"msg":"ok","errorCode":0}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
@@ -140,7 +138,6 @@ class Food extends BaseController
      * @apiSuccess (返回参数说明) {int} current_page 当前页码
      * @apiSuccess (返回参数说明) {int} last_page 最后页码
      * @apiSuccess (返回参数说明) {int} id 菜品id
-     * @apiSuccess (返回参数说明) {int} state  1|上架；2|下架
      * @apiSuccess (返回参数说明) {string} name  菜品名称
      * @apiSuccess (返回参数说明) {float} price  菜品价格
      * @apiSuccess (返回参数说明) {string} chef  主厨名称
@@ -216,12 +213,66 @@ class Food extends BaseController
 
     }
 
+    /**
+     * @api {GET} /api/v1/foods/officialManager 微信端-菜品管理-菜品信息
+     * @apiGroup  Official
+     * @apiVersion 3.0.0
+     * @apiDescription 微信端-菜品管理-菜品信息
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/foods/officialManager?$page=1&size=100&menu_id=1&food_type=2&day=2019-09-02&canteen_id=3
+     * @apiParam (请求参数说明) {int} page 当前页码
+     * @apiParam (请求参数说明) {int} size 每页多少条数据
+     * @apiParam (请求参数说明) {int} food_type  菜品是否为无选菜：1|是；2|否
+     * @apiParam (请求参数说明) {int} menu_id 类型id
+     * @apiParam (请求参数说明) {String} day 日期
+     * @apiParam (请求参数说明) {String} canteen_id 饭堂ID
+     * @apiSuccessExample {json} 返回样例:
+    {"msg":"ok","errorCode":0,"code":200,"data":{"total":2,"per_page":100,"current_page":1,"last_page":1,"data":[{"id":1,"name":"红烧牛肉","img_url":"http:\/\/canteen.tonglingok.com\/static\/image\/20190810\/ab9ce8ff0e2c5adb40263641b24f36d4.png","price":5,"status":0},{"id":3,"name":"西红柿牛肉","img_url":"http:\
+     * @apiSuccess (返回参数说明) {int} total 数据总数
+     * @apiSuccess (返回参数说明) {int} per_page 每页多少条数据
+     * @apiSuccess (返回参数说明) {int} current_page 当前页码
+     * @apiSuccess (返回参数说明) {int} last_page 最后页码
+     * @apiSuccess (返回参数说明) {int} id 菜品id
+     * @apiSuccess (返回参数说明) {string} name  菜品名称
+     * @apiSuccess (返回参数说明) {float} price  菜品价格
+     * @apiSuccess (返回参数说明) {string} img_url 菜品图片地址
+     * @apiSuccess (返回参数说明) {int} status 菜品状态：1|上架；2|默认；3|下架
+     */
     public function foodsForOfficialManager($page=1,$size=100){
         $menu_id=Request::param('menu_id');
         $food_type=Request::param('food_type');
         $day=Request::param('day');
-        $foods=(new FoodService())->foodsForOfficialManager($menu_id,$food_type,$day,$page,$size);
+        $canteen_id=Request::param('canteen_id');
+        $foods=(new FoodService())->foodsForOfficialManager($menu_id,$food_type,$day,$canteen_id,$page,$size);
         return json(new SuccessMessageWithData(['data'=>$foods]));
+    }
+
+    /**
+     * @api {POST} /api/v1/food/day/handel 微信端-菜品管理-菜品状态操作
+     * @apiGroup   Official
+     * @apiVersion 3.0.0
+     * @apiDescription   微信端-菜品管理-菜品状态操作
+     * @apiExample {post}  请求样例:
+     *    {
+     *       "food_id": 1，
+     *       "canteen_id": 1，
+     *       "day": 2019-09-01，
+     *       "status": 1，
+     *     }
+     * @apiParam (请求参数说明) {int} food_id  菜品ID
+     * @apiParam (请求参数说明) {int} canteen_id  饭堂ID
+     * @apiParam (请求参数说明) {String} day 日期
+     * @apiParam (请求参数说明) {String} status 菜品状态：1|上架；2|默认；3|下架
+     * @apiSuccessExample {json} 返回样例:
+     *{"msg":"ok","errorCode":0}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {String} msg 信息描述
+     */
+    public function handelFoodsDayStatus(){
+        $params=Request::param();
+        (new FoodService())->handelFoodsDayStatus($params);
+        return json(new SuccessMessage());
+
     }
 
 

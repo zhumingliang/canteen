@@ -5,6 +5,8 @@ namespace app\api\service;
 
 
 use app\api\model\CanteenModuleV;
+use app\api\model\FoodDayStateT;
+use app\api\model\FoodDayStateV;
 use app\api\model\FoodMaterialT;
 use app\api\model\FoodT;
 use app\api\model\FoodV;
@@ -85,7 +87,7 @@ class FoodService extends BaseService
         if (!$food) {
             throw  new ParameterException(['msg' => '菜品不存在']);
         }
-        $food->state = $params['state'];
+        $food->state = CommonEnum::STATE_IS_FAIL;
         $res = $food->save();
         if (!$res) {
             throw  new UpdateException();
@@ -135,19 +137,89 @@ class FoodService extends BaseService
 
     }
 
-    public function foodsForOfficialManager($menu_id, $food_type,$day, $page, $size)
+    public function foodsForOfficialManager($menu_id, $food_type, $day, $canteen_id, $page, $size)
     {
         $foods = FoodT::foodsForOfficialManager($menu_id, $food_type, $page, $size);
-        $foods['data'] = $this->prefixFoodDayStatus($foods['data']);
+        $foods['data'] = $this->prefixFoodDayStatus($foods['data'], $day, $canteen_id);
         return $foods;
     }
 
-    private function prefixFoodDayStatus($foods,$day)
+    private function prefixFoodDayStatus($foods, $day, $canteen_id)
     {
         if (!count($foods)) {
             return $foods;
         }
         //获取指定时间菜品状态
+        $foodDay = FoodDayStateT::FoodStatus($canteen_id, $day);
+        foreach ($foods as $k => $v) {
+            $status = 3;
+            if (!$foodDay->isEmpty()) {
+                foreach ($foodDay as $k2 => $v2) {
+                    if ($v['id'] == $v2['f_id']) {
+                        $status = $v2['status'];
+                    }
+                }
+            }
+            $foods[$k]['status'] = $status;
+        }
+        return $foods;
     }
+
+    public function handelFoodsDayStatus($params)
+    {
+        $day = $params['day'];
+        $food_id = $params['food_id'];
+        $canteen_id = $params['canteen_id'];
+        $status = $params['status'];
+        if (!$this->checkStatus($food_id,$day,$status)){
+            throw new SaveException(['msg'=>'默认菜式数量已达到最大值']);
+        }
+        $dayFood = FoodDayStateT::where('f_id', $food_id)
+            ->whereBetweenTime('day', $day)
+            ->find();
+        if (!$dayFood) {
+            $data = [
+                'f_id' => $food_id,
+                'canteen_id' => $canteen_id,
+                'day' => $day,
+                'status' => $status,
+                'user_id' => Token::getCurrentUid()
+            ];
+            if (!FoodDayStateT::create($data)) {
+                throw new SaveException(['msg' => '新增菜品信息状态失败']);
+            }
+            return true;
+        }
+        $dayFood->status = $status;
+        if (!$dayFood->save()) {
+            throw new UpdateException (['msg' => '修改菜品信息状态失败']);
+
+        }
+    }
+
+    private function checkStatus($food_id, $day, $status)
+    {
+        if ($status != '2') {
+            return true;
+        }
+        $food = FoodT::where('id', $food_id)->with('menu')->find();
+        $menu_status = $food->menu->status;
+        $menu_count = $food->menu->count;
+        if ($menu_status == 2) {
+            //动态
+            return true;
+        }
+        //获取该餐类下设置数量
+        $count = FoodDayStateV::where('day', $day)
+            ->where('m_id', $food->menu->id)
+            ->where('status', 2)
+            ->count('id');
+        if ($count < $menu_count) {
+            return true;
+        }
+        return false;
+
+    }
+
 
 }

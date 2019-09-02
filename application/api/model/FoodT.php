@@ -13,6 +13,10 @@ class FoodT extends BaseModel
         return $this->prefixImgUrl($value);
     }
 
+    public function menu(){
+        return $this->belongsTo('MenuT','m_id','id');
+    }
+
     public static function foodsForOfficialManager($menu_id, $food_type, $page, $size)
     {
         $foods = self::where('m_id', $menu_id)
