@@ -5,6 +5,7 @@ namespace app\api\service;
 
 
 use app\api\model\CanteenModuleV;
+use app\api\model\FoodCommentT;
 use app\api\model\FoodDayStateT;
 use app\api\model\FoodDayStateV;
 use app\api\model\FoodMaterialT;
@@ -266,6 +267,15 @@ class FoodService extends BaseService
 
         }
         return $menus;
+    }
+
+    public function saveComment($params)
+    {
+        $params['u_id'] = Token::getCurrentUid();
+        $comment = FoodCommentT::create($params);
+        if (!$comment) {
+            throw  new SaveException();
+        }
     }
 
 }

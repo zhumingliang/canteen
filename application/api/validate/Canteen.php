@@ -16,6 +16,8 @@ class Canteen extends BaseValidate
         'account' => 'require',
         'type' => 'require|in:1,2',
         'clean_type' => 'require|in:1,2,3',
+        'taste' => 'require|in:1,2,3,4,5',
+        'service' => 'require|in:1,2,3,4,5',
         'clean_day' => 'require',
         'unordered_meals' => 'require|in:1,2',
     ];
@@ -26,5 +28,6 @@ class Canteen extends BaseValidate
         'configuration' => ['c_id'],
         'updateConfiguration' => ['c_id'],
         'saveConsumptionStrategy' => ['c_id', 't_id','unordered_meals'],
+        'saveComment' => ['taste', 'service'],
     ];
 }

@@ -38,6 +38,7 @@ Route::post('api/:version/canteen/configuration/update', 'api/:version.Canteen/u
 Route::post('api/:version/canteen/consumptionStrategy/save', 'api/:version.Canteen/saveConsumptionStrategy');
 Route::post('api/:version/canteen/consumptionStrategy/update', 'api/:version.Canteen/updateConsumptionStrategy');
 Route::post('api/:version/canteen/model/category', 'api/:version.Canteen/canteenModuleCategoryHandel');
+Route::post('api/:version/canteen/saveComment', 'api/:version.Canteen/saveComment');
 Route::get('api/:version/canteen/consumptionStrategy', 'api/:version.Canteen/consumptionStrategy');
 Route::get('api/:version/canteen/configuration', 'api/:version.Canteen/configuration');
 Route::get('api/:version/canteens/role', 'api/:version.Canteen/roleCanteens');

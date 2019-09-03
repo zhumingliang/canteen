@@ -282,7 +282,6 @@ class Food extends BaseController
 
     }
 
-
     /**
      * @api {GET} /api/v1/foods/personChoice 微信端-个人选菜-菜品列表
      * @apiGroup  Official
@@ -312,5 +311,35 @@ class Food extends BaseController
         $foods = (new FoodService())->foodsForOfficialPersonChoice($d_id);
         return json(new SuccessMessageWithData(['data' => $foods]));
     }
+
+    /**
+     * @api {POST} /api/v1/food/saveComment  微信端--个人选菜--评价菜品
+     * @apiGroup   Official
+     * @apiVersion 3.0.0
+     * @apiDescription    微信端--个人选菜--评价菜品
+     * @apiExample {post}  请求样例:
+     *    {
+     *       "food_id": 1,
+     *       "taste": 5,
+     *       "service": 5
+     *       "remark": "味道好极了"
+     *     }
+     * @apiParam (请求参数说明) {int} food_id  菜品id
+     * @apiParam (请求参数说明) {int} taste  味道评分：1-5分
+     * @apiParam (请求参数说明) {int} service  服务评分：1-5分
+     * @apiParam (请求参数说明) {string} remark  评价内容
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     */
+    public function saveComment()
+    {
+        $params = Request::param();
+        (new FoodService())->saveComment($params);
+        return json(new SuccessMessage());
+    }
+
+
 
 }

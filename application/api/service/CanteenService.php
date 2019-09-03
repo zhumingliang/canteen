@@ -7,6 +7,7 @@ namespace app\api\service;
 use app\api\model\AdminCanteenT;
 use app\api\model\AdminCanteenV;
 use app\api\model\CanteenAccountT;
+use app\api\model\CanteenCommentT;
 use app\api\model\CanteenModuleT;
 use app\api\model\CanteenT;
 use app\api\model\CompanyStaffV;
@@ -294,7 +295,7 @@ class CanteenService
     }
 
     //获取管理员可管理的饭堂和对应饭堂的菜单信息
-    public function  adminCanteens()
+    public function adminCanteens()
     {
         $admin_id = 7;//(new UserService())->checkUserAdminID();
         if (empty($admin_id)) {
@@ -321,6 +322,16 @@ class CanteenService
         //获取用户所有饭堂
         $canteens = StaffV::getStaffCanteens($phone);
         return $canteens;
+    }
+
+    public function saveComment($params)
+    {
+        $params['u_id'] = Token::getCurrentUid();
+        $params['c_id'] = Token::getCurrentTokenVar('current_canteen_id');
+        $comment = CanteenCommentT::create($params);
+        if (!$comment) {
+            throw  new SaveException();
+        }
     }
 
 

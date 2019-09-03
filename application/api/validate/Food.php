@@ -23,7 +23,9 @@ class Food extends BaseValidate
         'chef' => 'require|isNotEmpty',
         'des' => 'require|isNotEmpty',
         'img_url' => 'require|isNotEmpty',
-        'day' => 'require|isNotEmpty'
+        'day' => 'require|isNotEmpty',
+        'taste' => 'require|in:1,2,3,4,5',
+        'service' => 'require|in:1,2,3,4,5',
     ];
 
     protected $scene = [
@@ -35,5 +37,6 @@ class Food extends BaseValidate
         'foodsForOfficialManager' => ['food_type','menu_id','day','canteen_id'],
         'handelFoodsDayStatus' => ['food_id','status','default','day','canteen_id'],
         'foodsForOfficialPersonChoice' => ['dinner_id'],
+        'saveComment' => ['food_id','taste','service'],
     ];
 }
