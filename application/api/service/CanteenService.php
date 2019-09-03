@@ -236,7 +236,7 @@ class CanteenService
         return $info;
     }
 
-    private function getDinners($c_id)
+    public function getDinners($c_id)
     {
         return DinnerT::dinners($c_id);
 
@@ -293,7 +293,6 @@ class CanteenService
         return $canteens;
     }
 
-
     //获取管理员可管理的饭堂和对应饭堂的菜单信息
     public function  adminCanteens()
     {
@@ -314,8 +313,6 @@ class CanteenService
         }
         return $canteens;
     }
-
-
 
     //获取当前用户归属饭堂和企业信息
     public function userCanteens()

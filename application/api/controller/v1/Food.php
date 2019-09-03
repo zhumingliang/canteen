@@ -227,7 +227,9 @@ class Food extends BaseController
      * @apiParam (请求参数说明) {String} day 日期
      * @apiParam (请求参数说明) {String} canteen_id 饭堂ID
      * @apiSuccessExample {json} 返回样例:
-    {"msg":"ok","errorCode":0,"code":200,"data":{"total":2,"per_page":100,"current_page":1,"last_page":1,"data":[{"id":1,"name":"红烧牛肉","img_url":"http:\/\/canteen.tonglingok.com\/static\/image\/20190810\/ab9ce8ff0e2c5adb40263641b24f36d4.png","price":5,"status":0},{"id":3,"name":"西红柿牛肉","img_url":"http:\
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"total":2,"per_page":100,"current_page":1,"last_page":1,"data":[{"id":1,"name":"红烧牛肉","img_url":"http:\/\/canteen.tonglingok.com\/static\/image\/20190810\/ab9ce8ff0e2c5adb40263641b24f36d4.png","price":5,"status":2,"default":2}]}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {String} msg 信息描述
      * @apiSuccess (返回参数说明) {int} total 数据总数
      * @apiSuccess (返回参数说明) {int} per_page 每页多少条数据
      * @apiSuccess (返回参数说明) {int} current_page 当前页码
@@ -236,15 +238,17 @@ class Food extends BaseController
      * @apiSuccess (返回参数说明) {string} name  菜品名称
      * @apiSuccess (返回参数说明) {float} price  菜品价格
      * @apiSuccess (返回参数说明) {string} img_url 菜品图片地址
-     * @apiSuccess (返回参数说明) {int} status 菜品状态：1|上架；2|默认；3|下架
+     * @apiSuccess (返回参数说明) {int} status 菜品上架状态：1|上架；2|下架
+     * @apiSuccess (返回参数说明) {int} default 菜品默认状态：1|默认；2|非默认
      */
-    public function foodsForOfficialManager($page=1,$size=100){
-        $menu_id=Request::param('menu_id');
-        $food_type=Request::param('food_type');
-        $day=Request::param('day');
-        $canteen_id=Request::param('canteen_id');
-        $foods=(new FoodService())->foodsForOfficialManager($menu_id,$food_type,$day,$canteen_id,$page,$size);
-        return json(new SuccessMessageWithData(['data'=>$foods]));
+    public function foodsForOfficialManager($page = 1, $size = 100)
+    {
+        $menu_id = Request::param('menu_id');
+        $food_type = Request::param('food_type');
+        $day = Request::param('day');
+        $canteen_id = Request::param('canteen_id');
+        $foods = (new FoodService())->foodsForOfficialManager($menu_id, $food_type, $day, $canteen_id, $page, $size);
+        return json(new SuccessMessageWithData(['data' => $foods]));
     }
 
     /**
@@ -258,22 +262,55 @@ class Food extends BaseController
      *       "canteen_id": 1，
      *       "day": 2019-09-01，
      *       "status": 1，
+     *       "default": 1，
      *     }
      * @apiParam (请求参数说明) {int} food_id  菜品ID
      * @apiParam (请求参数说明) {int} canteen_id  饭堂ID
      * @apiParam (请求参数说明) {String} day 日期
-     * @apiParam (请求参数说明) {String} status 菜品状态：1|上架；2|默认；3|下架
+     * @apiParam (请求参数说明) {int} status 菜品状态：1|上架；2|下架
+     * @apiParam (请求参数说明) {int} default 菜品默认状态：1|默认；2|非默认
      * @apiSuccessExample {json} 返回样例:
      *{"msg":"ok","errorCode":0}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
      * @apiSuccess (返回参数说明) {String} msg 信息描述
      */
-    public function handelFoodsDayStatus(){
-        $params=Request::param();
+    public function handelFoodsDayStatus()
+    {
+        $params = Request::param();
         (new FoodService())->handelFoodsDayStatus($params);
         return json(new SuccessMessage());
 
     }
 
+
+    /**
+     * @api {GET} /api/v1/foods/personChoice 微信端-个人选菜-菜品列表
+     * @apiGroup  Official
+     * @apiVersion 3.0.0
+     * @apiDescription 微信端-菜品管理-菜品信息
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/foods/personChoice?dinner_id=6
+     * @apiParam (请求参数说明) {int} dinner_id 餐次ID
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":[{"id":1,"category":"荤菜","status":1,"count":3,"foods":[{"id":2,"day":"2019-09-03","f_id":1,"status":2,"m_id":1,"d_id":6,"name":"红烧牛肉","price":5,"img_url":"\/static\/image\/20190810\/ab9ce8ff0e2c5adb40263641b24f36d4.png","f_type":2},{"id":3,"day":"2019-09-04","f_id":1,"status":1,"m_id":1,"d_id":6,"name":"红烧牛肉","price":5,"img_url":"\/static\/image\/20190810\/ab9ce8ff0e2c5adb40263641b24f36d4.png","f_type":2}]},{"id":2,"category":"汤","status":2,"count":0,"foods":[]}]}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {String} msg 信息描述
+     * @apiSuccess (返回参数说明) {int} id 菜品类别id
+     * @apiSuccess (返回参数说明) {string} category  菜品类别名称
+     * @apiSuccess (返回参数说明) {int}  status 菜品状态:1|固定；2|动态
+     * @apiSuccess (返回参数说明) {int}  count 固定状态下可选数量
+     * @apiSuccess (返回参数说明) {obj} foods  菜品
+     * @apiSuccess (返回参数说明) {int} foods|f_id  菜品id
+     * @apiSuccess (返回参数说明) {sting} foods|day  日期
+     * @apiSuccess (返回参数说明) {sting} foods|name  菜品名称
+     * @apiSuccess (返回参数说明) {float} foods|price  菜品价格
+     * @apiSuccess (返回参数说明) {string} foods|img_url 菜品图片地址
+     */
+    public function foodsForOfficialPersonChoice()
+    {
+        $d_id = Request::param('dinner_id');
+        $foods = (new FoodService())->foodsForOfficialPersonChoice($d_id);
+        return json(new SuccessMessageWithData(['data' => $foods]));
+    }
 
 }

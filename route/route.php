@@ -41,6 +41,7 @@ Route::post('api/:version/canteen/model/category', 'api/:version.Canteen/canteen
 Route::get('api/:version/canteen/consumptionStrategy', 'api/:version.Canteen/consumptionStrategy');
 Route::get('api/:version/canteen/configuration', 'api/:version.Canteen/configuration');
 Route::get('api/:version/canteens/role', 'api/:version.Canteen/roleCanteens');
+Route::get('api/:version/canteen/dinners/user', 'api/:version.Canteen/currentCanteenDinners');
 
 Route::get('api/:version/roles', 'api/:version.Role/roles');
 Route::post('api/:version/role/save', 'api/:version.Role/save');
@@ -78,6 +79,7 @@ Route::post('api/:version/food/handel', 'api/:version.Food/handel');
 Route::post('api/:version/food/day/handel', 'api/:version.Food/handelFoodsDayStatus');
 Route::get('api/:version/foods', 'api/:version.Food/foods');
 Route::get('api/:version/foods/officialManager', 'api/:version.Food/foodsForOfficialManager');
+Route::get('api/:version/foods/personChoice', 'api/:version.Food/foodsForOfficialPersonChoice');
 Route::get('api/:version/food', 'api/:version.Food/food');
 
 Route::post('api/:version/material/save', 'api/:version.Material/save');

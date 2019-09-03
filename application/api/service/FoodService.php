@@ -43,7 +43,6 @@ class FoodService extends BaseService
 
     }
 
-
     private function prefixMaterial($material, $f_id)
     {
         $material = json_decode($material, true);
@@ -152,15 +151,18 @@ class FoodService extends BaseService
         //获取指定时间菜品状态
         $foodDay = FoodDayStateT::FoodStatus($canteen_id, $day);
         foreach ($foods as $k => $v) {
-            $status = 3;
+            $status = 2;
+            $default = 2;
             if (!$foodDay->isEmpty()) {
                 foreach ($foodDay as $k2 => $v2) {
                     if ($v['id'] == $v2['f_id']) {
                         $status = $v2['status'];
+                        $default = $v2['default'];
                     }
                 }
             }
             $foods[$k]['status'] = $status;
+            $foods[$k]['default'] = $default;
         }
         return $foods;
     }
@@ -170,9 +172,10 @@ class FoodService extends BaseService
         $day = $params['day'];
         $food_id = $params['food_id'];
         $canteen_id = $params['canteen_id'];
-        $status = $params['status'];
-        if (!$this->checkStatus($food_id,$day,$status)){
-            throw new SaveException(['msg'=>'默认菜式数量已达到最大值']);
+        if (!empty($params['default'])) {
+            if (!$this->checkStatus($food_id, $day, $params['default'])) {
+                throw new SaveException(['msg' => '默认菜式数量已达到最大值']);
+            }
         }
         $dayFood = FoodDayStateT::where('f_id', $food_id)
             ->whereBetweenTime('day', $day)
@@ -182,15 +185,32 @@ class FoodService extends BaseService
                 'f_id' => $food_id,
                 'canteen_id' => $canteen_id,
                 'day' => $day,
-                'status' => $status,
                 'user_id' => Token::getCurrentUid()
             ];
+            if (!empty($params['status'])) {
+                $data['v'] = $params['status'];
+            }
+            if (!empty($params['default'])) {
+                $data['default'] = $params['default'];
+                if ($params['default'] == CommonEnum::STATE_IS_OK) {
+                    $data['status'] = CommonEnum::STATE_IS_OK;
+                }
+            }
             if (!FoodDayStateT::create($data)) {
                 throw new SaveException(['msg' => '新增菜品信息状态失败']);
             }
             return true;
         }
-        $dayFood->status = $status;
+
+        if (!empty($params['status'])) {
+            $dayFood->status = $params['status'];
+        }
+        if (!empty($params['default'])) {
+            $dayFood->default = $params['default'];
+            if ($params['default'] == CommonEnum::STATE_IS_OK) {
+                $dayFood->status = CommonEnum::STATE_IS_OK;
+            }
+        }
         if (!$dayFood->save()) {
             throw new UpdateException (['msg' => '修改菜品信息状态失败']);
 
@@ -221,5 +241,31 @@ class FoodService extends BaseService
 
     }
 
+    public function foodsForOfficialPersonChoice($d_id)
+    {
+        $foods = FoodDayStateV::foodsForOfficialPersonChoice($d_id);
+        $menus = (new MenuService())->dinnerMenus($d_id);
+        $foods = $this->prefixPersonChoiceFoods($foods, $menus);
+        return $foods;
+    }
+
+    private function prefixPersonChoiceFoods($foods, $menus)
+    {
+        if (!count($foods)) {
+            return $foods;
+        }
+        foreach ($menus as $k => $v) {
+            $data = [];
+            foreach ($foods as $k2 => $v2) {
+                if ($v['id'] == $v2['m_id']) {
+                    array_push($data, $foods[$k2]);
+                    unset($foods[$k2]);
+                }
+            }
+            $menus[$k]['foods'] = $data;
+
+        }
+        return $menus;
+    }
 
 }

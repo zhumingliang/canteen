@@ -21,6 +21,7 @@ class DinnerT extends Model
         $info = self::where('c_id', $c_id)
             ->where('state', CommonEnum::STATE_IS_OK)
             ->hidden(['update_time', 'state'])
+            ->order('create_time')
             ->select();
         return $info;
     }

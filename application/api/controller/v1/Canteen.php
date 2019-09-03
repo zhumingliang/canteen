@@ -7,6 +7,7 @@ namespace app\api\controller\v1;
 use app\api\controller\BaseController;
 use app\api\model\ConsumptionStrategyT;
 use app\api\service\CanteenService;
+use app\api\service\Token;
 use app\lib\exception\SuccessMessage;
 use app\lib\exception\SuccessMessageWithData;
 use app\lib\exception\UpdateException;
@@ -272,6 +273,8 @@ class Canteen extends BaseController
      * http://canteen.tonglingok.com/api/v1/canteens/role
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200,"data":[{"id":3,"name":"企业A","parent_id":2,"canteen":[{"id":6,"c_id":3,"name":"饭堂1"},{"id":7,"c_id":3,"name":"饭堂2"}]},{"id":4,"name":"企业A1","parent_id":3,"canteen":[]},{"id":5,"name":"企业A2","parent_id":3,"canteen":[]},{"id":6,"name":"企业A11","parent_id":4,"canteen":[]}]}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {String} msg 信息描述
      * @apiSuccess (返回参数说明) {int} id 企业id
      * @apiSuccess (返回参数说明) {String} name  企业名称
      * @apiSuccess (返回参数说明) {obj} canteen 企业饭堂信息
@@ -284,5 +287,34 @@ class Canteen extends BaseController
         return json(new SuccessMessageWithData(['data' => $canteens]));
 
     }
+
+    /**
+     * @api {GET} /api/v1/canteen/dinners/user 微信端--个人选菜-用户所选择饭堂可选择餐次
+     * @apiGroup  Official
+     * @apiVersion 3.0.0
+     * @apiDescription  微信端--个人选菜-用户所选择饭堂可选择餐次(用户订餐时需要检测当前时间段是否为订餐时间)
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/canteen/dinners/user
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":[{"id":5,"c_id":6,"name":"早餐","type":"day","create_time":"2019-07-30 02:07:17","type_number":10,"meal_time_begin":"07:00:00","meal_time_end":"08:00:00","limit_time":"09:00:00"},{"id":6,"c_id":6,"name":"中餐","type":"day","create_time":"2019-07-30 02:07:17","type_number":10,"meal_time_begin":"12:00:00","meal_time_end":"13:00:00","limit_time":"10:00:00"},{"id":7,"c_id":6,"name":"晚餐","type":"day","create_time":"2019-07-30 11:24:36","type_number":10,"meal_time_begin":"18:00:00","meal_time_end":"19:00:00","limit_time":"10:00:00"}]}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {String} msg 信息描述
+     * @apiSuccess (返回参数说明) {int} id  餐次id
+     * @apiSuccess (返回参数说明) {string} name  餐次名称
+     * @apiSuccess (返回参数说明) {string} type  时间设置类别：day|week|month（可提前订餐时间类别）
+     * @apiSuccess (返回参数说明) {int} type_number 订餐时间类别对应数量
+     * @apiSuccess (返回参数说明) {string} limit_time  订餐限制时间
+     * @apiSuccess (返回参数说明) {string} meal_time_begin  就餐开始时间
+     * @apiSuccess (返回参数说明) {string} meal_time_end  就餐截止时间
+     */
+    public function currentCanteenDinners()
+    {
+        $canteen_id=Token::getCurrentTokenVar('current_canteen_id');
+        $dinners=(new CanteenService())->getDinners($canteen_id);
+        return json(new SuccessMessageWithData(['data'=>$dinners]));
+
+    }
+
+
 
 }

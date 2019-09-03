@@ -77,5 +77,10 @@ class MenuService
         return $menus;
     }
 
+    public function dinnerMenus($dinner_id){
+        $menus=MenuT::dinnerMenus($dinner_id);
+        return $menus;
+    }
+
 
 }
