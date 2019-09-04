@@ -12,6 +12,7 @@ use app\api\model\FoodMaterialT;
 use app\api\model\FoodT;
 use app\api\model\FoodV;
 use app\lib\enum\CommonEnum;
+use app\lib\enum\FoodEnum;
 use app\lib\exception\ParameterException;
 use app\lib\exception\SaveException;
 use app\lib\exception\UpdateException;
@@ -245,6 +246,14 @@ class FoodService extends BaseService
     public function foodsForOfficialPersonChoice($d_id)
     {
         $foods = FoodDayStateV::foodsForOfficialPersonChoice($d_id);
+        $menus = (new MenuService())->dinnerMenus($d_id);
+        $foods = $this->prefixPersonChoiceFoods($foods, $menus);
+        return $foods;
+    }
+
+    public function foodsForOfficialMenu($d_id)
+    {
+        $foods = FoodDayStateV::foodsForOfficialMenu($d_id);
         $menus = (new MenuService())->dinnerMenus($d_id);
         $foods = $this->prefixPersonChoiceFoods($foods, $menus);
         return $foods;

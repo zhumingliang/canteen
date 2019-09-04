@@ -81,6 +81,7 @@ Route::post('api/:version/food/day/handel', 'api/:version.Food/handelFoodsDaySta
 Route::get('api/:version/foods', 'api/:version.Food/foods');
 Route::get('api/:version/foods/officialManager', 'api/:version.Food/foodsForOfficialManager');
 Route::get('api/:version/foods/personChoice', 'api/:version.Food/foodsForOfficialPersonChoice');
+Route::get('api/:version/foods/menu', 'api/:version.Food/foodsForOfficialMenu');
 Route::get('api/:version/food', 'api/:version.Food/food');
 Route::get('api/:version/food/info/comment', 'api/:version.Food/infoToComment');
 
