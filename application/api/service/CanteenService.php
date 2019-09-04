@@ -334,5 +334,16 @@ class CanteenService
         }
     }
 
+    //获取饭堂评分
+    public function canteenScore($canteen_id)
+    {
+        $taste = CanteenCommentT::where('c_id', $canteen_id)->avg('taste');
+        $service = CanteenCommentT::where('c_id', $canteen_id)->avg('service');
+        return [
+            'taste' => round($taste,1),
+            'service' => round($service,1),
+        ];
+    }
+
 
 }

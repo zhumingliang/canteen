@@ -38,5 +38,6 @@ class Food extends BaseValidate
         'handelFoodsDayStatus' => ['food_id','status','default','day','canteen_id'],
         'foodsForOfficialPersonChoice' => ['dinner_id'],
         'saveComment' => ['food_id','taste','service'],
+        'infoToComment' => ['food_id'],
     ];
 }

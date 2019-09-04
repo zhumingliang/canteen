@@ -82,6 +82,7 @@ Route::get('api/:version/foods', 'api/:version.Food/foods');
 Route::get('api/:version/foods/officialManager', 'api/:version.Food/foodsForOfficialManager');
 Route::get('api/:version/foods/personChoice', 'api/:version.Food/foodsForOfficialPersonChoice');
 Route::get('api/:version/food', 'api/:version.Food/food');
+Route::get('api/:version/food/info/comment', 'api/:version.Food/infoToComment');
 
 Route::post('api/:version/material/save', 'api/:version.Material/save');
 Route::post('api/:version/material/update', 'api/:version.Material/update');

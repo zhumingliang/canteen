@@ -340,6 +340,37 @@ class Food extends BaseController
         return json(new SuccessMessage());
     }
 
+    /**
+     * @api {GET} /api/v1/food/info/comment   微信端--个人选菜-点击评论获取菜品评论信息
+     * @apiGroup  Official
+     * @apiVersion 3.0.0
+     * @apiDescription 微信端--个人选菜-点击评论获取菜品评论信息
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/food/info/comment?food_id=1
+     * @apiParam (请求参数说明) {int} id 菜品id
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"food":{"id":1,"name":"红烧牛肉","price":5,"img_url":"http:\/\/canteen.tonglingok.com\/static\/image\/20190810\/ab9ce8ff0e2c5adb40263641b24f36d4.png","chef":"李大厨","comments":[{"id":4,"u_id":3,"f_id":1,"taste":3,"service":3,"remark":"4"},{"id":3,"u_id":3,"f_id":1,"taste":4,"service":4,"remark":"3"},{"id":2,"u_id":3,"f_id":1,"taste":5,"service":5,"remark":"2"}]},"canteenScore":{"taste":4.3,"service":4.3}}}
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     * @apiSuccess (返回参数说明) {obj} food 菜品信息
+     * @apiSuccess (返回参数说明) {string} food|id 菜品id
+     * @apiSuccess (返回参数说明) {string} food|name 菜品名称
+     * @apiSuccess (返回参数说明) {string} food|price  菜品价格
+     * @apiSuccess (返回参数说明) {string} food|chef  主厨名称
+     * @apiSuccess (返回参数说明) {obj} comments  评论信息
+     * @apiSuccess (返回参数说明) {int} comments|id 评论id
+     * @apiSuccess (返回参数说明) {string} comments|taste 菜品味道评分
+     * @apiSuccess (返回参数说明) {string} comments|service 菜品服务评分
+     * @apiSuccess (返回参数说明) {string} comments|remark 评分说明
+     * @apiSuccess (返回参数说明) {obj} canteenScore 饭堂评分
+     * @apiSuccess (返回参数说明) {string} canteenScore|taste 饭堂味道评分
+     * @apiSuccess (返回参数说明) {string} canteenScore|service 饭堂服务评分
+     */
+    public function infoToComment()
+    {
+        $food_id = Request::param('food_id');
+        $info = (new FoodService())->infoToComment($food_id);
+        return json(new SuccessMessageWithData(['data' => $info]));
+    }
 
 
 }
