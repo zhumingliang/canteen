@@ -91,6 +91,13 @@ class Token
         return $uid;
     }
 
+    public static function getCurrentPhone()
+    {
+        //token
+        $phone = self::getCurrentTokenVar('phone');
+        return $phone;
+    }
+
 
     /**
      * @return mixed

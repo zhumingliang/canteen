@@ -88,6 +88,20 @@ class UserService
 
     }
 
+    public function getUserStaffTypeByPhone($phone)
+    {
+        if (empty($phone)) {
+            throw new AuthException(['msg' => '用户状态异常，未绑定手机号']);
+        }
+        $admin = CompanyStaffT::where('phone', $phone)->where('state', CommonEnum::STATE_IS_OK)
+            ->find();
+        if (!$admin) {
+            throw new AuthException(['msg' => '用户状态异常，不属于任何企业']);
+        }
+        return $admin->t_id;
+
+    }
+
     //获取用户电子饭卡
     public function mealCard()
     {
@@ -99,7 +113,7 @@ class UserService
         }
         if (empty($staff->qrcode)) {
 
-            return  (new DepartmentService())->saveQrcode($staff->id);
+            return (new DepartmentService())->saveQrcode($staff->id);
 
         }
         $qrcode = $staff->qrcode;
@@ -107,7 +121,7 @@ class UserService
             return ['url' => $qrcode->url];
         }
 
-       $newQrode= (new DepartmentService())->updateQrcode($qrcode->toArray());
+        $newQrode = (new DepartmentService())->updateQrcode($qrcode->toArray());
 
         return ['url' => $newQrode->url];
     }

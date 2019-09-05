@@ -140,11 +140,13 @@ class CanteenService
 
     private function prefixCanteenAccount($c_id, $account)
     {
-        $account['state'] = CommonEnum::STATE_IS_OK;
-        $account['c_id'] = $c_id;
-        $res = CanteenAccountT::create($c_id);
-        if (!$res) {
-            throw new SaveException();
+        if (!empty($account)) {
+            $account['state'] = CommonEnum::STATE_IS_OK;
+            $account['c_id'] = $c_id;
+            $res = CanteenAccountT::create($c_id);
+            if (!$res) {
+                throw new SaveException();
+            }
         }
     }
 
@@ -234,6 +236,12 @@ class CanteenService
     public function consumptionStrategy($c_id)
     {
         $info = ConsumptionStrategyT::info($c_id);
+        return $info;
+    }
+
+    public function getStaffConsumptionStrategy($c_id, $d_id, $t_id)
+    {
+        $info = ConsumptionStrategyT::getStaffConsumptionStrategy($c_id, $d_id, $t_id);
         return $info;
     }
 
@@ -340,8 +348,8 @@ class CanteenService
         $taste = CanteenCommentT::where('c_id', $canteen_id)->avg('taste');
         $service = CanteenCommentT::where('c_id', $canteen_id)->avg('service');
         return [
-            'taste' => round($taste,1),
-            'service' => round($service,1),
+            'taste' => round($taste, 1),
+            'service' => round($service, 1),
         ];
     }
 

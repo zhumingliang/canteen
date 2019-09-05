@@ -48,7 +48,7 @@ class Canteen extends BaseController
      *    {
      *       "c_id": 2,
      *       "dinners":[{"name":"早餐","type":"day","type_number":10,"limit_time":"10:00","meal_time_begin":"07:00","meal_time_end":"08:00"},{"name":"中餐","type":"day","type_number":10,"limit_time":"10:00","meal_time_bgin":"12:00","meal_time_end":"13:00"}],
-     *       "account":{"type":2,"clean_type":3,"clean_day":0}
+     *       "account":{"type":2,"clean_type":3,"clean_day":0,"limit_money":0}
      *     }
      * @apiParam (请求参数说明) {int} c_id  饭堂id
      * @apiParam (请求参数说明) {string} dinners  订餐信息json字符串
@@ -62,6 +62,7 @@ class Canteen extends BaseController
      * @apiParam (请求参数说明) {int} account|type  消费类别：1| 可透支消费；2|不可透支消费
      * @apiParam (请求参数说明) {int} account|clean_type  系统清零方式：1|系统自动清零；2|系统自动清零；3|无
      * @apiParam (请求参数说明) {int} account|clean_day  每月清零具体日期
+     * @apiParam (请求参数说明) {int} account|limit_money  可预消费金额
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
