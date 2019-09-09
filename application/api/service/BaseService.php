@@ -34,4 +34,24 @@ class BaseService
         throw  new ParameterException();
     }
 
+
+    public function prefixExpiryDate($expiry_date, $params,$symbol='+')
+    {
+        $type = ['minute', 'hour', 'day', 'week', 'month', 'year'];
+        $exit = 0;
+        foreach ($type as $k => $v) {
+            if (key_exists($v, $params)) {
+                $exit = 1;
+                $expiry_date = date('Y-m-d H:i:s', strtotime($symbol . $params[$v] . "$v", strtotime($expiry_date)));
+                break;
+            }
+
+        }
+        if (!$exit) {
+            $expiry_date = date('Y-m-d H:i:s', strtotime($symbol . config("setting.qrcode_expire_in") . "minute", strtotime($expiry_date)));
+
+        }
+        return $expiry_date;
+    }
+
 }

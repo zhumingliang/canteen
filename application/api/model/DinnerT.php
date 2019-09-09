@@ -58,4 +58,11 @@ class DinnerT extends Model
         return $menus;
     }
 
+    public static function dinnerInfo($dinner_id)
+    {
+        $dinner = self::where('id', $dinner_id)
+            ->find();
+        return $dinner;
+    }
+
 }

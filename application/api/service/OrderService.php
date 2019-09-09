@@ -11,6 +11,7 @@ namespace app\api\service;
 
 use app\api\model\CanteenAccountT;
 use app\api\model\ChoiceDetailT;
+use app\api\model\DinnerT;
 use app\api\model\OrderingV;
 use app\api\model\PersonalChoiceT;
 use app\lib\enum\CommonEnum;
@@ -22,7 +23,7 @@ use app\lib\exception\SaveException;
 use think\Db;
 use think\Exception;
 
-class OrderService
+class OrderService extends BaseService
 {
 
     public function personChoice($params)
@@ -37,6 +38,8 @@ class OrderService
             $money = $this->getOrderingMoney($detail);
             $params['money'] = $money;
             $u_id = Token::getCurrentUid();
+            //检测订餐时间是否允许
+            $this->checkDinner($dinner_id, $ordering_date);
             $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
             $this->checkUserCanOrder($u_id, $dinner_id, $ordering_date, $canteen_id, $count, $detail);
             $pay_way = $this->checkBalance($u_id, $canteen_id, $money);
@@ -55,6 +58,9 @@ class OrderService
                 throw new SaveException(['msg' => '生成订单失败']);
             }
             $this->prefixDetail($detail, $order->id);
+            if ($params['type'] == OrderEnum::EAT_OUTSIDER && !empty($params['address_id'])) {
+                (new AddressService())->prefixAddressDefault($params['address_id']);
+            }
             Db::commit();
             return [
                 'id' => $order->id
@@ -85,12 +91,12 @@ class OrderService
         foreach ($detail as $k => $v) {
             $foods = $v['foods'];
             foreach ($foods as $k2 => $v2) {
-                $data=[
-                    'f_id'=>$v2['food_id'],
-                    'price'=>$v2['price'],
-                    'count'=>$v2['count'],
-                    'o_id'=>$o_id,
-                    'state'=>CommonEnum::STATE_IS_OK,
+                $data = [
+                    'f_id' => $v2['food_id'],
+                    'price' => $v2['price'],
+                    'count' => $v2['count'],
+                    'o_id' => $o_id,
+                    'state' => CommonEnum::STATE_IS_OK,
                 ];
                 array_push($data_list, $data);
             }
@@ -114,6 +120,7 @@ class OrderService
         if (!$canteenAccount) {
             return false;
         }
+
         if ($canteenAccount->type == OrderEnum::OVERDRAFT_NO) {
             return false;
         }
@@ -127,6 +134,8 @@ class OrderService
     public
     function checkUserCanOrder($u_id, $dinner_id, $day, $canteen_id, $count, $detail)
     {
+        //检测当前时间是否可以订餐
+        $this->checkDinner($dinner_id);
         //获取用户指定日期订餐信息
         $record = OrderingV::getRecordForDayOrdering($u_id, $day, $dinner_id);
         if ($record) {
@@ -137,6 +146,22 @@ class OrderService
         //检测菜单数据是否合法
         $this->checkMenu($dinner_id, $detail);
 
+    }
+
+    //检测是否在订餐时间内
+    public function checkDinner($dinner_id, $ordering_date)
+    {
+        $dinner = DinnerT::dinnerInfo($dinner_id);
+        if (!$dinner) {
+            throw new ParameterException(['msg' => '指定餐次未设置']);
+        }
+        $limit_time = $dinner->limit_time;
+        $type = $dinner->type;
+        $type_number = $dinner->type_number;
+        $expiryDate = $this->prefixExpiryDate($ordering_date, [$type => $type_number]);
+        if (strtotime($limit_time) > strtotime($expiryDate)) {
+            throw  new  SaveException(['msg' => '超出订餐时间']);
+        }
     }
 
     private
@@ -197,3 +222,4 @@ class OrderService
     }
 
 }
+

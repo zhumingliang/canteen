@@ -305,7 +305,7 @@ class CanteenService
     //获取管理员可管理的饭堂和对应饭堂的菜单信息
     public function adminCanteens()
     {
-        $admin_id = 7;//(new UserService())->checkUserAdminID();
+        $admin_id = (new UserService())->checkUserAdminID();
         if (empty($admin_id)) {
             throw  new AuthException();
         }

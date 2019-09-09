@@ -11,6 +11,7 @@ namespace app\api\controller\v1;
 
 use app\api\controller\BaseController;
 use app\api\service\OrderService;
+use app\lib\exception\SuccessMessageWithData;
 use think\facade\Request;
 
 class Order extends BaseController
@@ -39,14 +40,16 @@ class Order extends BaseController
      * @apiParam (请求参数说明) {string} detail|foods|price 菜品实时单价
      * @apiParam (请求参数说明) {string} detail|foods|count 菜品数量
      * @apiSuccessExample {json} 返回样例:
-     * {"msg":"ok","errorCode":0,"code":200}
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"id":1}}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
      * @apiSuccess (返回参数说明) {string} msg 信息描述
+     * @apiSuccess (返回参数说明) {int} id 订单id
      */
     public function personChoice()
     {
         $params = Request::param();
-        (new OrderService())->personChoice($params);
+        $order = (new OrderService())->personChoice($params);
+        return json(new SuccessMessageWithData(['data' => $order]));
 
     }
 

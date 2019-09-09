@@ -221,7 +221,7 @@ class FoodService extends BaseService
 
     private function checkStatus($food_id, $day, $status)
     {
-        if ($status != '2') {
+        if ($status != 2) {
             return true;
         }
         $food = FoodT::where('id', $food_id)->with('menu')->find();

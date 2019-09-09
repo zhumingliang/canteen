@@ -54,7 +54,7 @@ class Canteen extends BaseController
      * @apiParam (请求参数说明) {string} dinners  订餐信息json字符串
      * @apiParam (请求参数说明) {string} dinners|name  餐次名称
      * @apiParam (请求参数说明) {string} dinners|type  时间设置类别：day|week|month
-     * @apiParam (请求参数说明) {int} dinners|type_number 订餐时间类别对应数量
+     * @apiParam (请求参数说明) {int} dinners|type_number 订餐时间类别对应数量:1、前n天是填写数字，说明每天的餐需要提前一个天数来订餐;2、周，是只能填写周一到周日，说明一周的订餐规定需要在每周某天进行下周一整周的订餐;3、月，是只能填写一月到12月说明一个月的订餐规定在每月的某天订下月一整月的餐
      * @apiParam (请求参数说明) {string} dinners|limit_time  订餐限制时间
      * @apiParam (请求参数说明) {string} dinners|meal_time_begin  就餐开始时间
      * @apiParam (请求参数说明) {string} dinners|meal_time_end  就餐截止时间
