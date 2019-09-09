@@ -18,4 +18,8 @@ class OrderEnum
     const OVERDRAFT = 1;
 
     const OVERDRAFT_NO = 2;
+
+    const EAT_CANTEEN = 1;
+
+    const EAT_OUTSIDER = 2;
 }

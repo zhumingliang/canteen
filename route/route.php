@@ -104,4 +104,7 @@ Route::get('api/:version/user/canteenMenus', 'api/:version.User/userCanteenMenus
 Route::get('api/:version/user/canteens', 'api/:version.User/userCanteens');
 Route::get('api/:version/user/card', 'api/:version.User/mealCard');
 
+Route::post('api/:version/order/personChoice/save', 'api/:version.Order/personChoice');
+
+
 
