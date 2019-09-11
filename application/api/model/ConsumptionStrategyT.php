@@ -70,4 +70,14 @@ class ConsumptionStrategyT extends Model
 
     }
 
+    public static function staffStrategy($c_id, $t_id)
+    {
+        $info = self::where('c_id', $c_id)
+            ->where('t_id', $t_id)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->field('id,d_id,ordered_count')
+            ->select();
+        return $info;
+    }
+
 }

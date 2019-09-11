@@ -353,5 +353,11 @@ class CanteenService
         ];
     }
 
+    public function staffStrategy($c_id, $t_id)
+    {
+        $info = ConsumptionStrategyT::staffStrategy($c_id, $t_id);
+        return $info;
+    }
+
 
 }

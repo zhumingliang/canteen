@@ -21,7 +21,8 @@ class Order extends BaseValidate
     ];
 
     protected $scene = [
-        'personChoice' => [ 'dinner_id', 'detail','ordering_date','type','count'],
+        'personChoice' => ['dinner_id', 'detail', 'ordering_date', 'type', 'count'],
+        'orderingOnline' => ['detail'],
         'companyMenus' => ['canteen_id'],
         'canteenMenus' => ['canteen_id'],
     ];

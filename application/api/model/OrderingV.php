@@ -13,14 +13,21 @@ use think\Model;
 
 class OrderingV extends Model
 {
-    public static function getRecordForDayOrdering($u_id, $ordering_date, $dinner_id)
+    public static function getRecordForDayOrdering($u_id, $ordering_date, $dinner)
     {
         $record = self::where('u_id', $u_id)
             ->where('ordering_date', $ordering_date)
-            ->where('d_id', $dinner_id)
+            ->where('dinner', $dinner)
             ->find();
         return $record;
+    }
 
+    public static function userOrdering($u_id)
+    {
+        $orderings = self::where('u_id', $u_id)
+            ->whereTime('ordering_date', '>=', date('Y-m-d'))
+            ->select();
+        return $orderings;
     }
 
 }

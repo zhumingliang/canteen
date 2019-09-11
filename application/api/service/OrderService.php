@@ -12,6 +12,7 @@ namespace app\api\service;
 use app\api\model\CanteenAccountT;
 use app\api\model\ChoiceDetailT;
 use app\api\model\DinnerT;
+use app\api\model\OnlineOrderingT;
 use app\api\model\OrderingV;
 use app\api\model\PersonalChoiceT;
 use app\lib\enum\CommonEnum;
@@ -31,6 +32,7 @@ class OrderService extends BaseService
         try {
             Db::startTrans();
             $dinner_id = $params['dinner_id'];
+            $dinner = $params['dinner'];
             $ordering_date = $params['ordering_date'];
             $count = $params['count'];
             $detail = json_decode($params['detail'], true);
@@ -40,8 +42,9 @@ class OrderService extends BaseService
             $u_id = Token::getCurrentUid();
             //检测订餐时间是否允许
             $this->checkDinner($dinner_id, $ordering_date);
+
             $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
-            $this->checkUserCanOrder($u_id, $dinner_id, $ordering_date, $canteen_id, $count, $detail);
+            $this->checkUserCanOrder($u_id, $dinner_id, $dinner, $ordering_date, $canteen_id, $count, $detail);
             $pay_way = $this->checkBalance($u_id, $canteen_id, $money);
             if (!$pay_way) {
                 throw new  SaveException(['msg' => '余额不足，请先充值']);
@@ -132,12 +135,10 @@ class OrderService extends BaseService
     }
 
     public
-    function checkUserCanOrder($u_id, $dinner_id, $day, $canteen_id, $count, $detail)
+    function checkUserCanOrder($u_id, $dinner_id, $dinner, $day, $canteen_id, $count, $detail)
     {
-        //检测当前时间是否可以订餐
-        $this->checkDinner($dinner_id);
         //获取用户指定日期订餐信息
-        $record = OrderingV::getRecordForDayOrdering($u_id, $day, $dinner_id);
+        $record = OrderingV::getRecordForDayOrdering($u_id, $day, $dinner);
         if ($record) {
             throw new SaveException(['msg' => '本餐次今日在' . $record->canteen . '已经预定，不能重复预定']);
         }
@@ -220,6 +221,99 @@ class OrderService extends BaseService
         }
         return $menu;
     }
+
+    /**
+     * 线上订餐
+     */
+    public function orderingOnline($detail)
+    {
+        try {
+            Db::startTrans();
+            $detail = json_decode($detail, true);
+            if (empty($detail)) {
+                throw new ParameterException(['msg' => '订餐数据格式错误']);
+            }
+            $u_id = 3;//Token::getCurrentUid();
+            $canteen_id = 1;//Token::getCurrentTokenVar('current_canteen_id');
+            $data = $this->prefixOnlineOrderingData($u_id, $canteen_id, $detail);
+            print_r($data);
+            return 1;
+            $ordering = OnlineOrderingT::create($data);
+            if (!$ordering) {
+                throw  new SaveException();
+            }
+            //Db::commit();
+
+        } catch (Exception $e) {
+            Db::rollback();
+            throw $e;
+        }
+
+    }
+
+    private function prefixOnlineOrderingData($u_id, $canteen_id, $detail)
+    {
+        $data_list = [];
+        foreach ($detail as $k => $v) {
+            $ordering_data = $v['ordering'];
+            if (!empty($ordering_data)) {
+                foreach ($ordering_data as $k2 => $v2) {
+                    $data = [];
+                    $data['u_id'] = $u_id;
+                    $data['c_id'] = $canteen_id;
+                    $data['d_id'] = $v['d_id'];
+                    $data['ordering_date'] = $v2['ordering_date'];
+                    $data['count'] = $v2['count'];
+                    $data['order_num'] = makeOrderNo();
+                    $data['money'] = 0;
+                    $data['pay_way'] = '';
+                    $data['pay'] = CommonEnum::STATE_IS_OK;
+                    array_push($data_list, $data);
+                }
+
+            }
+
+        }
+        return $data_list;
+
+    }
+
+    /**
+     * 获取用户的订餐信息
+     * 今天及今天以后订餐信息
+     */
+    public function userOrdering()
+    {
+        $u_id = Token::getCurrentUid();
+        $orderings = OrderingV::userOrdering($u_id);
+        return $orderings;
+
+
+    }
+
+    /**
+     * 线上订餐获取初始化信息
+     * 1.餐次信息及订餐时间限制
+     * 2.消费策略
+     */
+    public function infoForOnline()
+    {
+        $canteen_id = 1;//Token::getCurrentTokenVar('current_canteen_id');
+        $t_id = 1;// Token::getCurrentTokenVar('t_id');
+        $dinner = (new CanteenService())->getDinners(6);
+        $strategies = (new CanteenService())->staffStrategy(1, $t_id);
+        foreach ($dinner as $k => $v) {
+            foreach ($strategies as $k2 => $v2) {
+                if ($v['id'] = $v2['d_id']) {
+                    $dinner[$k]['ordered_count'] = $v2['ordered_count'];
+                    unset($strategies[$k2]);
+                }
+
+            }
+        }
+        return $dinner;
+    }
+
 
 }
 
