@@ -108,6 +108,7 @@ Route::post('api/:version/order/personChoice/save', 'api/:version.Order/personCh
 Route::post('api/:version/order/online/save', 'api/:version.Order/orderingOnline');
 Route::get('api/:version/order/userOrdering', 'api/:version.Order/userOrdering');
 Route::get('api/:version/order/online/info', 'api/:version.Order/infoForOnline');
+Route::post('api/:version/order/cancel', 'api/:version.Order/orderCancel');
 
 Route::post('api/:version/address/save', 'api/:version.Address/save');
 Route::post('api/:version/address/update', 'api/:version.Address/update');

@@ -53,8 +53,8 @@ class Canteen extends BaseController
      * @apiParam (请求参数说明) {int} c_id  饭堂id
      * @apiParam (请求参数说明) {string} dinners  订餐信息json字符串
      * @apiParam (请求参数说明) {string} dinners|name  餐次名称
-     * @apiParam (请求参数说明) {string} dinners|type  时间设置类别：day|week|month
-     * @apiParam (请求参数说明) {int} dinners|type_number 订餐时间类别对应数量:1、前n天是填写数字，说明每天的餐需要提前一个天数来订餐;2、周，是只能填写周一到周日，说明一周的订餐规定需要在每周某天进行下周一整周的订餐;3、月，是只能填写一月到12月说明一个月的订餐规定在每月的某天订下月一整月的餐
+     * @apiParam (请求参数说明) {string} dinners|type  时间设置类别：day|week；1、前n天是填写数字，说明每天的餐需要提前一个天数来订餐;2、周，是只能填写周一到周日，说明一周的订餐规定需要在每周某天进行下周一整周的订餐
+     * @apiParam (请求参数说明) {int} dinners|type_number 订餐时间类别对应数量 （week：0-6；周日-周六）
      * @apiParam (请求参数说明) {string} dinners|limit_time  订餐限制时间
      * @apiParam (请求参数说明) {string} dinners|meal_time_begin  就餐开始时间
      * @apiParam (请求参数说明) {string} dinners|meal_time_end  就餐截止时间
@@ -90,9 +90,9 @@ class Canteen extends BaseController
      * @apiSuccess (返回参数说明) {string} dinners  订餐信息json字符串
      * @apiSuccess (返回参数说明) {string} dinners|id  餐次id
      * @apiSuccess (返回参数说明) {string} dinners|name  餐次名称
-     * @apiSuccess (返回参数说明) {string} dinners|type  时间设置类别：day|week|month
+     * @apiSuccess (返回参数说明) {string} dinners|type  时间设置类别：day|week
      * @apiSuccess (返回参数说明) {string} dinners|create_time  创建时间
-     * @apiSuccess (返回参数说明) {int} dinners|type_number 订餐时间类别对应数量
+     * @apiSuccess (返回参数说明) {int} dinners|type_number 订餐时间类别对应数量 （week：0-6；周日-周六）
      * @apiSuccess (返回参数说明) {string} dinners|limit_time  订餐限制时间
      * @apiSuccess (返回参数说明) {string} dinners|meal_time_begin  就餐开始时间
      * @apiSuccess (返回参数说明) {string} dinners|meal_time_end  就餐截止时间
@@ -125,8 +125,8 @@ class Canteen extends BaseController
      * @apiParam (请求参数说明) {string} dinners  订餐信息json字符串
      * @apiParam (请求参数说明) {string} dinners|id  餐次设置id，更新操作需要传如此字段
      * @apiParam (请求参数说明) {string} dinners|name  餐次名称
-     * @apiParam (请求参数说明) {string} dinners|type  时间设置类别：day|week|month
-     * @apiParam (请求参数说明) {int} dinners|type_number 订餐时间类别对应数量
+     * @apiParam (请求参数说明) {string} dinners|type  时间设置类别：day|week (天、周)
+     * @apiParam (请求参数说明) {int} dinners|type_number 订餐时间类别对应数量    1、前n天是填写数字，说明每天的餐需要提前一个天数来订餐2、周，是只能填写周一到周日，说明一周的订餐规定需要在每周某天进行下周一整周的订餐
      * @apiParam (请求参数说明) {string} dinners|limit_time  订餐限制时间
      * @apiParam (请求参数说明) {string} dinners|meal_time_begin  就餐开始时间
      * @apiParam (请求参数说明) {string} dinners|meal_time_end  就餐截止时间
@@ -198,7 +198,7 @@ class Canteen extends BaseController
      *       "unordered_meals": 1,
      *       "consumption_count": 1,
      *       "ordered_count": 1,
-     *       "detail":[{"number":1,"strategy":[{"satus":"ordering_meals","money":10,"sub_money":5},{"satus":"no_meals_ordered","money":10,"sub_money":5},{"satus":"unordered_meals","money":10,"sub_money":5}]},{"number":2,"strategy":[{"satus":"ordering_meals","money":10,"sub_money":5},{"satus":"no_meals_ordered","money":10,"sub_money":5},{"satus":"unordered_meals","money":10,"sub_money":5}]}],
+     *       "detail":[{"number":1,"strategy":[{"status":"ordering_meals","money":10,"sub_money":5},{"status":"no_meals_ordered","money":10,"sub_money":5},{"status":"unordered_meals","money":10,"sub_money":5}]},{"number":2,"strategy":[{"status":"ordering_meals","money":10,"sub_money":5},{"satus":"no_meals_ordered","money":10,"sub_money":5},{"status":"unordered_meals","money":10,"sub_money":5}]}],
      *     }
      * @apiParam (请求参数说明) {int} id 消费策略id
      * @apiParam (请求参数说明) {int} unordered_meals  是否未订餐允许就餐：1|是；2|否

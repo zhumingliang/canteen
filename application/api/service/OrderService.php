@@ -10,17 +10,17 @@ namespace app\api\service;
 
 
 use app\api\model\CanteenAccountT;
-use app\api\model\ChoiceDetailT;
 use app\api\model\DinnerT;
-use app\api\model\OnlineOrderingT;
+use app\api\model\OrderDetailT;
 use app\api\model\OrderingV;
-use app\api\model\PersonalChoiceT;
+use app\api\model\OrderT;
 use app\lib\enum\CommonEnum;
 use app\lib\enum\MenuEnum;
 use app\lib\enum\OrderEnum;
 use app\lib\enum\PayEnum;
 use app\lib\exception\ParameterException;
 use app\lib\exception\SaveException;
+use app\lib\exception\UpdateException;
 use think\Db;
 use think\Exception;
 
@@ -37,14 +37,16 @@ class OrderService extends BaseService
             $count = $params['count'];
             $detail = json_decode($params['detail'], true);
             unset($params['detail']);
-            $money = $this->getOrderingMoney($detail);
-            $params['money'] = $money;
-            $u_id = Token::getCurrentUid();
-            //检测订餐时间是否允许
-            $this->checkDinner($dinner_id, $ordering_date);
 
+            $params['ordering_type'] = OrderEnum::ORDERING_CHOICE;
+            $u_id = Token::getCurrentUid();
+
+            //检测该餐次订餐时间是否允许
+            $this->checkDinnerForPersonalChoice($dinner_id, $ordering_date);
             $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
             $this->checkUserCanOrder($u_id, $dinner_id, $dinner, $ordering_date, $canteen_id, $count, $detail);
+            $money = $this->getOrderingMoney($detail);
+            $params['money'] = $money;
             $pay_way = $this->checkBalance($u_id, $canteen_id, $money);
             if (!$pay_way) {
                 throw new  SaveException(['msg' => '余额不足，请先充值']);
@@ -56,7 +58,7 @@ class OrderService extends BaseService
             $params['c_id'] = $canteen_id;
             $params['d_id'] = 6;
             $params['pay'] = CommonEnum::STATE_IS_OK;
-            $order = PersonalChoiceT::create($params);
+            $order = OrderT::create($params);
             if (!$order) {
                 throw new SaveException(['msg' => '生成订单失败']);
             }
@@ -105,7 +107,7 @@ class OrderService extends BaseService
             }
 
         }
-        $res = (new ChoiceDetailT())->saveAll($data_list);
+        $res = (new OrderDetailT())->saveAll($data_list);
         if (!$res) {
             throw new SaveException(['msg' => '存储订餐明细失败']);
         }
@@ -144,26 +146,49 @@ class OrderService extends BaseService
         }
         //检测消费策略
         $this->checkConsumptionStrategy($canteen_id, $dinner_id, $count);
-        //检测菜单数据是否合法
-        $this->checkMenu($dinner_id, $detail);
 
+        //检测菜单数据是否合法并返回订单金额
+        $this->checkMenu($dinner_id, $detail);
     }
 
     //检测是否在订餐时间内
-    public function checkDinner($dinner_id, $ordering_date)
+    public function checkDinnerForPersonalChoice($dinner_id, $ordering_date)
     {
         $dinner = DinnerT::dinnerInfo($dinner_id);
         if (!$dinner) {
             throw new ParameterException(['msg' => '指定餐次未设置']);
         }
-        $limit_time = $dinner->limit_time;
         $type = $dinner->type;
+        if ($type == 'week') {
+            throw new ParameterException(['msg' => '当前餐次需批量订餐，请使用线上订餐功能订餐']);
+        }
+        $limit_time = $dinner->limit_time;
         $type_number = $dinner->type_number;
         $expiryDate = $this->prefixExpiryDate($ordering_date, [$type => $type_number]);
         if (strtotime($limit_time) > strtotime($expiryDate)) {
             throw  new  SaveException(['msg' => '超出订餐时间']);
         }
     }
+
+    //检测是否在订餐时间内
+    /*  public function checkDinnerForOnline($dinner, $ordering_date)
+      {
+          // $dinner = DinnerT::dinnerInfo($dinner_id);
+          if (!$dinner) {
+              throw new ParameterException(['msg' => '指定餐次未设置']);
+          }
+          $type = $dinner->type;
+          $limit_time = $dinner->limit_time;
+          $type_number = $dinner->type_number;
+          if ($type == 'week') {
+
+          }
+
+          $expiryDate = $this->prefixExpiryDate($ordering_date, [$type => $type_number]);
+          if (strtotime($limit_time) > strtotime($expiryDate)) {
+              throw  new  SaveException(['msg' => '超出订餐时间']);
+          }
+      }*/
 
     private
     function checkConsumptionStrategy($canteen_id, $dinner_id, $count)
@@ -233,17 +258,17 @@ class OrderService extends BaseService
             if (empty($detail)) {
                 throw new ParameterException(['msg' => '订餐数据格式错误']);
             }
-            $u_id = 3;//Token::getCurrentUid();
-            $canteen_id = 1;//Token::getCurrentTokenVar('current_canteen_id');
+            $u_id = Token::getCurrentUid();
+            $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
             $data = $this->prefixOnlineOrderingData($u_id, $canteen_id, $detail);
-            print_r($data);
-            return 1;
-            $ordering = OnlineOrderingT::create($data);
+            $money = $data['all_money'];
+            $pay_way = $this->checkBalance($u_id, $canteen_id, $money);
+            $list = $this->prefixPayWay($pay_way, $data['list']);
+            $ordering = (new OrderT())->saveAll($list);
             if (!$ordering) {
                 throw  new SaveException();
             }
-            //Db::commit();
-
+            Db::commit();
         } catch (Exception $e) {
             Db::rollback();
             throw $e;
@@ -251,13 +276,35 @@ class OrderService extends BaseService
 
     }
 
+    private function prefixPayWay($pay_way, $list)
+    {
+        foreach ($list as $k => $v) {
+            $list[$k]['pay_way'] = $pay_way;
+        }
+        return $list;
+    }
+
+    /**
+     * 处理线上订餐信息
+     * 计算订单总价格
+     */
     private function prefixOnlineOrderingData($u_id, $canteen_id, $detail)
     {
+
         $data_list = [];
+        $all_money = 0;
+        $t_id = Token::getCurrentTokenVar('current_canteen_id');
+        //获取用户所有有效订餐信息
+        $records = OrderingV::getUserOrdering($u_id);
         foreach ($detail as $k => $v) {
+            //检测该餐次是否在订餐时间范围内
+
             $ordering_data = $v['ordering'];
+            $money = $this->getStrategyMoneyForOrderingOnline($canteen_id, $v['d_id'], $t_id);
             if (!empty($ordering_data)) {
                 foreach ($ordering_data as $k2 => $v2) {
+                    //检测是否重复订餐
+                    $this->checkDinnerOrdered($v2['ordering_date'], $v['d_id'], $records);
                     $data = [];
                     $data['u_id'] = $u_id;
                     $data['c_id'] = $canteen_id;
@@ -265,17 +312,68 @@ class OrderService extends BaseService
                     $data['ordering_date'] = $v2['ordering_date'];
                     $data['count'] = $v2['count'];
                     $data['order_num'] = makeOrderNo();
-                    $data['money'] = 0;
+                    $data['ordering_type'] = OrderEnum::ORDERING_ONLINE;
+                    $data['money'] = $money;
                     $data['pay_way'] = '';
                     $data['pay'] = CommonEnum::STATE_IS_OK;
                     array_push($data_list, $data);
+                    $all_money += $money;
                 }
 
             }
 
         }
-        return $data_list;
+        return [
+            'all_money' => $all_money,
+            'list' => $data_list
+        ];
 
+    }
+
+    public function checkDinnerOrdered($ordering_date, $dinner_id, $records)
+    {
+        if (empty($records)) {
+            return true;
+        }
+        foreach ($records as $k => $v) {
+            if (strtotime($ordering_date) == strtotime($v['ordering_date']) && $dinner_id == $v['d_id']) {
+                throw new SaveException(['msg' => '订餐失败，' . '日期：' . $ordering_date . ';餐次：' . $v['dinner'] . ';已在饭堂：' . $v['canteen'] . '预定']);
+                break;
+            }
+        }
+
+    }
+
+    /**
+     * 获取消费策略中订餐消费默认金额
+     */
+    private function getStrategyMoneyForOrderingOnline($c_id, $d_id, $t_id)
+    {
+        $money = 0;
+        $strategy = (new CanteenService())->getStaffConsumptionStrategy($c_id, $d_id, $t_id);
+        $strategy = $strategy->toArray();
+        $detail = $strategy['detail'];
+        if (empty($detail)) {
+            throw  new ParameterException(['msg' => '消费策略未设置或参数格式错误']);
+        }
+        foreach ($detail as $k => $v) {
+            $info = $v['strategy'];
+            if (empty($info)) {
+                throw  new ParameterException(['msg' => '消费策略设置出错']);
+            }
+            foreach ($info as $k2 => $v2) {
+                if ($info['status'] = 'ordering_meals') {
+                    $money = $v2['money'];
+                    break;
+                }
+            }
+
+            if ($money) {
+                break;
+            }
+
+        }
+        return $money;
     }
 
     /**
@@ -298,10 +396,10 @@ class OrderService extends BaseService
      */
     public function infoForOnline()
     {
-        $canteen_id = 1;//Token::getCurrentTokenVar('current_canteen_id');
-        $t_id = 1;// Token::getCurrentTokenVar('t_id');
-        $dinner = (new CanteenService())->getDinners(6);
-        $strategies = (new CanteenService())->staffStrategy(1, $t_id);
+        $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
+        $t_id = Token::getCurrentTokenVar('t_id');
+        $dinner = (new CanteenService())->getDinners($canteen_id);
+        $strategies = (new CanteenService())->staffStrategy($canteen_id, $t_id);
         foreach ($dinner as $k => $v) {
             foreach ($strategies as $k2 => $v2) {
                 if ($v['id'] = $v2['d_id']) {
@@ -314,6 +412,61 @@ class OrderService extends BaseService
         return $dinner;
     }
 
+    /**
+     * 取消订单
+     */
+    public function orderCancel($id)
+    {
+        //检测取消订餐操作是否可以执行
+        $order = OrderT::where('id', $id)->find();
+        if (!$order) {
+            throw new ParameterException(['msg' => '指定订餐信息不存在']);
+        }
+        $this->checkOrderCanCancel($order->d_id);
+        $order->state = CommonEnum::STATE_IS_FAIL;
+        $res = $order->save();
+        if (!$res) {
+            throw new SaveException();
+        }
+    }
+
+    private function checkOrderCanCancel($d_id)
+    {
+        //获取餐次设置
+        $dinner = DinnerT::dinnerInfo($d_id);
+        $type = $dinner->type;
+        $limit_time = $dinner->limit_time;
+        $type_number = $dinner->type_number;
+        if ($type == 'day') {
+            $expiryDate = $this->prefixExpiryDateForOrder($dinner->ordering_date, $type_number, '-');
+            if (strtotime(date('Y-m-d H:i:s', time())) > strtotime($expiryDate . ' ' . $limit_time)) {
+                throw  new  SaveException(['msg' => '当前时间不可操作订单']);
+            }
+        } else if ($type == 'week') {
+            $ordering_date_week = date('W', strtotime($dinner->ordering_date));
+            $now_week = date('W', time());
+            if ($ordering_date_week <= $now_week) {
+                throw  new  SaveException(['msg' => '当前时间不可操作订单']);
+            }
+            if (($ordering_date_week - $now_week) === 1) {
+                if ($type_number == 0) {
+                    //星期天
+                    if (strtotime($limit_time) < time()) {
+                        throw  new  SaveException(['msg' => '当前时间不可操作订单']);
+                    }
+                } else {
+                    //周一到周六
+                    if (date('w', time()) > $type_number) {
+                        throw  new  SaveException(['msg' => '当前时间不可操作订单']);
+                    } else if (date('w', time()) == $type_number && strtotime($limit_time) < time()) {
+                        throw  new  SaveException(['msg' => '当前时间不可操作订单']);
+                    }
+                }
+            }
+
+        }
+        return true;
+    }
 
 }
 

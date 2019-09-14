@@ -78,7 +78,7 @@ class Order extends BaseController
      * @apiSuccess (返回参数说明) {string} dinner 餐次名称
      * @apiSuccess (返回参数说明) {string} ordering_date 订餐日期
      * @apiSuccess (返回参数说明) {int} count 订餐数量
-     * @apiSuccess (返回参数说明) {string}type 订餐方式：online|线上订餐；person_choice|个人订餐
+     * @apiSuccess (返回参数说明) {string}ordering_type 订餐方式：online|线上订餐；personal_choice|个人订餐
      */
     public function userOrdering()
     {
@@ -100,8 +100,8 @@ class Order extends BaseController
      * @apiSuccess (返回参数说明) {String} msg 信息描述
      * @apiSuccess (返回参数说明) {int} id  餐次id
      * @apiSuccess (返回参数说明) {string} name  餐次名称
-     * @apiSuccess (返回参数说明) {string} type  时间设置类别：day|week|month（可提前订餐时间类别）
-     * @apiSuccess (返回参数说明) {int} type_number 订餐时间类别对应数量
+     * @apiSuccess (返回参数说明) {string} type  时间设置类别：day|week 1、前n天是填写数字，说明每天的餐需要提前一个天数来订餐2、周，是只能填写周一到周日，说明一周的订餐规定需要在每周某天进行下周一整周的订餐
+     * @apiSuccess (返回参数说明) {int} type_number 订餐时间类别对应数量（week：0-6；周日-周六）
      * @apiSuccess (返回参数说明) {string} limit_time  订餐限制时间
      * @apiSuccess (返回参数说明) {int} ordered_count  可订餐数量
      */
@@ -120,17 +120,11 @@ class Order extends BaseController
      *    {
      *       "detail":[{"d_id":5,"ordering":[{"ordering_date":"2019-10-01","count":1},{"ordering_date":"2019-10-02","count":1}]},{"d_id":6,"ordering":[{"ordering_date":"2019-10-01","count":1},{"ordering_date":"2019-10-02","count":1}]}]
      *     }
-     * @apiParam (请求参数说明) {string} ordering_date  订餐日期
-     * @apiParam (请求参数说明) {int} dinner_id 餐次id
-     * @apiParam (请求参数说明) {int} dinner 餐次名称
-     * @apiParam (请求参数说明) {int} type 就餐类别：1|食堂；2|外卖
-     * @apiParam (请求参数说明) {int} count 订餐数量
-     * @apiParam (请求参数说明) {obj} detail 订餐菜品明细
-     * @apiParam (请求参数说明) {string} detail|menu_id 菜品类别id
-     * @apiParam (请求参数说明) {obj} detail|foods 菜品明细
-     * @apiParam (请求参数说明) {string} detail|foods|food_id 菜品id
-     * @apiParam (请求参数说明) {string} detail|foods|price 菜品实时单价
-     * @apiParam (请求参数说明) {string} detail|foods|count 菜品数量
+     * @apiParam (请求参数说明) {obj} detail  订餐明细
+     * @apiParam (请求参数说明) {int} detail|d_id  餐次id
+     * @apiParam (请求参数说明) {obj} detail|ordering 指定餐次订餐明细
+     * @apiParam (请求参数说明) {string} detail|ordering|ordering_date  订餐日期
+     * @apiParam (请求参数说明) {string} detail|ordering|count  订餐数量
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
@@ -145,10 +139,10 @@ class Order extends BaseController
     }
 
     /**
-     * @api {POST} /api/v1/order/online/cancel 微信端--线上订餐--取消订餐
+     * @api {POST} /api/v1/order/cancel 微信端-取消订餐
      * @apiGroup   Official
      * @apiVersion 3.0.0
-     * @apiDescription  微信端--线上订餐--取消订餐
+     * @apiDescription 微信端-取消订餐（线上订餐/个人选菜）
      * @apiExample {post}  请求样例:
      *    {
      *       "id": 1
@@ -159,38 +153,12 @@ class Order extends BaseController
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
      * @apiSuccess (返回参数说明) {string} msg 信息描述
      */
-    public function orderingOnlineCancel()
+    public function orderCancel()
     {
         $id = Request::param('id');
-        $cancel = OnlineOrderingT::update(['state', CommonEnum::STATE_IS_FAIL], ['id' => $id]);
-        if (!$cancel) {
-            throw new UpdateException(['msg' => '取消订餐失败']);
-        }
+        (new OrderService())->orderCancel($id);
         return json(new SuccessMessage());
     }
-    /**
-     * @api {POST} /api/v1/order/personChoice/cancel 微信端--个人选餐--取消订餐
-     * @apiGroup   Official
-     * @apiVersion 3.0.0
-     * @apiDescription  微信端--个人选餐--取消订餐
-     * @apiExample {post}  请求样例:
-     *    {
-     *       "id": 1
-     *     }
-     * @apiParam (请求参数说明) {string} id  订餐id
-     * @apiSuccessExample {json} 返回样例:
-     * {"msg":"ok","errorCode":0,"code":200}
-     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
-     * @apiSuccess (返回参数说明) {string} msg 信息描述
-     */
-    public function personChoiceCancel()
-    {
-        $id = Request::param('id');
-        $cancel = PersonalChoiceT::update(['state', CommonEnum::STATE_IS_FAIL], ['id' => $id]);
-        if (!$cancel) {
-            throw new UpdateException(['msg' => '取消订餐失败']);
-        }
-        return json(new SuccessMessage());
-    }
+
 
 }

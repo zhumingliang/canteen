@@ -3,7 +3,7 @@
  * Created by PhpStorm.
  * User: 明良
  * Date: 2019/9/9
- * Time: 11:30
+ * Time: 10:50
  */
 
 namespace app\api\model;
@@ -11,7 +11,7 @@ namespace app\api\model;
 
 use think\Model;
 
-class PersonalChoiceT extends Model
+class OrderDetailT extends Model
 {
 
 }

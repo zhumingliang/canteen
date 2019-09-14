@@ -9,6 +9,7 @@
 namespace app\api\model;
 
 
+use app\lib\enum\CommonEnum;
 use think\Model;
 
 class OrderingV extends Model
@@ -26,7 +27,18 @@ class OrderingV extends Model
     {
         $orderings = self::where('u_id', $u_id)
             ->whereTime('ordering_date', '>=', date('Y-m-d'))
+            ->where('state', CommonEnum::STATE_IS_OK)
             ->select();
+        return $orderings;
+    }
+
+    public static function getUserOrdering($u_id)
+    {
+        $orderings = self::where('u_id', $u_id)
+            ->whereTime('ordering_date', '>=', date('Y-m-d'))
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->where('used', CommonEnum::STATE_IS_FAIL)
+            ->select()->toArray();
         return $orderings;
     }
 

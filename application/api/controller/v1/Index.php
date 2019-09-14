@@ -15,7 +15,11 @@ class Index extends BaseController
 {
     public function index()
     {
-        (new AddressService())->prefixAddressDefault(2);
+        $day = '2019-09-13';
+        echo date('W',strtotime($day));
+        $day = '2019-09-16';
+        echo date('W',time());
+
     }
 
 }

@@ -25,5 +25,6 @@ class Order extends BaseValidate
         'orderingOnline' => ['detail'],
         'companyMenus' => ['canteen_id'],
         'canteenMenus' => ['canteen_id'],
+        'orderingCancel' => ['id'],
     ];
 }

@@ -22,4 +22,8 @@ class OrderEnum
     const EAT_CANTEEN = 1;
 
     const EAT_OUTSIDER = 2;
+
+    const ORDERING_CHOICE = 'personal_choice';
+
+    const ORDERING_ONLINE = 'online';
 }

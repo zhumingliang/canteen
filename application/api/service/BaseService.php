@@ -35,7 +35,7 @@ class BaseService
     }
 
 
-    public function prefixExpiryDate($expiry_date, $params,$symbol='+')
+    public function prefixExpiryDate($expiry_date, $params, $symbol = '+')
     {
         $type = ['minute', 'hour', 'day', 'week', 'month', 'year'];
         $exit = 0;
@@ -53,5 +53,12 @@ class BaseService
         }
         return $expiry_date;
     }
+
+    public function prefixExpiryDateForOrder($expiry_date, $count, $symbol = '+')
+    {
+        $expiry_date = date('Y-m-d', strtotime($symbol . $count . "day", strtotime($expiry_date)));
+        return $expiry_date;
+    }
+
 
 }
