@@ -67,7 +67,7 @@ class Order extends BaseController
      * @apiDescription  微信端-线上订餐-获取用户所有订餐信息（今天及今天以后）
      * @apiExample {get}  请求样例:
      * http://canteen.tonglingok.com/api/v1/order/userOrdering
-     * @apiSuccessExample {json} 系统功能模块返回样例:
+     * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200,"data":[{"id":1,"c_id":6,"canteen":"饭堂1","d_id":6,"dinner":"中餐","ordering_date":"2019-09-07","count":1,"type":"person_choice"}]}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
      * @apiSuccess (返回参数说明) {String} msg 信息描述
@@ -94,7 +94,7 @@ class Order extends BaseController
      * @apiDescription  微信端-线上订餐-获取饭堂餐次配置信息（确定是否可以订餐、可以定几餐）
      * @apiExample {get}  请求样例:
      * http://canteen.tonglingok.com/api/v1/order/online/info
-     * @apiSuccessExample {json} 系统功能模块返回样例:
+     * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200,"data":[{"id":7,"c_id":6,"name":"早餐","type":"day","create_time":"2019-07-30 02:07:17","type_number":10,"meal_time_begin":"07:00:00","meal_time_end":"08:00:00","limit_time":"09:00:00","ordered_count":1},{"id":6,"c_id":6,"name":"中餐","type":"day","create_time":"2019-07-30 02:07:17","type_number":10,"meal_time_begin":"12:00:00","meal_time_end":"13:00:00","limit_time":"10:00:00"},{"id":7,"c_id":6,"name":"晚餐","type":"day","create_time":"2019-07-30 11:24:36","type_number":10,"meal_time_begin":"18:00:00","meal_time_end":"19:00:00","limit_time":"10:00:00"}]}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
      * @apiSuccess (返回参数说明) {String} msg 信息描述
@@ -161,10 +161,10 @@ class Order extends BaseController
     }
 
     /**
-     * @api {POST} /api/v1/order/changeCount 微信端---个人选菜/线上订餐---修改订单预定数量
+     * @api {POST} /api/v1/order/changeCount 微信端---线上订餐---修改订单预定数量
      * @apiGroup   Official
      * @apiVersion 3.0.0
-     * @apiDescription    微信端---个人选菜/线上订餐---修改订单预定数量
+     * @apiDescription    微信端---线上订餐---修改订单预定数量
      * @apiExample {post}  请求样例:
      *    {
      *       "id": 1,
@@ -194,7 +194,8 @@ class Order extends BaseController
      * @apiExample {post}  请求样例:
      *    {
      *       "id": 1,
-     *       "detail": [{"menu_id":1,"add_foods":[{"detail_id":1,"food_id":1,"price":5,"count":1},{"food_id":1,"price":5,"count":1},{"food_id":2,"price":5,"count":1}],"update_foods":[{"detail_id":1,"count":1}],"cancel_foods":"3,4"}]
+     *       "count": 2,
+     *       "detail": [{"menu_id":1,"add_foods":[{"food_id":1,"price":5,"count":1},{"food_id":1,"price":5,"count":1},{"food_id":2,"price":5,"count":1}],"update_foods":[{"detail_id":1,"count":1}],"cancel_foods":"3,4"}]
      *     }
      * @apiParam (请求参数说明) {int} id  订单id
      * @apiParam (请求参数说明) {int} count 订餐数量
@@ -218,6 +219,38 @@ class Order extends BaseController
         $params = Request::param();
         (new OrderService())->changeOrderFoods($params);
         return json(new SuccessMessage());
+
+    }
+
+    /**
+     * @api {GET} /api/v1/order/personalChoice/info  微信端-个人选菜-获取订单信息
+     * @apiGroup  Official
+     * @apiVersion 3.0.0
+     * @apiDescription  微信端-个人选菜-获取订单信息
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/order/personalChoice/info?id=8
+     * @apiParam (请求参数说明) {int} id  订单id
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"id":8,"dinner_id":6,"canteen_id":6,"ordering_date":"2019-09-07","count":1,"type":1,"money":"10.0","foods":[{"detail_id":5,"o_id":8,"food_id":1,"menu_id":0,"count":1},{"detail_id":6,"o_id":8,"food_id":3,"menu_id":0,"count":1}]}}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {String} msg 信息描述
+     * @apiParam (请求参数说明) {string} id  订单id
+     * @apiParam (请求参数说明) {string} ordering_date  订餐日期
+     * @apiParam (请求参数说明) {int} dinner_id 餐次id
+     * @apiParam (请求参数说明) {int} canteen_id 饭堂id
+     * @apiParam (请求参数说明) {int} type 就餐类别：1|食堂；2|外卖
+     * @apiParam (请求参数说明) {int} count 订餐数量
+     * @apiParam (请求参数说明) {obj} foods 订餐菜品明细
+     * @apiParam (请求参数说明) {int} foods|detail_id 订单菜品明细id
+     * @apiParam (请求参数说明) {int} foods|menu_id 菜品类别id
+     * @apiParam (请求参数说明) {int} foods|food_id 菜品id
+     * @apiParam (请求参数说明) {string} |oods|count 菜品数量
+     */
+    public function personalChoiceInfo()
+    {
+        $id = Request::param('id');
+        $info = (new OrderService())->personalChoiceInfo($id);
+        return json(new SuccessMessageWithData(['data' => $info]));
 
     }
 

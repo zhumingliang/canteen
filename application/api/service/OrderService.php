@@ -21,7 +21,6 @@ use app\lib\enum\PayEnum;
 use app\lib\exception\ParameterException;
 use app\lib\exception\SaveException;
 use app\lib\exception\UpdateException;
-use Monolog\Handler\IFTTTHandler;
 use think\Db;
 use think\Exception;
 
@@ -99,6 +98,7 @@ class OrderService extends BaseService
             $foods = $v['foods'];
             foreach ($foods as $k2 => $v2) {
                 $data = [
+                    'm_id' => $v['menu_id'],
                     'f_id' => $v2['food_id'],
                     'price' => $v2['price'],
                     'count' => $v2['count'],
@@ -513,18 +513,186 @@ class OrderService extends BaseService
     {
         try {
             Db::startTrans();
-
             $id = $params['id'];
             $detail = json_decode($params['detail'], true);
             if (empty($detail)) {
                 throw new ParameterException(['msg' => '订单明细为空或者数据格式错误']);
             }
             $order = OrderT::where('id', $id)->find();
+            //检测订单是否可操作
+            $count = $order->count;
+            $this->checkOrderCanHandel($order->d_id);
+            if (!empty($params['count']) && ($params['count'] != $count)) {
+                //检测订单修改数量是否合法
+                $count = $params['count'];
+                $strategy = (new CanteenService())->getStaffConsumptionStrategy($order->c_id, $order->d_id, $order->t_id);
+                if (!$strategy) {
+                    throw new ParameterException(['msg' => '当前用户消费策略不存在']);
+                }
+                if ($count > $strategy->ordered_count) {
+                    throw new UpdateException(['msg' => '当前用户消费策略不存在']);
+                }
+            }
 
-           // Db::commit();
+
+            $check_money = $this->checkOrderUpdateMoney($id, $order->u_id, $order->c_id,
+                $order->d_id, $order->pay_way, $order->money, $count, $detail);
+            $order->pay_way = $check_money['pay_way'];
+            $order->money = $check_money['new_money'];
+            if (!($order->save())) {
+                throw new UpdateException();
+            }
+            //处理订单明细
+            $this->prefixUpdateOrderDetail($id, $detail);
+            Db::commit();
         } catch (Exception $e) {
             Db::rollback();
             throw $e;
         }
+    }
+
+    private function prefixUpdateOrderDetail($o_id, $new_detail)
+    {
+        $data_list = [];
+        foreach ($new_detail as $k => $v) {
+            $menu_id = $v['menu_id'];
+            $add_foods = $v['add_foods'];
+            $update_foods = $v['update_foods'];
+            $cancel_foods = $v['cancel_foods'];
+            if (!empty($add_foods)) {
+                foreach ($add_foods as $k2 => $v2) {
+                    $data = [
+                        'm_id' => $menu_id,
+                        'f_id' => $v2['food_id'],
+                        'price' => $v2['price'],
+                        'count' => $v2['count'],
+                        'o_id' => $o_id,
+                        'state' => CommonEnum::STATE_IS_OK,
+                    ];
+                    array_push($data_list, $data);
+                }
+            }
+
+            if (!empty($update_foods)) {
+                foreach ($update_foods as $k3 => $v3) {
+                    $data = [
+                        'id' => $v3['detail_id'],
+                        'count' => $v3['count'],
+                    ];
+                    array_push($data_list, $data);
+                }
+            }
+
+            if (strlen($cancel_foods)) {
+                $cancel_arr = explode(',', $cancel_foods);
+                foreach ($cancel_arr as $k4 => $v4) {
+                    $data = [
+                        'id' => $v4,
+                        'state' => CommonEnum::STATE_IS_FAIL,
+                    ];
+                    array_push($data_list, $data);
+                }
+            }
+
+
+        }
+        $res = (new OrderDetailT())->saveAll($data_list);
+        if (!$res) {
+            throw new UpdateException(['msg' => '更新订单明细失败']);
+        }
+
+    }
+
+    private function checkOrderUpdateMoney($o_id, $u_id, $canteen_id, $dinner_id, $pay_way,
+                                           $old_money, $count, $new_detail)
+    {
+        //获取餐次下所有菜品类别
+        $menus = (new MenuService())->dinnerMenus($dinner_id);
+        if (!count($menus)) {
+            throw new ParameterException(['msg' => '指定餐次未设置菜单信息']);
+        }
+
+        $new_money = 0;
+        foreach ($new_detail as $k => $v) {
+            $menu_id = $v['menu_id'];
+            $add_foods = $v['add_foods'];
+            $update_foods = $v['update_foods'];
+            $cancel_foods = $v['cancel_foods'];
+
+            $old_detail = OrderDetailT::orderDetail($o_id, $menu_id);
+            $check_data = $this->checkOrderDetailUpdate($update_foods, $old_detail);
+            $check_data = $this->checkOrderDetailCancel($cancel_foods, $check_data);
+            $check_data = $this->checkOrderDetailAdd($add_foods, $check_data);
+            $menu = $this->getMenuInfo($menus, $menu_id);
+            if (empty($menu)) {
+                throw new ParameterException(['msg' => '菜品类别id错误']);
+            }
+            if (($menu['status'] == MenuEnum::FIXED) && ($menu['count'] < count($check_data))) {
+                throw new SaveException(['msg' => '选菜失败,菜品类别：<' . $menu['category'] . '> 选菜数量超过最大值：' . $menu['count']]);
+            }
+
+            foreach ($check_data as $k3 => $v3) {
+                $new_money += $v3['price'] * $v3['count'];
+            }
+        }
+        $new_money = $new_money * $count;
+        if ($new_money > $old_money) {
+            $pay_way = $this->checkBalance($u_id, $canteen_id, $new_money - $old_money);
+        }
+        return [
+            'new_money' => $new_money,
+            'pay_way' => $pay_way
+        ];
+    }
+
+    private function checkOrderDetailCancel($cancel_foods, $check_data)
+    {
+
+        if (strlen($cancel_foods)) {
+            $cancel_arr = explode(',', $cancel_foods);
+            foreach ($check_data as $k => $v) {
+                if (in_array($v['id'], $cancel_arr)) {
+                    unset($check_data[$k]);
+                }
+            }
+        }
+        return $check_data;
+    }
+
+    private function checkOrderDetailUpdate($update_foods, $check_date)
+    {
+        if (empty($update_foods)) {
+            return $check_date;
+        }
+        foreach ($check_date as $k => $v) {
+            foreach ($update_foods as $k2 => $v2) {
+                if ($v['id'] == $v2['detail_id']) {
+                    $check_date[$k]['count'] = $v2['count'];
+                }
+            }
+        }
+        return $check_date;
+    }
+
+    private function checkOrderDetailAdd($add_foods, $check_data)
+    {
+        if (empty($add_foods)) {
+            return $check_data;
+        }
+        foreach ($add_foods as $k => $v) {
+            $data = [
+                'f_id' => $v['food_id'],
+                'price' => $v['price'],
+                'count' => $v['count'],
+            ];
+            array_push($check_data, $data);
+        }
+        return $check_data;
+    }
+
+    public function personalChoiceInfo($id)
+    {
+        $info = OrderT:: personalChoiceInfo($id);
+        return $info;
     }
 }
