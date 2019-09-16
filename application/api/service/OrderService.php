@@ -21,6 +21,7 @@ use app\lib\enum\PayEnum;
 use app\lib\exception\ParameterException;
 use app\lib\exception\SaveException;
 use app\lib\exception\UpdateException;
+use Monolog\Handler\IFTTTHandler;
 use think\Db;
 use think\Exception;
 
@@ -56,7 +57,8 @@ class OrderService extends BaseService
             $params['pay_way'] = $pay_way;
             $params['u_id'] = $u_id;
             $params['c_id'] = $canteen_id;
-            $params['d_id'] = 6;
+            $params['d_id'] = $dinner_id;
+            $params['t_id'] = Token::getCurrentTokenVar('t_id');
             $params['pay'] = CommonEnum::STATE_IS_OK;
             $order = OrderT::create($params);
             if (!$order) {
@@ -309,6 +311,7 @@ class OrderService extends BaseService
                     $data['u_id'] = $u_id;
                     $data['c_id'] = $canteen_id;
                     $data['d_id'] = $v['d_id'];
+                    $data['t_id'] = Token::getCurrentTokenVar('t_id');;
                     $data['ordering_date'] = $v2['ordering_date'];
                     $data['count'] = $v2['count'];
                     $data['order_num'] = makeOrderNo();
@@ -422,7 +425,7 @@ class OrderService extends BaseService
         if (!$order) {
             throw new ParameterException(['msg' => '指定订餐信息不存在']);
         }
-        $this->checkOrderCanCancel($order->d_id);
+        $this->checkOrderCanHandel($order->d_id);
         $order->state = CommonEnum::STATE_IS_FAIL;
         $res = $order->save();
         if (!$res) {
@@ -430,7 +433,7 @@ class OrderService extends BaseService
         }
     }
 
-    private function checkOrderCanCancel($d_id)
+    private function checkOrderCanHandel($d_id)
     {
         //获取餐次设置
         $dinner = DinnerT::dinnerInfo($d_id);
@@ -468,5 +471,60 @@ class OrderService extends BaseService
         return true;
     }
 
-}
+    /**
+     * 修改订餐数量
+     */
+    public function changeOrderCount($id, $count)
+    {
+        $order = OrderT::where('id', $id)->find();
+        if (!$order) {
+            throw new ParameterException(['msg' => '指定订餐信息不存在']);
+        }
+        //检测订单是否可操作
+        $this->checkOrderCanHandel($order->d_id);
+        //检测订单修改数量是否合法
+        $strategy = (new CanteenService())->getStaffConsumptionStrategy($order->c_id, $order->d_id, $order->t_id);
+        if (!$strategy) {
+            throw new ParameterException(['msg' => '当前用户消费策略不存在']);
+        }
+        if ($count > $strategy->ordered_count) {
+            throw new UpdateException(['msg' => '当前用户消费策略不存在']);
+        }
+        $old_money = $order->money;
+        $old_count = $order->count;
+        $new_money = ($old_money / $old_count) * $count;
+        //检测订单金额是否合法
+        $check_res = $this->checkBalance($order->u_id, $order->c_id, ($new_money - $old_money));
+        if (!$check_res) {
+            throw new UpdateException(['msg' => '当前用户可消费余额不足']);
+        }
+        //修改数量
+        $order->count = $count;
+        //处理订单金额
+        $order->money = $new_money;
+        //处理消费方式
+        $order->pay_way = $check_res;
+        if (!($order->save())) {
+            throw new UpdateException();
+        }
+    }
 
+    public function changeOrderFoods($params)
+    {
+        try {
+            Db::startTrans();
+
+            $id = $params['id'];
+            $detail = json_decode($params['detail'], true);
+            if (empty($detail)) {
+                throw new ParameterException(['msg' => '订单明细为空或者数据格式错误']);
+            }
+            $order = OrderT::where('id', $id)->find();
+
+           // Db::commit();
+        } catch (Exception $e) {
+            Db::rollback();
+            throw $e;
+        }
+    }
+}

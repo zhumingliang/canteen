@@ -160,5 +160,66 @@ class Order extends BaseController
         return json(new SuccessMessage());
     }
 
+    /**
+     * @api {POST} /api/v1/order/changeCount 微信端---个人选菜/线上订餐---修改订单预定数量
+     * @apiGroup   Official
+     * @apiVersion 3.0.0
+     * @apiDescription    微信端---个人选菜/线上订餐---修改订单预定数量
+     * @apiExample {post}  请求样例:
+     *    {
+     *       "id": 1,
+     *       "count": 1,
+     *     }
+     * @apiParam (请求参数说明) {int} id  订单id
+     * @apiParam (请求参数说明) {int} count 订餐数量
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     */
+    public function changeOrderCount()
+    {
+        $id = Request::param('id');
+        $count = Request::param('count');
+        (new OrderService())->changeOrderCount($id, $count);
+        return json(new SuccessMessage());
+
+    }
+
+    /**
+     * @api {POST} /api/v1/order/changeFoods 微信端---个人选菜---修改订单菜品信息
+     * @apiGroup   Official
+     * @apiVersion 3.0.0
+     * @apiDescription    微信端---个人选菜---修改订单菜品信息
+     * @apiExample {post}  请求样例:
+     *    {
+     *       "id": 1,
+     *       "detail": [{"menu_id":1,"add_foods":[{"detail_id":1,"food_id":1,"price":5,"count":1},{"food_id":1,"price":5,"count":1},{"food_id":2,"price":5,"count":1}],"update_foods":[{"detail_id":1,"count":1}],"cancel_foods":"3,4"}]
+     *     }
+     * @apiParam (请求参数说明) {int} id  订单id
+     * @apiParam (请求参数说明) {int} count 订餐数量
+     * @apiParam (请求参数说明) {obj} detail 订餐菜品明细
+     * @apiParam (请求参数说明) {string} detail|menu_id 菜品类别id
+     * @apiParam (请求参数说明) {obj} detail|add_foods 新增菜品明细
+     * @apiParam (请求参数说明) {string} detail|add_foods|food_id 菜品id
+     * @apiParam (请求参数说明) {string} detail|add_foods|price 菜品实时单价
+     * @apiParam (请求参数说明) {string} detail|add_foods|count 菜品数量
+     * @apiParam (请求参数说明) {obj} detail|update_foods 修改菜品明细
+     * @apiParam (请求参数说明) {string} detail|update_foods|detail_id 订单菜品明细id
+     * @apiParam (请求参数说明) {string} detail|update_foods|count 修改菜品数量
+     * @apiParam (请求参数说明) {string} detail|cancel_foods 取消菜品id列表，多个用逗号分隔，此id来自于订单信息中detail_id
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     */
+    public function changeOrderFoods()
+    {
+        $params = Request::param();
+        (new OrderService())->changeOrderFoods($params);
+        return json(new SuccessMessage());
+
+    }
+
 
 }
