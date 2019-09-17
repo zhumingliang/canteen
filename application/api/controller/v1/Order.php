@@ -244,7 +244,7 @@ class Order extends BaseController
      * @apiParam (请求参数说明) {int} foods|detail_id 订单菜品明细id
      * @apiParam (请求参数说明) {int} foods|menu_id 菜品类别id
      * @apiParam (请求参数说明) {int} foods|food_id 菜品id
-     * @apiParam (请求参数说明) {string} |oods|count 菜品数量
+     * @apiParam (请求参数说明) {string} foods|count 菜品数量
      */
     public function personalChoiceInfo()
     {

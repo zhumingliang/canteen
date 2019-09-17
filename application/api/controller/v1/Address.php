@@ -91,7 +91,8 @@ class Address extends BaseController
     /**
      * @api {GET} /api/v1/addresses 微信端--获取用户地址列表
      * @apiGroup  Official
-     * @apiVersion 3.0.0 微信端--获取用户地址列表
+     * @apiVersion 3.0.0
+      * @apiDescription  微信端--获取用户地址列表
      * @apiExample {get}  请求样例:
      * http://canteen.tonglingok.com/api/v1/addresses
      * @apiSuccessExample {json} 返回样例:
