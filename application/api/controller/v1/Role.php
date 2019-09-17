@@ -83,10 +83,10 @@ class Role extends BaseController
      * @apiParam (请求参数说明) {string} canteens|add|name 饭堂名称
      * @apiParam (请求参数说明) {string} canteens|cancel  取消用户管理饭堂信息，取消多个饭堂，则将用户和饭堂关系id用逗号分隔
      * @apiParam (请求参数说明) {string} shops  管理小卖部列表
-     * @apiParam (请求参数说明) {string} shop|add 新增用户管理饭堂
-     * @apiParam (请求参数说明) {string} shop|add|s_id 小卖部id
-     * @apiParam (请求参数说明) {string} shop|add|name 小卖部名称
-     * @apiParam (请求参数说明) {string} shop|cancel  取消用户管理小卖部信息，取消多个小卖部，则将用户和小卖部关系id用逗号分隔
+     * @apiParam (请求参数说明) {string}  add 新增用户管理小卖部
+     * @apiParam (请求参数说明) {string} s_id 小卖部id
+     * @apiParam (请求参数说明) {string} name 小卖部名称
+     * @apiParam (请求参数说明) {string} cancel  取消用户管理小卖部信息，取消多个小卖部，则将用户和小卖部关系id用逗号分隔
      * @apiParam (请求参数说明) {string} rules  可见模块，用逗号分隔。注意，一级模块也需要上传
      * @apiSuccessExample {json} 返回样例:
      *{"msg":"ok","errorCode":0}
