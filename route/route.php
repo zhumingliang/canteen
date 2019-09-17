@@ -118,4 +118,10 @@ Route::post('api/:version/address/update', 'api/:version.Address/update');
 Route::post('api/:version/address/handel', 'api/:version.Address/handel');
 Route::get('api/:version/addresses', 'api/:version.Address/addresses');
 
+Route::post('api/:version/notice/save', 'api/:version.Notice/save');
+Route::post('api/:version/notice/delete', 'api/:version.Notice/deleteNotice');
+Route::get('api/:version/notice', 'api/:version.Notice/notice');
+Route::get('api/:version/notices/admin', 'api/:version.Notice/adminNotices');
+Route::get('api/:version/notices/user', 'api/:version.Notice/userNotices');
+
 

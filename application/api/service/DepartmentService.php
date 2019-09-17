@@ -241,7 +241,6 @@ class DepartmentService
 
     }
 
-
     private function companyDepartments($company_id)
     {
         $departs = CompanyDepartmentT::where('c_id', $company_id)
@@ -250,7 +249,6 @@ class DepartmentService
             ->select()->toArray();
         return $departs;
     }
-
 
     private function getUploadStaffQrcodeInfo($staffs)
     {
@@ -322,18 +320,31 @@ class DepartmentService
     private function prefixQrcodeExpiryDate($expiry_date, $params)
     {
         $type = ['minute', 'hour', 'day', 'month', 'year'];
-        $exit=0;
+        $exit = 0;
         foreach ($type as $k => $v) {
             if (key_exists($v, $params)) {
-                $exit=1;
+                $exit = 1;
                 $expiry_date = date('Y-m-d H:i:s', strtotime("+" . $params[$v] . "$v", strtotime($expiry_date)));
             }
         }
-        if (!$exit){
-            $expiry_date = date('Y-m-d H:i:s', strtotime("+".config("setting.qrcode_expire_in"). "minute", strtotime($expiry_date)));
+        if (!$exit) {
+            $expiry_date = date('Y-m-d H:i:s', strtotime("+" . config("setting.qrcode_expire_in") . "minute", strtotime($expiry_date)));
 
         }
         return $expiry_date;
+    }
+
+    public function departmentStaffs($d_ids)
+    {
+        $staffs = CompanyStaffT::departmentStaffs($d_ids);
+        return $staffs;
+    }
+
+    public function getStaffWithPhone($phone)
+    {
+        $staff= CompanyStaffT::getStaffWithPhone($phone);
+        return $staff;
+
     }
 
 

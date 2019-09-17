@@ -21,4 +21,19 @@ class CompanyStaffT extends Model
             ->with('qrcode')
             ->find();
     }
+
+    public static function departmentStaffs($d_ids)
+    {
+        $staffs = self::where('d_id', 'in', $d_ids)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->field('id')->select()->toArray();
+        return $staffs;
+    }
+
+    public static function getStaffWithPhone($phone)
+    {
+        return self::where('phone', $phone)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->find();
+    }
 }

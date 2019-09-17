@@ -11,7 +11,7 @@ namespace app\lib\enum;
 
 class MenuEnum
 {
-    const FIXED = 1;
 
-    const DYNAMIC = 2;
-}
+} const FIXED = 1;
+
+const DYNAMIC = 2;
