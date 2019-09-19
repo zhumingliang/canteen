@@ -126,5 +126,10 @@ Route::get('api/:version/notices/user', 'api/:version.Notice/userNotices');
 
 Route::post('api/:version/supplier/save', 'api/:version.Supplier/save');
 Route::post('api/:version/supplier/update', 'api/:version.Supplier/update');
-Route::post('api/:version/supplier/delete', 'api/:version.Supplier/deleteNotice');
+Route::post('api/:version/supplier/delete', 'api/:version.Supplier/delete');
 Route::get('api/:version/suppliers', 'api/:version.Supplier/suppliers');
+
+Route::post('api/:version/category/save', 'api/:version.Category/save');
+Route::post('api/:version/category/update', 'api/:version.Category/update');
+Route::post('api/:version/category/delete', 'api/:version.Category/delete');
+Route::get('api/:version/categories', 'api/:version.Category/categories');
