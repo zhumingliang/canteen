@@ -124,4 +124,7 @@ Route::get('api/:version/notice', 'api/:version.Notice/notice');
 Route::get('api/:version/notices/admin', 'api/:version.Notice/adminNotices');
 Route::get('api/:version/notices/user', 'api/:version.Notice/userNotices');
 
-
+Route::post('api/:version/supplier/save', 'api/:version.Supplier/save');
+Route::post('api/:version/supplier/update', 'api/:version.Supplier/update');
+Route::post('api/:version/supplier/delete', 'api/:version.Supplier/deleteNotice');
+Route::get('api/:version/suppliers', 'api/:version.Supplier/suppliers');

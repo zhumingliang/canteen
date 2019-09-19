@@ -15,10 +15,12 @@ class Index extends BaseController
 {
     public function index()
     {
-        $day = '2019-09-13';
-        echo date('W',strtotime($day));
-        $day = '2019-09-16';
-        echo date('W',time());
+        $message = ['a' => []];
+        $current = array();
+        if (empty($message['current'])) {
+            $current = $message['current'];
+            echo 1;
+        }
 
     }
 
