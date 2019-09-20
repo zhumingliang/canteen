@@ -133,3 +133,10 @@ Route::post('api/:version/category/save', 'api/:version.Category/save');
 Route::post('api/:version/category/update', 'api/:version.Category/update');
 Route::post('api/:version/category/delete', 'api/:version.Category/delete');
 Route::get('api/:version/categories', 'api/:version.Category/categories');
+
+Route::post('api/:version/shop/product/save', 'api/:version.Shop/saveProduct');
+Route::post('api/:version/shop/product/update', 'api/:version.Shop/updateProduct');
+Route::post('api/:version/shop/product/handel', 'api/:version.Shop/handel');
+Route::post('api/:version/shop/stock/save', 'api/:version.Shop/saveProductStock');
+Route::get('api/:version/shop/product', 'api/:version.Shop/product');
+Route::get('api/:version/shop/products', 'api/:version.Shop/products');

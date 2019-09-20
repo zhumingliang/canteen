@@ -5,10 +5,21 @@ namespace app\api\service;
 
 
 use app\api\model\ShopModuleT;
+use app\api\model\ShopProductStockT;
+use app\api\model\ShopProductT;
 use app\api\model\ShopT;
 use app\api\model\SystemShopModuleT;
 use app\lib\enum\CommonEnum;
+use app\lib\enum\ModuleEnum;
+use app\lib\enum\PayEnum;
+use app\lib\enum\ShopEnum;
+use app\lib\exception\ParameterException;
 use app\lib\exception\SaveException;
+use app\lib\exception\UpdateException;
+use think\Db;
+use think\Exception;
+use think\Model;
+use think\Request;
 
 class ShopService
 {
@@ -61,6 +72,87 @@ class ShopService
         }
 
 
+    }
+
+    public function saveProduct($params)
+    {
+        try {
+            Db::startTrans();
+            if ($this->checkName($params['company_id'], $params['name'])) {
+                throw new SaveException(['msg' => '商品名称已经存在']);
+            }
+            $product = ShopProductT::create($params);
+            if (!$product) {
+                throw new SaveException();
+            }
+            $this->saveStock($product->id, $params['count'], ShopEnum::STOCK_INIT);
+            Db::commit();
+        } catch (Exception $e) {
+            Db::rollback();;
+            throw $e;
+        }
+    }
+
+    public function updateProduct($params)
+    {
+        $product = ShopProductT::update($params);
+        if (!$product) {
+            throw new UpdateException();
+        }
+    }
+
+    public function product($id)
+    {
+        $product = ShopProductT::where('id', $id)
+            ->hidden(['create_time', 'update_time', 'state'])
+            ->find();
+        if (!$product) {
+            throw new ParameterException(['msg' => '参数错误，商品不存在']);
+        }
+        $product->stock = $this->getProductStock($id);
+        return $product;
+    }
+
+    private function saveStock($product_id, $stock, $type)
+    {
+        $data = [
+            'product_id' => $product_id,
+            'count' => $stock,
+            'type' => $type,
+            'state' => CommonEnum::STATE_IS_OK,
+            'admin_id' => Token::getCurrentUid()
+        ];
+        $shopStock = ShopProductStockT::create($data);
+        if (!$shopStock) {
+            throw new SaveException(['msg' => '保存库存明细失败']);
+        }
+
+    }
+
+    private function checkName($company_id, $name)
+    {
+        $product = ShopProductT::where('company_id', $company_id)
+            ->where('name', $name)
+            ->where('state', '<>', CommonEnum::STATE_IS_DELETE)
+            ->count();
+        return $product;
+    }
+
+    private function getProductStock($id)
+    {
+        return 100;
+
+    }
+
+    public function saveProductStock($params)
+    {
+        $params['admin_id'] = Token::getCurrentUid();
+        $params['type'] = ShopEnum::STOCK_ADD;
+        $params['state'] = CommonEnum::STATE_IS_OK;
+        $stock = ShopProductStockT::create($params);
+        if (!$stock) {
+            throw new SaveException();
+        }
     }
 
 
