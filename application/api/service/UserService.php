@@ -102,11 +102,27 @@ class UserService
 
     }
 
+    public function getUserCompanyInfo($phone, $canteen_id)
+    {
+        if (empty($phone)) {
+            throw new AuthException(['msg' => '用户状态异常，未绑定手机号']);
+        }
+        $admin = CompanyStaffT::where('phone', $phone)
+            ->where('c_id', $canteen_id)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->find();
+        if (!$admin) {
+            throw new AuthException(['msg' => '用户状态异常，不属于任何企业']);
+        }
+        return $admin;
+
+    }
+
     //获取用户电子饭卡
     public function mealCard()
     {
-        $phone = "998";//Token::getCurrentTokenVar('phone');
-        $current_canteen_id = 1;//Token::getCurrentTokenVar('current_canteen_id');
+        $phone = Token::getCurrentTokenVar('phone');
+        $current_canteen_id = Token::getCurrentTokenVar('current_canteen_id');
         $staff = CompanyStaffT::staff($current_canteen_id, $phone);
         if (!$staff) {
             throw  new  AuthException(['msg' => '用户信息不存在']);

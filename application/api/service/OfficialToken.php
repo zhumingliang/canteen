@@ -4,6 +4,7 @@
 namespace app\api\service;
 
 
+use app\api\model\CompanyStaffT;
 use app\api\model\StaffV;
 use app\api\model\UserT;
 use app\lib\exception\TokenException;
@@ -70,6 +71,7 @@ class OfficialToken extends Token
         $cachedValue['nickName'] = $user['nickname'];
         $cachedValue['current_canteen_id'] = $user['current_canteen_id'];
         $cachedValue['type'] = 'official';
+
         return $cachedValue;
     }
 

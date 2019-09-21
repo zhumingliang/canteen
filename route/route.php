@@ -140,3 +140,4 @@ Route::post('api/:version/shop/product/handel', 'api/:version.Shop/handel');
 Route::post('api/:version/shop/stock/save', 'api/:version.Shop/saveProductStock');
 Route::get('api/:version/shop/product', 'api/:version.Shop/product');
 Route::get('api/:version/shop/products', 'api/:version.Shop/products');
+Route::get('api/:version/shop/products/official', 'api/:version.Shop/officialProducts');

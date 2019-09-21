@@ -197,6 +197,37 @@ class Shop extends BaseController
         return json(new SuccessMessage());
     }
 
+    /**
+     * @api {GET} /api/v1/shop/products/official 微信端-小卖部-商品列表
+     * @apiGroup  Official
+     * @apiVersion 3.0.0
+     * @apiDescription 微信端-个人选菜-菜品列表
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/shop/products/official
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":[{"id":2,"name":"生鲜","products":[{"id":5,"category_id":2,"name":"鸡蛋1","price":"100.0","unit":"元\/500g","image":"http:\/\/canteen.tonglingok.com\/static\/image"},{"id":6,"category_id":2,"name":"鸡蛋2","price":"100.0","unit":"元\/500g","image":"http:\/\/canteen.tonglingok.com\/static\/image"}]}]}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {String} msg 信息描述
+     * @apiSuccess (返回参数说明) {int} id 商品类别id
+     * @apiSuccess (返回参数说明) {string} name 商品类别名称
+     * @apiSuccess (返回参数说明) {obj} products  商品列表
+     * @apiSuccess (返回参数说明) {int} products|id  商品id
+     * @apiSuccess (返回参数说明) {sting} products|unit  单位
+     * @apiSuccess (返回参数说明) {sting} products|name  商品名称
+     * @apiSuccess (返回参数说明) {float} products|price  商品价格
+     * @apiSuccess (返回参数说明) {string} products|image 商品图片地址
+     */
+    public function officialProducts()
+    {
+        $products = (new ShopService())->officialProducts();
+        return json(new SuccessMessageWithData(['data' => $products]));
+    }
 
+    public function saveOrder()
+    {
+        $params = Request::param();
+
+
+    }
 
 }

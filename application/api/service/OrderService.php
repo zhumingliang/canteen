@@ -57,8 +57,11 @@ class OrderService extends BaseService
             $params['u_id'] = $u_id;
             $params['c_id'] = $canteen_id;
             $params['d_id'] = $dinner_id;
-            $params['t_id'] = Token::getCurrentTokenVar('t_id');
             $params['pay'] = CommonEnum::STATE_IS_OK;
+
+            $staff = (new UserService())->getUserCompanyInfo(Token::getCurrentPhone(), $canteen_id);
+            $params['staff_type_id'] = $staff->t_id;
+            $params['department_id'] = $staff->d_id;
             $order = OrderT::create($params);
             if (!$order) {
                 throw new SaveException(['msg' => '生成订单失败']);
@@ -295,14 +298,16 @@ class OrderService extends BaseService
 
         $data_list = [];
         $all_money = 0;
-        $t_id = Token::getCurrentTokenVar('current_canteen_id');
+        $staff = (new UserService())->getUserCompanyInfo(Token::getCurrentPhone(), $canteen_id);
+        $staff_type_id = $staff->t_id;
+        $department_id = $staff->d_id;
         //获取用户所有有效订餐信息
         $records = OrderingV::getUserOrdering($u_id);
+
         foreach ($detail as $k => $v) {
             //检测该餐次是否在订餐时间范围内
-
             $ordering_data = $v['ordering'];
-            $money = $this->getStrategyMoneyForOrderingOnline($canteen_id, $v['d_id'], $t_id);
+            $money = $this->getStrategyMoneyForOrderingOnline($canteen_id, $v['d_id'], $staff_type_id);
             if (!empty($ordering_data)) {
                 foreach ($ordering_data as $k2 => $v2) {
                     //检测是否重复订餐
@@ -311,7 +316,8 @@ class OrderService extends BaseService
                     $data['u_id'] = $u_id;
                     $data['c_id'] = $canteen_id;
                     $data['d_id'] = $v['d_id'];
-                    $data['t_id'] = Token::getCurrentTokenVar('t_id');;
+                    $data['staff_type_id'] = $staff_type_id;
+                    $data['department_id'] = $department_id;
                     $data['ordering_date'] = $v2['ordering_date'];
                     $data['count'] = $v2['count'];
                     $data['order_num'] = makeOrderNo();

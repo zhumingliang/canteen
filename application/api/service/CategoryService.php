@@ -46,5 +46,12 @@ class CategoryService
         return $suppliers;
     }
 
+    public function companyCategories($company_id)
+    {
+        $categories = ShopProductCategoryT:: companyCategories($company_id);
+        return $categories;
+
+    }
+
 
 }

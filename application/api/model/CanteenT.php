@@ -42,5 +42,12 @@ class CanteenT extends Model
         return $menus;
     }
 
+    public static function canteen($canteen_id)
+    {
+        $canteen = self::where('id', $canteen_id)
+            ->find();
+        return $canteen;
+
+    }
 
 }

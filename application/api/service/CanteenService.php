@@ -359,5 +359,14 @@ class CanteenService
         return $info;
     }
 
+    public function getCanteenBelongCompanyID($canteen_id)
+    {
+        $canteen = CanteenT::canteen($canteen_id);
+        if (empty($canteen)) {
+            throw new ParameterException(['msg' => '参数错误，饭堂不存在']);
+        }
+        return $canteen->c_id;
+    }
+
 
 }

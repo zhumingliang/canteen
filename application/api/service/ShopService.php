@@ -155,5 +155,47 @@ class ShopService
         }
     }
 
+    public function officialProducts()
+    {
+        $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
+        if (empty($canteen_id)) {
+            throw new ParameterException(['msg' => '请先选择饭堂']);
+        }
+        $company_id = (new CanteenService())->getCanteenBelongCompanyID($canteen_id);
+        //获取企业所有类别
+        $categories = (new CategoryService())->companyCategories($company_id);
+        //获取企业所有商品
+        $products = $this->companyProducts($company_id);
+        return $this->prefixOfficialProducts($categories, $products);
+    }
+
+    private function companyProducts($company_id)
+    {
+        $products = ShopProductT::companyProducts($company_id);
+        return $products;
+
+    }
+
+    private function prefixOfficialProducts($categories, $products)
+    {
+        if (empty($categories)) {
+            return $categories;
+        }
+        foreach ($categories as $k => $v) {
+            if (empty($products)) {
+                break;
+            }
+            $data = [];
+            foreach ($products as $k2 => $v2) {
+                if ($v['id'] == $v2['category_id']) {
+                    array_push($data, $products[$k2]);
+                }
+            }
+            $categories[$k]['products'] = $data;
+        }
+        return $categories;
+
+    }
+
 
 }
