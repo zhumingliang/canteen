@@ -16,7 +16,10 @@ class Shop extends BaseValidate
         'unit' => 'require|isNotEmpty',
         'price' => 'require|isNotEmpty',
         'count' => 'require|isPositiveInteger',
-        'state' => 'require|in:1,2,3'
+        'state' => 'require|in:1,2,3',
+        'distribution' => 'require|in:1,2',
+        'address_id' => 'require|isPositiveInteger',
+        'products' => 'require|isNotEmpty'
     ];
 
     protected $scene = [
@@ -25,5 +28,6 @@ class Shop extends BaseValidate
         'handel' => ['id', 'state'],
         'product' => ['id'],
         'saveProductStock' => ['product_id', 'count'],
+        'saveOrder' => ['count', 'distribution', 'address_id', 'products'],
     ];
 }

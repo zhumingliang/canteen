@@ -14,6 +14,7 @@ Route::rule('api/:version/index', 'api/:version.Index/index');
 
 Route::post('api/:version/token/admin', 'api/:version.Token/getAdminToken');
 Route::rule('api/:version/token/official', 'api/:version.Token/getOfficialToken')->middleware(\Naixiaoxin\ThinkWechat\Middleware\OauthMiddleware::class);
+Route::post('api/:version/token/supplier', 'api/:version.Token/getSupplierToken');
 
 Route::post('api/:version/module/system/save', 'api/:version.Module/saveSystem');
 Route::post('api/:version/module/system/canteen/save', 'api/:version.Module/saveSystemCanteen');
@@ -128,11 +129,13 @@ Route::post('api/:version/supplier/save', 'api/:version.Supplier/save');
 Route::post('api/:version/supplier/update', 'api/:version.Supplier/update');
 Route::post('api/:version/supplier/delete', 'api/:version.Supplier/delete');
 Route::get('api/:version/suppliers', 'api/:version.Supplier/suppliers');
+Route::get('api/:version/company/suppliers', 'api/:version.Supplier/companySuppliers');
 
 Route::post('api/:version/category/save', 'api/:version.Category/save');
 Route::post('api/:version/category/update', 'api/:version.Category/update');
 Route::post('api/:version/category/delete', 'api/:version.Category/delete');
 Route::get('api/:version/categories', 'api/:version.Category/categories');
+Route::get('api/:version/company/categories', 'api/:version.Category/companyCategories');
 
 Route::post('api/:version/shop/product/save', 'api/:version.Shop/saveProduct');
 Route::post('api/:version/shop/product/update', 'api/:version.Shop/updateProduct');
@@ -140,4 +143,6 @@ Route::post('api/:version/shop/product/handel', 'api/:version.Shop/handel');
 Route::post('api/:version/shop/stock/save', 'api/:version.Shop/saveProductStock');
 Route::get('api/:version/shop/product', 'api/:version.Shop/product');
 Route::get('api/:version/shop/products', 'api/:version.Shop/products');
-Route::get('api/:version/shop/products/official', 'api/:version.Shop/officialProducts');
+Route::get('api/:version/shop/official/products', 'api/:version.Shop/officialProducts');
+Route::get('api/:version/shop/supplier/products', 'api/:version.Shop/supplierProducts');
+Route::get('api/:version/shop/cms/products', 'api/:version.Shop/cmsProducts');

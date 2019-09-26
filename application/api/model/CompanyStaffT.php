@@ -14,6 +14,12 @@ class CompanyStaffT extends Model
         return $this->hasOne('StaffQrcodeT', 's_id', 'id');
     }
 
+    public function canteen()
+    {
+        return $this->belongsTo('CanteenT', 'c_id', 'id');
+
+    }
+
     public static function staff($c_id, $phone)
     {
         return self::where('phone', $phone)->where('c_id', $c_id)

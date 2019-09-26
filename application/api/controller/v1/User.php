@@ -66,6 +66,19 @@ class User extends BaseController
         return json(new SuccessMessage());
     }
 
+    /**
+     * @api {GET} /api/v1/user/card 微信端-电子饭卡-获取用户该饭堂电子饭卡
+     * @apiGroup  Official
+     * @apiVersion 3.0.0
+     * @apiDescription  微信端-电子饭卡-获取用户该饭堂电子饭卡
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/user/card
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"url":""}}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     * @apiSuccess (返回参数说明) {int} url 饭卡地址
+     */
     public function mealCard()
     {
         $card = (new UserService())->mealCard();

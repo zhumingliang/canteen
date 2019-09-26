@@ -16,6 +16,7 @@ use app\api\service\AdminToken;
 use app\api\service\DriverToken;
 use app\api\service\LogService;
 use app\api\service\OfficialToken;
+use app\api\service\SupplierToken;
 use app\api\service\UserToken;
 use app\api\validate\TokenGet;
 use app\lib\enum\CommonEnum;
@@ -53,6 +54,32 @@ class Token extends Controller
         $token = $at->get();
         return json(new SuccessMessageWithData(['data' => $token]));
     }
+
+    /**
+     * @api {POST} /api/v1/token/supplier  CMS管理端-获取供应商登陆token
+     * @apiGroup  CMS
+     * @apiVersion 3.0.0
+     * @apiDescription  后台用户登录
+     * @apiExample {post}  请求样例:
+     *    {
+     *       "account": "zml",
+     *       "passwd": "a11111"
+     *     }
+     * @apiParam (请求参数说明) {String} account    用户账号
+     * @apiParam (请求参数说明) {String} pwd   用户密码
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"token":"fe6ed7b4a89aab3a31d0606a55116a49","name":"系统超级管理员"}}
+     * @apiSuccess (返回参数说明) {string} token 口令令牌，每次请求接口需要传入，有效期 24 hours
+     * @apiSuccess (返回参数说明) {string} name 供应商名称
+     */
+    public function getSupplierToken()
+    {
+        $params = $this->request->param();
+        $at = new SupplierToken($params['account'], $params['passwd']);
+        $token = $at->get();
+        return json(new SuccessMessageWithData(['data' => $token]));
+    }
+
 
     /**
      * @api {GET} /api/v1/token/login/out  CMS管理端-退出登陆

@@ -4,6 +4,7 @@
 namespace app\api\service;
 
 
+use app\api\model\CanteenT;
 use app\api\model\CompanyDepartmentT;
 use app\api\model\CompanyStaffT;
 use app\api\model\CompanyStaffV;
@@ -84,6 +85,8 @@ class DepartmentService
         try {
             Db::startTrans();;
             $params['state'] = CommonEnum::STATE_IS_OK;
+            $canteen = CanteenT::get($params['c_id']);
+            $params['company_id'] = $canteen->c_id;
             $staff = CompanyStaffT::create($params);
             if (!$staff) {
                 throw new SaveException();
@@ -121,7 +124,7 @@ class DepartmentService
             if ($k == 1) {
                 $param_key = $data[$k];
             } else if ($k > 1) {
-                $check = $this->validateParams($param_key, $data[$k], $types, $canteens, $departments);
+                $check = $this->validateParams($company_id, $param_key, $data[$k], $types, $canteens, $departments);
                 if (!$check['res']) {
                     $fail[] = $check['info'];
                     continue;
@@ -152,7 +155,7 @@ class DepartmentService
 
     }
 
-    private function validateParams($param_key, $data, $types, $canteens, $departments)
+    private function validateParams($company_id, $param_key, $data, $types, $canteens, $departments)
     {
         foreach ($data as $k => $v) {
             if (!strlen($v)) {
@@ -221,7 +224,8 @@ class DepartmentService
                 'code' => $code,
                 'username' => $name,
                 'phone' => $phone,
-                'card_num' => $card_num
+                'card_num' => $card_num,
+                'company_id' => $company_id
 
             ]
         ];
@@ -271,7 +275,7 @@ class DepartmentService
     public function saveQrcode($s_id)
     {
         $code = getRandChar(12);
-        $url = sprintf(config("setting.qrcode_url"), $code);
+        $url = sprintf(config("setting.qrcode_url"), 'canteen', $code);
         $qrcode_url = (new QrcodeService())->qr_code($url);
         $data = [
             'code' => $code,
@@ -342,7 +346,7 @@ class DepartmentService
 
     public function getStaffWithPhone($phone)
     {
-        $staff= CompanyStaffT::getStaffWithPhone($phone);
+        $staff = CompanyStaffT::getStaffWithPhone($phone);
         return $staff;
 
     }

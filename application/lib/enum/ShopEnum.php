@@ -15,4 +15,6 @@ class ShopEnum
     const PRODUCT_STATE_DOWN = 2;
 
     const PRODUCT_STATE_DELETE = 2;
+
+    const ORDER_GET_SELF = 1;
 }

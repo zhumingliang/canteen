@@ -4,15 +4,22 @@
 namespace app\api\service;
 
 
+use app\api\model\OrderDetailT;
 use app\api\model\ShopModuleT;
+use app\api\model\ShopOrderDetailT;
+use app\api\model\ShopOrderT;
+use app\api\model\ShopProductStockBalanceV;
 use app\api\model\ShopProductStockT;
+use app\api\model\ShopProductStockV;
 use app\api\model\ShopProductT;
 use app\api\model\ShopT;
+use app\api\model\StaffQrcodeT;
 use app\api\model\SystemShopModuleT;
 use app\lib\enum\CommonEnum;
 use app\lib\enum\ModuleEnum;
 use app\lib\enum\PayEnum;
 use app\lib\enum\ShopEnum;
+use app\lib\exception\AuthException;
 use app\lib\exception\ParameterException;
 use app\lib\exception\SaveException;
 use app\lib\exception\UpdateException;
@@ -197,5 +204,137 @@ class ShopService
 
     }
 
+    public function supplierProducts($category_id, $page, $size)
+    {
+        if (Token::getCurrentTokenVar('type') != 'supplier') {
+            throw new AuthException();
+        }
+        $supplier_id = Token::getCurrentUid();
+        $products = ShopProductStockV::supplierProducts($supplier_id, $category_id, $page, $size);
+        return $products;
 
+    }
+
+    public function cmsProducts($supplier_id, $category_id, $page, $size)
+    {
+        $company_id = Token::getCurrentTokenVar('c_id');
+        if (empty($company_id)) {
+            throw new AuthException();
+        }
+        $products = ShopProductStockV::cmsProducts($company_id, $supplier_id, $category_id, $page, $size);
+        return $products;
+
+    }
+
+    public function saveOrder($params)
+    {
+        try {
+            Db::startTrans();
+            $orderData = $this->prepareOrderData($params);
+            $order = ShopOrderT::create($orderData);
+            if (!$order) {
+                throw new SaveException(['msg' => '创建订单失败']);
+            }
+            $detailData = $this->prepareOrderDetailData($order->id, json_decode($params['products'], true));
+            $detail = (new OrderDetailT())->saveAll($detailData);
+            if (!$detail) {
+                throw new SaveException(['msg' => '创建订单明细失败']);
+            }
+            //订单自取时，生成订单取货二维码
+            if ($params['distribution'] == ShopEnum::ORDER_GET_SELF) {
+                $this->prefixOrderQrcode($order->id);
+            }
+            Db::commit();;
+        } catch (Exception $e) {
+            Db::rollback();;
+            throw  $e;
+        }
+    }
+
+    private function prefixOrderQrcode($o_id)
+    {
+        $code = getRandChar(12);
+        $url = sprintf(config("setting.qrcode_url"), 'shop', $code);
+        $qrcode_url = (new QrcodeService())->qr_code($url);
+        $data = [
+            'code' => $code,
+            'o_id' => $o_id,
+            'url' => $qrcode_url
+        ];
+        $qrcode = StaffQrcodeT::create($data);
+        if (!$qrcode) {
+            throw new SaveException(['msg' => '生成提货二维码失败']);
+        }
+        return $qrcode_url;
+    }
+
+
+    private function prepareOrderData($params)
+    {
+        $products = json_decode($params['products'], true);
+        $u_id = Token::getCurrentUid();
+        $money = $this->getProductsMoney($products);
+        $payCheck = $this->checkMoney($u_id, $money);
+        if (!$payCheck) {
+            throw new  SaveException(['msg' => '余额不足，请先充值']);
+        }
+        $params['u_id'] = $u_id;
+        $params['money'] = $money;
+        $params['pay_way'] = $payCheck;
+        $params['pay'] = CommonEnum::STATE_IS_OK;
+        $params['order_num'] = makeOrderNo();
+
+        $staff = (new UserService())->getUserCompanyInfo(Token::getCurrentPhone(),
+            Token::getCurrentTokenVar('current_canteen_id'));
+        $params['staff_type_id'] = $staff->t_id;
+        $params['department_id'] = $staff->d_id;
+        $params['company_id'] = $staff->company_id;
+        return $params;
+    }
+
+    private function prepareOrderDetailData($order_id, $products)
+    {
+        foreach ($products as $k => $v) {
+            $this->checkProductStock($v['product_id'], $v['count']);
+            $products[$k]['o_id'] = $order_id;
+            $products[$k]['state'] = CommonEnum::STATE_IS_OK;
+        }
+        return $products;
+
+    }
+
+    private function checkProductStock($product_id, $count)
+    {
+        $stock = ShopProductStockBalanceV::getProductStock($product_id);
+        if ($stock < $count) {
+            throw new SaveException(['msg' => '商品库存不足']);
+        }
+
+    }
+
+    private function getProductsMoney($products)
+    {
+        if (empty($products)) {
+            throw new ParameterException(['msg' => '商品数据格式错误']);
+        }
+        $money = 0;
+        foreach ($products as $k => $v) {
+            $money += $v['price'];
+        }
+        if (!$money) {
+            throw new ParameterException(['msg' => '商品数据格式错误']);
+        }
+        return $money;
+
+    }
+
+    private function checkMoney($u_id, $money)
+    {
+        $balance = 100;
+        if ($balance < $money) {
+            throw new SaveException(['errorCode' => 49000, 'msg' => '余额不足']);
+        }
+        return PayEnum::PAY_BALANCE;
+
+    }
 }

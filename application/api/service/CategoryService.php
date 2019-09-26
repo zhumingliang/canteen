@@ -7,6 +7,7 @@ namespace app\api\service;
 use app\api\model\ShopProductCategoryT;
 use app\api\model\ShopProductCategoryV;
 use app\lib\enum\CommonEnum;
+use app\lib\exception\AuthException;
 use app\lib\exception\DeleteException;
 use app\lib\exception\SaveException;
 use app\lib\exception\UpdateException;
@@ -49,6 +50,17 @@ class CategoryService
     public function companyCategories($company_id)
     {
         $categories = ShopProductCategoryT:: companyCategories($company_id);
+        return $categories;
+
+    }
+
+    public function companyCategoriesToSelect()
+    {
+        $company_id = 3;//Token::getCurrentTokenVar('c_id');
+        if (empty($company_id)){
+            throw new AuthException(['msg'=>'该用户没有归属企业']);
+        }
+        $categories = ShopProductCategoryT:: companyCategoriesToSelect($company_id);
         return $categories;
 
     }

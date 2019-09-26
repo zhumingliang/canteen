@@ -49,7 +49,7 @@ class OrderService extends BaseService
             $params['money'] = $money;
             $pay_way = $this->checkBalance($u_id, $canteen_id, $money);
             if (!$pay_way) {
-                throw new  SaveException(['msg' => '余额不足，请先充值']);
+                throw new SaveException(['errorCode' => 49000, 'msg' => '余额不足']);
             }
             //保存订单信息
             $params['order_num'] = makeOrderNo();
@@ -62,6 +62,7 @@ class OrderService extends BaseService
             $staff = (new UserService())->getUserCompanyInfo(Token::getCurrentPhone(), $canteen_id);
             $params['staff_type_id'] = $staff->t_id;
             $params['department_id'] = $staff->d_id;
+            $params['company_id'] = $staff->company_id;
             $order = OrderT::create($params);
             if (!$order) {
                 throw new SaveException(['msg' => '生成订单失败']);
@@ -268,6 +269,9 @@ class OrderService extends BaseService
             $data = $this->prefixOnlineOrderingData($u_id, $canteen_id, $detail);
             $money = $data['all_money'];
             $pay_way = $this->checkBalance($u_id, $canteen_id, $money);
+            if (!$pay_way) {
+                throw new SaveException(['errorCode' => 49000, 'msg' => '余额不足']);
+            }
             $list = $this->prefixPayWay($pay_way, $data['list']);
             $ordering = (new OrderT())->saveAll($list);
             if (!$ordering) {

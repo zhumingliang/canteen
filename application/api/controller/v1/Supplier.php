@@ -122,5 +122,30 @@ class Supplier extends BaseController
         return json(new SuccessMessageWithData(['data' => $suppliers]));
     }
 
+    /**
+     * @api {GET} /api/v1/company/suppliers CMS管理端-小卖部管理-商品管理-获取该企业下供货商列表
+     * @apiGroup  CMS
+     * @apiVersion 3.0.0
+     * @apiDescription CMS管理端-小卖部管理-商品管理-获取该企业下供货商列表
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/company/suppliers?page=1&size=10
+     * @apiParam (请求参数说明) {int} page 当前页码
+     * @apiParam (请求参数说明) {int} size 每页多少条数据
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"total":1,"per_page":10,"current_page":1,"last_page":1,"data":[{"id":1,"name":"供应商1"}]}}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     * @apiSuccess (返回参数说明) {int} total 数据总数
+     * @apiSuccess (返回参数说明) {int} per_page 每页多少条数据
+     * @apiSuccess (返回参数说明) {int} current_page 当前页码
+     * @apiSuccess (返回参数说明) {int} last_page 最后页码
+     * @apiSuccess (返回参数说明) {int} id 供应商id
+     * @apiSuccess (返回参数说明) {String} name  供应商名称
+     */
+    public function companySuppliers($page = 1, $size = 10)
+    {
+        $suppliers = (new SupplierService())->companySuppliers($page, $size);
+        return json(new SuccessMessageWithData(['data' => $suppliers]));
+    }
 
 }

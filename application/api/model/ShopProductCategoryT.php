@@ -18,4 +18,14 @@ class ShopProductCategoryT extends Model
             ->select()->toArray();
         return $categories;
     }
+
+
+    public static function companyCategoriesToSelect($company_id)
+    {
+        $categories = self::where('c_id', $company_id)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->field('id,name')
+            ->select()->toArray();
+        return $categories;
+    }
 }

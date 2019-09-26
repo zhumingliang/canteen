@@ -16,4 +16,6 @@ class SupplierV extends Model
             ->paginate($size, false, ['page' => $page])->toArray();
         return $orderings;
     }
+
+
 }
