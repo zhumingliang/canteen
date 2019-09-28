@@ -33,7 +33,7 @@ class Order extends BaseController
      *       "dinner": "早餐",
      *       "type": 1,
      *       "count": 1,
-     *       "detail":[{"menu_id":1,"foods":[{"food_id":1,"price":5,"count":1},{"food_id":2,"price":5,"count":1}]}]
+     *       "detail":[{"menu_id":1,"foods":[{"food_id":1,"name":"商品1","price":5,""count":1},{"food_id":2,"name":"商品1","price":5,"count":1}]}]
      *     }
      * @apiParam (请求参数说明) {string} ordering_date  订餐日期
      * @apiParam (请求参数说明) {int} dinner_id 餐次id
@@ -43,9 +43,10 @@ class Order extends BaseController
      * @apiParam (请求参数说明) {obj} detail 订餐菜品明细
      * @apiParam (请求参数说明) {string} detail|menu_id 菜品类别id
      * @apiParam (请求参数说明) {obj} detail|foods 菜品明细
-     * @apiParam (请求参数说明) {string} detail|foods|food_id 菜品id
-     * @apiParam (请求参数说明) {string} detail|foods|price 菜品实时单价
-     * @apiParam (请求参数说明) {string} detail|foods|count 菜品数量
+     * @apiParam (请求参数说明) {string} foods|food_id 菜品id
+     * @apiParam (请求参数说明) {string} foods|price 菜品实时单价
+     * @apiParam (请求参数说明) {string} foods|count 菜品数量
+     * @apiParam (请求参数说明) {string} foods|name 菜品名称
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200,"data":{"id":1}}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
@@ -195,19 +196,21 @@ class Order extends BaseController
      *    {
      *       "id": 1,
      *       "count": 2,
-     *       "detail": [{"menu_id":1,"add_foods":[{"food_id":1,"price":5,"count":1},{"food_id":1,"price":5,"count":1},{"food_id":2,"price":5,"count":1}],"update_foods":[{"detail_id":1,"count":1}],"cancel_foods":"3,4"}]
+     *       "detail": [{"menu_id":1,"add_foods":[{"food_id":1,"name":"商品1","price":5,"count":1},{"food_id":1,"name":"商品1","price":5,"count":1},{"food_id":2,"name":"商品1","price":5,"count":1}],"update_foods":[{"detail_id":1,"count":1}],"cancel_foods":"3,4"}]
      *     }
      * @apiParam (请求参数说明) {int} id  订单id
      * @apiParam (请求参数说明) {int} count 订餐数量
      * @apiParam (请求参数说明) {obj} detail 订餐菜品明细
      * @apiParam (请求参数说明) {string} detail|menu_id 菜品类别id
      * @apiParam (请求参数说明) {obj} detail|add_foods 新增菜品明细
-     * @apiParam (请求参数说明) {string} detail|add_foods|food_id 菜品id
-     * @apiParam (请求参数说明) {string} detail|add_foods|price 菜品实时单价
-     * @apiParam (请求参数说明) {string} detail|add_foods|count 菜品数量
+     * @apiParam (请求参数说明) {string} add_foods|food_id 菜品id
+     * @apiParam (请求参数说明) {string} add_foods|price 菜品实时单价
+     * @apiParam (请求参数说明) {string} add_foods|count 菜品数量
+     * @apiParam (请求参数说明) {string} add_foods|price 菜品实时单价
+     * @apiParam (请求参数说明) {string} add_foods|name 菜品名称
      * @apiParam (请求参数说明) {obj} detail|update_foods 修改菜品明细
-     * @apiParam (请求参数说明) {string} detail|update_foods|detail_id 订单菜品明细id
-     * @apiParam (请求参数说明) {string} detail|update_foods|count 修改菜品数量
+     * @apiParam (请求参数说明) {string} update_foods|detail_id 订单菜品明细id
+     * @apiParam (请求参数说明) {string} update_foods|count 修改菜品数量
      * @apiParam (请求参数说明) {string} detail|cancel_foods 取消菜品id列表，多个用逗号分隔，此id来自于订单信息中detail_id
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200}
@@ -251,6 +254,49 @@ class Order extends BaseController
         $id = Request::param('id');
         $info = (new OrderService())->personalChoiceInfo($id);
         return json(new SuccessMessageWithData(['data' => $info]));
+
+    }
+
+    /**
+     * @api {GET} /api/v1/order/userOrderings 微信端-订单查询-订单列表
+     * @apiGroup  Official
+     * @apiVersion 3.0.0
+     * @apiDescription 微信端-订单查询-订单列表
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/order/userOrderings?$page=1&size=100&type=3&id=1
+     * @apiParam (请求参数说明) {int} page 当前页码
+     * @apiParam (请求参数说明) {int} size 每页多少条数据
+     * @apiParam (请求参数说明) {int} type  类型：1|就餐；2|外卖；3|小卖部
+     * @apiParam (请求参数说明) {int} id 类型为：就餐和外卖时该字段为饭堂id，类型为小卖部时，该字段为企业id
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"total":1,"per_page":10,"current_page":1,"last_page":1,"data":[{"id":8,"address":"饭堂1","type":"食堂","create_time":"2019-09-09 16:34:15","dinner":"中餐","money":"10.0"}]}}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {String} msg 信息描述
+     * @apiSuccess (返回参数说明) {int} total 数据总数
+     * @apiSuccess (返回参数说明) {int} per_page 每页多少条数据
+     * @apiSuccess (返回参数说明) {int} current_page 当前页码
+     * @apiSuccess (返回参数说明) {int} last_page 最后页码
+     * @apiSuccess (返回参数说明) {int} id 订单id
+     * @apiSuccess (返回参数说明) {string} address  地点
+     * @apiSuccess (返回参数说明) {float} type  类型
+     * @apiSuccess (返回参数说明) {string} create_time 日期
+     * @apiSuccess (返回参数说明) {int} dinner 名称
+     * @apiSuccess (返回参数说明) {int} money 金额
+     */
+    public function userOrderings($page = 1, $size = 10)
+    {
+        $type = Request::param('type');
+        $id = Request::param('id');
+        $orders = (new OrderService())->userOrders($type, $id, $page, $size);
+        return json(new SuccessMessageWithData(['data' => $orders]));
+    }
+
+    public function orderDetail()
+    {
+        $type = Request::param('type');
+        $id = Request::param('id');
+        $order = (new OrderService())->orderDetail($type, $id);
+        return json(new SuccessMessageWithData(['data' => $order]));
 
     }
 

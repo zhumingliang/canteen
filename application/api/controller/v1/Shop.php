@@ -276,7 +276,7 @@ class Shop extends BaseController
      *       "count": 2,
      *       "distribution": 1,
      *       "address_id": 1,
-     *       "products":[{"product_id":1,"price":5,"count":1},{"product_id":2,"price":5,"count":1}]
+     *       "products":[{"product_id":1,"name":"商品1","price":5,"unit":"kg","count":1},{"product_id":2,"name":"商品2","price":5,"unit":"kg","count":1}]
      *     }
      * @apiParam (请求参数说明) {int} count  数量
      * @apiParam (请求参数说明) {int} distribution  取货方式：1|到店取；2|送货上门
@@ -285,6 +285,8 @@ class Shop extends BaseController
      * @apiParam (请求参数说明) {string} products|product_id 商品id
      * @apiParam (请求参数说明) {string} products|price 商品实时单价
      * @apiParam (请求参数说明) {string} products|count 商品数量
+     * @apiParam (请求参数说明) {string} products|name 商品名称
+     * @apiParam (请求参数说明) {string} products|unit 商品单位
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200,"data":{"id":1}}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
@@ -298,6 +300,60 @@ class Shop extends BaseController
         return json(new SuccessMessage());
     }
 
+    /**
+     * @api {POST} /api/v1/shop/product/saveComment  微信端--小卖部--评价商品
+     * @apiGroup   Official
+     * @apiVersion 3.0.0
+     * @apiDescription     微信端--小卖部--评价商品
+     * @apiExample {post}  请求样例:
+     *    {
+     *       "product_id": 1,
+     *       "taste": 5,
+     *       "service": 5
+     *       "remark": "味道好极了"
+     *     }
+     * @apiParam (请求参数说明) {int} product_id  商品id
+     * @apiParam (请求参数说明) {int} taste  味道评分：1-5分
+     * @apiParam (请求参数说明) {int} service  服务评分：1-5分
+     * @apiParam (请求参数说明) {string} remark  评价内容
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     */
+    public function saveComment()
+    {
+        $params = Request::param();
+        (new ShopService())->saveProductComment($params);
+        return json(new SuccessMessage());
+    }
+
+    /**
+     * @api {GET} /api/v1/shop/product/comments   微信端--小卖部-点击评论获取商品评论信息
+     * @apiGroup  Official
+     * @apiVersion 3.0.0
+     * @apiDescription 微信端--小卖部-点击评论获取商品评论信息
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/fproduct/comments?product_id=1&page=1&size=10
+     * @apiParam (请求参数说明) {int} product_id 商品id
+     * @apiParam (请求参数说明) {int} page 页数
+     * @apiParam (请求参数说明) {int} size 每条条数
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"total":2,"per_page":"10","current_page":1,"last_page":1,"data":[{"id":4,"u_id":3,"product_id":1,"taste":3,"service":3,"remark":"4"},{"id":3,"u_id":3,"product_id":1,"taste":4,"service":4,"remark":"3"},{"id":2,"u_id":3,"product_id":1,"taste":5,"service":5,"remark":"2"}]}}
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     * @apiSuccess (返回参数说明) {int}  id 评论id
+     * @apiSuccess (返回参数说明) {int}  product_id 评论商品
+     * @apiSuccess (返回参数说明) {int}  u_id 评论用户
+     * @apiSuccess (返回参数说明) {int} taste 味道评分
+     * @apiSuccess (返回参数说明) {int} service 服务评分
+     * @apiSuccess (返回参数说明) {string} remark 评分说明
+     */
+    public function productComments($page = 1, $size = 10)
+    {
+        $product_id = Request::param('product_id');
+        $comments = (new ShopService())->productComments($product_id, $page, $size);
+        return json(new SuccessMessageWithData(['data' => $comments]));
+    }
 
 
 }

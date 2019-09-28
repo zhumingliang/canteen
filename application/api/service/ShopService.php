@@ -7,7 +7,9 @@ namespace app\api\service;
 use app\api\model\OrderDetailT;
 use app\api\model\ShopModuleT;
 use app\api\model\ShopOrderDetailT;
+use app\api\model\ShopOrderQrcodeT;
 use app\api\model\ShopOrderT;
+use app\api\model\ShopProductCommentT;
 use app\api\model\ShopProductStockBalanceV;
 use app\api\model\ShopProductStockT;
 use app\api\model\ShopProductStockV;
@@ -236,7 +238,7 @@ class ShopService
                 throw new SaveException(['msg' => '创建订单失败']);
             }
             $detailData = $this->prepareOrderDetailData($order->id, json_decode($params['products'], true));
-            $detail = (new OrderDetailT())->saveAll($detailData);
+            $detail = (new ShopOrderDetailT())->saveAll($detailData);
             if (!$detail) {
                 throw new SaveException(['msg' => '创建订单明细失败']);
             }
@@ -261,13 +263,12 @@ class ShopService
             'o_id' => $o_id,
             'url' => $qrcode_url
         ];
-        $qrcode = StaffQrcodeT::create($data);
+        $qrcode = ShopOrderQrcodeT::create($data);
         if (!$qrcode) {
             throw new SaveException(['msg' => '生成提货二维码失败']);
         }
         return $qrcode_url;
     }
-
 
     private function prepareOrderData($params)
     {
@@ -284,8 +285,9 @@ class ShopService
         $params['pay'] = CommonEnum::STATE_IS_OK;
         $params['order_num'] = makeOrderNo();
 
-        $staff = (new UserService())->getUserCompanyInfo(Token::getCurrentPhone(),
-            Token::getCurrentTokenVar('current_canteen_id'));
+        $phone = Token::getCurrentPhone();
+        $current_canteen_id = Token::getCurrentTokenVar('current_canteen_id');
+        $staff = (new UserService())->getUserCompanyInfo($phone, $current_canteen_id);
         $params['staff_type_id'] = $staff->t_id;
         $params['department_id'] = $staff->d_id;
         $params['company_id'] = $staff->company_id;
@@ -336,5 +338,20 @@ class ShopService
         }
         return PayEnum::PAY_BALANCE;
 
+    }
+
+    public function saveProductComment($params)
+    {
+        $params['u_id'] = Token::getCurrentUid();
+        $comment = ShopProductCommentT::create($params);
+        if (!$comment) {
+            throw  new SaveException();
+        }
+    }
+
+    public function productComments($product_id, $page, $size)
+    {
+        $comments = ShopProductCommentT::productComments($product_id, $page, $size);
+        return $comments;
     }
 }

@@ -113,6 +113,7 @@ Route::get('api/:version/order/personalChoice/info', 'api/:version.Order/persona
 Route::post('api/:version/order/cancel', 'api/:version.Order/orderCancel');
 Route::post('api/:version/order/changeCount', 'api/:version.Order/changeOrderCount');
 Route::post('api/:version/order/changeFoods', 'api/:version.Order/changeOrderFoods');
+Route::get('api/:version/order/userOrderings', 'api/:version.Order/userOrderings');
 
 Route::post('api/:version/address/save', 'api/:version.Address/save');
 Route::post('api/:version/address/update', 'api/:version.Address/update');
@@ -138,11 +139,14 @@ Route::get('api/:version/categories', 'api/:version.Category/categories');
 Route::get('api/:version/company/categories', 'api/:version.Category/companyCategories');
 
 Route::post('api/:version/shop/product/save', 'api/:version.Shop/saveProduct');
+Route::post('api/:version/shop/order/save', 'api/:version.Shop/saveOrder');
 Route::post('api/:version/shop/product/update', 'api/:version.Shop/updateProduct');
 Route::post('api/:version/shop/product/handel', 'api/:version.Shop/handel');
 Route::post('api/:version/shop/stock/save', 'api/:version.Shop/saveProductStock');
+Route::post('api/:version/shop/product/saveComment', 'api/:version.Shop/saveComment');
 Route::get('api/:version/shop/product', 'api/:version.Shop/product');
 Route::get('api/:version/shop/products', 'api/:version.Shop/products');
 Route::get('api/:version/shop/official/products', 'api/:version.Shop/officialProducts');
 Route::get('api/:version/shop/supplier/products', 'api/:version.Shop/supplierProducts');
 Route::get('api/:version/shop/cms/products', 'api/:version.Shop/cmsProducts');
+Route::get('api/:version/shop/product/comments', 'api/:version.Shop/productComments');

@@ -15,7 +15,7 @@ class Order extends BaseValidate
         'id' => 'require|isPositiveInteger',
         'dinner_id' => 'require|isPositiveInteger',
         'count' => 'require|isPositiveInteger',
-        'type' => 'require|in:1,2',
+        'type' => 'require|in:1,2,3',
         'ordering_date' => 'require|isNotEmpty',
         'detail' => 'require|isNotEmpty',
     ];
@@ -29,5 +29,7 @@ class Order extends BaseValidate
         'changeOrderCount' => ['id', 'count'],
         'changeOrderFoods' => ['id', 'detail'],
         'personalChoiceInfo' => ['id'],
+        'userOrders' => ['id','type'],
+        'userOrderings' => ['id','type'],
     ];
 }

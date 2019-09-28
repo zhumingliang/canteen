@@ -14,6 +14,8 @@ use app\api\model\DinnerT;
 use app\api\model\OrderDetailT;
 use app\api\model\OrderingV;
 use app\api\model\OrderT;
+use app\api\model\ShopOrderingV;
+use app\api\model\ShopOrderT;
 use app\lib\enum\CommonEnum;
 use app\lib\enum\MenuEnum;
 use app\lib\enum\OrderEnum;
@@ -106,6 +108,7 @@ class OrderService extends BaseService
                     'f_id' => $v2['food_id'],
                     'price' => $v2['price'],
                     'count' => $v2['count'],
+                    'name' => $v2['name'],
                     'o_id' => $o_id,
                     'state' => CommonEnum::STATE_IS_OK,
                 ];
@@ -576,6 +579,7 @@ class OrderService extends BaseService
                         'f_id' => $v2['food_id'],
                         'price' => $v2['price'],
                         'count' => $v2['count'],
+                        'name' => $v2['name'],
                         'o_id' => $o_id,
                         'state' => CommonEnum::STATE_IS_OK,
                     ];
@@ -705,4 +709,30 @@ class OrderService extends BaseService
         $info = OrderT:: personalChoiceInfo($id);
         return $info;
     }
+
+    public function userOrders($type, $id, $page, $size)
+    {
+        $u_id = Token::getCurrentUid();
+        if ($type == OrderEnum::USER_ORDER_SHOP) {
+
+            $orders = ShopOrderingV::userOrderings($u_id, $id, $page, $size);
+
+        } else {
+            $orders = OrderingV::userOrderings($u_id, $type, $id, $page, $size);
+        }
+        return $orders;
+    }
+
+    public function orderDetail($type, $id)
+    {
+        $u_id = Token::getCurrentUid();
+        if ($type == OrderEnum::USER_ORDER_SHOP) {
+            $order = ShopOrderT::orderInfo($id);
+
+        } else {
+            $order = OrderingV::userOrderings($u_id, $type, $id);
+        }
+        return $orders;
+    }
+
 }

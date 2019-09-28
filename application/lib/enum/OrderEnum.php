@@ -26,4 +26,11 @@ class OrderEnum
     const ORDERING_CHOICE = 'personal_choice';
 
     const ORDERING_ONLINE = 'online';
+
+
+    const USER_ORDER_CANTEEN = 1;
+
+    const USER_ORDER_OUTSIDE = 2;
+
+    const USER_ORDER_SHOP = 3;
 }
