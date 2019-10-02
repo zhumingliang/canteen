@@ -351,5 +351,11 @@ class DepartmentService
 
     }
 
+    public function getCompanyStaffCounts($company_id)
+    {
+        $count = CompanyStaffT::getCompanyStaffCounts($company_id);
+        return $count;
+    }
+
 
 }

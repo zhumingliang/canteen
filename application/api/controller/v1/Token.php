@@ -30,7 +30,7 @@ use think\facade\Request;
 class Token extends Controller
 {
     /**
-     * @api {POST} /api/v1/token/admin  CMS管理端-获取登陆token
+     * @api {POST} /api/v1/token/admin  CMS管理端-获取登录token
      * @apiGroup  CMS
      * @apiVersion 3.0.0
      * @apiDescription  后台用户登录
@@ -80,7 +80,6 @@ class Token extends Controller
         return json(new SuccessMessageWithData(['data' => $token]));
     }
 
-
     /**
      * @api {GET} /api/v1/token/login/out  CMS管理端-退出登陆
      * @apiGroup  CMS
@@ -122,6 +121,5 @@ class Token extends Controller
         return json(new SuccessMessageWithData(['data' => $token]));
 
     }
-
 
 }

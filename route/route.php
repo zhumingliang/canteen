@@ -40,9 +40,13 @@ Route::post('api/:version/canteen/consumptionStrategy/save', 'api/:version.Cante
 Route::post('api/:version/canteen/consumptionStrategy/update', 'api/:version.Canteen/updateConsumptionStrategy');
 Route::post('api/:version/canteen/model/category', 'api/:version.Canteen/canteenModuleCategoryHandel');
 Route::post('api/:version/canteen/saveComment', 'api/:version.Canteen/saveComment');
+Route::post('api/:version/canteen/saveMachine', 'api/:version.Canteen/saveMachine');
+Route::post('api/:version/canteen/updateMachine', 'api/:version.Canteen/updateMachine');
+Route::post('api/:version/canteen/deleteMachine', 'api/:version.Canteen/deleteMachine');
 Route::get('api/:version/canteen/consumptionStrategy', 'api/:version.Canteen/consumptionStrategy');
 Route::get('api/:version/canteen/configuration', 'api/:version.Canteen/configuration');
 Route::get('api/:version/canteens/role', 'api/:version.Canteen/roleCanteens');
+Route::get('api/:version/canteens/company', 'api/:version.Canteen/getCanteensForCompany');
 Route::get('api/:version/canteen/dinners/user', 'api/:version.Canteen/currentCanteenDinners');
 
 Route::get('api/:version/roles', 'api/:version.Role/roles');

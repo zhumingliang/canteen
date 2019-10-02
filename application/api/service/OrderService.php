@@ -730,9 +730,9 @@ class OrderService extends BaseService
             $order = ShopOrderT::orderInfo($id);
 
         } else {
-            $order = OrderingV::userOrderings($u_id, $type, $id);
+            $order = OrderT::orderInfo($id);
         }
-        return $orders;
+        return $order;
     }
 
 }

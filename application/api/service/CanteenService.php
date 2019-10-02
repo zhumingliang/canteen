@@ -14,6 +14,7 @@ use app\api\model\CompanyStaffV;
 use app\api\model\CompanyT;
 use app\api\model\ConsumptionStrategyT;
 use app\api\model\DinnerT;
+use app\api\model\MachineT;
 use app\api\model\MenuT;
 use app\api\model\StaffV;
 use app\api\model\SystemCanteenModuleT;
@@ -21,6 +22,7 @@ use app\lib\enum\AdminEnum;
 use app\lib\enum\CommonEnum;
 use app\lib\enum\ModuleEnum;
 use app\lib\exception\AuthException;
+use app\lib\exception\DeleteException;
 use app\lib\exception\ParameterException;
 use app\lib\exception\SaveException;
 use app\lib\exception\UpdateException;
@@ -271,10 +273,8 @@ class CanteenService
 
     private function superCompanyMangerCanteens($c_id)
     {
-
         $canteens = (new CompanyService())->superManagerCompanies($c_id);
         return $canteens;
-
     }
 
     private function companyManagerCanteens($admin_id)
@@ -366,6 +366,75 @@ class CanteenService
             throw new ParameterException(['msg' => '参数错误，饭堂不存在']);
         }
         return $canteen->c_id;
+    }
+
+    public function saveMachine($params)
+    {
+        if (!empty($params['pwd'])) {
+            $params['pwd'] = sha1($params['pwd']);
+        }
+        $machine = MachineT::create($params);
+        if (!$machine) {
+            throw new SaveException();
+        }
+    }
+
+    public function updateMachine($params)
+    {
+        if (!empty($params['pwd'])) {
+            $params['pwd'] = sha1($params['pwd']);
+        }
+        $machine = MachineT::update($params);
+        if (!$machine) {
+            throw new UpdateException();
+        }
+    }
+
+    /**
+     * 获取企业下所有饭堂信息和饭堂模块信息/设备信息
+     */
+    public function getCanteensForCompany($company_id)
+    {
+        $staffs = (new DepartmentService())->getCompanyStaffCounts($company_id);
+        $canteens = CanteenT::getCanteensForCompany($company_id);
+        $canteens = $this->prefixCanteenMachineState($canteens);
+        return [
+            'staffs' => $staffs,
+            'canteens' => $canteens
+        ];
+
+    }
+
+    private function prefixCanteenMachineState($canteens)
+    {
+        if (count($canteens)) {
+            foreach ($canteens as $k => $v) {
+                $machines = $v['machines'];
+                if (count($machines)) {
+                    foreach ($machines as $k2 => $v2) {
+                        $machines[$k2]['state'] = $this->checkMachineState($v2['id']);
+                    }
+                    $canteens[$k]['machines'] = $machines;
+
+                }
+            }
+        }
+        return $canteens;
+
+    }
+
+    private function checkMachineState($machine_id)
+    {
+        return 1;
+
+    }
+
+    public function deleteMachine($machine_id)
+    {
+        $machine = MachineT::update(['state' => CommonEnum::STATE_IS_FAIL], ['id' => $machine_id]);
+        if (!$machine) {
+            throw  new DeleteException();
+        }
     }
 
 

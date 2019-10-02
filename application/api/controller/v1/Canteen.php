@@ -340,5 +340,121 @@ class Canteen extends BaseController
         return json(new SuccessMessage());
     }
 
+    /**
+     * @api {POST} /api/v1/canteen/saveMachine CMS管理端-企业管理-添加饭堂硬件
+     * @apiGroup   CMS
+     * @apiVersion 3.0.0
+     * @apiDescription     CMS管理端-企业管理-添加饭堂硬件
+     * @apiExample {post}  请求样例:
+     *    {
+     *       "c_id": 6,
+     *       "name": "1号设备",
+     *       "number": "001",
+     *       "code": "dadas12121",
+     *       "pwd": "a111",
+     *     }
+     * @apiParam (请求参数说明) {string} name  设备名称
+     * @apiParam (请求参数说明) {int} c_id  饭堂id
+     * @apiParam (请求参数说明) {string} number  编号
+     * @apiParam (请求参数说明) {string} code  设备号
+     * @apiParam (请求参数说明) {string} pwd  设备登陆密码
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     */
+    public function saveMachine()
+    {
+        $params = Request::param();
+        (new CanteenService())->saveMachine($params);
+        return json(new SuccessMessage());
+    }
+
+    /**
+     * @api {POST} /api/v1/canteen/deleteMachine  CMS管理端-企业明细-删除设备
+     * @apiGroup   CMS
+     * @apiVersion 3.0.0
+     * @apiDescription    CMS管理端-企业明细-删除设备
+     * @apiExample {post}  请求样例:
+     *    {
+     *       "id": "1"
+     *     }
+     * @apiParam (请求参数说明) {int} id  设备id
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     */
+    public function deleteMachine()
+    {
+        $id = Request::param('id');
+        (new CanteenService())->deleteMachine($id);
+        return json(new SuccessMessage());
+    }
+
+
+    /**
+     * @api {POST} /api/v1/canteen/updateMachine CMS管理端-企业管理-修改饭堂硬件信息
+     * @apiGroup   CMS
+     * @apiVersion 3.0.0
+     * @apiDescription    CMS管理端-企业管理-修改饭堂硬件信息
+     * @apiExample {post}  请求样例:
+     *    {
+     *       "id": 1,
+     *       "name": "1号设备",
+     *       "number": "001",
+     *       "code": "dadas12121",
+     *       "pwd": "a111",
+     *     }
+     * @apiParam (请求参数说明) {int} id  设备id
+     * @apiParam (请求参数说明) {string} name  设备名称
+     * @apiParam (请求参数说明) {string} number  编号
+     * @apiParam (请求参数说明) {string} code  设备号
+     * @apiParam (请求参数说明) {string} pwd  设备登陆密码
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     */
+    public function updateMachine()
+    {
+        $params = Request::param();
+        (new CanteenService())->updateMachine($params);
+        return json(new SuccessMessage());
+    }
+
+    /**
+     * @api {GET} /api/v1/canteens/company CMS管理端--企业明细-查看企业饭堂信息
+     * @apiGroup  CMS
+     * @apiVersion 3.0.0
+     * @apiDescription CMS管理端--企业明细-查看企业饭堂信息
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/canteens/company
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"staffs":330,"canteens":[{"id":6,"c_id":3,"name":"饭堂1","modules":[{"id":1,"canteen_id":6,"parent_id":0,"type":1,"name":"设置"},{"id":2,"canteen_id":6,"parent_id":1,"type":2,"name":"小卖部"}],"machines":[{"id":2,"c_id":6,"name":"刷卡器1号","code":"a111111","number":"001","state":1}]},{"id":7,"c_id":3,"name":"饭堂2","modules":[{"id":1,"canteen_id":7,"parent_id":0,"type":1,"name":"设置"},{"id":2,"canteen_id":7,"parent_id":1,"type":2,"name":"小卖部"}],"machines":[]}]}}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {String} msg 信息描述
+     * @apiSuccess (返回参数说明) {int} staffs  企业人数
+     * @apiSuccess (返回参数说明) {obj} canteens  饭堂信息
+     * @apiSuccess (返回参数说明) {string} canteens|name  饭堂名称
+     * @apiSuccess (返回参数说明) {obj} canteens|modules  饭堂模块信息
+     * @apiSuccess (返回参数说明) {int} modules|id 模块id
+     * @apiSuccess (返回参数说明) {string} modules|name  模块名称
+     * @apiSuccess (返回参数说明) {string} modules|parent_id  模块上级id
+     * @apiSuccess (返回参数说明) {int} modules|type  模块类别：1|pc端；2|小卖部
+     * @apiSuccess (返回参数说明) {obj} canteens|machines 饭堂设备信息
+     * @apiSuccess (返回参数说明) {int} machines|id 设备id
+     * @apiSuccess (返回参数说明) {string} machines|number 设备序号
+     * @apiSuccess (返回参数说明) {string} machines|code 设备硬件号
+     * @apiSuccess (返回参数说明) {string} machines|name 设备硬件名称
+     * @apiSuccess (返回参数说明) {int} machines|state 状态：1|正常；2|异常
+     */
+    public function getCanteensForCompany()
+    {
+        $company_id = Request::param('company_id');
+        $canteens = (new CanteenService())->getCanteensForCompany($company_id);
+        return json(new SuccessMessageWithData(['data' => $canteens]));
+    }
+
 
 }

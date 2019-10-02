@@ -42,4 +42,11 @@ class CompanyStaffT extends Model
             ->where('state', CommonEnum::STATE_IS_OK)
             ->find();
     }
+
+    public static function getCompanyStaffCounts($company_id)
+    {
+        return self::where('company_id', $company_id)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->count();
+    }
 }

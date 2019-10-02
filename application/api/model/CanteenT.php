@@ -21,6 +21,22 @@ class CanteenT extends Model
 
     }
 
+    public function machines(){
+        return $this->hasMany('MachineT','c_id','id');
+    }
+
+    /*
+        public function modules()
+
+        {
+            return $this->hasMany('CanteenModuleT', 'c_id', 'id');
+        }*/
+
+    public function modules()
+    {
+        return $this->hasMany('CanteenModuleV', 'canteen_id', 'id');
+    }
+
     public static function canteensMenu($page, $size, $canteen_id)
     {
         $menus = self::whereIn('id', $canteen_id)
@@ -47,7 +63,23 @@ class CanteenT extends Model
         $canteen = self::where('id', $canteen_id)
             ->find();
         return $canteen;
+    }
 
+    public static function getCanteensForCompany($company_id)
+    {
+        $canteens = self::where('c_id', $company_id)
+            ->with([
+                'modules' => function ($query) {
+                    $query->field('id,canteen_id,parent_id,type,name')
+                        ->order('order');
+                },
+                'machines'=>function ($query) {
+                    $query->field('id,c_id,name,code,number');
+                },
+            ])
+            ->field('id,c_id,name')
+            ->select()->toArray();
+        return $canteens;
     }
 
 }
