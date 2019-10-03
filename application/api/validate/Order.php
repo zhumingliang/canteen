@@ -31,5 +31,6 @@ class Order extends BaseValidate
         'personalChoiceInfo' => ['id'],
         'userOrders' => ['id','type'],
         'userOrderings' => ['id','type'],
+        'orderDetail' => ['id','type'],
     ];
 }

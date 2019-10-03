@@ -20,6 +20,7 @@ use app\lib\enum\CommonEnum;
 use app\lib\enum\MenuEnum;
 use app\lib\enum\OrderEnum;
 use app\lib\enum\PayEnum;
+use app\lib\exception\AuthException;
 use app\lib\exception\ParameterException;
 use app\lib\exception\SaveException;
 use app\lib\exception\UpdateException;
@@ -725,13 +726,16 @@ class OrderService extends BaseService
 
     public function orderDetail($type, $id)
     {
-        $u_id = Token::getCurrentUid();
+        //$u_id = Token::getCurrentUid();
         if ($type == OrderEnum::USER_ORDER_SHOP) {
             $order = ShopOrderT::orderInfo($id);
-
         } else {
-            $order = OrderT::orderInfo($id);
+            $order = OrderT::orderDetail($id);
         }
+       /* if ($order->u_id != $u_id) {
+            throw new AuthException();
+        }*/
+
         return $order;
     }
 

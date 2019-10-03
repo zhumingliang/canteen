@@ -21,7 +21,7 @@ class OrderT extends Model
 
     public function address()
     {
-        return $this->belongsTo('UserAddress', 'address_id', 'id');
+        return $this->belongsTo('UserAddressT', 'address_id', 'id');
 
     }
 
@@ -42,7 +42,7 @@ class OrderT extends Model
         return $info;
     }
 
-    public function orderInfo($id)
+    public static function orderInfo($id)
     {
         $info = self::where('id', $id)
             ->with([
@@ -55,5 +55,23 @@ class OrderT extends Model
             ->find();
         return $info;
     }
+
+    public static function orderDetail($id)
+    {
+        $info = self::where('id', $id)
+            ->with([
+                'foods' => function ($query) {
+                    $query->where('state', CommonEnum::STATE_IS_OK)
+                        ->field('id as detail_id ,o_id,f_id as food_id,count,name');
+                },
+                'address' => function ($query) {
+                    $query->field('id,province,city,area,address,name,phone,sex');
+                }
+            ])
+            ->field('id,u_id,type as order_type,ordering_type,count,address_id,state')
+            ->find();
+        return $info;
+    }
+
 
 }

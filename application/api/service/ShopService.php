@@ -4,7 +4,6 @@
 namespace app\api\service;
 
 
-use app\api\model\OrderDetailT;
 use app\api\model\ShopModuleT;
 use app\api\model\ShopOrderDetailT;
 use app\api\model\ShopOrderQrcodeT;
@@ -15,10 +14,10 @@ use app\api\model\ShopProductStockT;
 use app\api\model\ShopProductStockV;
 use app\api\model\ShopProductT;
 use app\api\model\ShopT;
-use app\api\model\StaffQrcodeT;
 use app\api\model\SystemShopModuleT;
 use app\lib\enum\CommonEnum;
 use app\lib\enum\ModuleEnum;
+use app\lib\enum\OrderEnum;
 use app\lib\enum\PayEnum;
 use app\lib\enum\ShopEnum;
 use app\lib\exception\AuthException;
@@ -27,8 +26,6 @@ use app\lib\exception\SaveException;
 use app\lib\exception\UpdateException;
 use think\Db;
 use think\Exception;
-use think\Model;
-use think\Request;
 
 class ShopService
 {
@@ -353,5 +350,29 @@ class ShopService
     {
         $comments = ShopProductCommentT::productComments($product_id, $page, $size);
         return $comments;
+    }
+
+    public function orderCancel($id)
+    {
+        $order = ShopOrderT::get($id);
+        if (!$order) {
+            throw new ParameterException(['msg' => '订单不存在']);
+        }
+        if ($order->complete = CommonEnum::STATE_IS_OK) {
+            throw new UpdateException(['msg' => '订单已经完成，不能取消']);
+        }
+        $distribution = $order->distribution;
+        if ($distribution == OrderEnum::USER_ORDER_OUTSIDE) {
+            //外送
+            if ($order->send = CommonEnum::STATE_IS_OK) {
+                throw new UpdateException(['msg' => '订单正在派送，不能取消']);
+            }
+        }
+        $order->state = CommonEnum::STATE_IS_FAIL;
+        $res = $order->save();
+        if (!$res) {
+            throw new UpdateException(['msg' => '订单取消失败']);
+        }
+
     }
 }

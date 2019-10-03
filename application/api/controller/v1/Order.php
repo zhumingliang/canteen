@@ -291,13 +291,44 @@ class Order extends BaseController
         return json(new SuccessMessageWithData(['data' => $orders]));
     }
 
+    /**
+     * @api {GET} /api/v1/order/detail 微信端-订单查询-获取订单详情
+     * @apiGroup  Official
+     * @apiVersion 3.0.0
+     * @apiDescription 微信端-订单查询-获取订单详情
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/order/detail?id=8&type=1
+     * @apiParam (请求参数说明) {int} type  类型：1|就餐；2|外卖；3|小卖部
+     * @apiParam (请求参数说明) {int} id  订单id
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"id":8,"u_id":3,"order_type":1,"ordering_type":"personal_choice|","count":1,"address_id":1,"state":1,"foods":[{"detail_id":5,"o_id":8,"food_id":1,"count":1,"name":"菜品1"},{"detail_id":6,"o_id":8,"food_id":3,"count":1,"name":"菜品2"}],"address":{"id":1,"province":"广东省","city":"江门市","area":"蓬江区","address":"江门市白石大道东4号路3栋","name":"张三","phone":"18956225230","sex":1}}}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     * @apiSuccess (返回参数说明) {int} id 订单id
+     * @apiSuccess (返回参数说明) {float} order_type  订单类型，饭堂订单：1|食堂，2|外卖；小卖部订单：1|到店取；2|送货上门
+     * @apiSuccess (返回参数说明) {int} count  订餐数量
+     * @apiSuccess (返回参数说明) {int} ordering_type  订单类别：shop|小卖部；personal_choice|个人选菜；online|在线订餐
+     * @apiSuccess (返回参数说明) {obj} address 地址信息：order_type=2时此数据不为空
+     * @apiSuccess (返回参数说明) {string} address|province  省
+     * @apiSuccess (返回参数说明) {string} address|city  城市
+     * @apiSuccess (返回参数说明) {string} address|area  区
+     * @apiSuccess (返回参数说明) {string} address|address  详细地址
+     * @apiSuccess (返回参数说明) {string} address|name  姓名
+     * @apiSuccess (返回参数说明) {string} address|phone  手机号
+     * @apiSuccess (返回参数说明) {int} address|sex  性别：1|男；2|女
+     * @apiSuccess (返回参数说明) {obj} foods ：order_type=2时此数据不为空
+     * @apiSuccess (返回参数说明) {int} foods|food_id 菜品id
+     * @apiSuccess (返回参数说明) {string} foods|price 菜品实时单价
+     * @apiSuccess (返回参数说明) {string} foods|count 菜品数量
+     * @apiSuccess (返回参数说明) {string} foods|name 菜品名称
+     * @apiSuccess (返回参数说明) {string} foods|unit 小卖部商品单位
+     */
     public function orderDetail()
     {
         $type = Request::param('type');
         $id = Request::param('id');
         $order = (new OrderService())->orderDetail($type, $id);
         return json(new SuccessMessageWithData(['data' => $order]));
-
     }
 
 

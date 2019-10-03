@@ -118,6 +118,7 @@ Route::post('api/:version/order/cancel', 'api/:version.Order/orderCancel');
 Route::post('api/:version/order/changeCount', 'api/:version.Order/changeOrderCount');
 Route::post('api/:version/order/changeFoods', 'api/:version.Order/changeOrderFoods');
 Route::get('api/:version/order/userOrderings', 'api/:version.Order/userOrderings');
+Route::get('api/:version/order/detail', 'api/:version.Order/orderDetail');
 
 Route::post('api/:version/address/save', 'api/:version.Address/save');
 Route::post('api/:version/address/update', 'api/:version.Address/update');
@@ -144,6 +145,7 @@ Route::get('api/:version/company/categories', 'api/:version.Category/companyCate
 
 Route::post('api/:version/shop/product/save', 'api/:version.Shop/saveProduct');
 Route::post('api/:version/shop/order/save', 'api/:version.Shop/saveOrder');
+Route::post('api/:version/shop/order/cancel', 'api/:version.Shop/orderCancel');
 Route::post('api/:version/shop/product/update', 'api/:version.Shop/updateProduct');
 Route::post('api/:version/shop/product/handel', 'api/:version.Shop/handel');
 Route::post('api/:version/shop/stock/save', 'api/:version.Shop/saveProductStock');

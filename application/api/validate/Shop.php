@@ -28,5 +28,6 @@ class Shop extends BaseValidate
         'product' => ['id'],
         'saveProductStock' => ['product_id', 'count'],
         'saveOrder' => ['count', 'distribution', 'products'],
+        'orderCancel' => ['id'],
     ];
 }
