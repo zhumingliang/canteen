@@ -726,15 +726,15 @@ class OrderService extends BaseService
 
     public function orderDetail($type, $id)
     {
-        //$u_id = Token::getCurrentUid();
+        $u_id = Token::getCurrentUid();
         if ($type == OrderEnum::USER_ORDER_SHOP) {
             $order = ShopOrderT::orderInfo($id);
         } else {
             $order = OrderT::orderDetail($id);
         }
-       /* if ($order->u_id != $u_id) {
+        if ($order->u_id != $u_id) {
             throw new AuthException();
-        }*/
+        }
 
         return $order;
     }

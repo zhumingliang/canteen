@@ -307,7 +307,8 @@ class Order extends BaseController
      * @apiSuccess (返回参数说明) {int} id 订单id
      * @apiSuccess (返回参数说明) {float} order_type  订单类型，饭堂订单：1|食堂，2|外卖；小卖部订单：1|到店取；2|送货上门
      * @apiSuccess (返回参数说明) {int} count  订餐数量
-     * @apiSuccess (返回参数说明) {int} ordering_type  订单类别：shop|小卖部；personal_choice|个人选菜；online|在线订餐
+     * @apiSuccess (返回参数说明) {string} ordering_type  订单类别：shop|小卖部；personal_choice|个人选菜；online|在线订餐
+     * @apiSuccess (返回参数说明) {string} ordering_date  饭堂订单中订餐日期
      * @apiSuccess (返回参数说明) {obj} address 地址信息：order_type=2时此数据不为空
      * @apiSuccess (返回参数说明) {string} address|province  省
      * @apiSuccess (返回参数说明) {string} address|city  城市
