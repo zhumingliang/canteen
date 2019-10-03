@@ -156,3 +156,4 @@ Route::get('api/:version/shop/official/products', 'api/:version.Shop/officialPro
 Route::get('api/:version/shop/supplier/products', 'api/:version.Shop/supplierProducts');
 Route::get('api/:version/shop/cms/products', 'api/:version.Shop/cmsProducts');
 Route::get('api/:version/shop/product/comments', 'api/:version.Shop/productComments');
+Route::get('api/:version/shop/order/deliveryCode', 'api/:version.Shop/deliveryCode');

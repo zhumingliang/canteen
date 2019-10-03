@@ -147,7 +147,6 @@ class Shop extends BaseController
         return json(new SuccessMessage());
     }
 
-
     /**
      * @api {POST} /api/v1/shop/stock/save  CMS管理端-小卖部管理-商品管理-商品入库
      * @apiGroup   CMS
@@ -265,7 +264,6 @@ class Shop extends BaseController
         return json(new SuccessMessageWithData(['data' => $products]));
     }
 
-
     /**
      * @api {POST} /api/v1/shop/order/save 微信端-小卖部-新增订单
      * @apiGroup   Official
@@ -355,7 +353,6 @@ class Shop extends BaseController
         return json(new SuccessMessageWithData(['data' => $comments]));
     }
 
-
     /**
      * @api {POST} /api/v1/shop/order/cancel 微信端-订单查询-取消小卖部订单
      * @apiGroup   Official
@@ -378,5 +375,24 @@ class Shop extends BaseController
         return json(new SuccessMessage());
     }
 
-
+    /**
+     * @api {GET} /api/v1/shop/order/deliveryCode   微信端-订单查询-获取小卖部订单提货码
+     * @apiGroup  CMS
+     * @apiVersion 3.0.0
+     * @apiDescription  微信端-订单查询-获取小卖部订单提货码
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/shop/order/deliveryCode?id=8
+     * @apiParam (请求参数说明) {int} id  订单id
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"url":""}}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {String} msg 信息描述
+     * @apiSuccess (返回参数说明) {int} url  提货二维码地址
+     */
+    public function deliveryCode()
+    {
+        $order_id = Request::param('id');
+        $url = (new ShopService())->deliveryCode($order_id);
+        return json(new SuccessMessageWithData(['data' => ['url' => $url]]));
+    }
 }

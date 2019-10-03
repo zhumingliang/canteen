@@ -128,9 +128,7 @@ class UserService
             throw  new  AuthException(['msg' => '用户信息不存在']);
         }
         if (empty($staff->qrcode)) {
-
             return (new DepartmentService())->saveQrcode($staff->id);
-
         }
         $qrcode = $staff->qrcode;
         if (strtotime($qrcode->expiry_date) >= time()) {

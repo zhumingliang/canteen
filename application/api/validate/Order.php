@@ -29,8 +29,9 @@ class Order extends BaseValidate
         'changeOrderCount' => ['id', 'count'],
         'changeOrderFoods' => ['id', 'detail'],
         'personalChoiceInfo' => ['id'],
-        'userOrders' => ['id','type'],
-        'userOrderings' => ['id','type'],
-        'orderDetail' => ['id','type'],
+        'userOrders' => ['id', 'type'],
+        'userOrderings' => ['id', 'type'],
+        'orderDetail' => ['id', 'type'],
+        'deliveryCode' => ['id'],
     ];
 }

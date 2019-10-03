@@ -26,6 +26,7 @@ use app\lib\exception\SaveException;
 use app\lib\exception\UpdateException;
 use think\Db;
 use think\Exception;
+use think\Request;
 
 class ShopService
 {
@@ -258,9 +259,29 @@ class ShopService
         $data = [
             'code' => $code,
             'o_id' => $o_id,
-            'url' => $qrcode_url
+            'url' => $qrcode_url,
+            'end_time' => date('Y-m-d H:i:s', strtotime("+" . config("setting.shop_qrcode_expire_in") . "minute", time()))
         ];
         $qrcode = ShopOrderQrcodeT::create($data);
+        if (!$qrcode) {
+            throw new SaveException(['msg' => '生成提货二维码失败']);
+        }
+        return $qrcode_url;
+    }
+
+
+    private function updateOrderQrcode($id)
+    {
+        $code = getRandChar(12);
+        $url = sprintf(config("setting.qrcode_url"), 'shop', $code);
+        $qrcode_url = (new QrcodeService())->qr_code($url);
+        $data = [
+            'id' => $id,
+            'code' => $code,
+            'url' => $qrcode_url,
+            'end_time' => date('Y-m-d H:i:s', strtotime("+" . config("setting.shop_qrcode_expire_in") . "minute", time()))
+        ];
+        $qrcode = ShopOrderQrcodeT::update($data);
         if (!$qrcode) {
             throw new SaveException(['msg' => '生成提货二维码失败']);
         }
@@ -361,6 +382,9 @@ class ShopService
         if ($order->complete = CommonEnum::STATE_IS_OK) {
             throw new UpdateException(['msg' => '订单已经完成，不能取消']);
         }
+        if ($order->u_id != Token::getCurrentUid()) {
+            throw new AuthException();
+        }
         $distribution = $order->distribution;
         if ($distribution == OrderEnum::USER_ORDER_OUTSIDE) {
             //外送
@@ -374,5 +398,28 @@ class ShopService
             throw new UpdateException(['msg' => '订单取消失败']);
         }
 
+    }
+
+    public function deliveryCode($order_id)
+    {
+        $order = ShopOrderT::get($order_id);
+        if (!$order) {
+            throw new ParameterException(['msg' => '订单不存在']);
+        }
+        if ($order->u_id != Token::getCurrentUid()) {
+            throw new AuthException();
+        }
+        if ($order->distribution == OrderEnum::USER_ORDER_OUTSIDE) {
+            throw new ParameterException(['msg' => '订单为外送订单，无提货券']);
+        }
+
+        $qrcode = ShopOrderQrcodeT::where('o_id', $order_id)->find();
+        if (!$qrcode) {
+            return $this->prefixOrderQrcode($order_id);
+        }
+        if (strtotime($qrcode->end_time) < time() - config("setting.shop_qrcode_expire_in") * 60) {
+            return $this->updateOrderQrcode($qrcode->id);
+        }
+        return $qrcode->url;
     }
 }
