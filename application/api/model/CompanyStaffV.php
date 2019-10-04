@@ -14,6 +14,11 @@ class CompanyStaffV extends BaseModel
         return $this->prefixImgUrl($value, $data);
     }
 
+    public function canteens()
+    {
+        return $this->hasMany('StaffCanteenT', 'staff_id', 'id');
+    }
+
     public static function companyStaffs($page, $size, $c_id, $d_id)
     {
         $list = self::where('company_id', '=', $c_id)
@@ -23,6 +28,15 @@ class CompanyStaffV extends BaseModel
                     $query->where('d_id', '=', $d_id);
                 }
             })
+            ->with([
+                'canteens' => function ($query) {
+                    $query->with(['info' => function ($query2) {
+                        $query2->field('id,name');
+                    }])
+                        ->field('id,staff_id,canteen_id')
+                        ->where('state', '=', CommonEnum::STATE_IS_OK);
+                }
+            ])
             ->hidden(['company_id', 'state'])
             ->order('create_time desc')
             ->paginate($size, false, ['page' => $page]);

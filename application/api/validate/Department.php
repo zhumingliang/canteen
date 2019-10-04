@@ -16,6 +16,7 @@ class Department extends BaseValidate
         'phone' => 'require|isMobile',
         'card_num' => 'require|isNotEmpty',
         'name' => 'require|isNotEmpty',
+        'canteens' => 'require|isNotEmpty',
         'parent_id' => 'require'
     ];
 
@@ -24,7 +25,7 @@ class Department extends BaseValidate
         'update' => ['name', 'id'],
         'delete' => ['id'],
         'departments' => ['c_id'],
-        'addStaff' => ['c_id', 'd_id', 't_id', 'username', 'code', 'phone', 'card_num'],
+        'addStaff' => ['canteens', 'd_id', 't_id', 'username', 'code', 'phone', 'card_num'],
         'updateStaff' => ['id'],
         'deleteStaff' => ['id'],
         'uploadStaffs' => ['c_id'],

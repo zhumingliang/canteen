@@ -9,6 +9,7 @@ use app\api\model\CompanyDepartmentT;
 use app\api\model\CompanyStaffT;
 use app\api\model\CompanyStaffV;
 use app\api\model\DepartmentV;
+use app\api\model\StaffCanteenT;
 use app\api\model\StaffQrcodeT;
 use app\api\model\StaffV;
 use app\lib\enum\CommonEnum;
@@ -32,20 +33,6 @@ class DepartmentService
             throw new SaveException();
         }
         return $department->id;
-    }
-
-    public function updateStaff($params)
-    {
-        if (key_exists('expiry_date', $params)) {
-            $qrcode = StaffQrcodeT::update(['expiry_date' => $params['expiry_date']], ['s_id' => $params['id']]);
-            if (!$qrcode) {
-                throw new UpdateException(['msg' => '更新二维码有效期失败']);
-            }
-        }
-        $staff = CompanyStaffT::update($params);
-        if (!$staff) {
-            throw new UpdateException();
-        }
     }
 
     public function deleteDepartment($id)
@@ -83,7 +70,7 @@ class DepartmentService
     public function addStaff($params)
     {
         try {
-            Db::startTrans();;
+            Db::startTrans();
             $params['state'] = CommonEnum::STATE_IS_OK;
             $canteen = CanteenT::get($params['c_id']);
             $params['company_id'] = $canteen->c_id;
@@ -91,6 +78,8 @@ class DepartmentService
             if (!$staff) {
                 throw new SaveException();
             }
+            //保存用户饭堂绑定关系
+            $this->saveStaffCanteen($staff->id, $params['canteens']);
             //保存二维码
             $this->saveQrcode($staff->id);
             Db::commit();
@@ -98,7 +87,78 @@ class DepartmentService
             Db::rollback();
             throw $e;
         }
+    }
 
+    public function updateStaff($params)
+    {
+        try {
+            Db::startTrans();
+            if (key_exists('expiry_date', $params)) {
+                $qrcode = StaffQrcodeT::update(['expiry_date' => $params['expiry_date']], ['s_id' => $params['id']]);
+                if (!$qrcode) {
+                    throw new UpdateException(['msg' => '更新二维码有效期失败']);
+                }
+            }
+            $staff = CompanyStaffT::update($params);
+            if (!$staff) {
+                throw new UpdateException();
+            }
+            //更新用户饭堂绑定关系
+            $this->updateStaffCanteen($staff->id, $params['canteens'], $params['cancel_canteens']);
+            Db::commit();
+        } catch (Exception $e) {
+            Db::rollback();
+            throw $e;
+        }
+    }
+
+    private function saveStaffCanteen($staff_id, $canteens)
+    {
+        $canteens = json_decode($canteens, true);
+        if (empty($canteens)) {
+            throw new ParameterException(['msg' => '字段饭堂id，参数格式错误']);
+        }
+        $data_list = [];
+        foreach ($canteens as $k => $v) {
+            $data_list[] = [
+                'staff_id' => $staff_id,
+                'canteen_id' => $v,
+                'state' => CommonEnum::STATE_IS_OK
+            ];
+        }
+        $res = (new StaffCanteenT())->saveAll($data_list);
+        if (!$res) {
+            throw new SaveException(['msg' => '添加饭堂用户关系失败']);
+        }
+
+    }
+
+    private function updateStaffCanteen($staff_id, $canteens, $cancel_canteens)
+    {
+        $canteens = json_decode($canteens, true);
+        $cancel_canteens = json_decode($cancel_canteens, true);
+        $data_list = [];
+        if (!empty($canteens)) {
+            foreach ($canteens as $k => $v) {
+                $data_list[] = [
+                    'staff_id' => $staff_id,
+                    'canteen_id' => $v,
+                    'state' => CommonEnum::STATE_IS_OK
+                ];
+            }
+        }
+        if (!empty($cancel_canteens)) {
+            foreach ($cancel_canteens as $k => $v) {
+                $data_list[] = [
+                    'id' => $v['id'],
+                    'state' => CommonEnum::STATE_IS_FAIL
+                ];
+            }
+        }
+        $res = (new StaffCanteenT())->saveAll($data_list);
+        if (!$res) {
+            throw new SaveException(['msg' => '更新饭堂用户关系失败']);
+        }
 
     }
 
@@ -140,9 +200,15 @@ class DepartmentService
                 throw  new SaveException();
             }
 
-            $qrcodeInfo = $this->getUploadStaffQrcodeInfo($all);
+            $info = $this->getUploadStaffQrcodeAndCanteenInfo($all);
+            $qrcodeInfo=$info['qrcode'];
+            $canteenInfo=$info['canteen'];
             $qrcods = (new StaffQrcodeT())->saveAll($qrcodeInfo);
             if (!$qrcods) {
+                throw  new SaveException();
+            }
+            $canteens = (new StaffCanteenT())->saveAll($canteenInfo);
+            if (!$canteens) {
                 throw  new SaveException();
             }
 
@@ -177,7 +243,8 @@ class DepartmentService
         $name = $data[4];
         $phone = $data[5];
         $card_num = $data[6];
-
+        $state = $data[7];
+        $canteen_ids = [];
         //判断人员类型是否存在
         $t_id = $this->checkParamExits($types, $staffType);
         if (!$t_id) {
@@ -191,17 +258,34 @@ class DepartmentService
             ];
         }
         //判断饭堂是否存在
-        $c_id = $this->checkParamExits($canteens, $canteen);
-        if (!$c_id) {
+        $canteen_arr = explode('|', $canteen);
+        if (empty($canteen_arr)) {
             $fail = [
                 'name' => $name,
-                'msg' => '企业中不存在该饭堂：' . $canteen
+                'msg' => '饭堂字段为空'
             ];
             return [
                 'res' => false,
                 'info' => $fail
             ];
         }
+
+        foreach ($canteen_arr as $k => $v) {
+            $c_id = $this->checkParamExits($canteens, $v);
+            if (!$c_id) {
+                $fail = [
+                    'name' => $name,
+                    'msg' => '企业中不存在该饭堂：' . $v
+                ];
+                return [
+                    'res' => false,
+                    'info' => $fail
+                ];
+                break;
+            }
+            array_push($canteen_ids, $c_id);
+        }
+
         //检测部门是否存在
         $d_id = $this->checkParamExits($departments, $department);
         if (!$d_id) {
@@ -218,15 +302,15 @@ class DepartmentService
         return [
             'res' => true,
             'info' => [
-                'c_id' => $c_id,
                 'd_id' => $d_id,
                 't_id' => $t_id,
                 'code' => $code,
                 'username' => $name,
                 'phone' => $phone,
                 'card_num' => $card_num,
-                'company_id' => $company_id
-
+                'company_id' => $company_id,
+                'canteen_ids' => implode(',', $canteen_ids),
+                'state' => $state
             ]
         ];
     }
@@ -254,9 +338,10 @@ class DepartmentService
         return $departs;
     }
 
-    private function getUploadStaffQrcodeInfo($staffs)
+    private function getUploadStaffQrcodeAndCanteenInfo($staffs)
     {
         $list = array();
+        $staff_canteen_list = array();
         foreach ($staffs as $k => $v) {
             $code = getRandChar(12);
             $url = sprintf(config("setting.qrcode_url"), $code);
@@ -267,12 +352,28 @@ class DepartmentService
                 'expiry_date' => date('Y-m-d H:i:s', strtotime('+' . config("setting.qrcode_expire_in") . 'minute')),
                 'url' => $qrcode_url
             ];
+
+            $canteen_ids = $v->canteen_ids;
+            $canteen_arr = explode(',', $canteen_ids);
+            if (!empty($canteen_arr)) {
+                foreach ($canteen_arr as $k2 => $v2) {
+                    $staff_canteen_list[] = [
+                        'staff_id' => $v->id,
+                        'canteen_id' => $v2,
+                        'state' => CommonEnum::STATE_IS_OK
+                    ];
+                }
+            }
         }
-        return $list;
+        return [
+            'qrcode' => $list,
+            'canteen' => $staff_canteen_list
+        ];
 
     }
 
-    public function saveQrcode($s_id)
+    public
+    function saveQrcode($s_id)
     {
         $code = getRandChar(12);
         $url = sprintf(config("setting.qrcode_url"), 'canteen', $code);
@@ -290,7 +391,8 @@ class DepartmentService
         return $qrcode_url;
     }
 
-    public function updateQrcode($params)
+    public
+    function updateQrcode($params)
     {
         $code = getRandChar(12);
         $url = sprintf(config("setting.qrcode_url"), $code);
@@ -314,14 +416,16 @@ class DepartmentService
         ];
     }
 
-    public function companyStaffs($page, $size, $c_id, $d_id)
+    public
+    function companyStaffs($page, $size, $c_id, $d_id)
     {
         $staffs = CompanyStaffV::companyStaffs($page, $size, $c_id, $d_id);
         return $staffs;
 
     }
 
-    private function prefixQrcodeExpiryDate($expiry_date, $params)
+    private
+    function prefixQrcodeExpiryDate($expiry_date, $params)
     {
         $type = ['minute', 'hour', 'day', 'month', 'year'];
         $exit = 0;
@@ -338,20 +442,23 @@ class DepartmentService
         return $expiry_date;
     }
 
-    public function departmentStaffs($d_ids)
+    public
+    function departmentStaffs($d_ids)
     {
         $staffs = CompanyStaffT::departmentStaffs($d_ids);
         return $staffs;
     }
 
-    public function getStaffWithPhone($phone)
+    public
+    function getStaffWithPhone($phone)
     {
         $staff = CompanyStaffT::getStaffWithPhone($phone);
         return $staff;
 
     }
 
-    public function getCompanyStaffCounts($company_id)
+    public
+    function getCompanyStaffCounts($company_id)
     {
         $count = CompanyStaffT::getCompanyStaffCounts($company_id);
         return $count;
