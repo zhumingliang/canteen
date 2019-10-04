@@ -10,12 +10,14 @@ use app\api\model\CanteenAccountT;
 use app\api\model\CanteenCommentT;
 use app\api\model\CanteenModuleT;
 use app\api\model\CanteenT;
+use app\api\model\CompanyStaffT;
 use app\api\model\CompanyStaffV;
 use app\api\model\CompanyT;
 use app\api\model\ConsumptionStrategyT;
 use app\api\model\DinnerT;
 use app\api\model\MachineT;
 use app\api\model\MenuT;
+use app\api\model\StaffCanteenV;
 use app\api\model\StaffV;
 use app\api\model\SystemCanteenModuleT;
 use app\lib\enum\AdminEnum;
@@ -328,7 +330,7 @@ class CanteenService
     {
         $phone = Token::getCurrentTokenVar('phone');
         //获取用户所有饭堂
-        $canteens = StaffV::getStaffCanteens($phone);
+        $canteens = CompanyStaffT::getStaffCanteens($phone);
         return $canteens;
     }
 

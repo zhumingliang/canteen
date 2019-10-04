@@ -132,7 +132,7 @@ class Department extends BaseController
      *       "phone": "18956225230"
      *       "card_num": "1212121"
      *     }
-     * @apiParam (请求参数说明) {string}  归属饭堂id列表 canteens json字符串
+     * @apiParam (请求参数说明) {string}  canteens json字符串,归属饭堂id列表
      * @apiParam (请求参数说明) {int} d_id  归属部门id
      * @apiParam (请求参数说明) {int} t_id  人员类型id
      * @apiParam (请求参数说明) {string} code  员工编号

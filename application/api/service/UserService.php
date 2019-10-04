@@ -122,8 +122,7 @@ class UserService
     public function mealCard()
     {
         $phone = Token::getCurrentTokenVar('phone');
-        $current_canteen_id = Token::getCurrentTokenVar('current_canteen_id');
-        $staff = CompanyStaffT::staff($current_canteen_id, $phone);
+        $staff = CompanyStaffT::staff($phone);
         if (!$staff) {
             throw  new  AuthException(['msg' => '用户信息不存在']);
         }
