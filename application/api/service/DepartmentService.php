@@ -120,7 +120,7 @@ class DepartmentService
         foreach ($canteens as $k => $v) {
             $data_list[] = [
                 'staff_id' => $staff_id,
-                'canteen_id' => $v,
+                'canteen_id' => $v['canteen_id'],
                 'state' => CommonEnum::STATE_IS_OK
             ];
         }
@@ -199,8 +199,8 @@ class DepartmentService
             }
 
             $info = $this->getUploadStaffQrcodeAndCanteenInfo($all);
-            $qrcodeInfo=$info['qrcode'];
-            $canteenInfo=$info['canteen'];
+            $qrcodeInfo = $info['qrcode'];
+            $canteenInfo = $info['canteen'];
             $qrcods = (new StaffQrcodeT())->saveAll($qrcodeInfo);
             if (!$qrcods) {
                 throw  new SaveException();
