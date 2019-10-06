@@ -47,6 +47,7 @@ Route::get('api/:version/canteen/consumptionStrategy', 'api/:version.Canteen/con
 Route::get('api/:version/canteen/configuration', 'api/:version.Canteen/configuration');
 Route::get('api/:version/canteens/role', 'api/:version.Canteen/roleCanteens');
 Route::get('api/:version/canteens/company', 'api/:version.Canteen/getCanteensForCompany');
+Route::get('api/:version/canteens', 'api/:version.Canteen/canteens');
 Route::get('api/:version/canteen/dinners/user', 'api/:version.Canteen/currentCanteenDinners');
 
 Route::get('api/:version/roles', 'api/:version.Role/roles');

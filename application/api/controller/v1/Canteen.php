@@ -456,5 +456,26 @@ class Canteen extends BaseController
         return json(new SuccessMessageWithData(['data' => $canteens]));
     }
 
+    /**
+     * @api {GET} /api/v1/canteens CMS管理端--查询类接口-获取企业下饭堂列表
+     * @apiGroup  CMS
+     * @apiVersion 3.0.0
+     * @apiDescription CMS管理端--查询类接口-获取企业下饭堂列表
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/canteens
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":[{"id":6,"name":"饭堂1"},{"id":7,"name":"饭堂2"}]}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {String} msg 信息描述
+     * @apiSuccess (返回参数说明) {int} id  饭堂ID
+     * @apiSuccess (返回参数说明) {obj} name  饭堂名称
+     */
+    public function canteens()
+    {
+        $company_id = Request::param('company_id');
+        $canteens = (new CanteenService())->companyCanteens($company_id);
+        return json(new SuccessMessageWithData(['data' => $canteens]));
+    }
+
 
 }

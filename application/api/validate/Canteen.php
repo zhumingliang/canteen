@@ -36,6 +36,7 @@ class Canteen extends BaseValidate
         'updateConfiguration' => ['c_id'],
         'saveConsumptionStrategy' => ['c_id', 't_id', 'unordered_meals'],
         'saveComment' => ['taste', 'service'],
+        'canteens' => ['company_id'],
         'getCanteensForCompany' => ['company_id'],
         'saveMachine' => ['c_id', 'name', 'number', 'code', 'pwd'],
         'updateMachine' => ['id'],

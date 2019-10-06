@@ -22,7 +22,7 @@ class Menu extends BaseController
      *    {
      *       "c_id": 6
      *       "d_id": 6
-     *      "detail": [{"id":4,"category":"荤菜","status":1,"count":3,"state":2},{"category":"汤","status":2,"count":0}]
+     *       "detail":[{"id":4,"category":"荤菜","status":1,"count":3,"state":2},{"category":"汤","status":2,"count":0}]
      *     }
      * @apiParam (请求参数说明) {int} c_id 饭堂id
      * @apiParam (请求参数说明) {int} d_id  饭堂餐次id
@@ -110,7 +110,6 @@ class Menu extends BaseController
         $menus = (new MenuService())->canteenMenus($canteen_id);
         return json(new SuccessMessageWithData(['data' => $menus]));
     }
-
 
 
 }
