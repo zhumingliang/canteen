@@ -124,6 +124,7 @@ class Department extends BaseController
      * @apiDescription    CMS管理端-新增部门员工
      * @apiExample {post}  请求样例:
      *    {
+     *       "company_id": 1
      *       "canteens": [1,2,3]
      *       "d_id": 2,
      *       "t_id": 2,
@@ -132,6 +133,7 @@ class Department extends BaseController
      *       "phone": "18956225230"
      *       "card_num": "1212121"
      *     }
+     * @apiParam (请求参数说明) {int}  company_id 企业id
      * @apiParam (请求参数说明) {string}  canteens json字符串,归属饭堂id列表
      * @apiParam (请求参数说明) {int} d_id  归属部门id
      * @apiParam (请求参数说明) {int} t_id  人员类型id
@@ -232,7 +234,7 @@ class Department extends BaseController
      * @apiParam (请求参数说明) {int} c_id 企业id
      * @apiParam (请求参数说明) {int} d_id 企业部门id,获取全部传入：0
      * @apiSuccessExample {json} 返回样例:
-    {"msg":"ok","errorCode":0,"code":200,"data":{"total":329,"per_page":"1","current_page":1,"last_page":329,"data":[{"id":350,"t_id":3,"type":"员工","d_id":4,"department":"A部门","code":"123456","username":"里斯","phone":"18956225230","card_num":"a123","create_time":"2019-08-03 00:47:59","expiry_date":"0000-00-00 00:00:00","url":"http:\/\/canteen.tonglingok.com\/static\/qrcode\/517e9af47c57e0e789e4bd113d5b0c9b54a615ca.png","q_id":329,"canteens":[{"id":1,"staff_id":350,"canteen_id":1,"info":{"id":1,"name":"大饭堂"}}]}]}}
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"total":329,"per_page":"1","current_page":1,"last_page":329,"data":[{"id":350,"t_id":3,"type":"员工","d_id":4,"department":"A部门","code":"123456","username":"里斯","phone":"18956225230","card_num":"a123","create_time":"2019-08-03 00:47:59","expiry_date":"0000-00-00 00:00:00","url":"http:\/\/canteen.tonglingok.com\/static\/qrcode\/517e9af47c57e0e789e4bd113d5b0c9b54a615ca.png","q_id":329,"canteens":[{"id":1,"staff_id":350,"canteen_id":1,"info":{"id":1,"name":"大饭堂"}}]}]}}
      * @apiSuccess (返回参数说明) {int} total 数据总数
      * @apiSuccess (返回参数说明) {int} per_page 每页多少条数据
      * @apiSuccess (返回参数说明) {int} current_page 当前页码

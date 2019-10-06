@@ -72,8 +72,6 @@ class DepartmentService
         try {
             Db::startTrans();
             $params['state'] = CommonEnum::STATE_IS_OK;
-            $canteen = CanteenT::get($params['c_id']);
-            $params['company_id'] = $canteen->c_id;
             $staff = CompanyStaffT::create($params);
             if (!$staff) {
                 throw new SaveException();

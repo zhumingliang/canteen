@@ -9,6 +9,7 @@ class Department extends BaseValidate
     protected $rule = [
         'id' => 'require|isPositiveInteger',
         'c_id' => 'require|isPositiveInteger',
+        'company_id' => 'require|isPositiveInteger',
         'd_id' => 'require|isPositiveInteger',
         't_id' => 'require|isPositiveInteger',
         'username' => 'require|isNotEmpty',
@@ -25,12 +26,12 @@ class Department extends BaseValidate
         'update' => ['name', 'id'],
         'delete' => ['id'],
         'departments' => ['c_id'],
-        'addStaff' => ['canteens', 'd_id', 't_id', 'username', 'code', 'phone', 'card_num'],
+        'addStaff' => ['company_id', 'canteens', 'd_id', 't_id', 'username', 'code', 'phone', 'card_num'],
         'updateStaff' => ['id'],
         'deleteStaff' => ['id'],
         'uploadStaffs' => ['c_id'],
-        'staffs' => ['c_id','d_id'],
-        'moveStaffDepartment' => ['id','d_id'],
+        'staffs' => ['c_id', 'd_id'],
+        'moveStaffDepartment' => ['id', 'd_id'],
     ];
 
 }
