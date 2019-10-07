@@ -50,10 +50,11 @@ class Menu extends BaseController
      * @apiVersion 3.0.0
      * @apiDescription  CMS管理端-菜单设置-菜单设置列表
      * @apiExample {get}  请求样例:
-     * http://canteen.tonglingok.com/api/v1/menus/company?page=1&size=10&canteen_id="1,2,3"
+     * http://canteen.tonglingok.com/api/v1/menus/company?page=1&size=10&company_id=1&canteen_id=2
      * @apiParam (请求参数说明) {int} page 当前页码
      * @apiParam (请求参数说明) {int} size 每页多少条数据
-     * @apiParam (请求参数说明) {String} canteen_id 饭堂id，多个用逗号分隔
+     * @apiParam (请求参数说明) {String} company_id 企业id，全部传入所有id用逗号分隔
+     * @apiParam (请求参数说明) {String} canteen_id 饭堂id，全部传入0
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200,"data":{"total":3,"per_page":10,"current_page":1,"last_page":1,"data":[{"id":5,"name":"饭堂2","c_id":2,"company":{"id":2,"name":"一级企业","grade":1},"dinner":[]},{"id":6,"name":"饭堂1","c_id":3,"company":{"id":3,"name":"企业A","grade":1},"dinner":[{"id":5,"c_id":6,"name":"早餐","menus":[]},{"id":6,"c_id":6,"name":"中餐","menus":[{"id":1,"d_id":6,"category":"荤菜","status":1,"count":3},{"id":2,"d_id":6,"category":"汤","status":2,"count":0}]},{"id":7,"c_id":6,"name":"晚餐","menus":[]}]},{"id":7,"name":"饭堂2","c_id":3,"company":{"id":3,"name":"企业A","grade":1},"dinner":[]}]}}
      * @apiSuccess (返回参数说明) {int} total 数据总数
@@ -80,8 +81,9 @@ class Menu extends BaseController
     public function companyMenus($page = 1, $size = 10)
     {
         $params = Request::param();
+        $company_id = $params['company_id'];
         $canteen_id = $params['canteen_id'];
-        $menus = (new MenuService())->companyMenus($page, $size, $canteen_id);
+        $menus = (new MenuService())->companyMenus($page, $size, $company_id,$canteen_id);
         return json(new SuccessMessageWithData(['data' => $menus]));
     }
 

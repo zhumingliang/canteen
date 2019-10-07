@@ -65,9 +65,9 @@ class MenuService
         }
     }
 
-    public function companyMenus($page, $size, $canteen_id)
+    public function companyMenus($page, $size, $company_id,$canteen_id)
     {
-        $menus = CanteenT::canteensMenu($page, $size, $canteen_id);
+        $menus = CanteenT::canteensMenu($page, $size, $company_id,$canteen_id);
         return $menus;
     }
 

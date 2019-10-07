@@ -21,8 +21,9 @@ class CanteenT extends Model
 
     }
 
-    public function machines(){
-        return $this->hasMany('MachineT','c_id','id');
+    public function machines()
+    {
+        return $this->hasMany('MachineT', 'c_id', 'id');
     }
 
     /*
@@ -37,9 +38,17 @@ class CanteenT extends Model
         return $this->hasMany('CanteenModuleV', 'canteen_id', 'id');
     }
 
-    public static function canteensMenu($page, $size, $canteen_id)
+    public static function canteensMenu($page, $size, $company_id, $canteen_id)
     {
-        $menus = self::whereIn('id', $canteen_id)
+        $menus = self::where(function ($query) use ($company_id) {
+            if (strlen($company_id)) {
+                $query->whereIn('c_id', $company_id);
+            }
+        })->where(function ($query) use ($canteen_id) {
+            if (!empty($canteen_id)) {
+                $query->whereIn('id', $canteen_id);
+            }
+        })
             ->where('state', CommonEnum::STATE_IS_OK)
             ->with([
                 'company' => function ($query) {
@@ -73,7 +82,7 @@ class CanteenT extends Model
                     $query->field('id,canteen_id,parent_id,type,name')
                         ->order('order');
                 },
-                'machines'=>function ($query) {
+                'machines' => function ($query) {
                     $query->field('id,c_id,name,code,number');
                 },
             ])
