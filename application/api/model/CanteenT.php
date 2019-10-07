@@ -46,7 +46,7 @@ class CanteenT extends Model
             }
         })->where(function ($query) use ($canteen_id) {
             if (!empty($canteen_id)) {
-                $query->whereIn('id', $canteen_id);
+                $query->where('id', $canteen_id);
             }
         })
             ->where('state', CommonEnum::STATE_IS_OK)
