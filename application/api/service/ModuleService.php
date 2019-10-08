@@ -332,8 +332,27 @@ class ModuleService
 
     private function companyNormalMobileModules($company_id)
     {
-
         $modules = CanteenModuleV::companyNormalMobileModules($company_id);
         return $modules;
+    }
+
+    public function handelModuleDefaultStatus($params)
+    {
+        $type = $params['type'];
+        $modules = $params['modules'];
+        $modules = json_decode($modules, true);
+        if (empty($modules)) {
+            throw new ParameterException();
+        }
+        $res = false;
+        if ($type == ModuleEnum::CANTEEN) {
+            $res = (new SystemCanteenModuleT())->saveAll($modules);
+        } else if (type == ModuleEnum::SHOP) {
+            $res = (new SystemShopModuleT())->saveAll($modules);
+        }
+        if (!$res) {
+            throw new UpdateException();
+        }
+
     }
 }

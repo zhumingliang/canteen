@@ -204,6 +204,31 @@ class Module extends BaseController
     }
 
     /**
+     * @api {POST} /api/v1/module/default/handel CMS管理端-系统饭堂模块/系统小卖部模块-默认模块状态
+     * @apiGroup   CMS
+     * @apiVersion 3.0.0
+     * @apiDescription   CMS管理端-系统饭堂模块/系统小卖部模块-默认模块状态
+     * @apiExample {post}  请求样例:
+     * {"type":2,"modules":[{"id":1,"default":1},{"id":2,"default":2}]}
+     * @apiParam (请求参数说明) {int} type  模块类别：2|系统饭堂功能模块；3|系统小卖部功能模块
+     * @apiParam (请求参数说明) {obj} modules  模块信息
+     * @apiParam (请求参数说明) {int} id  模块ID
+     * @apiParam (请求参数说明) {string} default  模块是否默认：1|是；2|否
+     * @apiSuccessExample {json} 返回样例:
+     *{"msg":"ok","errorCode":0}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {String} msg 信息描述
+     */
+    public function handelModuleDefaultStatus()
+    {
+        $params = $this->request->param();
+        (new ModuleService())->handelModuleDefaultStatus($params);
+        return json(new SuccessMessage());
+
+    }
+
+
+    /**
      * @api {GET} /api/v1/modules/admin  CMS管理端-登录成功后获取模块权限列表
      * @apiGroup  CMS
      * @apiVersion 3.0.0

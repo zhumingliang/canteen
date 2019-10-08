@@ -20,6 +20,7 @@ Route::post('api/:version/module/system/save', 'api/:version.Module/saveSystem')
 Route::post('api/:version/module/system/canteen/save', 'api/:version.Module/saveSystemCanteen');
 Route::post('api/:version/module/system/shop/save', 'api/:version.Module/saveSystemShop');
 Route::post('api/:version/module/system/handel', 'api/:version.Module/handelSystem');
+Route::post('api/:version/module/default/handel', 'api/:version.Module/handelModuleDefaultStatus');
 Route::post('api/:version/module/update', 'api/:version.Module/updateModule');
 Route::post('api/:version/module/company/update', 'api/:version.Module/updateCompanyModule');
 Route::get('api/:version/modules', 'api/:version.Module/systemModules');

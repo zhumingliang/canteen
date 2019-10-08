@@ -12,6 +12,7 @@ class Module extends BaseValidate
         'company_id' => 'require|isPositiveInteger',
         'name' => 'require|isNotEmpty',
         'url' => 'require|isNotEmpty',
+        'modules' => 'require|isNotEmpty',
         'shop' => 'require',
         'canteen' => 'require',
         'parent_id' => 'require',
@@ -28,7 +29,8 @@ class Module extends BaseValidate
         'updateModule' => ['id', 'type'],
         'canteenModule' => ['c_id'],
         'canteenModules' => ['c_id'],
-        'updateCompanyModule' => ['company_id','shop', 'canteen']
+        'updateCompanyModule' => ['company_id','shop', 'canteen'],
+        'handelModuleDefaultStatus' => ['type','modules']
     ];
 
 }
