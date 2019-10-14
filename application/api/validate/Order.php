@@ -18,6 +18,7 @@ class Order extends BaseValidate
         'type' => 'require|in:1,2,3',
         'ordering_date' => 'require|isNotEmpty',
         'detail' => 'require|isNotEmpty',
+        'consumption_time' => 'require|isNotEmpty',
     ];
 
     protected $scene = [
@@ -33,5 +34,6 @@ class Order extends BaseValidate
         'userOrderings' => ['id', 'type'],
         'orderDetail' => ['id', 'type'],
         'deliveryCode' => ['id'],
+        'consumptionRecords' => ['consumption_time'],
     ];
 }

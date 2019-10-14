@@ -332,5 +332,83 @@ class Order extends BaseController
         return json(new SuccessMessageWithData(['data' => $order]));
     }
 
+    /**
+     * @api {GET} /api/v1/order/consumptionRecords 微信端-消费查询-订单列表
+     * @apiGroup  Official
+     * @apiVersion 3.0.0
+     * @apiDescription 微信端-订单查询-订单列表
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/order/consumptionRecords?$page=1&size=100&consumption_time=2019-10
+     * @apiParam (请求参数说明) {int} page 当前页码
+     * @apiParam (请求参数说明) {int} size 每页多少条数据
+     * @apiParam (请求参数说明) {string} consumption_time  消费日期
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"balance":{"hidden":2,"money":0},"consumptionMoney":20,"records":{"total":2,"per_page":20,"current_page":1,"last_page":1,"data":[{"order_id":6,"location":"企业A","order_type":"shop","used_type":"小卖部","create_time":"2019-09-28 08:14:10","ordering_date":"\/","dinner":"商品","money":-10},{"order_id":8,"location":"饭堂1","order_type":"canteen","used_type":"就餐","create_time":"2019-09-09 16:34:15","ordering_date":"2019-09-07","dinner":"中餐","money":-10}]}}}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {String} msg 信息描述
+     * @apiSuccess (返回参数说明) {int} total 数据总数
+     * @apiSuccess (返回参数说明) {int} per_page 每页多少条数据
+     * @apiSuccess (返回参数说明) {int} current_page 当前页码
+     * @apiSuccess (返回参数说明) {int} last_page 最后页码
+     * @apiSuccess (返回参数说明) {obj} balance 余额信息
+     * @apiSuccess (返回参数说明) {int} hidden 是否隐藏：1｜是；2｜否
+     * @apiSuccess (返回参数说明) {int} money 余额金额
+     * @apiSuccess (返回参数说明) {int} consumptionMoney 月消费金额
+     * @apiSuccess (返回参数说明) {obj} records  记录列表
+     * @apiSuccess (返回参数说明) {int} order_id  订单id
+     * @apiSuccess (返回参数说明) {string} location  消费地点
+     * @apiSuccess (返回参数说明) {string} order_type  订单类别
+     * @apiSuccess (返回参数说明) {string} used_type  类型
+     * @apiSuccess (返回参数说明) {string} create_time 消费日期
+     * @apiSuccess (返回参数说明) {string} ordering_date 餐次日期
+     * @apiSuccess (返回参数说明) {int} dinner 名称
+     * @apiSuccess (返回参数说明) {int} money 金额
+     */
+    public function consumptionRecords($page = 1, $size = 20)
+    {
+        $consumption_time = Request::param('consumption_time');
+        $records = (new OrderService())->consumptionRecords($consumption_time, $page = 1, $size = 20);
+        return json(new SuccessMessageWithData(['data' => $records]));
+    }
+
+    /**
+     * @api {GET} /api/v1/order/consumptionRecords/detail 微信端-消费查询-获取订单详情
+     * @apiGroup  Official
+     * @apiVersion 3.0.0
+     * @apiDescription 微信端-消费查询-获取订单详情
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/order/consumptionRecords/detail?order_id=8&order_type=canteen
+     * @apiParam (请求参数说明) {int} order_type 饭堂订单：canteen；小卖部订单：shop
+     * @apiParam (请求参数说明) {int} order_id  订单id
+     * @apiSuccessExample {json} 饭堂订单返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"id":8,"u_id":3,"order_type":1,"ordering_type":"personal_choice|","count":1,"address_id":1,"state":1,"foods":[{"detail_id":5,"o_id":8,"food_id":1,"count":1,"name":"菜品1"},{"detail_id":6,"o_id":8,"food_id":3,"count":1,"name":"菜品2"}],"address":{"id":1,"province":"广东省","city":"江门市","area":"蓬江区","address":"江门市白石大道东4号路3栋","name":"张三","phone":"18956225230","sex":1}}}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     * @apiSuccess (返回参数说明) {int} id 订单id
+     * @apiSuccess (返回参数说明) {int} count  订餐数量
+     * @apiSuccess (返回参数说明) {string} ordering_date  饭堂订单中订餐日期
+     * @apiSuccess (返回参数说明) {obj} address 地址信息：order_type=2时此数据不为空
+     * @apiSuccess (返回参数说明) {string} address|province  省
+     * @apiSuccess (返回参数说明) {string} address|city  城市
+     * @apiSuccess (返回参数说明) {string} address|area  区
+     * @apiSuccess (返回参数说明) {string} address|address  详细地址
+     * @apiSuccess (返回参数说明) {string} address|name  姓名
+     * @apiSuccess (返回参数说明) {string} address|phone  手机号
+     * @apiSuccess (返回参数说明) {int} address|sex  性别：1|男；2|女
+     * @apiSuccess (返回参数说明) {obj} foods ：order_type=2时此数据不为空
+     * @apiSuccess (返回参数说明) {int} foods|food_id 菜品id
+     * @apiSuccess (返回参数说明) {string} foods|price 菜品实时单价
+     * @apiSuccess (返回参数说明) {string} foods|count 菜品数量
+     * @apiSuccess (返回参数说明) {string} foods|name 菜品名称
+     * @apiSuccess (返回参数说明) {string} foods|unit 小卖部商品单位
+     */
+    public function recordsDetail()
+    {
+        $order_type = Request::param('order_type');
+        $order_id = Request::param('order_id');
+        $info = (new OrderService())->recordsDetail($order_type, $order_id);
+        return json(new SuccessMessageWithData(['data' => $info]));
+    }
+
 
 }

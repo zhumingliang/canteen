@@ -120,7 +120,9 @@ Route::post('api/:version/order/cancel', 'api/:version.Order/orderCancel');
 Route::post('api/:version/order/changeCount', 'api/:version.Order/changeOrderCount');
 Route::post('api/:version/order/changeFoods', 'api/:version.Order/changeOrderFoods');
 Route::get('api/:version/order/userOrderings', 'api/:version.Order/userOrderings');
+Route::get('api/:version/order/consumptionRecords', 'api/:version.Order/consumptionRecords');
 Route::get('api/:version/order/detail', 'api/:version.Order/orderDetail');
+Route::get('api/:version/order/consumptionRecords/detail', 'api/:version.Order/recordsDetail');
 
 Route::post('api/:version/address/save', 'api/:version.Address/save');
 Route::post('api/:version/address/update', 'api/:version.Address/update');

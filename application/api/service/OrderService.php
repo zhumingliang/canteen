@@ -10,6 +10,7 @@ namespace app\api\service;
 
 
 use app\api\model\CanteenAccountT;
+use app\api\model\ConsumptionRecordsV;
 use app\api\model\DinnerT;
 use app\api\model\OrderDetailT;
 use app\api\model\OrderingV;
@@ -738,5 +739,51 @@ class OrderService extends BaseService
 
         return $order;
     }
+
+    //用户查询消费记录
+    public function consumptionRecords($consumption_time, $page, $size)
+    {
+        $u_id = Token::getCurrentUid();
+        $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
+        $records = ConsumptionRecordsV::records($u_id, $consumption_time, $page, $size);
+        $consumptionMoney = ConsumptionRecordsV::monthConsumptionMoney($u_id, $consumption_time);
+        return [
+            'balance' => $this->getUserBalance($u_id, $canteen_id),
+            'consumptionMoney' => $consumptionMoney,
+            'records' => $records
+        ];
+    }
+
+    public function getUserBalance($u_id, $canteen_id)
+    {
+
+        $canteenAccount = CanteenAccountT::where('c_id', $canteen_id)
+            ->find();
+        if (!$canteenAccount) {
+            throw new ParameterException(['msg' => '该用户归属饭堂设置异常']);
+        }
+        $hidden = $canteenAccount->type;
+        $money = 0;
+        if ($hidden == CommonEnum::STATE_IS_FAIL) {
+            //不可透支消费，返回用户在该饭堂余额
+            $money = 100;
+        }
+        return [
+            'hidden' => $hidden,
+            'money' => $money
+        ];
+
+    }
+
+    public function recordsDetail($order_type, $order_id)
+    {
+        if ($order_type == "shop") {
+            $order = ShopOrderT::orderInfo($order_id);
+        } else if ($order_type == "canteen") {
+            $order = OrderT::orderDetail($order_id);
+        }
+        return $order;
+    }
+
 
 }
