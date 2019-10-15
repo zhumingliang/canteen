@@ -392,7 +392,6 @@ class Canteen extends BaseController
         return json(new SuccessMessage());
     }
 
-
     /**
      * @api {POST} /api/v1/canteen/updateMachine CMS管理端-企业管理-修改饭堂硬件信息
      * @apiGroup   CMS
@@ -477,5 +476,24 @@ class Canteen extends BaseController
         return json(new SuccessMessageWithData(['data' => $canteens]));
     }
 
+    /**
+     * @api {GET} /api/v1/managerCanteens  微信端--总订单查询--获取当前角色可管理饭堂列表
+     * @apiGroup  Official
+     * @apiVersion 3.0.0
+     * @apiDescription  微信端--总订单查询--获取当前角色可管理饭堂列表
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/managerCanteens
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":[{"canteen_id":5,"canteen_name":"饭堂2"},{"canteen_id":1,"canteen_name":"大饭堂"},{"canteen_id":6,"canteen_name":"饭堂1"},{"canteen_id":7,"canteen_name":"饭堂2"}]}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {String} msg 信息描述
+     * @apiSuccess (返回参数说明) {int} canteen_id  饭堂ID
+     * @apiSuccess (返回参数说明) {string} canteen_name  饭堂名称
+     */
+    public function managerCanteens()
+    {
+        $canteens = (new CanteenService())->managerCanteens();
+        return json(new SuccessMessageWithData(['data' => $canteens]));
+    }
 
 }

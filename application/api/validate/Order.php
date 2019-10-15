@@ -14,11 +14,14 @@ class Order extends BaseValidate
     protected $rule = [
         'id' => 'require|isPositiveInteger',
         'dinner_id' => 'require|isPositiveInteger',
+        'food_id' => 'require|isPositiveInteger',
+        'canteen_id' => 'require|isPositiveInteger',
         'count' => 'require|isPositiveInteger',
         'type' => 'require|in:1,2,3',
         'ordering_date' => 'require|isNotEmpty',
         'detail' => 'require|isNotEmpty',
         'consumption_time' => 'require|isNotEmpty',
+        'consumption_type' => 'require|isNotEmpty',
     ];
 
     protected $scene = [
@@ -35,5 +38,9 @@ class Order extends BaseValidate
         'orderDetail' => ['id', 'type'],
         'deliveryCode' => ['id'],
         'consumptionRecords' => ['consumption_time'],
+        'managerOrders' => ['canteen_id', 'consumption_time'],
+        'managerDinnerStatistic' => ['dinner_id', 'consumption_time'],
+        'orderUsersStatistic' => ['dinner_id', 'consumption_time', 'consumption_type'],
+        'foodUsersStatistic' => ['dinner_id', 'food_id', 'consumption_time'],
     ];
 }

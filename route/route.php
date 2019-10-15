@@ -49,6 +49,7 @@ Route::get('api/:version/canteen/configuration', 'api/:version.Canteen/configura
 Route::get('api/:version/canteens/role', 'api/:version.Canteen/roleCanteens');
 Route::get('api/:version/canteens/company', 'api/:version.Canteen/getCanteensForCompany');
 Route::get('api/:version/canteens', 'api/:version.Canteen/canteens');
+Route::get('api/:version/managerCanteens', 'api/:version.Canteen/managerCanteens');
 Route::get('api/:version/canteen/dinners/user', 'api/:version.Canteen/currentCanteenDinners');
 
 Route::get('api/:version/roles', 'api/:version.Role/roles');
@@ -123,6 +124,10 @@ Route::get('api/:version/order/userOrderings', 'api/:version.Order/userOrderings
 Route::get('api/:version/order/consumptionRecords', 'api/:version.Order/consumptionRecords');
 Route::get('api/:version/order/detail', 'api/:version.Order/orderDetail');
 Route::get('api/:version/order/consumptionRecords/detail', 'api/:version.Order/recordsDetail');
+Route::get('api/:version/order/managerOrders', 'api/:version.Order/managerOrders');
+Route::get('api/:version/order/managerDinnerStatistic', 'api/:version.Order/managerDinnerStatistic');
+Route::get('api/:version/order/usersStatistic', 'api/:version.Order/orderUsersStatistic');
+Route::get('api/:version/order/foodUsersStatistic', 'api/:version.Order/foodUsersStatistic');
 
 Route::post('api/:version/address/save', 'api/:version.Address/save');
 Route::post('api/:version/address/update', 'api/:version.Address/update');

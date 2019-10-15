@@ -10,6 +10,8 @@ namespace app\api\model;
 
 
 use app\lib\enum\CommonEnum;
+use app\lib\enum\OrderEnum;
+use app\lib\enum\PayEnum;
 use think\Model;
 
 class OrderT extends Model
@@ -71,6 +73,18 @@ class OrderT extends Model
             ->field('id,u_id,type as order_type,ordering_type,ordering_date,count,address_id,state')
             ->find();
         return $info;
+    }
+
+    public static function statisticToOfficial($canteen_id, $consumption_time)
+    {
+        $statistic = self::where('c_id', $canteen_id)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->where('pay', CommonEnum::STATE_IS_OK)
+            ->whereBetweenTime('ordering_date', $consumption_time)
+            ->field('d_id,used,booking,count(id) as count')
+            ->group('d_id,used,booking')
+            ->select()->toArray();
+        return $statistic;
     }
 
 

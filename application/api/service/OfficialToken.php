@@ -70,6 +70,7 @@ class OfficialToken extends Token
         $cachedValue['province'] = $user['province'];
         $cachedValue['nickName'] = $user['nickname'];
         $cachedValue['current_canteen_id'] = $user['current_canteen_id'];
+        $cachedValue['company_id'] = $user['company_id'];
         $cachedValue['type'] = 'official';
 
         return $cachedValue;

@@ -410,5 +410,144 @@ class Order extends BaseController
         return json(new SuccessMessageWithData(['data' => $info]));
     }
 
+    /**
+     * * @api {GET} /api/v1/order/managerOrders 微信端-总订餐查询-餐次订餐信息
+     * @apiGroup  Official
+     * @apiVersion 3.0.0
+     * @apiDescription 微信端-总订餐查询-餐次订餐信息
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/order/managerOrders?canteen_id=6&consumption_time=2019-09-07
+     * @apiParam (请求参数说明) {string} canteen_id  饭堂id
+     * @apiParam (请求参数说明) {string} consumption_time  消费日期
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":[{"id":5,"name":"早餐","all":0,"used":0,"noOrdering":0,"orderingNoMeal":0},{"id":6,"name":"中餐","all":1,"used":0,"noOrdering":0,"orderingNoMeal":1},{"id":7,"name":"晚餐","all":0,"used":0,"noOrdering":0,"orderingNoMeal":0}]}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {String} msg 信息描述
+     * @apiSuccess (返回参数说明) {int} id 餐次id
+     * @apiSuccess (返回参数说明) {string} name 餐次名称
+     * @apiSuccess (返回参数说明) {int} all  订餐数量
+     * @apiSuccess (返回参数说明) {int} used  已就餐数量
+     * @apiSuccess (返回参数说明) {int} noOrdering  未订餐就餐数量
+     * @apiSuccess (返回参数说明) {int} orderingNoMeal  订餐未就餐数量
+     */
+    public function managerOrders()
+    {
+        $canteen_id = Request::param('canteen_id');
+        $consumption_time = Request::param('consumption_time');
+        $orders = (new OrderService())->managerOrders($canteen_id, $consumption_time);
+        return json(new SuccessMessageWithData(['data' => $orders]));
+
+    }
+
+    /**
+     * * @api {GET} /api/v1/order/managerDinnerStatistic 微信端-总订餐查询-点击订餐数量获取菜品统计（有选菜/无选菜）
+     * @apiGroup  Official
+     * @apiVersion 3.0.0
+     * @apiDescription 微信端-总订餐查询-点击订餐数量获取菜品统计（有选菜/无选菜）
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/order/managerDinnerStatistic?dinner_id=6&consumption_time=2019-09-07&page=1&size=20
+     * @apiParam (请求参数说明) {int} page 当前页码
+     * @apiParam (请求参数说明) {int} size 每页多少条数据
+     * @apiParam (请求参数说明) {string} dinner_id  残次id
+     * @apiParam (请求参数说明) {string} consumption_time  消费日期
+     * @apiSuccessExample {json} 无选菜返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"haveFoods":2,"statistic":{"total":1,"per_page":20,"current_page":1,"last_page":1,"data":[{"username":"张三","phone":"18956225230"}]}}}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {String} msg 信息描述
+     * @apiSuccess (返回参数说明) {int} haveFoods 是否有选菜：1｜是；2｜否
+     * @apiSuccess (返回参数说明) {obj} statistic 订餐人员明细统计
+     * @apiSuccess (返回参数说明) {int} total 数据总数
+     * @apiSuccess (返回参数说明) {int} per_page 每页多少条数据
+     * @apiSuccess (返回参数说明) {int} current_page 当前页码
+     * @apiSuccess (返回参数说明) {int} last_page 最后页码
+     * @apiSuccess (返回参数说明) {string} username 姓名
+     * @apiSuccess (返回参数说明) {string} phone 手机号
+     * @apiSuccessExample {json}有选菜返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"haveFoods":1,"statistic":{"total":2,"per_page":20,"current_page":1,"last_page":1,"data":[{"order_id":8,"food_id":1,"name":"菜品1","count":1},{"order_id":8,"food_id":3,"name":"菜品2","count":1}]}}}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {String} msg 信息描述
+     * @apiSuccess (返回参数说明) {int} haveFoods 是否有选菜：1｜是；2｜否
+     * @apiSuccess (返回参数说明) {obj} statistic 订餐数量统计
+     * @apiSuccess (返回参数说明) {int} total 数据总数
+     * @apiSuccess (返回参数说明) {int} per_page 每页多少条数据
+     * @apiSuccess (返回参数说明) {int} current_page 当前页码
+     * @apiSuccess (返回参数说明) {int} last_page 最后页码
+     * @apiSuccess (返回参数说明) {int} food_id 菜品id
+     * @apiSuccess (返回参数说明) {string} name 菜品名称
+     * @apiSuccess (返回参数说明) {string} count 订餐人数
+     */
+    public function managerDinnerStatistic($page = 1, $size = 20)
+    {
+        $dinner_id = Request::param('dinner_id');
+        $consumption_time = Request::param('consumption_time');
+        $info = (new OrderService())->managerDinnerStatistic($dinner_id, $consumption_time, $page, $size);
+        return json(new SuccessMessageWithData(['data' => $info]));
+
+    }
+
+    /**
+     * * @api {GET} /api/v1/order/usersStatistic 微信端-总订餐查询-点击订餐数量获取订餐人员统计
+     * @apiGroup  Official
+     * @apiVersion 3.0.0
+     * @apiDescription 微信端-总订餐查询-点击订餐数量获取订餐人员统计（已就餐/未订餐就餐/订餐未就餐）
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/order/usersStatistic?dinner_id=6&consumption_time=2019-09-07&page=1&size=20&consumption_type=used
+     * @apiParam (请求参数说明) {int} page 当前页码
+     * @apiParam (请求参数说明) {int} size 每页多少条数据
+     * @apiParam (请求参数说明) {string} dinner_id  餐次id
+     * @apiParam (请求参数说明) {string} consumption_time  消费日期
+     * @apiParam (请求参数说明) {string} consumption_type  订餐统计类别：used｜已就餐；noOrdering｜未订餐就餐；orderingNoMeal｜订餐未就餐
+     * @apiSuccessExample {json}返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"total":1,"per_page":20,"current_page":1,"last_page":1,"data":[{"username":"张三","phone":"18956225230"}]}}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {String} msg 信息描述
+     * @apiSuccess (返回参数说明) {int} total 数据总数
+     * @apiSuccess (返回参数说明) {int} per_page 每页多少条数据
+     * @apiSuccess (返回参数说明) {int} current_page 当前页码
+     * @apiSuccess (返回参数说明) {int} last_page 最后页码
+     * @apiSuccess (返回参数说明) {string} username 姓名
+     * @apiSuccess (返回参数说明) {string} phone 手机号
+     */
+    public function orderUsersStatistic($page = 1, $size = 20)
+    {
+        $dinner_id = Request::param('dinner_id');
+        $consumption_time = Request::param('consumption_time');
+        $consumption_type = Request::param('consumption_type');
+        $info = (new OrderService())->orderUsersStatistic($dinner_id, $consumption_time, $consumption_type, $page, $size);
+        return json(new SuccessMessageWithData(['data' => $info]));
+    }
+
+    /**
+     * * @api {GET} /api/v1/order/foodUsersStatistic 微信端-总订餐查询-点击有选菜订餐数量中订餐人数获取人员统计
+     * @apiGroup  Official
+     * @apiVersion 3.0.0
+     * @apiDescription 微信端-总订餐查询-点击有选菜订餐数量中订餐人数获取人员统计
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/order/foodUsersStatistic?dinner_id=6&consumption_time=2019-09-07&page=1&size=20&food_id=1
+     * @apiParam (请求参数说明) {int} page 当前页码
+     * @apiParam (请求参数说明) {int} size 每页多少条数据
+     * @apiParam (请求参数说明) {string} dinner_id  餐次id
+     * @apiParam (请求参数说明) {string} consumption_time  消费日期
+     * @apiParam (请求参数说明) {int} food_id  菜品id
+     * @apiSuccessExample {json}返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"total":1,"per_page":20,"current_page":1,"last_page":1,"data":[{"username":"张三","phone":"18956225230"}]}}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {String} msg 信息描述
+     * @apiSuccess (返回参数说明) {int} total 数据总数
+     * @apiSuccess (返回参数说明) {int} per_page 每页多少条数据
+     * @apiSuccess (返回参数说明) {int} current_page 当前页码
+     * @apiSuccess (返回参数说明) {int} last_page 最后页码
+     * @apiSuccess (返回参数说明) {string} username 姓名
+     * @apiSuccess (返回参数说明) {string} phone 手机号
+     */
+    public function foodUsersStatistic($page = 1, $size = 20)
+    {
+        $dinner_id = Request::param('dinner_id');
+        $food_id = Request::param('food_id');
+        $consumption_time = Request::param('consumption_time');
+        $info = (new OrderService())->foodUsersStatistic($dinner_id, $food_id, $consumption_time, $page, $size);
+        return json(new SuccessMessageWithData(['data' => $info]));
+    }
+
 
 }

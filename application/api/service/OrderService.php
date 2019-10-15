@@ -11,10 +11,13 @@ namespace app\api\service;
 
 use app\api\model\CanteenAccountT;
 use app\api\model\ConsumptionRecordsV;
+use app\api\model\DinnerStatisticV;
 use app\api\model\DinnerT;
+use app\api\model\FoodsStatisticV;
 use app\api\model\OrderDetailT;
 use app\api\model\OrderingV;
 use app\api\model\OrderT;
+use app\api\model\OrderUsersStatisticV;
 use app\api\model\ShopOrderingV;
 use app\api\model\ShopOrderT;
 use app\lib\enum\CommonEnum;
@@ -27,6 +30,7 @@ use app\lib\exception\SaveException;
 use app\lib\exception\UpdateException;
 use think\Db;
 use think\Exception;
+use think\Request;
 
 class OrderService extends BaseService
 {
@@ -63,10 +67,12 @@ class OrderService extends BaseService
             $params['d_id'] = $dinner_id;
             $params['pay'] = CommonEnum::STATE_IS_OK;
 
-            $staff = (new UserService())->getUserCompanyInfo(Token::getCurrentPhone(), $canteen_id);
+            $company_id = Token::getCurrentTokenVar('current_company_id');
+            $staff = (new UserService())->getUserCompanyInfo(Token::getCurrentPhone(), $company_id);
             $params['staff_type_id'] = $staff->t_id;
             $params['department_id'] = $staff->d_id;
             $params['company_id'] = $staff->company_id;
+            $params['staff_id'] = $staff->id;
             $order = OrderT::create($params);
             if (!$order) {
                 throw new SaveException(['msg' => '生成订单失败']);
@@ -307,9 +313,12 @@ class OrderService extends BaseService
 
         $data_list = [];
         $all_money = 0;
-        $staff = (new UserService())->getUserCompanyInfo(Token::getCurrentPhone(), $canteen_id);
+        $company_id = Token::getCurrentTokenVar('current_company_id');
+        $staff = (new UserService())->getUserCompanyInfo(Token::getCurrentPhone(), $company_id);
         $staff_type_id = $staff->t_id;
         $department_id = $staff->d_id;
+        $staff_id = $staff->id;
+
         //获取用户所有有效订餐信息
         $records = OrderingV::getUserOrdering($u_id);
 
@@ -327,6 +336,8 @@ class OrderService extends BaseService
                     $data['d_id'] = $v['d_id'];
                     $data['staff_type_id'] = $staff_type_id;
                     $data['department_id'] = $department_id;
+                    $data['staff_id'] = $staff_id;
+                    $data['company_id'] = $company_id;
                     $data['ordering_date'] = $v2['ordering_date'];
                     $data['count'] = $v2['count'];
                     $data['order_num'] = makeOrderNo();
@@ -785,5 +796,72 @@ class OrderService extends BaseService
         return $order;
     }
 
+    public function managerOrders($canteen_id, $consumption_time)
+    {
+        //获取饭堂餐次信息
+        $dinner = (new CanteenService())->getDinnerNames($canteen_id);
+        if (!$dinner) {
+            throw new ParameterException(['msg' => '参数异常，该饭堂未设置餐次信息']);
+        }
+        //获取饭堂订餐信息
+        $orderInfo = OrderT::statisticToOfficial($canteen_id, $consumption_time);
+        foreach ($dinner as $k => $v) {
+            $all = 0;
+            $used = 0;
+            $noOrdering = 0;
+            $orderingNoMeal = 0;
+            if (!empty($orderInfo)) {
+                foreach ($orderInfo as $k2 => $v2) {
+                    if ($v['id'] == $v2['d_id']) {
+                        $all += $v2['count'];
+                        if ($v2['used'] == CommonEnum::STATE_IS_OK) {
+                            $used += $v2['count'];
+                            if ($v2['booking'] == CommonEnum::STATE_IS_FAIL) {
+                                $noOrdering += $v2['count'];
+                            }
+                        } else if ($v2['used'] == CommonEnum::STATE_IS_FAIL) {
+                            $orderingNoMeal += $v2['count'];
+                        }
+                        unset($orderInfo[$k2]);
+                    }
+
+                }
+            }
+            $dinner[$k]['all'] = $all;
+            $dinner[$k]['used'] = $used;
+            $dinner[$k]['noOrdering'] = $noOrdering;
+            $dinner[$k]['orderingNoMeal'] = $orderingNoMeal;
+        }
+        return $dinner;
+
+    }
+
+    //微信端总订餐查询-点击订餐数量，获取菜品统计信息
+    public function managerDinnerStatistic($dinner_id, $consumption_time,$page,$size)
+    {
+        $statistic = DinnerStatisticV::managerDinnerStatistic($dinner_id, $consumption_time,$page,$size);
+        if ($statistic->isEmpty()) {
+            return [
+                'haveFoods' => CommonEnum::STATE_IS_FAIL,
+                'statistic' => $this->orderUsersStatistic($dinner_id, $consumption_time, 'all', 1, 20)];
+        }
+        return [
+            'haveFoods' => CommonEnum::STATE_IS_OK,
+            'statistic' => $statistic
+        ];
+    }
+
+    public function orderUsersStatistic($dinner_id, $consumption_time, $consumption_type, $page, $size)
+    {
+        $statistic = OrderUsersStatisticV::orderUsers($dinner_id, $consumption_time, $consumption_type, $page, $size);
+        return $statistic;
+    }
+
+    public function foodUsersStatistic($dinner_id, $food_id, $consumption_time, $page, $size)
+    {
+        $statistic = FoodsStatisticV::foodUsersStatistic($dinner_id, $food_id, $consumption_time, $page, $size);
+        return $statistic;
+
+    }
 
 }

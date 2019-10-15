@@ -18,4 +18,14 @@ class AdminCanteenV extends Model
 
     }
 
+    public static function managerCanteens($admin_id)
+    {
+        $canteens = self::where('admin_id', $admin_id)
+            ->field('canteen_id,canteen_name')
+            ->select()->toArray();
+        return $canteens;
+
+    }
+
+
 }

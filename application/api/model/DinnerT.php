@@ -26,6 +26,16 @@ class DinnerT extends Model
         return $info;
     }
 
+    public static function dinnerNames($c_id)
+    {
+        $info = self::where('c_id', $c_id)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->field('id,name')
+            ->order('create_time')
+            ->select();
+        return $info;
+    }
+
     public static function canteenDinnerMenus($canteen_id)
     {
         $menus = self::where('c_id', $canteen_id)

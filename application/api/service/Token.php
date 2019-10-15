@@ -60,7 +60,6 @@ class Token
     {
 
         $token = Request::header('token');
-        //$vars = Redis::instance()->get($token);
         $vars = \think\facade\Cache::get($token);
         if (!$vars) {
             throw new TokenException();
@@ -68,7 +67,6 @@ class Token
             $vars = json_decode($vars, true);
             $vars[$key] = $value;
             $expire_in = config('setting.token_official_expire_in');
-
             $res = \think\facade\Cache::set($token, json_encode($vars), $expire_in);
             if (!$res) {
                 throw  new TokenException(['msg' => '更新缓存失败']);

@@ -50,12 +50,16 @@ class UserService
         if (!$staff) {
             throw  new AuthException(['msg' => '绑定失败,用户不属于该饭堂']);
         }
-        $res = UserT::update(['current_canteen_id', $canteen_id], ['id', Token::getCurrentUid()]);
+        $res = UserT::update([
+            'current_canteen_id' => $canteen_id,
+            'company_id' => $staff->company_id],
+            ['id' => Token::getCurrentUid()]);
         if (!$res) {
             throw  new UpdateException(['msg' => '绑定失败']);
         }
         //更新用户缓存
         Token::updateCurrentTokenVar('current_canteen_id', $canteen_id);
+        Token::updateCurrentTokenVar('current_company_id', $staff->company_id);
     }
 
     public function getUserCurrentCompanyID()
@@ -102,13 +106,13 @@ class UserService
 
     }
 
-    public function getUserCompanyInfo($phone, $canteen_id)
+    public function getUserCompanyInfo($phone, $company_id)
     {
         if (empty($phone)) {
             throw new AuthException(['msg' => '用户状态异常，未绑定手机号']);
         }
         $admin = CompanyStaffT::where('phone', $phone)
-            ->where('c_id', $canteen_id)
+            ->where('company_id', $company_id)
             ->where('state', CommonEnum::STATE_IS_OK)
             ->find();
         if (!$admin) {

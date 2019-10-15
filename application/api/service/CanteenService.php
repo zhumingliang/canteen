@@ -255,6 +255,12 @@ class CanteenService
 
     }
 
+    public function getDinnerNames($c_id)
+    {
+        return DinnerT::dinnerNames($c_id);
+
+    }
+
     public function roleCanteens()
     {
         $grade = Token::getCurrentTokenVar('grade');
@@ -439,5 +445,11 @@ class CanteenService
         }
     }
 
+    public function managerCanteens()
+    {
+        $admin_id = Token::getCurrentUid();
+        $canteens = AdminCanteenV::managerCanteens($admin_id);
+        return $canteens;
+    }
 
 }

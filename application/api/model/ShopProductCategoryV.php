@@ -13,7 +13,8 @@ class ShopProductCategoryV extends Model
     {
         $orderings = self::where('c_id', $c_id)
             ->where('state', CommonEnum::STATE_IS_OK)
-            ->paginate($size, false, ['page' => $page])->toArray();
+            ->paginate($size, false, ['page' => $page])
+            ->toArray();
         return $orderings;
     }
 }
