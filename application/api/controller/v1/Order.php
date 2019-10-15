@@ -549,5 +549,14 @@ class Order extends BaseController
         return json(new SuccessMessageWithData(['data' => $info]));
     }
 
+    public function handelOrderedNoMeal()
+    {
+        $dinner_id = Request::param('dinner_id');
+        $consumption_time = Request::param('consumption_time');
+        (new OrderService())->handelOrderedNoMeal($dinner_id, $consumption_time);
+        return json(new SuccessMessage());
+
+    }
+
 
 }

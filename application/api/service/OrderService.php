@@ -837,9 +837,9 @@ class OrderService extends BaseService
     }
 
     //微信端总订餐查询-点击订餐数量，获取菜品统计信息
-    public function managerDinnerStatistic($dinner_id, $consumption_time,$page,$size)
+    public function managerDinnerStatistic($dinner_id, $consumption_time, $page, $size)
     {
-        $statistic = DinnerStatisticV::managerDinnerStatistic($dinner_id, $consumption_time,$page,$size);
+        $statistic = DinnerStatisticV::managerDinnerStatistic($dinner_id, $consumption_time, $page, $size);
         if ($statistic->isEmpty()) {
             return [
                 'haveFoods' => CommonEnum::STATE_IS_FAIL,
@@ -861,6 +861,10 @@ class OrderService extends BaseService
     {
         $statistic = FoodsStatisticV::foodUsersStatistic($dinner_id, $food_id, $consumption_time, $page, $size);
         return $statistic;
+    }
+
+    public function handelOrderedNoMeal($dinner_id,$consumption_time)
+    {
 
     }
 
