@@ -332,19 +332,23 @@ class Shop extends BaseController
      * @apiVersion 3.0.0
      * @apiDescription 微信端--小卖部-点击评论获取商品评论信息
      * @apiExample {get}  请求样例:
-     * http://canteen.tonglingok.com/fproduct/comments?product_id=1&page=1&size=10
+     * http://canteen.tonglingok.com/api/v1/shop/product/comments?product_id=1&page=1&size=10
      * @apiParam (请求参数说明) {int} product_id 商品id
      * @apiParam (请求参数说明) {int} page 页数
      * @apiParam (请求参数说明) {int} size 每条条数
      * @apiSuccessExample {json} 返回样例:
-     * {"msg":"ok","errorCode":0,"code":200,"data":{"total":2,"per_page":"10","current_page":1,"last_page":1,"data":[{"id":4,"u_id":3,"product_id":1,"taste":3,"service":3,"remark":"4"},{"id":3,"u_id":3,"product_id":1,"taste":4,"service":4,"remark":"3"},{"id":2,"u_id":3,"product_id":1,"taste":5,"service":5,"remark":"2"}]}}
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"comments":{"total":0,"per_page":"10","current_page":1,"last_page":0,"data":[]},"productScore":{"taste":0,"service":0}}}
      * @apiSuccess (返回参数说明) {string} msg 信息描述
+     * @apiSuccess (返回参数说明) {obj}  comments 评论信息
      * @apiSuccess (返回参数说明) {int}  id 评论id
      * @apiSuccess (返回参数说明) {int}  product_id 评论商品
      * @apiSuccess (返回参数说明) {int}  u_id 评论用户
      * @apiSuccess (返回参数说明) {int} taste 味道评分
      * @apiSuccess (返回参数说明) {int} service 服务评分
      * @apiSuccess (返回参数说明) {string} remark 评分说明
+     * @apiSuccess (返回参数说明) {obj} productScore 商品评价
+     * @apiSuccess (返回参数说明) {float} taste 味道评分
+     * @apiSuccess (返回参数说明) {float} service 服务评分
      */
     public function productComments($page = 1, $size = 10)
     {

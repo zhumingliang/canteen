@@ -4,6 +4,7 @@
 namespace app\api\service;
 
 
+use app\api\model\CanteenCommentT;
 use app\api\model\ShopModuleT;
 use app\api\model\ShopOrderDetailT;
 use app\api\model\ShopOrderQrcodeT;
@@ -370,7 +371,11 @@ class ShopService
     public function productComments($product_id, $page, $size)
     {
         $comments = ShopProductCommentT::productComments($product_id, $page, $size);
-        return $comments;
+        return [
+            'comments' => $comments,
+            'productScore' => $this->productScore($product_id)
+
+        ];
     }
 
     public function orderCancel($id)
@@ -421,5 +426,16 @@ class ShopService
             return $this->updateOrderQrcode($qrcode->id);
         }
         return $qrcode->url;
+    }
+
+    //获取商品评分
+    public function productScore($product_id)
+    {
+        $taste = ShopProductCommentT::where('product_id', $product_id)->avg('taste');
+        $service = ShopProductCommentT::where('product_id', $product_id)->avg('service');
+        return [
+            'taste' => round($taste, 1),
+            'service' => round($service, 1),
+        ];
     }
 }
