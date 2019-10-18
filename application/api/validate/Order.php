@@ -35,6 +35,7 @@ class Order extends BaseValidate
         'personalChoiceInfo' => ['id'],
         'userOrders' => ['id', 'type'],
         'userOrderings' => ['id', 'type'],
+        'userOrdering' => ['consumption_type'],
         'orderDetail' => ['id', 'type'],
         'deliveryCode' => ['id'],
         'consumptionRecords' => ['consumption_time'],
@@ -42,5 +43,6 @@ class Order extends BaseValidate
         'managerDinnerStatistic' => ['dinner_id', 'consumption_time'],
         'orderUsersStatistic' => ['dinner_id', 'consumption_time', 'consumption_type'],
         'foodUsersStatistic' => ['dinner_id', 'food_id', 'consumption_time'],
+        'handelOrderedNoMeal' => ['dinner_id', 'consumption_time'],
     ];
 }

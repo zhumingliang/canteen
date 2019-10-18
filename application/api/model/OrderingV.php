@@ -19,14 +19,14 @@ class OrderingV extends Model
         $record = self::where('u_id', $u_id)
             ->where('ordering_date', $ordering_date)
             ->where('dinner', $dinner)
-            ->find();
+            ->count();
         return $record;
     }
 
-    public static function userOrdering($u_id)
+    public static function userOrdering($u_id, $consumption_time)
     {
         $orderings = self::where('u_id', $u_id)
-            ->whereTime('ordering_date', '>=', date('Y-m-d'))
+            ->whereBetweenTime('ordering_month', $consumption_time)
             ->where('state', CommonEnum::STATE_IS_OK)
             ->select();
         return $orderings;

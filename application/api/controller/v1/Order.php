@@ -62,12 +62,13 @@ class Order extends BaseController
     }
 
     /**
-     * @api {GET} /api/v1/order/userOrdering  微信端-线上订餐-获取用户所有订餐信息（今天及今天以后）
+     * @api {GET} /api/v1/order/userOrdering  微信端-线上订餐-获取用户所有订餐信息
      * @apiGroup  Official
      * @apiVersion 3.0.0
-     * @apiDescription  微信端-线上订餐-获取用户所有订餐信息（今天及今天以后）
+     * @apiDescription  微信端-线上订餐-获取用户所有订餐信息
      * @apiExample {get}  请求样例:
-     * http://canteen.tonglingok.com/api/v1/order/userOrdering
+     * http://canteen.tonglingok.com/api/v1/order/userOrdering?consumption_time=2019-10
+     * @apiParam (请求参数说明) {string} consumption_time  消费月份
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200,"data":[{"id":1,"c_id":6,"canteen":"饭堂1","d_id":6,"dinner":"中餐","ordering_date":"2019-09-07","count":1,"type":"person_choice"}]}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
@@ -78,12 +79,14 @@ class Order extends BaseController
      * @apiSuccess (返回参数说明) {int} d_id 餐次id
      * @apiSuccess (返回参数说明) {string} dinner 餐次名称
      * @apiSuccess (返回参数说明) {string} ordering_date 订餐日期
+     * @apiSuccess (返回参数说明) {string} ordering_month 订餐月份
      * @apiSuccess (返回参数说明) {int} count 订餐数量
      * @apiSuccess (返回参数说明) {string}ordering_type 订餐方式：online|线上订餐；personal_choice|个人订餐
      */
     public function userOrdering()
     {
-        $orders = (new OrderService())->userOrdering();
+        $consumption_time = Request::param('consumption_time');
+        $orders = (new OrderService())->userOrdering($consumption_time);
         return json(new SuccessMessageWithData(['data' => $orders]));
 
     }
@@ -94,7 +97,7 @@ class Order extends BaseController
      * @apiVersion 3.0.0
      * @apiDescription  微信端-线上订餐-获取饭堂餐次配置信息（确定是否可以订餐、可以定几餐）
      * @apiExample {get}  请求样例:
-     * http://canteen.tonglingok.com/api/v1/order/online/info
+     * http://canteen.tonglingok.com/api/v1/order/online/info?
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200,"data":[{"id":7,"c_id":6,"name":"早餐","type":"day","create_time":"2019-07-30 02:07:17","type_number":10,"meal_time_begin":"07:00:00","meal_time_end":"08:00:00","limit_time":"09:00:00","ordered_count":1},{"id":6,"c_id":6,"name":"中餐","type":"day","create_time":"2019-07-30 02:07:17","type_number":10,"meal_time_begin":"12:00:00","meal_time_end":"13:00:00","limit_time":"10:00:00"},{"id":7,"c_id":6,"name":"晚餐","type":"day","create_time":"2019-07-30 11:24:36","type_number":10,"meal_time_begin":"18:00:00","meal_time_end":"19:00:00","limit_time":"10:00:00"}]}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
@@ -455,13 +458,6 @@ class Order extends BaseController
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
      * @apiSuccess (返回参数说明) {String} msg 信息描述
      * @apiSuccess (返回参数说明) {int} haveFoods 是否有选菜：1｜是；2｜否
-     * @apiSuccess (返回参数说明) {obj} statistic 订餐人员明细统计
-     * @apiSuccess (返回参数说明) {int} total 数据总数
-     * @apiSuccess (返回参数说明) {int} per_page 每页多少条数据
-     * @apiSuccess (返回参数说明) {int} current_page 当前页码
-     * @apiSuccess (返回参数说明) {int} last_page 最后页码
-     * @apiSuccess (返回参数说明) {string} username 姓名
-     * @apiSuccess (返回参数说明) {string} phone 手机号
      * @apiSuccessExample {json}有选菜返回样例:
      * {"msg":"ok","errorCode":0,"code":200,"data":{"haveFoods":1,"statistic":{"total":2,"per_page":20,"current_page":1,"last_page":1,"data":[{"order_id":8,"food_id":1,"name":"菜品1","count":1},{"order_id":8,"food_id":3,"name":"菜品2","count":1}]}}}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
@@ -474,7 +470,7 @@ class Order extends BaseController
      * @apiSuccess (返回参数说明) {int} last_page 最后页码
      * @apiSuccess (返回参数说明) {int} food_id 菜品id
      * @apiSuccess (返回参数说明) {string} name 菜品名称
-     * @apiSuccess (返回参数说明) {string} count 订餐人数
+     * @apiSuccess (返回参数说明) {string} count 订餐份数
      */
     public function managerDinnerStatistic($page = 1, $size = 20)
     {
@@ -498,7 +494,7 @@ class Order extends BaseController
      * @apiParam (请求参数说明) {string} consumption_time  消费日期
      * @apiParam (请求参数说明) {string} consumption_type  订餐统计类别：used｜已就餐；noOrdering｜未订餐就餐；orderingNoMeal｜订餐未就餐
      * @apiSuccessExample {json}返回样例:
-     * {"msg":"ok","errorCode":0,"code":200,"data":{"total":1,"per_page":20,"current_page":1,"last_page":1,"data":[{"username":"张三","phone":"18956225230"}]}}
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"total":1,"per_page":20,"current_page":1,"last_page":1,"data":[{"username":"张三","phone":"18956225230","count":1}]}}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
      * @apiSuccess (返回参数说明) {String} msg 信息描述
      * @apiSuccess (返回参数说明) {int} total 数据总数
@@ -507,6 +503,7 @@ class Order extends BaseController
      * @apiSuccess (返回参数说明) {int} last_page 最后页码
      * @apiSuccess (返回参数说明) {string} username 姓名
      * @apiSuccess (返回参数说明) {string} phone 手机号
+     * @apiSuccess (返回参数说明) {string} count 订餐份数
      */
     public function orderUsersStatistic($page = 1, $size = 20)
     {

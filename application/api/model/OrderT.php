@@ -81,7 +81,7 @@ class OrderT extends Model
             ->where('state', CommonEnum::STATE_IS_OK)
             ->where('pay', CommonEnum::STATE_IS_OK)
             ->whereBetweenTime('ordering_date', $consumption_time)
-            ->field('d_id,used,booking,count(id) as count')
+            ->field('d_id,used,booking,sum(count) as count')
             ->group('d_id,used,booking')
             ->select()->toArray();
         return $statistic;

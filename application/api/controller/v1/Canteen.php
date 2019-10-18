@@ -47,21 +47,23 @@ class Canteen extends BaseController
      * @apiExample {post}  请求样例:
      *    {
      *       "c_id": 2,
-     *       "dinners":[{"name":"早餐","type":"day","type_number":10,"limit_time":"10:00","meal_time_begin":"07:00","meal_time_end":"08:00"},{"name":"中餐","type":"day","type_number":10,"limit_time":"10:00","meal_time_bgin":"12:00","meal_time_end":"13:00"}],
-     *       "account":{"type":2,"clean_type":3,"clean_day":0,"limit_money":0}
+     *       "dinners":[{"name":"早餐","type":"day","type_number":10,"limit_time":"10:00","meal_time_begin":"07:00","meal_time_end":"08:00","fixed":2},{"name":"中餐","type":"day","type_number":10,"limit_time":"10:00","meal_time_bgin":"12:00","meal_time_end":"13:00","fixed":1}],
+     *       "account":{"type":2,"clean_type":3,"clean_day":1,"clean_time":01:00:00,"limit_money":0}
      *     }
      * @apiParam (请求参数说明) {int} c_id  饭堂id
      * @apiParam (请求参数说明) {string} dinners  订餐信息json字符串
-     * @apiParam (请求参数说明) {string} dinners|name  餐次名称
-     * @apiParam (请求参数说明) {string} dinners|type  时间设置类别：day|week；1、前n天是填写数字，说明每天的餐需要提前一个天数来订餐;2、周，是只能填写周一到周日，说明一周的订餐规定需要在每周某天进行下周一整周的订餐
-     * @apiParam (请求参数说明) {int} dinners|type_number 订餐时间类别对应数量 （week：0-6；周日-周六）
-     * @apiParam (请求参数说明) {string} dinners|limit_time  订餐限制时间
-     * @apiParam (请求参数说明) {string} dinners|meal_time_begin  就餐开始时间
-     * @apiParam (请求参数说明) {string} dinners|meal_time_end  就餐截止时间
-     * @apiParam (请求参数说明) {string} account 饭堂账户设置
+     * @apiParam (请求参数说明) {string} name  餐次名称
+     * @apiParam (请求参数说明) {string} type  时间设置类别：day|week；1、前n天是填写数字，说明每天的餐需要提前一个天数来订餐;2、周，是只能填写周一到周日，说明一周的订餐规定需要在每周某天进行下周一整周的订餐
+     * @apiParam (请求参数说明) {int} type_number 订餐时间类别对应数量 （week：0-6；周日-周六）
+     * @apiParam (请求参数说明) {string} limit_time  订餐限制时间
+     * @apiParam (请求参数说明) {string} meal_time_begin  就餐开始时间
+     * @apiParam (请求参数说明) {string} meal_time_end  就餐截止时间
+     * @apiParam (请求参数说明) {int} fixed  餐次是否采用标准金额：1｜是；2｜否
+     * @apiParam (请求参数说明) {obj} account 饭堂账户设置
      * @apiParam (请求参数说明) {int} account|type  消费类别：1| 可透支消费；2|不可透支消费
      * @apiParam (请求参数说明) {int} account|clean_type  系统清零方式：1|系统自动清零；2|系统自动清零；3|无
      * @apiParam (请求参数说明) {int} account|clean_day  每月清零具体日期
+     * @apiParam (请求参数说明) {int} account|clean_time  每月清零具体时间
      * @apiParam (请求参数说明) {int} account|limit_money  可预消费金额
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200}
@@ -91,6 +93,7 @@ class Canteen extends BaseController
      * @apiSuccess (返回参数说明) {string} dinners|id  餐次id
      * @apiSuccess (返回参数说明) {string} dinners|name  餐次名称
      * @apiSuccess (返回参数说明) {string} dinners|type  时间设置类别：day|week
+     * @apiSuccess (返回参数说明) {int} fixed  餐次是否采用标准金额：1｜是；2｜否
      * @apiSuccess (返回参数说明) {string} dinners|create_time  创建时间
      * @apiSuccess (返回参数说明) {int} dinners|type_number 订餐时间类别对应数量 （week：0-6；周日-周六）
      * @apiSuccess (返回参数说明) {string} dinners|limit_time  订餐限制时间
@@ -101,6 +104,7 @@ class Canteen extends BaseController
      * @apiSuccess (返回参数说明) {int} account|type  消费类别：1| 可透支消费；2|不可透支消费
      * @apiSuccess (返回参数说明) {int} account|clean_type  系统清零方式：1|系统自动清零；2|系统自动清零；3|无
      * @apiSuccess (返回参数说明) {int} account|clean_day  每月清零具体日期
+     * @apiSuccess (返回参数说明) {int} account|clean_time  每月清零具体时间
      * @apiSuccess (返回参数说明) {int} account|create_time  创建时间
      */
     public function configuration()
@@ -119,7 +123,7 @@ class Canteen extends BaseController
      *    {
      *       "c_id": 2,
      *       "dinners":[{"id":1,"name":"早餐","type":"day","type_number":10,"limit_time":"10:00","meal_time_begin":"07:00","meal_time_end":"08:00"},{"name":"晚餐","type":"day","type_number":10,"limit_time":"10:00","meal_time_begin":"18:00","meal_time_end":"19:00"}],
-     *       "account":{"id":1,"type":2,"clean_type":3,"clean_day":0}
+     *       "account":{"id":1,"type":2,"clean_type":3,"clean_day":1,"clean_day":02:00:00}
      *     }
      * @apiParam (请求参数说明) {int} c_id  饭堂id
      * @apiParam (请求参数说明) {string} dinners  订餐信息json字符串
@@ -130,11 +134,13 @@ class Canteen extends BaseController
      * @apiParam (请求参数说明) {string} dinners|limit_time  订餐限制时间
      * @apiParam (请求参数说明) {string} dinners|meal_time_begin  就餐开始时间
      * @apiParam (请求参数说明) {string} dinners|meal_time_end  就餐截止时间
+     * @apiParam (请求参数说明) {int} fixed  餐次是否采用标准金额：1｜是；2｜否
      * @apiParam (请求参数说明) {string} account 饭堂账户设置
      * @apiParam (请求参数说明) {int} account|id  饭堂账户设置ID
      * @apiParam (请求参数说明) {int} account|type  消费类别：1| 可透支消费；2|不可透支消费
      * @apiParam (请求参数说明) {int} account|clean_type  系统清零方式：1|系统自动清零；2|系统自动清零；3|无
      * @apiParam (请求参数说明) {int} account|clean_day  每月清零具体日期
+     * @apiParam (请求参数说明) {int} account|clean_time  每月清零具体时间
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误

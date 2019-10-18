@@ -249,6 +249,26 @@ class CanteenService
         return $info;
     }
 
+    public function getDinnerConsumptionStrategyForNoMeals($c_id, $d_id)
+    {
+        $info = ConsumptionStrategyT::getDinnerConsumptionStrategy($c_id, $d_id);
+        if ($info->isEmpty()) {
+            throw new ParameterException(['msg' => '餐次未设置消费策略']);
+        }
+        $dataList = [];
+        foreach ($info as $k => $v) {
+            $data['t_id'] = $v['t_id'];
+            $detail = json_decode($v['detail'], true);
+            foreach ($detail as $k2 => $v2) {
+                if ($v2['status'] == 'ordering_meals') {
+                    $detail['sub_money']=$v2['sub_money'];
+                }
+
+            }
+        }
+        return $data;
+    }
+
     public function getDinners($c_id)
     {
         return DinnerT::dinners($c_id);

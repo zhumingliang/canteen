@@ -31,6 +31,7 @@ use app\lib\exception\UpdateException;
 use think\Db;
 use think\Exception;
 use think\Request;
+use function GuzzleHttp\Psr7\str;
 
 class OrderService extends BaseService
 {
@@ -40,7 +41,6 @@ class OrderService extends BaseService
         try {
             Db::startTrans();
             $dinner_id = $params['dinner_id'];
-            $dinner = $params['dinner'];
             $ordering_date = $params['ordering_date'];
             $count = $params['count'];
             $detail = json_decode($params['detail'], true);
@@ -48,11 +48,14 @@ class OrderService extends BaseService
 
             $params['ordering_type'] = OrderEnum::ORDERING_CHOICE;
             $u_id = Token::getCurrentUid();
-
-            //检测该餐次订餐时间是否允许
-            $this->checkDinnerForPersonalChoice($dinner_id, $ordering_date);
             $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
-            $this->checkUserCanOrder($u_id, $dinner_id, $dinner, $ordering_date, $canteen_id, $count, $detail);
+
+            //获取餐次信息
+            $dinner = DinnerT::dinnerInfo($dinner_id);
+            //检测该餐次订餐时间是否允许
+            $this->checkDinnerForPersonalChoice($dinner, $ordering_date);
+            //检测用户是否可以订餐
+            $this->checkUserCanOrder($u_id, $dinner, $ordering_date, $canteen_id, $count, $detail);
             $money = $this->getOrderingMoney($detail);
             $params['money'] = $money;
             $pay_way = $this->checkBalance($u_id, $canteen_id, $money);
@@ -154,24 +157,28 @@ class OrderService extends BaseService
     }
 
     public
-    function checkUserCanOrder($u_id, $dinner_id, $dinner, $day, $canteen_id, $count, $detail)
+    function checkUserCanOrder($u_id, $dinner, $day, $canteen_id, $count, $detail)
     {
-        //获取用户指定日期订餐信息
-        $record = OrderingV::getRecordForDayOrdering($u_id, $day, $dinner);
-        if ($record) {
-            throw new SaveException(['msg' => '本餐次今日在' . $record->canteen . '已经预定，不能重复预定']);
-        }
+        //获取用户指定日期订餐数量
+        $consumptionCount = OrderingV::getRecordForDayOrdering($u_id, $day, $dinner->name);
+
+        /*  if ($record) {
+              throw new SaveException(['msg' => '本餐次今日预定数量已达上限，不能预定']);
+          }*/
         //检测消费策略
-        $this->checkConsumptionStrategy($canteen_id, $dinner_id, $count);
+        $phone = Token::getCurrentPhone();
+        $t_id = (new UserService())->getUserStaffTypeByPhone($phone);
+        //获取指定用户消费策略
+        $strategies = (new CanteenService())->getStaffConsumptionStrategy($canteen_id, $dinner->id, $t_id);
+        $strategyMoney = $this->checkConsumptionStrategy($strategies, $count, $consumptionCount);
 
         //检测菜单数据是否合法并返回订单金额
-        $this->checkMenu($dinner_id, $detail);
+        $this->checkMenu($dinner->id, $detail);
     }
 
     //检测是否在订餐时间内
-    public function checkDinnerForPersonalChoice($dinner_id, $ordering_date)
+    public function checkDinnerForPersonalChoice($dinner, $ordering_date)
     {
-        $dinner = DinnerT::dinnerInfo($dinner_id);
         if (!$dinner) {
             throw new ParameterException(['msg' => '指定餐次未设置']);
         }
@@ -208,20 +215,39 @@ class OrderService extends BaseService
       }*/
 
     private
-    function checkConsumptionStrategy($canteen_id, $dinner_id, $count)
+    function checkConsumptionStrategy($strategies, $orderCount, $consumptionCount)
     {
-        $phone = Token::getCurrentPhone();
-        $t_id = (new UserService())->getUserStaffTypeByPhone($phone);
-        //获取指定用户消费策略
-        $strategies = (new CanteenService())->getStaffConsumptionStrategy($canteen_id, $dinner_id, $t_id);
         if (!$strategies) {
             throw new SaveException(['msg' => '饭堂消费策略没有设置']);
         }
-        if ($count > $strategies->ordered_count) {
+        if ($orderCount > $strategies->ordered_count) {
             throw new SaveException(['msg' => '订餐数量超过最大订餐数量，最大订餐数量为：' . $strategies->ordered_count]);
         }
-        return true;
-
+        if ($consumptionCount >= $strategies->consumption_count) {
+            throw new SaveException(['msg' => '消费次数已达到上限，最大消费次数为：' . $strategies->ordered_count]);
+        }
+        $detail = json_decode($strategies->detail, true);
+        if (empty($detail)) {
+            throw new ParameterException(['msg' => "消费策略设置异常"]);
+        }
+        //获取消费策略中：订餐未就餐的标准金额和附加金额
+        $returnMoney = [];
+        foreach ($detail as $k => $v) {
+            if (($consumptionCount + 1) == $v['number']) {
+                $strategy = json_decode($v['strategy'], true);
+                foreach ($strategy as $k2 => $v2) {
+                    if ($v2['status'] == "no_meals_ordered") {
+                        $returnMoney = [
+                            'money' => $v2['money'],
+                            'sub_money' => $v2['sub_money'],
+                        ];
+                    }
+                    break;
+                }
+                break;
+            }
+        }
+        return $returnMoney;
     }
 
     private
@@ -409,10 +435,10 @@ class OrderService extends BaseService
      * 获取用户的订餐信息
      * 今天及今天以后订餐信息
      */
-    public function userOrdering()
+    public function userOrdering($consumption_time)
     {
         $u_id = Token::getCurrentUid();
-        $orderings = OrderingV::userOrdering($u_id);
+        $orderings = OrderingV::userOrdering($u_id,$consumption_time);
         return $orderings;
 
 
@@ -805,6 +831,7 @@ class OrderService extends BaseService
         }
         //获取饭堂订餐信息
         $orderInfo = OrderT::statisticToOfficial($canteen_id, $consumption_time);
+        $today = date('Y-m-d');
         foreach ($dinner as $k => $v) {
             $all = 0;
             $used = 0;
@@ -814,6 +841,9 @@ class OrderService extends BaseService
                 foreach ($orderInfo as $k2 => $v2) {
                     if ($v['id'] == $v2['d_id']) {
                         $all += $v2['count'];
+                        if (strtotime($today) < strtotime($consumption_time)) {
+                            continue;
+                        }
                         if ($v2['used'] == CommonEnum::STATE_IS_OK) {
                             $used += $v2['count'];
                             if ($v2['booking'] == CommonEnum::STATE_IS_FAIL) {
@@ -843,7 +873,8 @@ class OrderService extends BaseService
         if ($statistic->isEmpty()) {
             return [
                 'haveFoods' => CommonEnum::STATE_IS_FAIL,
-                'statistic' => $this->orderUsersStatistic($dinner_id, $consumption_time, 'all', 1, 20)];
+                // 'statistic' => $this->orderUsersStatistic($dinner_id, $consumption_time, 'all', 1, 20)
+            ];
         }
         return [
             'haveFoods' => CommonEnum::STATE_IS_OK,
@@ -863,8 +894,32 @@ class OrderService extends BaseService
         return $statistic;
     }
 
-    public function handelOrderedNoMeal($dinner_id,$consumption_time)
+    public function handelOrderedNoMeal($dinner_id, $consumption_time)
     {
+        $dinner = DinnerT::where('id', $dinner_id)->find();
+        if (!$dinner) {
+            throw new ParameterException(['msg' => '餐次信息不存在']);
+        }
+        $canteen_id = $dinner->c_id;
+        $checkCleanTime = false;
+        $cleanTime = '';
+        $dinnerEndTime = $consumption_time . ' ' . $dinner->meal_time_end;
+        $account = CanteenAccountT::where('c_id', $canteen_id)->find();
+        if ($account) {
+            if ($account->type = CommonEnum::STATE_IS_OK) {
+                $cleanTime = date('Y-m', strtotime($consumption_time)) . '-' . $account->clean_day . ' ' . $account->clean_time;
+            }
+        }
+        if (strtotime($dinnerEndTime) > time()) {
+            throw new UpdateException(['msg' => '餐次就餐时间未截止，不能一键扣费']);
+        }
+        if ($checkCleanTime && strtotime($cleanTime) < time()) {
+            throw new UpdateException(['msg' => '超出系统扣费时间，不能一键扣费']);
+        }
+        //可以进行一键扣费
+        //获取消费策略
+        $strategy = (new CanteenService())->getDinnerConsumptionStrategy($canteen_id, $dinner_id);
+
 
     }
 
