@@ -54,11 +54,10 @@ class OrderService extends BaseService
             $dinner = DinnerT::dinnerInfo($dinner_id);
             //检测该餐次订餐时间是否允许
             $this->checkDinnerForPersonalChoice($dinner, $ordering_date);
-            //检测用户是否可以订餐
-            $this->checkUserCanOrder($u_id, $dinner, $ordering_date, $canteen_id, $count, $detail);
-            $money = $this->getOrderingMoney($detail);
-            $params['money'] = $money;
-            $pay_way = $this->checkBalance($u_id, $canteen_id, $money);
+            //检测用户是否可以订餐并返回订单金额
+            $orderMoney = $this->checkUserCanOrder($u_id, $dinner, $ordering_date, $canteen_id, $count, $detail);
+
+            $pay_way = $this->checkBalance($u_id, $canteen_id, $orderMoney['money']);
             if (!$pay_way) {
                 throw new SaveException(['errorCode' => 49000, 'msg' => '余额不足']);
             }
@@ -68,6 +67,10 @@ class OrderService extends BaseService
             $params['u_id'] = $u_id;
             $params['c_id'] = $canteen_id;
             $params['d_id'] = $dinner_id;
+            $params['pay'] = CommonEnum::STATE_IS_OK;
+            $params['money'] = $orderMoney['money'] * $count;
+            $params['sub_money'] = $orderMoney['sub_money'] * $count;
+            $params['consumption_type'] = $orderMoney['consumption_type'];
             $params['pay'] = CommonEnum::STATE_IS_OK;
 
             $company_id = Token::getCurrentTokenVar('current_company_id');
@@ -93,18 +96,6 @@ class OrderService extends BaseService
             throw $e;
         }
 
-    }
-
-    private function getOrderingMoney($detail)
-    {
-        $money = 0;
-        foreach ($detail as $k => $v) {
-            $foods = $v['foods'];
-            foreach ($foods as $k2 => $v2) {
-                $money += $v2['price'];
-            }
-        }
-        return $money;
     }
 
     public
@@ -162,18 +153,21 @@ class OrderService extends BaseService
         //获取用户指定日期订餐数量
         $consumptionCount = OrderingV::getRecordForDayOrdering($u_id, $day, $dinner->name);
 
-        /*  if ($record) {
-              throw new SaveException(['msg' => '本餐次今日预定数量已达上限，不能预定']);
-          }*/
         //检测消费策略
         $phone = Token::getCurrentPhone();
         $t_id = (new UserService())->getUserStaffTypeByPhone($phone);
         //获取指定用户消费策略
         $strategies = (new CanteenService())->getStaffConsumptionStrategy($canteen_id, $dinner->id, $t_id);
-        $strategyMoney = $this->checkConsumptionStrategy($strategies, $count, $consumptionCount);
 
+        $orderMoneyFixed = $dinner->fixed;
+        $strategyMoney = $this->checkConsumptionStrategy($strategies, $count, $consumptionCount);
         //检测菜单数据是否合法并返回订单金额
-        $this->checkMenu($dinner->id, $detail);
+        $detailMoney = $this->checkMenu($dinner->id, $detail);
+        if ($orderMoneyFixed == CommonEnum::STATE_IS_FAIL) {
+            $strategyMoney['money'] = $detailMoney;
+        }
+        return $strategyMoney;
+
     }
 
     //检测是否在订餐时间内
@@ -232,17 +226,35 @@ class OrderService extends BaseService
         }
         //获取消费策略中：订餐未就餐的标准金额和附加金额
         $returnMoney = [];
+        $no_meal_money = 0;
+        $no_meal_sub_money = 0;
+        $meal_money = 0;
+        $meal_sub_money = 0;
         foreach ($detail as $k => $v) {
             if (($consumptionCount + 1) == $v['number']) {
-                $strategy = json_decode($v['strategy'], true);
+                $strategy = $v['strategy'];
                 foreach ($strategy as $k2 => $v2) {
                     if ($v2['status'] == "no_meals_ordered") {
-                        $returnMoney = [
-                            'money' => $v2['money'],
-                            'sub_money' => $v2['sub_money'],
-                        ];
+                        $no_meal_money = $v2['money'];
+                        $no_meal_sub_money = $v2['sub_money'];
+                    } else if ($v2['status'] == "ordering_meals") {
+                        $meal_money = $v2['money'];
+                        $meal_sub_money = $v2['sub_money'];
                     }
-                    break;
+                }
+
+                if (($no_meal_money + $no_meal_sub_money) > ($meal_money + $meal_sub_money)) {
+                    $returnMoney = [
+                        'consumption_type' => 'no_meals_ordered',
+                        'money' => $no_meal_money,
+                        'sub_money' => $no_meal_money
+                    ];
+                } else {
+                    $returnMoney = [
+                        'consumption_type' => 'ordering_meals',
+                        'money' => $meal_money,
+                        'sub_money' => $meal_money
+                    ];
                 }
                 break;
             }
@@ -262,6 +274,7 @@ class OrderService extends BaseService
             throw new ParameterException(['msg' => '指定餐次未设置菜单信息']);
         }
 
+        $detailMoney = 0;
         foreach ($detail as $k => $v) {
             $menu_id = $v['menu_id'];
             $menu = $this->getMenuInfo($menus, $menu_id);
@@ -271,7 +284,13 @@ class OrderService extends BaseService
             if (($menu['status'] == MenuEnum::FIXED) && ($menu['count'] < count($v['foods']))) {
                 throw new SaveException(['msg' => '选菜失败,菜品类别：<' . $menu['category'] . '> 选菜数量超过最大值：' . $menu['count']]);
             }
+
+            $foods = $v['foods'];
+            foreach ($foods as $k2 => $v2) {
+                $detailMoney += $v2['price'] * $v2['count'];
+            }
         }
+        return $detailMoney;
     }
 
     private
@@ -293,7 +312,7 @@ class OrderService extends BaseService
     /**
      * 线上订餐
      */
-    public function orderingOnline($detail)
+    public function  orderingOnline($detail)
     {
         try {
             Db::startTrans();
@@ -438,7 +457,7 @@ class OrderService extends BaseService
     public function userOrdering($consumption_time)
     {
         $u_id = Token::getCurrentUid();
-        $orderings = OrderingV::userOrdering($u_id,$consumption_time);
+        $orderings = OrderingV::userOrdering($u_id, $consumption_time);
         return $orderings;
 
 

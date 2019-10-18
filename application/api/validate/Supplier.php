@@ -9,6 +9,7 @@ class Supplier extends BaseValidate
     protected $rule = [
         'id' => 'require|isPositiveInteger',
         'c_id ' => 'require|isPositiveInteger',
+        'company_id ' => 'require|isPositiveInteger',
         'name' => 'require|isNotEmpty',
         'account' => 'require|isNotEmpty',
         'pwd' => 'require|isNotEmpty'
@@ -19,6 +20,7 @@ class Supplier extends BaseValidate
         'update' => ['id'],
         'delete' => ['id'],
         'suppliers' => ['c_id'],
+        'companySuppliers' => ['company_id'],
     ];
 
 }
