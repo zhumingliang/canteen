@@ -54,12 +54,12 @@ class CategoryService
 
     }
 
-    public function companyCategoriesToSelect()
+    public function companyCategoriesToSelect($company_id)
     {
-        $company_id = 3;//Token::getCurrentTokenVar('c_id');
+       /* $company_id = 3;//Token::getCurrentTokenVar('c_id');
         if (empty($company_id)){
             throw new AuthException(['msg'=>'该用户没有归属企业']);
-        }
+        }*/
         $categories = ShopProductCategoryT:: companyCategoriesToSelect($company_id);
         return $categories;
 
