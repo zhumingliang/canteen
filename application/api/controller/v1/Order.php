@@ -125,10 +125,10 @@ class Order extends BaseController
      *       "detail":[{"d_id":5,"ordering":[{"ordering_date":"2019-10-01","count":1},{"ordering_date":"2019-10-02","count":1}]},{"d_id":6,"ordering":[{"ordering_date":"2019-10-01","count":1},{"ordering_date":"2019-10-02","count":1}]}]
      *     }
      * @apiParam (请求参数说明) {obj} detail  订餐明细
-     * @apiParam (请求参数说明) {int} detail|d_id  餐次id
-     * @apiParam (请求参数说明) {obj} detail|ordering 指定餐次订餐明细
-     * @apiParam (请求参数说明) {string} detail|ordering|ordering_date  订餐日期
-     * @apiParam (请求参数说明) {string} detail|ordering|count  订餐数量
+     * @apiParam (请求参数说明) {int} d_id  餐次id
+     * @apiParam (请求参数说明) {obj} ordering 指定餐次订餐明细
+     * @apiParam (请求参数说明) {string} ordering_date  订餐日期
+     * @apiParam (请求参数说明) {string} ordering|count  订餐数量
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误

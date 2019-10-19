@@ -21,7 +21,6 @@ class Shop extends BaseController
      * @apiDescription    CMS管理端-小卖部管理-商品管理-新增商品
      * @apiExample {post}  请求样例:
      *    {
-     *       "company_id": 3,
      *       "supplier_id": 1,
      *       "category_id": 2,
      *       "name": "鸡蛋",
@@ -30,7 +29,6 @@ class Shop extends BaseController
      *       "count": 100,
      *       "image": "/static/image/a.png",
      *     }
-     * @apiParam (请求参数说明) {int} company_id  企业id
      * @apiParam (请求参数说明) {int} supplier_id  供应商id
      * @apiParam (请求参数说明) {int} category_id  类型id
      * @apiParam (请求参数说明) {string} name  商品名称

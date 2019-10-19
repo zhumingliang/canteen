@@ -22,7 +22,7 @@ class Shop extends BaseValidate
     ];
 
     protected $scene = [
-        'saveProduct' => ['company_id', 'supplier_id', 'category_id', 'unit', 'name', 'price', 'count'],
+        'saveProduct' => [ 'supplier_id', 'category_id', 'unit', 'name', 'price', 'count'],
         'updateProduct' => ['id'],
         'handel' => ['id', 'state'],
         'product' => ['id'],

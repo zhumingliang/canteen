@@ -128,10 +128,9 @@ class Supplier extends BaseController
      * @apiVersion 3.0.0
      * @apiDescription CMS管理端-小卖部管理-商品管理-获取该企业下供货商列表
      * @apiExample {get}  请求样例:
-     * http://canteen.tonglingok.com/api/v1/company/suppliers?page=1&size=10&company_id=3
+     * http://canteen.tonglingok.com/api/v1/company/suppliers?page=1&size=10
      * @apiParam (请求参数说明) {int} page 当前页码
      * @apiParam (请求参数说明) {int} size 每页多少条数据
-     * @apiParam (请求参数说明) {int} company_id 企业id
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200,"data":{"total":1,"per_page":10,"current_page":1,"last_page":1,"data":[{"id":1,"name":"供应商1"}]}}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
@@ -145,8 +144,7 @@ class Supplier extends BaseController
      */
     public function companySuppliers($page = 1, $size = 10)
     {
-        $company_id = Request::param('company_id');
-        $suppliers = (new SupplierService())->companySuppliers($company_id,$page, $size);
+        $suppliers = (new SupplierService())->companySuppliers($page, $size);
         return json(new SuccessMessageWithData(['data' => $suppliers]));
     }
 

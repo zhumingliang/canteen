@@ -86,6 +86,7 @@ class ShopService
     {
         try {
             Db::startTrans();
+            $params['company_id'] = Token::getCurrentTokenVar('c_id');
             if ($this->checkName($params['company_id'], $params['name'])) {
                 throw new SaveException(['msg' => '商品名称已经存在']);
             }

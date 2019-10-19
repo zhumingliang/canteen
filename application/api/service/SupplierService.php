@@ -53,12 +53,12 @@ class SupplierService
         return $suppliers;
     }
 
-    public function companySuppliers($company_id,$page, $size)
+    public function companySuppliers($page, $size)
     {
-       /* $company_id = Token::getCurrentTokenVar('c_id');
+        $company_id = Token::getCurrentTokenVar('c_id');
         if (empty($company_id)) {
             throw new AuthException(['msg' => '该用户没有归属企业']);
-        }*/
+        }
         $suppliers = SupplierT::companySuppliers($company_id, $page, $size);
         return $suppliers;
     }

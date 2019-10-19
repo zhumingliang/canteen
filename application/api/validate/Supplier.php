@@ -19,8 +19,7 @@ class Supplier extends BaseValidate
         'save' => ['c_id', 'name', 'account', 'pwd'],
         'update' => ['id'],
         'delete' => ['id'],
-        'suppliers' => ['c_id'],
-        'companySuppliers' => ['company_id'],
+        'suppliers' => ['c_id']
     ];
 
 }
