@@ -38,18 +38,22 @@ class CanteenService
     {
         try {
             Db::startTrans();
-            $canteens = $params['canteens'];
-            $canteens = json_decode($canteens, true);
             $c_id = $params['c_id'];
-            foreach ($canteens as $K => $v) {
-                $id = $this->saveDefault($c_id, $v);
-                if (!$id) {
-                    Db::rollback();
-                    throw new SaveException();
-                    break;
-                }
-            }
+            $canteens = $params['canteens'];
+            /*  Db::startTrans();
+              $canteens = $params['canteens'];
+              $canteens = json_decode($canteens, true);
+              $c_id = $params['c_id'];
+              foreach ($canteens as $K => $v) {
+                  $id = $this->saveDefault($c_id, $v);
+                  if (!$id) {
+                      throw new SaveException();
+                      break;
+                  }
+              }*/
+            $id = $this->saveDefault($c_id, $canteens);
             Db::commit();
+            return $id;
         } catch (Exception$e) {
             Db::rollback();
             throw  $e;
@@ -261,7 +265,7 @@ class CanteenService
             $detail = json_decode($v['detail'], true);
             foreach ($detail as $k2 => $v2) {
                 if ($v2['status'] == 'ordering_meals') {
-                    $detail['sub_money']=$v2['sub_money'];
+                    $detail['sub_money'] = $v2['sub_money'];
                 }
 
             }

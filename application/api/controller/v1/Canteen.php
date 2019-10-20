@@ -22,7 +22,7 @@ class Canteen extends BaseController
      * @apiDescription     CMS管理端-新增饭堂
      * @apiExample {post}  请求样例:
      *    {
-     *       "canteens": ["饭堂1号","饭堂2号"],
+     *       "canteens":"饭堂1号",
      *       "c_id": 2
      *     }
      * @apiParam (请求参数说明) {string} canteens  饭堂名称json字符串
@@ -35,8 +35,8 @@ class Canteen extends BaseController
     public function save()
     {
         $params = $this->request->param();
-        (new CanteenService())->save($params);
-        return json(new SuccessMessage());
+        $canteen_id = (new CanteenService())->save($params);
+        return json(new SuccessMessageWithData(['data' => ['canteen_id' => $canteen_id]]));
     }
 
     /**
