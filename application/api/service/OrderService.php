@@ -148,7 +148,7 @@ class OrderService extends BaseService
     }
 
     public
-    function checkUserCanOrder($u_id, $dinner, $day, $canteen_id, $count, $detail)
+    function checkUserCanOrder($u_id, $dinner, $day, $canteen_id, $count, $detail, $ordering_type = "person_choice")
     {
         //获取用户指定日期订餐数量
         $consumptionCount = OrderingV::getRecordForDayOrdering($u_id, $day, $dinner->name);
@@ -161,14 +161,28 @@ class OrderService extends BaseService
 
         $orderMoneyFixed = $dinner->fixed;
         $strategyMoney = $this->checkConsumptionStrategy($strategies, $count, $consumptionCount);
-        //检测菜单数据是否合法并返回订单金额
-        $detailMoney = $this->checkMenu($dinner->id, $detail);
-        if ($orderMoneyFixed == CommonEnum::STATE_IS_FAIL) {
-            $strategyMoney['money'] = $detailMoney;
+        if ($ordering_type == "person_choice") {
+            //检测菜单数据是否合法并返回订单金额
+            $detailMoney = $this->checkMenu($dinner->id, $detail);
+            if ($orderMoneyFixed == CommonEnum::STATE_IS_FAIL) {
+                $strategyMoney['money'] = $detailMoney;
+            }
         }
         return $strategyMoney;
 
     }
+
+    public
+    function checkUserCanOrderForOnline($u_id, $dinner, $day, $count, $strategies)
+    {
+        //获取用户指定日期订餐数量
+        $consumptionCount = OrderingV::getRecordForDayOrdering($u_id, $day, $dinner->name);
+        //获取指定用户消费策略
+        $strategyMoney = $this->checkConsumptionStrategy($strategies, $count, $consumptionCount);
+        return $strategyMoney;
+
+    }
+
 
     //检测是否在订餐时间内
     public function checkDinnerForPersonalChoice($dinner, $ordering_date)
@@ -312,7 +326,7 @@ class OrderService extends BaseService
     /**
      * 线上订餐
      */
-    public function  orderingOnline($detail)
+    public function orderingOnline($detail)
     {
         try {
             Db::startTrans();
@@ -364,17 +378,16 @@ class OrderService extends BaseService
         $department_id = $staff->d_id;
         $staff_id = $staff->id;
 
-        //获取用户所有有效订餐信息
-        $records = OrderingV::getUserOrdering($u_id);
-
         foreach ($detail as $k => $v) {
             //检测该餐次是否在订餐时间范围内
             $ordering_data = $v['ordering'];
-            $money = $this->getStrategyMoneyForOrderingOnline($canteen_id, $v['d_id'], $staff_type_id);
+            $dinner = DinnerT::dinnerInfo($v['d_id']);
+            $strategies = (new CanteenService())->getStaffConsumptionStrategy($canteen_id, $v['d_id'], $staff_type_id);
+
             if (!empty($ordering_data)) {
                 foreach ($ordering_data as $k2 => $v2) {
-                    //检测是否重复订餐
-                    $this->checkDinnerOrdered($v2['ordering_date'], $v['d_id'], $records);
+                    //检测是否可以订餐
+                    $checkOrder = $this->checkUserCanOrderForOnline($u_id, $dinner, $v2['ordering_date'], $v2['count'], $strategies);
                     $data = [];
                     $data['u_id'] = $u_id;
                     $data['c_id'] = $canteen_id;
@@ -387,11 +400,13 @@ class OrderService extends BaseService
                     $data['count'] = $v2['count'];
                     $data['order_num'] = makeOrderNo();
                     $data['ordering_type'] = OrderEnum::ORDERING_ONLINE;
-                    $data['money'] = $money;
+                    $params['money'] = $checkOrder['money'] * $v2['count'];
+                    $params['sub_money'] = $checkOrder['sub_money'] * $v2['count'];
+                    $params['consumption_type'] = $checkOrder['consumption_type'];
                     $data['pay_way'] = '';
                     $data['pay'] = CommonEnum::STATE_IS_OK;
                     array_push($data_list, $data);
-                    $all_money += $money;
+                    $all_money += $params['money'] + $params['sub_money'];
                 }
 
             }
@@ -559,11 +574,13 @@ class OrderService extends BaseService
             throw new ParameterException(['msg' => '当前用户消费策略不存在']);
         }
         if ($count > $strategy->ordered_count) {
-            throw new UpdateException(['msg' => '当前用户消费策略不存在']);
+            throw new UpdateException(['msg' => '超出最大订餐数量，不能预定']);
         }
         $old_money = $order->money;
+        $old_sub_money = $order->sub_money;
         $old_count = $order->count;
         $new_money = ($old_money / $old_count) * $count;
+        $new_sub_money = ($old_sub_money / $old_count) * $count;
         //检测订单金额是否合法
         $check_res = $this->checkBalance($order->u_id, $order->c_id, ($new_money - $old_money));
         if (!$check_res) {
@@ -573,6 +590,8 @@ class OrderService extends BaseService
         $order->count = $count;
         //处理订单金额
         $order->money = $new_money;
+        //处理订单附加金额
+        $order->sub_money = $new_sub_money;
         //处理消费方式
         $order->pay_way = $check_res;
         if (!($order->save())) {
@@ -592,6 +611,7 @@ class OrderService extends BaseService
             $order = OrderT::where('id', $id)->find();
             //检测订单是否可操作
             $count = $order->count;
+            $sub_money = $order->sub_money;
             $this->checkOrderCanHandel($order->d_id);
             if (!empty($params['count']) && ($params['count'] != $count)) {
                 //检测订单修改数量是否合法
@@ -601,8 +621,10 @@ class OrderService extends BaseService
                     throw new ParameterException(['msg' => '当前用户消费策略不存在']);
                 }
                 if ($count > $strategy->ordered_count) {
-                    throw new UpdateException(['msg' => '当前用户消费策略不存在']);
+                    throw new UpdateException(['msg' => '超出最大订餐量，不能修改']);
                 }
+
+                $sub_money = ($sub_money / $order->count) * $count;
             }
 
 
@@ -610,6 +632,8 @@ class OrderService extends BaseService
                 $order->d_id, $order->pay_way, $order->money, $count, $detail);
             $order->pay_way = $check_money['pay_way'];
             $order->money = $check_money['new_money'];
+            $order->sub_money = $sub_money;
+            $order->count = $count;
             if (!($order->save())) {
                 throw new UpdateException();
             }

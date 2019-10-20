@@ -30,7 +30,7 @@ class Canteen extends BaseValidate
     ];
 
     protected $scene = [
-        'save' => ['name', 'parent_id'],
+        'save' => ['canteens', 'parent_id'],
         'saveConfiguration' => ['c_id', 'dinners', 'account'],
         'configuration' => ['c_id'],
         'updateConfiguration' => ['c_id'],
