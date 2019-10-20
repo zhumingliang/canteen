@@ -57,7 +57,7 @@ class OrderService extends BaseService
             //检测用户是否可以订餐并返回订单金额
             $orderMoney = $this->checkUserCanOrder($u_id, $dinner, $ordering_date, $canteen_id, $count, $detail);
 
-            $pay_way = $this->checkBalance($u_id, $canteen_id, $orderMoney['money']);
+            $pay_way = $this->checkBalance($u_id, $canteen_id, $orderMoney['money'] * $count + $orderMoney['sub_money'] * $count);
             if (!$pay_way) {
                 throw new SaveException(['errorCode' => 49000, 'msg' => '余额不足']);
             }
@@ -582,7 +582,7 @@ class OrderService extends BaseService
         $new_money = ($old_money / $old_count) * $count;
         $new_sub_money = ($old_sub_money / $old_count) * $count;
         //检测订单金额是否合法
-        $check_res = $this->checkBalance($order->u_id, $order->c_id, ($new_money - $old_money));
+        $check_res = $this->checkBalance($order->u_id, $order->c_id, ($new_money + $new_sub_money - $old_money - $old_sub_money));
         if (!$check_res) {
             throw new UpdateException(['msg' => '当前用户可消费余额不足']);
         }
@@ -611,7 +611,6 @@ class OrderService extends BaseService
             $order = OrderT::where('id', $id)->find();
             //检测订单是否可操作
             $count = $order->count;
-            $sub_money = $order->sub_money;
             $this->checkOrderCanHandel($order->d_id);
             if (!empty($params['count']) && ($params['count'] != $count)) {
                 //检测订单修改数量是否合法
@@ -623,16 +622,14 @@ class OrderService extends BaseService
                 if ($count > $strategy->ordered_count) {
                     throw new UpdateException(['msg' => '超出最大订餐量，不能修改']);
                 }
-
-                $sub_money = ($sub_money / $order->count) * $count;
             }
 
 
             $check_money = $this->checkOrderUpdateMoney($id, $order->u_id, $order->c_id,
-                $order->d_id, $order->pay_way, $order->money, $count, $detail);
+                $order->d_id, $order->pay_way, $order->money, $order->sub_money, $order->count, $count, $detail);
             $order->pay_way = $check_money['pay_way'];
             $order->money = $check_money['new_money'];
-            $order->sub_money = $sub_money;
+            $order->sub_money = $check_money['new_sub_money'];
             $order->count = $count;
             if (!($order->save())) {
                 throw new UpdateException();
@@ -700,15 +697,17 @@ class OrderService extends BaseService
     }
 
     private function checkOrderUpdateMoney($o_id, $u_id, $canteen_id, $dinner_id, $pay_way,
-                                           $old_money, $count, $new_detail)
+                                           $old_money, $old_sub_money, $old_count, $count, $new_detail)
     {
         //获取餐次下所有菜品类别
         $menus = (new MenuService())->dinnerMenus($dinner_id);
         if (!count($menus)) {
             throw new ParameterException(['msg' => '指定餐次未设置菜单信息']);
         }
-
+        $dinner = DinnerT::dinnerInfo($dinner_id);
+        $fixed = $dinner->fixed;
         $new_money = 0;
+        $new_sub_money = 0;
         foreach ($new_detail as $k => $v) {
             $menu_id = $v['menu_id'];
             $add_foods = $v['add_foods'];
@@ -727,16 +726,24 @@ class OrderService extends BaseService
                 throw new SaveException(['msg' => '选菜失败,菜品类别：<' . $menu['category'] . '> 选菜数量超过最大值：' . $menu['count']]);
             }
 
-            foreach ($check_data as $k3 => $v3) {
-                $new_money += $v3['price'] * $v3['count'];
+            if ($fixed == CommonEnum::STATE_IS_FAIL) {
+                foreach ($check_data as $k3 => $v3) {
+                    $new_money += $v3['price'] * $v3['count'];
+                }
             }
         }
-        $new_money = $new_money * $count;
+        if ($fixed == CommonEnum::STATE_IS_FAIL) {
+            $new_money = $new_money * $count;
+        } else {
+            $new_money = $old_money * $count;
+        }
+        $new_sub_money = $old_sub_money / $old_count * $count;
         if ($new_money > $old_money) {
-            $pay_way = $this->checkBalance($u_id, $canteen_id, $new_money - $old_money);
+            $pay_way = $this->checkBalance($u_id, $canteen_id, $new_money + $new_sub_money - $old_money - $old_sub_money);
         }
         return [
             'new_money' => $new_money,
+            'new_sub_money' => $new_sub_money,
             'pay_way' => $pay_way
         ];
     }

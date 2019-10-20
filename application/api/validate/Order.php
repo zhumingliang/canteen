@@ -35,7 +35,7 @@ class Order extends BaseValidate
         'personalChoiceInfo' => ['id'],
         'userOrders' => ['id', 'type'],
         'userOrderings' => ['id', 'type'],
-        'userOrdering' => ['consumption_type'],
+        'userOrdering' => ['consumption_time'],
         'orderDetail' => ['id', 'type'],
         'deliveryCode' => ['id'],
         'consumptionRecords' => ['consumption_time'],
