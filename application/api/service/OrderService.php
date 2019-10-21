@@ -374,7 +374,8 @@ class OrderService extends BaseService
         $data_list = [];
         $all_money = 0;
         $company_id = Token::getCurrentTokenVar('current_company_id');
-        $staff = (new UserService())->getUserCompanyInfo(Token::getCurrentPhone(), $company_id);
+        $phone = Token::getCurrentPhone();
+        $staff = (new UserService())->getUserCompanyInfo($phone, $company_id);
         $staff_type_id = $staff->t_id;
         $department_id = $staff->d_id;
         $staff_id = $staff->id;
@@ -987,7 +988,7 @@ class OrderService extends BaseService
     public function orderStateHandel()
     {
         try {
-            Db::startTrans();
+            // Db::startTrans();
             $orders = OrderHandelT::where('state', CommonEnum::STATE_IS_FAIL)
                 ->limit(0, 5)->select();
             if (!$orders->isEmpty()) {
@@ -996,9 +997,9 @@ class OrderService extends BaseService
                 }
 
             }
-            Db::commit();
+            //Db::commit();
         } catch (Exception $e) {
-            Db::rollback();
+            //Db::rollback();
             LogService::save($e->getMessage());
         }
 
@@ -1007,16 +1008,16 @@ class OrderService extends BaseService
     private function prefixOrderState($order_id)
     {
         $order = OrderT::where('id', $order_id)->find();
-        if ($order->consumption_type == "ordering_meals") {
-            $order->used = CommonEnum::STATE_IS_OK;
-            $order->remark = "消费状态由未就餐改为就餐";
-            $order->save();
-        } else if ($order->consumption_type == "no_meals_ordered") {
+        if ($order->consumption_type == "no_meals_ordered") {
             //获取餐次信息
             $dinner = DinnerT::dinnerInfo($order->d_id);
             //获取消费策略
             $strategies = (new CanteenService())->getStaffConsumptionStrategy($order->c_id, $order->d_id, $order->staff_type_id);
             $detail = json_decode($strategies->detail, true);
+            if (empty($detail)) {
+                throw new ParameterException();
+                LogService::save('消费策略设置异常，订单id：' . $order_id);
+            }
             $fixed = $dinner->fixed;
             $number = $this->getOrderNumber($order->id, $order->c_id, $order->u_id, $order->d_id, $order->ordering_date);
             $count = $order->count;
@@ -1046,13 +1047,15 @@ class OrderService extends BaseService
             } else {
                 $order->sub_money = $sub_money * $count;
             }
-            $res = $order->save();
-            if (!$res) {
-                LogService::save('更新订单失败，订单id：' . $order_id);
-                throw new UpdateException(['msg' => '更新订单失败，订单id：' . $order_id]);
-            }
         }
 
+        $order->used = CommonEnum::STATE_IS_OK;
+        $order->remark = "消费状态由未就餐改为就餐";
+        $res = $order->save();
+        if (!$res) {
+            LogService::save('更新订单失败，订单id：' . $order_id);
+            throw new UpdateException(['msg' => '更新订单失败，订单id：' . $order_id]);
+        }
     }
 
     //获取本餐是饭堂第几次消费

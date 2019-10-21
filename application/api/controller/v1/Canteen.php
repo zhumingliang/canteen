@@ -60,11 +60,11 @@ class Canteen extends BaseController
      * @apiParam (请求参数说明) {string} meal_time_end  就餐截止时间
      * @apiParam (请求参数说明) {int} fixed  餐次是否采用标准金额：1｜是；2｜否
      * @apiParam (请求参数说明) {obj} account 饭堂账户设置
-     * @apiParam (请求参数说明) {int} account|type  消费类别：1| 可透支消费；2|不可透支消费
-     * @apiParam (请求参数说明) {int} account|clean_type  系统清零方式：1|系统自动清零；2|系统自动清零；3|无
-     * @apiParam (请求参数说明) {int} account|clean_day  每月清零具体日期
-     * @apiParam (请求参数说明) {int} account|clean_time  每月清零具体时间
-     * @apiParam (请求参数说明) {int} account|limit_money  可预消费金额
+     * @apiParam (请求参数说明) {int} type  消费类别：1| 可透支消费；2|不可透支消费
+     * @apiParam (请求参数说明) {int} clean_type  系统清零方式：1|系统自动清零；2|系统自动清零；3|无
+     * @apiParam (请求参数说明) {int} clean_day  每月清零具体日期
+     * @apiParam (请求参数说明) {int} clean_time  每月清零具体时间
+     * @apiParam (请求参数说明) {int} limit_money  可预消费金额
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误

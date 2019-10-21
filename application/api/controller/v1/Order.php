@@ -573,5 +573,12 @@ class Order extends BaseController
 
     }
 
+    public function orderStatistic($page = 1, $size = 20)
+    {
+        $company_id=Request::param('company_id');
+        $canteen_id=Request::param('canteen_id');
+
+    }
+
 
 }

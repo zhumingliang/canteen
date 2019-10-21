@@ -30,7 +30,6 @@ class Department extends BaseValidate
         'updateStaff' => ['id'],
         'deleteStaff' => ['id'],
         'uploadStaffs' => ['c_id'],
-        'staffs' => ['d_id'],
         'moveStaffDepartment' => ['id', 'd_id'],
     ];
 
