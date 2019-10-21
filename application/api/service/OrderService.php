@@ -986,21 +986,81 @@ class OrderService extends BaseService
 
     public function orderStateHandel()
     {
-        $orders = OrderHandelT::where('state', CommonEnum::STATE_IS_FAIL)
-            ->limit(0, 5)->select();
-        if (!$orders->isEmpty()) {
-            foreach ($orders as $k => $v) {
-                $this->prefixOrderState($v->order_id);
+        try {
+            Db::startTrans();
+            $orders = OrderHandelT::where('state', CommonEnum::STATE_IS_FAIL)
+                ->limit(0, 5)->select();
+            if (!$orders->isEmpty()) {
+                foreach ($orders as $k => $v) {
+                    $this->prefixOrderState($v->order_id);
+                }
 
             }
-
+            Db::commit();
+        } catch (Exception $e) {
+            Db::rollback();
+            LogService::save($e->getMessage());
         }
+
     }
 
     private function prefixOrderState($order_id)
     {
         $order = OrderT::where('id', $order_id)->find();
+        if ($order->consumption_type == "ordering_meals") {
+            $order->used = CommonEnum::STATE_IS_OK;
+            $order->remark = "消费状态由未就餐改为就餐";
+            $order->save();
+        } else if ($order->consumption_type == "no_meals_ordered") {
+            //获取餐次信息
+            $dinner = DinnerT::dinnerInfo($order->d_id);
+            //获取消费策略
+            $strategies = (new CanteenService())->getStaffConsumptionStrategy($order->c_id, $order->d_id, $order->staff_type_id);
+            $detail = json_decode($strategies->detail, true);
+            $fixed = $dinner->fixed;
+            $number = $this->getOrderNumber($order->id, $order->c_id, $order->u_id, $order->d_id, $order->ordering_date);
+            $money = 0;
+            $sub_money = 0;
+            if ($fixed == CommonEnum::STATE_IS_OK) {
+                foreach ($detail as $k => $v) {
+                    if ($number == $v['number']) {
+                        $strategy = $v['strategy'];
+                        foreach ($strategy as $k2 => $v2) {
+                            if ($v2['status'] == 'ordering_meals') {
+
+                            }
+
+                        }
+                    }
+
+                }
+
+            }
+        }
 
     }
 
+    //获取本餐是饭堂第几次消费
+    public function getOrderNumber($order_id, $canteen_id, $u_id, $dinner_id, $ordering_date)
+    {
+        $orders = OrderT::where('u_id', $u_id)
+            ->where('c_id', $canteen_id)
+            ->where('d_id', $dinner_id)
+            ->whereBetweenTime('ordering_date', $ordering_date)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->order('id')
+            ->select()->toArray();
+        $number = 1;
+        if ($orders > 1) {
+            foreach ($orders as $k => $v) {
+                if ($v['id'] == $order_id) {
+                    $number = $k + 1;
+                    break;
+                }
+
+            }
+
+        }
+        return $number;
+    }
 }

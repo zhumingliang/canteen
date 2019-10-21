@@ -126,7 +126,7 @@ class Shop extends BaseController
      *       "id": 1,
      *       "state": 2,
      *     }
-     * @apiParam (请求参数说明) {int} id  供应商id
+     * @apiParam (请求参数说明) {int} id  商品id
      * @apiParam (请求参数说明) {int} state  状态：1|上架；2|下架；3|删除
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200}

@@ -4,6 +4,8 @@
 namespace app\api\model;
 
 
+use app\lib\enum\CommonEnum;
+
 class ShopProductStockV extends BaseModel
 {
 
@@ -20,6 +22,7 @@ class ShopProductStockV extends BaseModel
                     $query->where('category_id', $category_id);
                 }
             })
+            ->where('state', '<', CommonEnum::STATE_IS_DELETE)
             ->field('product_id,image,name,category,unit,price,sum(count) as stock,supplier')
             ->order('create_time desc')
             ->group('product_id')
