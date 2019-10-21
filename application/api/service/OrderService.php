@@ -1019,22 +1019,37 @@ class OrderService extends BaseService
             $detail = json_decode($strategies->detail, true);
             $fixed = $dinner->fixed;
             $number = $this->getOrderNumber($order->id, $order->c_id, $order->u_id, $order->d_id, $order->ordering_date);
+            $count = $order->count;
             $money = 0;
             $sub_money = 0;
-            if ($fixed == CommonEnum::STATE_IS_OK) {
-                foreach ($detail as $k => $v) {
-                    if ($number == $v['number']) {
-                        $strategy = $v['strategy'];
-                        foreach ($strategy as $k2 => $v2) {
-                            if ($v2['status'] == 'ordering_meals') {
-
-                            }
-
+            $checkType = false;
+            foreach ($detail as $k => $v) {
+                if ($number == $v['number']) {
+                    $strategy = $v['strategy'];
+                    foreach ($strategy as $k2 => $v2) {
+                        if ($v2['status'] == 'ordering_meals') {
+                            $money = $v2['money'];
+                            $sub_money = $v2['sub_money'];
+                            $checkType = true;
                         }
+
                     }
-
                 }
-
+            }
+            if (!$checkType) {
+                LogService::save('未找到消费策略，订单id：' . $order_id);
+                throw new UpdateException(['msg' => '未找到消费策略，订单id：' . $order_id]);
+            }
+            if ($fixed == CommonEnum::STATE_IS_OK) {
+                $order->money = $money * $count;
+                $order->sub_money = $sub_money * $count;
+            } else {
+                $order->sub_money = $sub_money * $count;
+            }
+            $res = $order->save();
+            if (!$res) {
+                LogService::save('更新订单失败，订单id：' . $order_id);
+                throw new UpdateException(['msg' => '更新订单失败，订单id：' . $order_id]);
             }
         }
 
