@@ -87,5 +87,17 @@ class OrderT extends Model
         return $statistic;
     }
 
+    public static function orderUsersNoUsed($dinner_id, $consumption_time)
+    {
+
+        $statistic = self::where('d_id', $dinner_id)
+            ->whereBetweenTime('ordering_date', $consumption_time)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->where('used', CommonEnum::STATE_IS_FAIL)
+            ->field('id')
+            ->select();
+        return $statistic;
+    }
+
 
 }

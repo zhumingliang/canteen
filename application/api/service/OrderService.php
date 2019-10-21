@@ -15,6 +15,7 @@ use app\api\model\DinnerStatisticV;
 use app\api\model\DinnerT;
 use app\api\model\FoodsStatisticV;
 use app\api\model\OrderDetailT;
+use app\api\model\OrderHandelT;
 use app\api\model\OrderingV;
 use app\api\model\OrderT;
 use app\api\model\OrderUsersStatisticV;
@@ -966,10 +967,39 @@ class OrderService extends BaseService
         if ($checkCleanTime && strtotime($cleanTime) < time()) {
             throw new UpdateException(['msg' => '超出系统扣费时间，不能一键扣费']);
         }
-        //可以进行一键扣费
-        //获取消费策略
-        $strategy = (new CanteenService())->getDinnerConsumptionStrategy($canteen_id, $dinner_id);
+        //将订餐未就餐改为订餐就餐信息进行缓存
+        $list = OrderUsersStatisticV::orderUsersNoUsed($dinner_id, $consumption_time);
+        $dataList = [];
+        foreach ($list as $k => $v) {
+            $dataList[] = [
+                'order_id' => $v->id,
+                'state' => CommonEnum::STATE_IS_FAIL
+            ];
+        }
+        if (count($dataList)) {
+            $res = (new OrderHandelT())->saveAll($dataList);
+            if (!$res) {
+                throw new UpdateException();
+            }
+        }
+    }
 
+    public function orderStateHandel()
+    {
+        $orders = OrderHandelT::where('state', CommonEnum::STATE_IS_FAIL)
+            ->limit(0, 5)->select();
+        if (!$orders->isEmpty()) {
+            foreach ($orders as $k => $v) {
+                $this->prefixOrderState($v->order_id);
+
+            }
+
+        }
+    }
+
+    private function prefixOrderState($order_id)
+    {
+        $order = OrderT::where('id', $order_id)->find();
 
     }
 

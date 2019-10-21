@@ -255,6 +255,7 @@ class Shop extends BaseController
      * @apiSuccess (返回参数说明) {int} stock 商品库存
      * @apiSuccess (返回参数说明) {string} category 商品类型
      * @apiSuccess (返回参数说明) {string} supplier 供货商
+     * @apiSuccess (返回参数说明) {int} state 商品状态：1 | 上架；2| 下架
      */
     public function cmsProducts($supplier_id = 0, $category_id = 0, $page = 1, $size = 10)
     {

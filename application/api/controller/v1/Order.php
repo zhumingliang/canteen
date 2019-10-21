@@ -546,6 +546,24 @@ class Order extends BaseController
         return json(new SuccessMessageWithData(['data' => $info]));
     }
 
+    /**
+     * @api {POST} /api/v1/order/handelOrderedNoMeal 微信端-总订餐查询-订餐未就餐-一键扣费
+     * @apiGroup   Official
+     * @apiVersion 3.0.0
+     * @apiDescription    微信端-个人选菜-新增订单
+     * @apiExample {post}  请求样例:
+     *    {
+     *       "consumption_time": "2019-09-07",
+     *       "dinner_id": 1
+     *     }
+     * @apiParam (请求参数说明) {string} consumption_time  订餐日期
+     * @apiParam (请求参数说明) {int} dinner_id 餐次id
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     * @apiSuccess (返回参数说明) {int} id 订单id
+     */
     public function handelOrderedNoMeal()
     {
         $dinner_id = Request::param('dinner_id');
