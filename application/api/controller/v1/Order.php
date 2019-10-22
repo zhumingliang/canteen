@@ -516,7 +516,7 @@ class Order extends BaseController
     }
 
     /**
-     * * @api {GET} /api/v1/order/foodUsersStatistic 微信端-总订餐查询-点击有选菜订餐数量中订餐人数获取人员统计
+     * @api {GET} /api/v1/order/foodUsersStatistic 微信端-总订餐查询-点击有选菜订餐数量中订餐人数获取人员统计
      * @apiGroup  Official
      * @apiVersion 3.0.0
      * @apiDescription 微信端-总订餐查询-点击有选菜订餐数量中订餐人数获取人员统计
@@ -574,6 +574,33 @@ class Order extends BaseController
 
     }
 
+    /**
+     * @api {GET} /api/v1/order/orderStatistic CMS管理端-订餐管理-订餐统计
+     * @apiGroup  CMS管理端
+     * @apiVersion 3.0.0
+     * @apiDescription CMS管理端-订餐管理-订餐统计
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/order/orderStatistic?company_id=6&canteen_id=1&time_begin=2019-09-07&time_end=2019-09-07&page=1&size=20
+     * @apiParam (请求参数说明) {int} page 当前页码
+     * @apiParam (请求参数说明) {int} size 每页多少条数据
+     * @apiParam (请求参数说明) {string} company_id  企业id：选择全部时，将企业id用逗号分隔，例如：1,2，此时饭堂id传入0;选择某一个企业时传入企业id
+     * @apiParam (请求参数说明) {string} canteen_id  饭堂id：选择某一个饭堂时传入饭堂id，此时企业id为0，选择全部时，饭堂id传入0
+     * @apiParam (请求参数说明) {string} time_begin  查询开始时间
+     * @apiParam (请求参数说明) {string} time_end  查询结束时间
+     * @apiSuccessExample {json}返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"total":1,"per_page":20,"current_page":1,"last_page":1,"data":[{"ordering_date":"2019-09-07","company":"一级企业","canteen":"饭堂1","dinner":"中餐","count":1}]}}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {String} msg 信息描述
+     * @apiSuccess (返回参数说明) {int} total 数据总数
+     * @apiSuccess (返回参数说明) {int} per_page 每页多少条数据
+     * @apiSuccess (返回参数说明) {int} current_page 当前页码
+     * @apiSuccess (返回参数说明) {int} last_page 最后页码
+     * @apiSuccess (返回参数说明) {string} ordering_date 订餐日期
+     * @apiSuccess (返回参数说明) {string} company 企业
+     * @apiSuccess (返回参数说明) {string} canteen 饭堂
+     * @apiSuccess (返回参数说明) {string} dinner 餐次
+     * @apiSuccess (返回参数说明) {string} count 订餐人数
+     */
     public function orderStatistic($page = 1, $size = 20, $company_id = 0, $canteen_id = 0)
     {
         $time_begin = Request::param('time_begin');

@@ -5,6 +5,7 @@ namespace app\api\service;
 
 
 use app\api\model\CompanyT;
+use app\api\model\ShopT;
 use app\api\model\StaffV;
 use app\lib\enum\AdminEnum;
 use app\lib\enum\CanteenEnum;
@@ -13,6 +14,7 @@ use app\lib\exception\AuthException;
 use app\lib\exception\SaveException;
 use think\Db;
 use think\Exception;
+use function GuzzleHttp\Promise\each_limit;
 
 class CompanyService
 {
@@ -74,7 +76,6 @@ class CompanyService
         return $companies;
     }
 
-
     public function managerCompanies($name)
     {
         $ids = [];
@@ -131,7 +132,6 @@ class CompanyService
         return $companies;
     }
 
-
     private function getSonID($ids, $id)
     {
         $company = CompanyT::where('parent_id', $id)->select();
@@ -156,6 +156,63 @@ class CompanyService
         }
         $companies = StaffV::get($phone);
         return $companies;
+    }
+
+    public function adminCompanies()
+    {
+        $grade = Token::getCurrentTokenVar('grade');
+        if ($grade == AdminEnum::SYSTEM_SUPER) {
+            $companies = CompanyT::systemManagerGetCompanies();
+            $companies = getTree($companies, 0);
+        } else if ($grade == AdminEnum::COMPANY_SUPER) {
+            $companies = $this->companySuperGetCompanies();
+        } else if ($grade == AdminEnum::COMPANY_OTHER) {
+            $companies = $this->companySuperGetCompanies();
+        } else {
+            throw new AuthException();
+        }
+        return $companies;
+    }
+
+    public function companySuperGetCompanies()
+    {
+        $company_id = Token::getCurrentTokenVar('company_id');
+        $company = CompanyT::where('id', $company_id)
+            ->field('id,name,parent_id')
+            ->find();
+        $company['items'] = $this->getSonCompanies($company['id']);
+        return $company;
+    }
+
+    public function getSonCompanies($parent_id)
+    {
+        $company = CompanyT::where('parent_id', $parent_id)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->field('id,name,parent_id')
+            ->select()->toArray();
+        if (!count($company)) {
+            return $company;
+        }
+
+        foreach ($company as $k => $v) {
+            $company[$k]['items'] = $this->getSonCompanies($v['id']);
+        }
+
+        return $company;
+
+    }
+
+    public function consumptionLocation($company_id)
+    {
+        $canteens = (new CanteenService())->companyCanteens($company_id);
+        $shop = ShopT::where('c_id', $company_id)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->field('id,name')
+            ->find();
+        return [
+            'canteen' => $canteens,
+            'shop' => $shop
+        ];
     }
 
 

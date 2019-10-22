@@ -6,7 +6,10 @@ namespace app\api\controller\v1;
 
 use app\api\controller\BaseController;
 use app\api\model\ShopProductT;
+use app\api\model\ShopT;
 use app\api\service\ShopService;
+use app\lib\enum\CommonEnum;
+use app\lib\exception\DeleteException;
 use app\lib\exception\SuccessMessage;
 use app\lib\exception\SuccessMessageWithData;
 use app\lib\exception\UpdateException;
@@ -396,4 +399,84 @@ class Shop extends BaseController
         $url = (new ShopService())->deliveryCode($order_id);
         return json(new SuccessMessageWithData(['data' => ['url' => $url]]));
     }
+
+    /**
+     * @api {POST} /api/v1/shop/save  CMS管理端-企业管理-新增小卖部
+     * @apiGroup   CMS
+     * @apiVersion 3.0.0
+     * @apiDescription    CMS管理端-企业管理-新增小卖部
+     * @apiExample {post}  请求样例:
+     *    {
+     *       "c_id": 1,
+     *       "name": "小卖部"
+     *     }
+     * @apiParam (请求参数说明) {int} c_id  企业id
+     * @apiParam (请求参数说明) {string} name  小卖部名称
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     */
+    public function saveShop()
+    {
+        $params = Request::param();
+        (new ShopService())->save($params);
+        return json(new SuccessMessage());
+
+    }
+
+    /**
+     * @api {POST} /api/v1/shop/update  CMS管理端-企业管理-更新小卖部
+     * @apiGroup   CMS
+     * @apiVersion 3.0.0
+     * @apiDescription    CMS管理端-企业管理-更新小卖部
+     * @apiExample {post}  请求样例:
+     *    {
+     *       "id": 1,
+     *       "name": "小卖部"
+     *     }
+     * @apiParam (请求参数说明) {int} id  小卖部id
+     * @apiParam (请求参数说明) {string} name  小卖部名称
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     */
+    public function update()
+    {
+        $params = Request::param();
+        $shop = ShopT::update($params);
+        if (!$shop) {
+            throw new UpdateException();
+        }
+        return json(new SuccessMessage());
+
+    }
+
+    /**
+     * @api {POST} /api/v1/shop/delete   CMS管理端-企业管理-小卖部删除
+     * @apiGroup   CMS
+     * @apiVersion 3.0.0
+     * @apiDescription     CMS管理端-企业管理-小卖部删除
+     * @apiExample {post}  请求样例:
+     *    {
+     *       "id": 1
+     *     }
+     * @apiParam (请求参数说明) {int} id  小卖部id
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     */
+    public function deleteShop()
+    {
+        $id = Request::param('id');
+        $shop = ShopProductT::update(['state' => CommonEnum::STATE_IS_FAIL], ['id' => $id]);
+        if (!$shop) {
+            throw new DeleteException();
+        }
+        return json(new SuccessMessage());
+    }
+
+
 }

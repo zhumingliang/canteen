@@ -121,5 +121,47 @@ class Company extends BaseController
 
     }
 
+    /**
+     * @api {GET} /api/v1/admin/companies CMS管理端--系统管理员/企业超级管理员/企业管理员--查看可见企业
+     * @apiGroup  CMS
+     * @apiVersion 3.0.0
+     * @apiDescription CMS管理端--系统管理员/企业超级管理员/企业管理员--查看可见企业
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/admin/companies
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":[{"id":9,"parent_id":0,"name":"一级企业"}]}
+     * @apiSuccess (返回参数说明) {int} id 企业id
+     * @apiSuccess (返回参数说明) {int} parent_id  企业上级企业id
+     * @apiSuccess (返回参数说明) {String} name  企业名称
+     * @apiSuccess (返回参数说明) {obj} items  企业子级企业
+     */
+    public function adminCompanies()
+    {
+        $companies = (new CompanyService())->adminCompanies();
+        return json(new SuccessMessageWithData(['data' => $companies]));
+    }
+
+    /**
+     * @api {GET} /api/v1/company/consumptionLocation CMS管理端--企业管理-获取指定企业消费地点
+     * @apiGroup  CMS
+     * @apiVersion 3.0.0
+     * @apiDescription CMS管理端--企业管理-获取指定企业消费地点
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/company/consumptionLocation
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"canteen":[{"id":6,"name":"饭堂1"},{"id":7,"name":"饭堂2"},{"id":17,"name":"newCanteen"}],"shop":{"id":1,"name":"小饭堂"}}}
+     * @apiSuccess (返回参数说明) {obj} canteen 饭堂信息
+     * @apiSuccess (返回参数说明) {int} id 饭堂id
+     * @apiSuccess (返回参数说明) {String} name 饭堂名称
+     * @apiSuccess (返回参数说明) {obj} shop 小卖部信息
+     * @apiSuccess (返回参数说明) {int} id 小卖部id
+     * @apiSuccess (返回参数说明) {String} name 小卖部名称
+     */
+    public function consumptionLocation()
+    {
+        $company_id = Request::param('company_id');
+        $locations = (new CompanyService())->consumptionLocation($company_id);
+        return json(new SuccessMessageWithData(['data' => $locations]));
+    }
 
 }

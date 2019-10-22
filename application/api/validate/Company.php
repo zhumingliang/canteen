@@ -8,6 +8,7 @@ class Company extends BaseValidate
 {
     protected $rule = [
         'id' => 'require|isPositiveInteger',
+        'company_id' => 'require|isPositiveInteger',
         'name' => 'require|isNotEmpty',
         'parent_id' => 'require'
     ];
@@ -15,6 +16,7 @@ class Company extends BaseValidate
     protected $scene = [
         'save' => ['name', 'parent_id'],
         'managerCompanies' => ['name'],
+        'consumptionLocation' => ['company_id'],
     ];
 
 }

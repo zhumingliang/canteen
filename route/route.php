@@ -31,6 +31,7 @@ Route::get('api/:version/modules/user', 'api/:version.Module/userMobileModules')
 
 Route::post('api/:version/company/save', 'api/:version.Company/save');
 Route::get('api/:version/companies', 'api/:version.Company/companies');
+Route::get('api/:version/company/consumptionLocation', 'api/:version.Company/consumptionLocation');
 Route::get('api/:version/manager/companies', 'api/:version.Company/managerCompanies');
 Route::get('api/:version/user/companies', 'api/:version.Company/userCompanies');
 
@@ -129,6 +130,7 @@ Route::get('api/:version/order/managerOrders', 'api/:version.Order/managerOrders
 Route::get('api/:version/order/managerDinnerStatistic', 'api/:version.Order/managerDinnerStatistic');
 Route::get('api/:version/order/usersStatistic', 'api/:version.Order/orderUsersStatistic');
 Route::get('api/:version/order/foodUsersStatistic', 'api/:version.Order/foodUsersStatistic');
+Route::get('api/:version/order/orderStatistic', 'api/:version.Order/orderStatistic');
 
 Route::post('api/:version/address/save', 'api/:version.Address/save');
 Route::post('api/:version/address/update', 'api/:version.Address/update');
@@ -154,6 +156,9 @@ Route::get('api/:version/categories', 'api/:version.Category/categories');
 Route::get('api/:version/company/categories', 'api/:version.Category/companyCategories');
 
 Route::post('api/:version/shop/product/save', 'api/:version.Shop/saveProduct');
+Route::post('api/:version/shop/save', 'api/:version.Shop/saveShop');
+Route::post('api/:version/shop/update', 'api/:version.Shop/updateShop');
+Route::post('api/:version/shop/delete', 'api/:version.Shop/deleteShop');
 Route::post('api/:version/shop/order/save', 'api/:version.Shop/saveOrder');
 Route::post('api/:version/shop/order/cancel', 'api/:version.Shop/orderCancel');
 Route::post('api/:version/shop/product/update', 'api/:version.Shop/updateProduct');

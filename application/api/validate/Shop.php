@@ -9,6 +9,7 @@ class Shop extends BaseValidate
     protected $rule = [
         'id' => 'require|isPositiveInteger',
         'product_id' => 'require|isPositiveInteger',
+        'c_id' => 'require|isPositiveInteger',
         'company_id ' => 'require|isPositiveInteger',
         'supplier_id ' => 'require|isPositiveInteger',
         'category_id ' => 'require|isPositiveInteger',
@@ -23,6 +24,7 @@ class Shop extends BaseValidate
 
     protected $scene = [
         'saveProduct' => [ 'supplier_id', 'category_id', 'unit', 'name', 'price', 'count'],
+        'saveShop' => ['c_id','name'],
         'updateProduct' => ['id'],
         'handel' => ['id', 'state'],
         'product' => ['id'],

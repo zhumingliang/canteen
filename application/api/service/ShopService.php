@@ -31,20 +31,29 @@ use think\Request;
 
 class ShopService
 {
-    public function save($c_id)
+    public function save($params)
     {
-        $shop = ShopT::create([
-            'state' => CommonEnum::STATE_IS_OK,
-            'c_id' => $c_id
-        ]);
-        if (!$shop) {
-            throw  new SaveException();
+        try {
+            $shop = ShopT::where('c_id', $params['c_id'])
+                ->where('state', CommonEnum::STATE_IS_OK)
+                ->count('id');
+            if ($shop) {
+                throw new SaveException(['msg' => '该企业已经有小卖部，不能重复添加']);
+            }
+            $params['state'] = CommonEnum::STATE_IS_OK;
+            $shop = ShopT::create($params);
+            if (!$shop) {
+                throw  new SaveException();
+            }
+            $this->saveDefaultShopModule($shop->id);
+        } catch (Exception $e) {
+            Db::rollback();
+            throw $e;
         }
 
-        $this->saveDefaultCanteen($shop->id);
     }
 
-    private function saveDefaultCanteen($s_id)
+    private function saveDefaultShopModule($s_id)
     {
         $modules = SystemShopModuleT::defaultModules();
         $data = array();
@@ -270,7 +279,6 @@ class ShopService
         }
         return $qrcode_url;
     }
-
 
     private function updateOrderQrcode($id)
     {
