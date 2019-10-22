@@ -125,7 +125,7 @@ class CanteenService
             $account = json_decode($params['account'], true);
             $this->prefixDinner($c_id, $dinners);
             $this->prefixCanteenAccount($c_id, $account);
-            Db::commit();
+           // Db::commit();
         } catch (Exception $e) {
             Db::rollback();
             throw  $e;
@@ -151,7 +151,7 @@ class CanteenService
         if (!empty($account)) {
             $account['state'] = CommonEnum::STATE_IS_OK;
             $account['c_id'] = $c_id;
-            $res = CanteenAccountT::create($c_id);
+            $res = CanteenAccountT::create($account);
             if (!$res) {
                 throw new SaveException();
             }

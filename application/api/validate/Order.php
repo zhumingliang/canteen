@@ -44,5 +44,6 @@ class Order extends BaseValidate
         'orderUsersStatistic' => ['dinner_id', 'consumption_time', 'consumption_type'],
         'foodUsersStatistic' => ['dinner_id', 'food_id', 'consumption_time'],
         'handelOrderedNoMeal' => ['dinner_id', 'consumption_time'],
+        'orderStatistic' => ['dinner_id', 'consumption_time'],
     ];
 }

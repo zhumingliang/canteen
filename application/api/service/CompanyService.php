@@ -149,7 +149,6 @@ class CompanyService
     {
         if (Token::getCurrentTokenVar('type') != "official") {
             throw new AuthException();
-
         }
         $phone = Token::getCurrentTokenVar('phone');
         if (empty($phone)) {

@@ -13,6 +13,7 @@ use app\api\controller\BaseController;
 use app\api\model\OnlineOrderingT;
 use app\api\model\PersonalChoiceT;
 use app\api\service\OrderService;
+use app\api\service\OrderStatisticService;
 use app\lib\enum\CommonEnum;
 use app\lib\exception\SuccessMessage;
 use app\lib\exception\SuccessMessageWithData;
@@ -573,10 +574,12 @@ class Order extends BaseController
 
     }
 
-    public function orderStatistic($page = 1, $size = 20)
+    public function orderStatistic($page = 1, $size = 20, $company_id = 0, $canteen_id = 0)
     {
-        $company_id=Request::param('company_id');
-        $canteen_id=Request::param('canteen_id');
+        $time_begin = Request::param('time_begin');
+        $time_end = Request::param('time_end');
+        $list = (new OrderStatisticService())->statistic($time_begin, $time_end, $company_id, $canteen_id, $page, $size);
+        return json(new SuccessMessageWithData(['data' => $list]));
 
     }
 

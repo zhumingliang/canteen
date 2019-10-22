@@ -108,7 +108,6 @@ class Company extends BaseController
      * @apiDescription 微信端-获取当前用户所属企业列表
      * @apiExample {get}  请求样例:
      * http://canteen.tonglingok.com/api/v1/user/companies
-     * @apiParam (请求参数说明) {String} name 名称
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200,"data":[{"id":9,"company_id":2,"company":"一级企业"}]}
      * @apiSuccess (返回参数说明) {int} id 企业id
