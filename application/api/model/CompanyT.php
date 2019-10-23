@@ -114,10 +114,13 @@ class CompanyT extends Model
 
     }
 
-    public static function systemManagerGetCompanies()
+    public static function systemManagerGetCompanies($name)
     {
 
         $list = self::where('state', CommonEnum::STATE_IS_OK)
+           /* ->where(function ($query) use ($name) {
+                $query->where('name', 'like', '%' . $name . '%');
+            })*/
             ->field('id,name,parent_id')
             ->select()->toArray();
         return $list;

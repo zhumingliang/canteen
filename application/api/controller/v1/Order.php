@@ -580,10 +580,10 @@ class Order extends BaseController
      * @apiVersion 3.0.0
      * @apiDescription CMS管理端-订餐管理-订餐统计
      * @apiExample {get}  请求样例:
-     * http://canteen.tonglingok.com/api/v1/order/orderStatistic?company_id=6&canteen_id=1&time_begin=2019-09-07&time_end=2019-09-07&page=1&size=20
+     * http://canteen.tonglingok.com/api/v1/order/orderStatistic?company_ids=6&canteen_id=1&time_begin=2019-09-07&time_end=2019-09-07&page=1&size=20
      * @apiParam (请求参数说明) {int} page 当前页码
      * @apiParam (请求参数说明) {int} size 每页多少条数据
-     * @apiParam (请求参数说明) {string} company_id  企业id：选择全部时，将企业id用逗号分隔，例如：1,2，此时饭堂id传入0;选择某一个企业时传入企业id
+     * @apiParam (请求参数说明) {string} company_ids  企业id：选择全部时，将企业id用逗号分隔，例如：1,2，此时饭堂id传入0;选择某一个企业时传入企业id
      * @apiParam (请求参数说明) {string} canteen_id  饭堂id：选择某一个饭堂时传入饭堂id，此时企业id为0，选择全部时，饭堂id传入0
      * @apiParam (请求参数说明) {string} time_begin  查询开始时间
      * @apiParam (请求参数说明) {string} time_end  查询结束时间
@@ -601,11 +601,56 @@ class Order extends BaseController
      * @apiSuccess (返回参数说明) {string} dinner 餐次
      * @apiSuccess (返回参数说明) {string} count 订餐人数
      */
-    public function orderStatistic($page = 1, $size = 20, $company_id = 0, $canteen_id = 0)
+    public function orderStatistic($page = 1, $size = 20, $canteen_id = 0)
     {
         $time_begin = Request::param('time_begin');
         $time_end = Request::param('time_end');
-        $list = (new OrderStatisticService())->statistic($time_begin, $time_end, $company_id, $canteen_id, $page, $size);
+        $company_ids = Request::param('company_id');
+        $list = (new OrderStatisticService())->statistic($time_begin, $time_end, $company_ids, $canteen_id, $page, $size);
+        return json(new SuccessMessageWithData(['data' => $list]));
+    }
+
+    /**
+     * @api {GET} /api/v1/order/orderStatistic/detail CMS管理端-订餐管理-订餐明细
+     * @apiGroup  CMS管理端
+     * @apiVersion 3.0.0
+     * @apiDescription CMS管理端-订餐管理-订餐明细
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/order/orderStatistic/detail?company_ids=&canteen_id=0&time_begin=2019-09-07&time_end=2019-12-07&page=1&size=20&department_id=2&dinner_id=0&name=&phone
+     * @apiParam (请求参数说明) {int} page 当前页码
+     * @apiParam (请求参数说明) {int} size 每页多少条数据
+     * @apiParam (请求参数说明) {string} company_ids  企业id：选择全部时，将企业id用逗号分隔，例如：1,2，此时饭堂id传入0;选择某一个企业时传入企业id
+     * @apiParam (请求参数说明) {string} canteen_id  饭堂id：选择某一个饭堂时传入饭堂id，此时企业id为0或者不传，选择全部时，饭堂id传入0
+     * @apiParam (请求参数说明) {string} department_id  部门id：选择企业时才可以选择具体的部门信息，否则传0或者不传
+     * @apiParam (请求参数说明) {string} dinner_id  餐次id：选择饭堂时才可以选择具体的餐次信息，否则传0或者不传
+     * @apiParam (请求参数说明) {string} time_begin  查询开始时间
+     * @apiParam (请求参数说明) {string} time_end  查询结束时间
+     * @apiParam (请求参数说明) {string} phone  手机号查询
+     * @apiParam (请求参数说明) {string} name  姓名查询
+     * @apiSuccessExample {json}返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"total":1,"per_page":20,"current_page":1,"last_page":1,"data":[{"ordering_date":"2019-09-07","company":"一级企业","canteen":"饭堂1","dinner":"中餐","count":1}]}}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {String} msg 信息描述
+     * @apiSuccess (返回参数说明) {int} total 数据总数
+     * @apiSuccess (返回参数说明) {int} per_page 每页多少条数据
+     * @apiSuccess (返回参数说明) {int} current_page 当前页码
+     * @apiSuccess (返回参数说明) {int} last_page 最后页码
+     * @apiSuccess (返回参数说明) {int} order_id 订单id
+     * @apiSuccess (返回参数说明) {string} ordering_date 订餐日期
+     * @apiSuccess (返回参数说明) {string} canteen 消费地点
+     * @apiSuccess (返回参数说明) {string} department 部门
+     * @apiSuccess (返回参数说明) {string} name 用户姓名
+     * @apiSuccess (返回参数说明) {string} dinner 餐次
+     */
+    public function orderStatisticDetail($page = 1, $size = 20, $name = '', $phone = '', $canteen_id = 0, $department_id = 0, $dinner_id = 0)
+    {
+        $time_begin = Request::param('time_begin');
+        $time_end = Request::param('time_end');
+        $company_ids = Request::param('company_ids');
+        $list = (new OrderStatisticService())->orderStatisticDetail($company_ids, $time_begin,
+            $time_end, $page, $size, $name,
+            $phone, $canteen_id, $department_id,
+            $dinner_id);
         return json(new SuccessMessageWithData(['data' => $list]));
 
     }

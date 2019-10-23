@@ -132,6 +132,7 @@ Route::get('api/:version/order/managerDinnerStatistic', 'api/:version.Order/mana
 Route::get('api/:version/order/usersStatistic', 'api/:version.Order/orderUsersStatistic');
 Route::get('api/:version/order/foodUsersStatistic', 'api/:version.Order/foodUsersStatistic');
 Route::get('api/:version/order/orderStatistic', 'api/:version.Order/orderStatistic');
+Route::get('api/:version/order/orderStatistic/detail', 'api/:version.Order/orderStatisticDetail');
 
 Route::post('api/:version/address/save', 'api/:version.Address/save');
 Route::post('api/:version/address/update', 'api/:version.Address/update');

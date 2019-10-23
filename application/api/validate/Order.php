@@ -24,6 +24,7 @@ class Order extends BaseValidate
         'time_end' => 'require|isNotEmpty',
         'consumption_time' => 'require|isNotEmpty',
         'consumption_type' => 'require|isNotEmpty',
+        'company_ids' => 'require|isNotEmpty',
     ];
 
     protected $scene = [
@@ -46,6 +47,7 @@ class Order extends BaseValidate
         'orderUsersStatistic' => ['dinner_id', 'consumption_time', 'consumption_type'],
         'foodUsersStatistic' => ['dinner_id', 'food_id', 'consumption_time'],
         'handelOrderedNoMeal' => ['dinner_id', 'consumption_time'],
-        'orderStatistic' => ['time_begin', 'time_end'],
+        'orderStatistic' => ['company_ids','time_begin', 'time_end'],
+        'orderStatisticDetail' => ['company_ids','time_begin', 'time_end'],
     ];
 }
