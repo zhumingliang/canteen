@@ -114,7 +114,7 @@ class CompanyT extends Model
 
     }
 
-    public static function systemManagerGetCompanies($name)
+    public static function systemManagerGetCompanies()
     {
 
         $list = self::where('state', CommonEnum::STATE_IS_OK)
