@@ -109,7 +109,7 @@ Route::rule('api/:version/weixin/menu/save', 'api/:version.WeiXin/createMenu');
 Route::post('api/:version/sms/send', 'api/:version.SendSMS/sendCode');
 
 Route::post('api/:version/user/bindPhone', 'api/:version.User/bindPhone');
-Route::post('api/:version/user/bindCanteen', 'api/:version.User/bindCompany');
+Route::post('api/:version/user/bindCanteen', 'api/:version.User/bindCanteen');
 Route::get('api/:version/user/canteenMenus', 'api/:version.User/userCanteenMenus');
 Route::get('api/:version/user/canteens', 'api/:version.User/userCanteens');
 Route::get('api/:version/user/card', 'api/:version.User/mealCard');

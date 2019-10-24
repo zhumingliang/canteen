@@ -52,7 +52,8 @@ class UserService
         }
         $res = UserT::update([
             'current_canteen_id' => $canteen_id,
-            'company_id' => $staff->company_id],
+            'current_company_id' => $staff->company_id
+        ],
             ['id' => Token::getCurrentUid()]);
         if (!$res) {
             throw  new UpdateException(['msg' => '绑定失败']);
