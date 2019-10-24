@@ -46,6 +46,8 @@ class UserService
 
     public function bindCanteen($canteen_id)
     {
+        $cache=Token::getCurrentTokenVar();
+        print_r($cache);
         $staff = CompanyStaffT::where('phone', Token::updateCurrentTokenVar('phone'))
             ->find();
         if (!$staff) {
