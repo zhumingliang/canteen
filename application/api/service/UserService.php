@@ -47,8 +47,7 @@ class UserService
     public function bindCanteen($canteen_id)
     {
         $cache=Token::getCurrentTokenVar();
-        print_r($cache);
-        $staff = CompanyStaffT::where('phone', Token::updateCurrentTokenVar('phone'))
+        $staff = CompanyStaffT::where('phone', Token::getCurrentTokenVar('phone'))
             ->find();
         if (!$staff) {
             throw  new AuthException(['msg' => '用户信息不存在']);
