@@ -6,6 +6,7 @@ namespace app\api\service;
 
 use app\api\model\AdminT;
 use app\api\model\CompanyStaffT;
+use app\api\model\StaffCanteenT;
 use app\api\model\StaffQrcodeT;
 use app\api\model\UserT;
 use app\lib\enum\CommonEnum;
@@ -46,9 +47,17 @@ class UserService
     public function bindCanteen($canteen_id)
     {
         $staff = CompanyStaffT::where('phone', Token::updateCurrentTokenVar('phone'))
-            ->where('c_id', $canteen_id)->count('id');
+            ->find();
         if (!$staff) {
-            throw  new AuthException(['msg' => '绑定失败,用户不属于该饭堂']);
+            throw  new AuthException(['msg' => '用户信息不存在']);
+        }
+
+        $userCanteen = StaffCanteenT::where('staff_id', $staff->id)
+            ->where('canteen_id', $canteen_id)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->find();
+        if (!$userCanteen) {
+            throw  new AuthException(['msg' => '绑定失败，用户不属于该饭堂']);
         }
         $res = UserT::update([
             'current_canteen_id' => $canteen_id,
