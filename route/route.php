@@ -68,6 +68,7 @@ Route::post('api/:version/role/handel/type', 'api/:version.Role/handelType');
 Route::post('api/:version/department/save', 'api/:version.Department/save');
 Route::post('api/:version/department/update', 'api/:version.Department/update');
 Route::get('api/:version/departments', 'api/:version.Department/departments');
+Route::get('api/:version/department/staffs', 'api/:version.Department/departmentStaffs');
 Route::get('api/:version/admin/departments', 'api/:version.Department/adminDepartments');
 Route::post('api/:version/department/staff/save', 'api/:version.Department/addStaff');
 Route::post('api/:version/department/staff/update', 'api/:version.Department/updateStaff');

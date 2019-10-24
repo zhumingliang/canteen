@@ -19,6 +19,7 @@ class CompanyStaffT extends Model
         return $this->belongsTo('CanteenT', 'c_id', 'id');
 
     }
+
     public function canteens()
     {
         return $this->hasMany('StaffCanteenT', 'staff_id', 'id');
@@ -40,9 +41,14 @@ class CompanyStaffT extends Model
 
     public static function departmentStaffs($d_ids)
     {
-        $staffs = self::where('d_id', 'in', $d_ids)
-            ->where('state', CommonEnum::STATE_IS_OK)
-            ->field('id')->select()->toArray();
+        $staffs = self::where(function ($query) use ($d_ids) {
+            if (strpos($d_ids, ',') !== false) {
+                $query->whereIn('d_id', $d_ids);
+            } else {
+                $query->where('d_id', $d_ids);
+            }
+        })->where('state', CommonEnum::STATE_IS_OK)
+            ->field('id,username')->select()->toArray();
         return $staffs;
     }
 
