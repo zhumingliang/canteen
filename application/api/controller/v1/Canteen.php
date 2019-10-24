@@ -48,7 +48,7 @@ class Canteen extends BaseController
      *    {
      *       "c_id": 2,
      *       "dinners":[{"name":"早餐","type":"day","type_number":10,"limit_time":"10:00","meal_time_begin":"07:00","meal_time_end":"08:00","fixed":2},{"name":"中餐","type":"day","type_number":10,"limit_time":"10:00","meal_time_bgin":"12:00","meal_time_end":"13:00","fixed":1}],
-     *       "account":{"type":2,"clean_type":3,"clean_day":1,"clean_time":01:00:00,"limit_money":0}
+     *       "account":{"dining_mode":3,"type":2,"clean_type":3,"clean_day":1,"clean_time":01:00:00,"limit_money":0}
      *     }
      * @apiParam (请求参数说明) {int} c_id  饭堂id
      * @apiParam (请求参数说明) {string} dinners  订餐信息json字符串
@@ -60,6 +60,7 @@ class Canteen extends BaseController
      * @apiParam (请求参数说明) {string} meal_time_end  就餐截止时间
      * @apiParam (请求参数说明) {int} fixed  餐次是否采用标准金额：1｜是；2｜否
      * @apiParam (请求参数说明) {obj} account 饭堂账户设置
+     * @apiParam (请求参数说明) {int} dining_mode  个人选菜就餐方式：1｜食堂；2｜外卖；3｜全部
      * @apiParam (请求参数说明) {int} type  消费类别：1| 可透支消费；2|不可透支消费
      * @apiParam (请求参数说明) {int} clean_type  系统清零方式：1|系统自动清零；2|系统自动清零；3|无
      * @apiParam (请求参数说明) {int} clean_day  每月清零具体日期
@@ -90,22 +91,23 @@ class Canteen extends BaseController
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
      * @apiSuccess (返回参数说明) {String} msg 信息描述
      * @apiSuccess (返回参数说明) {string} dinners  订餐信息json字符串
-     * @apiSuccess (返回参数说明) {string} dinners|id  餐次id
-     * @apiSuccess (返回参数说明) {string} dinners|name  餐次名称
-     * @apiSuccess (返回参数说明) {string} dinners|type  时间设置类别：day|week
+     * @apiSuccess (返回参数说明) {string} id  餐次id
+     * @apiSuccess (返回参数说明) {string} name  餐次名称
+     * @apiSuccess (返回参数说明) {string} type  时间设置类别：day|week
      * @apiSuccess (返回参数说明) {int} fixed  餐次是否采用标准金额：1｜是；2｜否
-     * @apiSuccess (返回参数说明) {string} dinners|create_time  创建时间
-     * @apiSuccess (返回参数说明) {int} dinners|type_number 订餐时间类别对应数量 （week：0-6；周日-周六）
-     * @apiSuccess (返回参数说明) {string} dinners|limit_time  订餐限制时间
-     * @apiSuccess (返回参数说明) {string} dinners|meal_time_begin  就餐开始时间
-     * @apiSuccess (返回参数说明) {string} dinners|meal_time_end  就餐截止时间
+     * @apiSuccess (返回参数说明) {string} create_time  创建时间
+     * @apiSuccess (返回参数说明) {int} type_number 订餐时间类别对应数量 （week：0-6；周日-周六）
+     * @apiSuccess (返回参数说明) {string} limit_time  订餐限制时间
+     * @apiSuccess (返回参数说明) {string} meal_time_begin  就餐开始时间
+     * @apiSuccess (返回参数说明) {string} meal_time_end  就餐截止时间
      * @apiSuccess (返回参数说明) {string} account 账户设置
      * @apiSuccess (返回参数说明) {int} account|id  设置id
-     * @apiSuccess (返回参数说明) {int} account|type  消费类别：1| 可透支消费；2|不可透支消费
-     * @apiSuccess (返回参数说明) {int} account|clean_type  系统清零方式：1|系统自动清零；2|系统自动清零；3|无
-     * @apiSuccess (返回参数说明) {int} account|clean_day  每月清零具体日期
-     * @apiSuccess (返回参数说明) {int} account|clean_time  每月清零具体时间
-     * @apiSuccess (返回参数说明) {int} account|create_time  创建时间
+     * @apiSuccess (返回参数说明) {int} dining_mode  个人选菜就餐方式：1｜食堂；2｜外卖；3｜全部
+     * @apiSuccess (返回参数说明) {int} type  消费类别：1| 可透支消费；2|不可透支消费
+     * @apiSuccess (返回参数说明) {int} clean_type  系统清零方式：1|系统自动清零；2|系统自动清零；3|无
+     * @apiSuccess (返回参数说明) {int} clean_day  每月清零具体日期
+     * @apiSuccess (返回参数说明) {int} clean_time  每月清零具体时间
+     * @apiSuccess (返回参数说明) {int} create_time  创建时间
      */
     public function configuration()
     {
@@ -127,20 +129,21 @@ class Canteen extends BaseController
      *     }
      * @apiParam (请求参数说明) {int} c_id  饭堂id
      * @apiParam (请求参数说明) {string} dinners  订餐信息json字符串
-     * @apiParam (请求参数说明) {string} dinners|id  餐次设置id，更新操作需要传如此字段
-     * @apiParam (请求参数说明) {string} dinners|name  餐次名称
-     * @apiParam (请求参数说明) {string} dinners|type  时间设置类别：day|week (天、周)
-     * @apiParam (请求参数说明) {int} dinners|type_number 订餐时间类别对应数量    1、前n天是填写数字，说明每天的餐需要提前一个天数来订餐2、周，是只能填写周一到周日，说明一周的订餐规定需要在每周某天进行下周一整周的订餐
-     * @apiParam (请求参数说明) {string} dinners|limit_time  订餐限制时间
-     * @apiParam (请求参数说明) {string} dinners|meal_time_begin  就餐开始时间
-     * @apiParam (请求参数说明) {string} dinners|meal_time_end  就餐截止时间
+     * @apiParam (请求参数说明) {string} id  餐次设置id，更新操作需要传如此字段
+     * @apiParam (请求参数说明) {string} name  餐次名称
+     * @apiParam (请求参数说明) {string} type  时间设置类别：day|week (天、周)
+     * @apiParam (请求参数说明) {int} type_number 订餐时间类别对应数量    1、前n天是填写数字，说明每天的餐需要提前一个天数来订餐2、周，是只能填写周一到周日，说明一周的订餐规定需要在每周某天进行下周一整周的订餐
+     * @apiParam (请求参数说明) {string} limit_time  订餐限制时间
+     * @apiParam (请求参数说明) {string} meal_time_begin  就餐开始时间
+     * @apiParam (请求参数说明) {string} meal_time_end  就餐截止时间
      * @apiParam (请求参数说明) {int} fixed  餐次是否采用标准金额：1｜是；2｜否
      * @apiParam (请求参数说明) {string} account 饭堂账户设置
-     * @apiParam (请求参数说明) {int} account|id  饭堂账户设置ID
-     * @apiParam (请求参数说明) {int} account|type  消费类别：1| 可透支消费；2|不可透支消费
-     * @apiParam (请求参数说明) {int} account|clean_type  系统清零方式：1|系统自动清零；2|系统自动清零；3|无
-     * @apiParam (请求参数说明) {int} account|clean_day  每月清零具体日期
-     * @apiParam (请求参数说明) {int} account|clean_time  每月清零具体时间
+     * @apiParam (请求参数说明) {int} id  饭堂账户设置ID
+     * @apiParam (请求参数说明) {int} dining_mode  个人选菜就餐方式：1｜食堂；2｜外卖；3｜全部
+     * @apiParam (请求参数说明) {int} type  消费类别：1| 可透支消费；2|不可透支消费
+     * @apiParam (请求参数说明) {int} clean_type  系统清零方式：1|系统自动清零；2|系统自动清零；3|无
+     * @apiParam (请求参数说明) {int} clean_day  每月清零具体日期
+     * @apiParam (请求参数说明) {int} clean_time  每月清零具体时间
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
@@ -502,4 +505,22 @@ class Canteen extends BaseController
         return json(new SuccessMessageWithData(['data' => $canteens]));
     }
 
+    /**
+     * @api {GET} /api/v1/canteen/diningMode  微信端--个人选菜--获取当前饭堂就餐地点设置
+     * @apiGroup  Official
+     * @apiVersion 3.0.0
+     * @apiDescription  微信端--个人选菜--获取当前饭堂就餐地点设置
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/canteen/diningMode
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"dining_mode":3}}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     * @apiSuccess (返回参数说明) {int} dining_mode  个人选菜就餐方式：1｜食堂；2｜外卖；3｜全部
+     */
+    public function diningMode()
+    {
+        $mode = (new CanteenService())->diningMode();
+        return json(new SuccessMessageWithData(['data' => $mode]));
+    }
 }

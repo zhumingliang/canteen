@@ -125,7 +125,7 @@ class CanteenService
             $account = json_decode($params['account'], true);
             $this->prefixDinner($c_id, $dinners);
             $this->prefixCanteenAccount($c_id, $account);
-           // Db::commit();
+            // Db::commit();
         } catch (Exception $e) {
             Db::rollback();
             throw  $e;
@@ -474,6 +474,17 @@ class CanteenService
         $admin_id = Token::getCurrentUid();
         $canteens = AdminCanteenV::managerCanteens($admin_id);
         return $canteens;
+    }
+
+    public function diningMode()
+    {
+        $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
+        $account = CanteenAccountT::where('c_id', $canteen_id)->field('dining_mode')
+            ->find();
+        if (empty($account)) {
+            throw new ParameterException(['msg' => '未设置饭堂账户信息']);
+        }
+        return $account;
     }
 
 }

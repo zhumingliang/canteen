@@ -299,11 +299,11 @@ class Food extends BaseController
      * @apiSuccess (返回参数说明) {int}  status 菜品状态:1|固定；2|动态
      * @apiSuccess (返回参数说明) {int}  count 固定状态下可选数量
      * @apiSuccess (返回参数说明) {obj} foods  菜品
-     * @apiSuccess (返回参数说明) {int} foods|f_id  菜品id
-     * @apiSuccess (返回参数说明) {sting} foods|day  日期
-     * @apiSuccess (返回参数说明) {sting} foods|name  菜品名称
-     * @apiSuccess (返回参数说明) {float} foods|price  菜品价格
-     * @apiSuccess (返回参数说明) {string} foods|img_url 菜品图片地址
+     * @apiSuccess (返回参数说明) {int} f_id  菜品id
+     * @apiSuccess (返回参数说明) {sting} day  日期
+     * @apiSuccess (返回参数说明) {sting} name  菜品名称
+     * @apiSuccess (返回参数说明) {float} price  菜品价格
+     * @apiSuccess (返回参数说明) {string} img_url 菜品图片地址
      */
     public function foodsForOfficialPersonChoice()
     {
@@ -381,7 +381,7 @@ class Food extends BaseController
      * http://canteen.tonglingok.com/api/v1/foods/foods/menu?dinner_id=6
      * @apiParam (请求参数说明) {int} dinner_id 餐次ID
      * @apiSuccessExample {json} 返回样例:
-    {"msg":"ok","errorCode":0,"code":200,"data":[{"id":1,"category":"荤菜","status":1,"count":3,"foods":[{"id":3,"day":"2019-09-07","f_id":1,"status":1,"default":2,"m_id":1,"d_id":6,"name":"红烧牛肉","price":5,"img_url":"\/static\/image\/20190810\/ab9ce8ff0e2c5adb40263641b24f36d4.png","f_type":2,"chef":"李大厨","des":"适合**人群，有利于***不适合***人群","materials":[{"id":1,"f_id":3,"name":"牛肉","count":15,"unit":"kg"},{"id":2,"f_id":3,"name":"土豆","count":10,"unit":"kg"},{"id":3,"f_id":3,"name":"西红柿","count":10,"unit":"kg"}]}]},{"id":2,"category":"汤","status":2,"count":0,"foods":[]}]}
+     * {"msg":"ok","errorCode":0,"code":200,"data":[{"id":1,"category":"荤菜","status":1,"count":3,"foods":[{"id":3,"day":"2019-09-07","f_id":1,"status":1,"default":2,"m_id":1,"d_id":6,"name":"红烧牛肉","price":5,"img_url":"\/static\/image\/20190810\/ab9ce8ff0e2c5adb40263641b24f36d4.png","f_type":2,"chef":"李大厨","des":"适合**人群，有利于***不适合***人群","materials":[{"id":1,"f_id":3,"name":"牛肉","count":15,"unit":"kg"},{"id":2,"f_id":3,"name":"土豆","count":10,"unit":"kg"},{"id":3,"f_id":3,"name":"西红柿","count":10,"unit":"kg"}]}]},{"id":2,"category":"汤","status":2,"count":0,"foods":[]}]}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
      * @apiSuccess (返回参数说明) {String} msg 信息描述
      * @apiSuccess (返回参数说明) {int} id 菜品类别id

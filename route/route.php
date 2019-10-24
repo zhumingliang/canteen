@@ -53,6 +53,7 @@ Route::get('api/:version/canteens/company', 'api/:version.Canteen/getCanteensFor
 Route::get('api/:version/canteens', 'api/:version.Canteen/canteens');
 Route::get('api/:version/managerCanteens', 'api/:version.Canteen/managerCanteens');
 Route::get('api/:version/canteen/dinners/user', 'api/:version.Canteen/currentCanteenDinners');
+Route::get('api/:version/canteen/diningMode', 'api/:version.Canteen/diningMode');
 
 Route::get('api/:version/roles', 'api/:version.Role/roles');
 Route::post('api/:version/role/save', 'api/:version.Role/save');
