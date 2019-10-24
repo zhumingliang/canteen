@@ -102,7 +102,9 @@ class DepartmentService
                 throw new UpdateException();
             }
             //更新用户饭堂绑定关系
-            $this->updateStaffCanteen($staff->id, $params['canteens'], $params['cancel_canteens']);
+            $canteens = empty($params['canteens']) ? [] : json_decode($params['canteens'], true);
+            $cancel_canteens = empty($params['cancel_canteens']) ? [] : json_decode($params['cancel_canteens'], true);
+            $this->updateStaffCanteen($staff->id, $canteens, $cancel_canteens);
             Db::commit();
         } catch (Exception $e) {
             Db::rollback();
@@ -133,8 +135,6 @@ class DepartmentService
 
     private function updateStaffCanteen($staff_id, $canteens, $cancel_canteens)
     {
-        $canteens = json_decode($canteens, true);
-        $cancel_canteens = json_decode($cancel_canteens, true);
         $data_list = [];
         if (!empty($canteens)) {
             foreach ($canteens as $k => $v) {
@@ -148,7 +148,7 @@ class DepartmentService
         if (!empty($cancel_canteens)) {
             foreach ($cancel_canteens as $k => $v) {
                 $data_list[] = [
-                    'id' => $v['id'],
+                    'id' => $v,
                     'state' => CommonEnum::STATE_IS_FAIL
                 ];
             }
