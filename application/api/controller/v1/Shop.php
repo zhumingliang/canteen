@@ -402,10 +402,12 @@ class Shop extends BaseController
      * @apiExample {post}  请求样例:
      *    {
      *       "c_id": 1,
-     *       "name": "小卖部"
+     *       "name": "小卖部",
+     *       "taking_mode": 3
      *     }
      * @apiParam (请求参数说明) {int} c_id  企业id
      * @apiParam (请求参数说明) {string} name  小卖部名称
+     * @apiParam (请求参数说明) {string} taking_mode  取货方式：1｜到店取；2｜送货上门；3｜全部都显示
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
@@ -427,9 +429,11 @@ class Shop extends BaseController
      * @apiExample {post}  请求样例:
      *    {
      *       "id": 1,
-     *       "name": "小卖部"
+     *       "name": "小卖部",
+     *       "taking_mode": 3
      *     }
      * @apiParam (请求参数说明) {int} id  小卖部id
+     * @apiParam (请求参数说明) {string} taking_mode  取货方式：1｜到店取；2｜送货上门；3｜全部都显示
      * @apiParam (请求参数说明) {string} name  小卖部名称
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200}
@@ -470,6 +474,25 @@ class Shop extends BaseController
             throw new DeleteException();
         }
         return json(new SuccessMessage());
+    }
+
+    /**
+     * @api {GET} /api/v1/canteen/takingMode  微信端--小卖部--获取当前小卖部取货方式
+     * @apiGroup  Official
+     * @apiVersion 3.0.0
+     * @apiDescription  微信端--小卖部--获取当前小卖部取货方式
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/shop/takingMode
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"taking_mode":3}}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     * @apiSuccess (返回参数说明) {string} taking_mode  取货方式：1｜到店取；2｜送货上门；3｜全部都显示
+     */
+    public function takingMode()
+    {
+        $mode = (new ShopService())->takingMode();
+        return json(new SuccessMessageWithData(['data' => $mode]));
     }
 
 

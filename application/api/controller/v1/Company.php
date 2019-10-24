@@ -152,10 +152,11 @@ class Company extends BaseController
      * {"msg":"ok","errorCode":0,"code":200,"data":{"canteen":[{"id":6,"name":"饭堂1"},{"id":7,"name":"饭堂2"},{"id":17,"name":"newCanteen"}],"shop":{"id":1,"name":"小饭堂"}}}
      * @apiSuccess (返回参数说明) {obj} canteen 饭堂信息
      * @apiSuccess (返回参数说明) {int} id 饭堂id
-     * @apiSuccess (返回参数说明) {String} name 饭堂名称
+     * @apiSuccess (返回参数说明) {string} name 饭堂名称
      * @apiSuccess (返回参数说明) {obj} shop 小卖部信息
      * @apiSuccess (返回参数说明) {int} id 小卖部id
-     * @apiSuccess (返回参数说明) {String} name 小卖部名称
+     * @apiSuccess (返回参数说明) {string} name 小卖部名称
+     * @apiSuccess (返回参数说明) {string} taking_mode 取货方式：1｜到店取；2｜送货上门；3｜全部都显示
      */
     public function consumptionLocation()
     {

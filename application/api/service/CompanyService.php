@@ -207,7 +207,7 @@ class CompanyService
         $canteens = (new CanteenService())->companyCanteens($company_id);
         $shop = ShopT::where('c_id', $company_id)
             ->where('state', CommonEnum::STATE_IS_OK)
-            ->field('id,name')
+            ->field('id,name,taking_mode')
             ->find();
         return [
             'canteen' => $canteens,

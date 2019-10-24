@@ -445,4 +445,12 @@ class ShopService
             'service' => round($service, 1),
         ];
     }
+
+    public function takingMode()
+    {
+        $company_id = Token::getCurrentTokenVar('current_company_id');
+        $shop = ShopT::where('c_id', $company_id)->field('taking_mode')
+            ->find();
+        return $shop;
+    }
 }
