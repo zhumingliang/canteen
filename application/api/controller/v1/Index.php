@@ -18,13 +18,15 @@ class Index extends BaseController
 {
     public function index()
     {
-        $user = CanteenT::whereIn('id', "19")
-            ->field('name')->select()->toArray();
-        $user_ids = array();
-        foreach ($user as $k => $v) {
-            array_push($user_ids, $v['name']);
-        }
-        echo implode('|', $user_ids);
+        $cache = \app\api\service\Token::getCurrentTokenVar();
+        print_r($cache);
+        /* $user = CanteenT::whereIn('id', "19")
+             ->field('name')->select()->toArray();
+         $user_ids = array();
+         foreach ($user as $k => $v) {
+             array_push($user_ids, $v['name']);
+         }
+         echo implode('|', $user_ids);*/
     }
 
 }

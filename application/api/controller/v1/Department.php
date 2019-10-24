@@ -358,9 +358,28 @@ class Department extends BaseController
         return json(new SuccessMessageWithData(['data' => $info]));
     }
 
+    /**
+     * @api {GET} /api/v1/admin/departments 微信端-公告发布-获取用户可以查看部门列表
+     * @apiGroup  Official
+     * @apiVersion 3.0.0
+     * @apiDescription 微信端-公告发布-获取用户可以查看部门列表
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/admin/departments
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":[{"id":3,"name":"董事会-修改"},{"id":4,"name":"A部门"},{"id":5,"name":"B部门"},{"id":6,"name":"A1部门"},{"id":7,"name":"A2部门"},{"id":8,"name":"B1部门"},{"id":9,"name":"B2部门"}]}
+     * @apiSuccess (返回参数说明) {int} id 部门id
+     * @apiSuccess (返回参数说明) {String} name  部门名称
+     */
     public function adminDepartments()
     {
         $departments = (new DepartmentService())->adminDepartments();
         return json(new SuccessMessageWithData(['data' => $departments]));
+    }
+
+    public function departmentStaffs()
+    {
+        $department_id = Request::param('department_id');
+        $staffs = (new DepartmentService())->departmentStaffs($department_id);
+        return json(new SuccessMessageWithData(['data' => $staffs]));
     }
 }

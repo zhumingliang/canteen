@@ -176,7 +176,7 @@ class Shop extends BaseController
      * @apiVersion 3.0.0
      * @apiDescription 微信端-个人选菜-菜品列表
      * @apiExample {get}  请求样例:
-     * http://canteen.tonglingok.com/api/v1/shop/products/official
+     * http://canteen.tonglingok.com/api/v1/shop/official/products
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200,"data":[{"id":2,"name":"生鲜","products":[{"id":5,"category_id":2,"name":"鸡蛋1","price":"100.0","unit":"元\/500g","image":"http:\/\/canteen.tonglingok.com\/static\/image"},{"id":6,"category_id":2,"name":"鸡蛋2","price":"100.0","unit":"元\/500g","image":"http:\/\/canteen.tonglingok.com\/static\/image"}]}]}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
