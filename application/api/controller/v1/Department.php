@@ -322,7 +322,6 @@ class Department extends BaseController
         return json(new SuccessMessage());
     }
 
-
     /**
      * @api {POST} /api/v1/staff/qrcode/save CMS管理端-生成员工二维码
      * @apiGroup   CMS
@@ -357,5 +356,11 @@ class Department extends BaseController
         $params = Request::param();
         $info = (new DepartmentService())->updateQrcode($params);
         return json(new SuccessMessageWithData(['data' => $info]));
+    }
+
+    public function adminDepartments()
+    {
+        $departments = (new DepartmentService())->adminDepartments();
+        return json(new SuccessMessageWithData(['data' => $departments]));
     }
 }

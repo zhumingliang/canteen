@@ -462,5 +462,11 @@ class DepartmentService
         return $count;
     }
 
+    public function adminDepartments()
+    {
+        $company_id = Token::getCurrentTokenVar('current_company_id');
+        $departments = CompanyDepartmentT::adminDepartments($company_id);
+        return $departments;
+    }
 
 }

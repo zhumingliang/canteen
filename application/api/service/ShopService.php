@@ -175,11 +175,12 @@ class ShopService
 
     public function officialProducts()
     {
-        $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
-        if (empty($canteen_id)) {
-            throw new ParameterException(['msg' => '请先选择饭堂']);
-        }
-        $company_id = (new CanteenService())->getCanteenBelongCompanyID($canteen_id);
+        /*        $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
+                if (empty($canteen_id)) {
+                    throw new ParameterException(['msg' => '请先选择饭堂']);
+                }
+                $company_id = (new CanteenService())->getCanteenBelongCompanyID($canteen_id);*/
+        $company_id = Token::getCurrentTokenVar('current_company_id');
         //获取企业所有类别
         $categories = (new CategoryService())->companyCategories($company_id);
         //获取企业所有商品
