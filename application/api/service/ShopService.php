@@ -95,7 +95,9 @@ class ShopService
     {
         try {
             Db::startTrans();
+            (new AuthorService())->checkAuthorSupplier();
             $params['company_id'] = Token::getCurrentTokenVar('c_id');
+            $params['supplier_id'] = Token::getCurrentUid();
             if ($this->checkName($params['company_id'], $params['name'])) {
                 throw new SaveException(['msg' => '商品名称已经存在']);
             }
@@ -113,6 +115,7 @@ class ShopService
 
     public function updateProduct($params)
     {
+        (new AuthorService())->checkAuthorSupplier();
         $product = ShopProductT::update($params);
         if (!$product) {
             throw new UpdateException();
@@ -164,6 +167,7 @@ class ShopService
 
     public function saveProductStock($params)
     {
+        (new AuthorService())->checkAuthorSupplier();
         $params['admin_id'] = Token::getCurrentUid();
         $params['type'] = ShopEnum::STOCK_ADD;
         $params['state'] = CommonEnum::STATE_IS_OK;
@@ -175,11 +179,6 @@ class ShopService
 
     public function officialProducts()
     {
-        /*        $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
-                if (empty($canteen_id)) {
-                    throw new ParameterException(['msg' => '请先选择饭堂']);
-                }
-                $company_id = (new CanteenService())->getCanteenBelongCompanyID($canteen_id);*/
         $company_id = Token::getCurrentTokenVar('current_company_id');
         //获取企业所有类别
         $categories = (new CategoryService())->companyCategories($company_id);
@@ -218,9 +217,7 @@ class ShopService
 
     public function supplierProducts($category_id, $page, $size)
     {
-        if (Token::getCurrentTokenVar('type') != 'supplier') {
-            throw new AuthException();
-        }
+        (new AuthorService())->checkAuthorSupplier();
         $supplier_id = Token::getCurrentUid();
         $products = ShopProductStockV::supplierProducts($supplier_id, $category_id, $page, $size);
         return $products;

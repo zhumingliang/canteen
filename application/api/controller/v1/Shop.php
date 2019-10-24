@@ -18,22 +18,18 @@ use think\facade\Request;
 class Shop extends BaseController
 {
     /**
-     * @api {POST} /api/v1/shop/product/save  CMS管理端-小卖部管理-商品管理-新增商品
+     * @api {POST} /api/v1/shop/product/save  CMS管理端-小卖部管理-商品管理-新增商品(只有供应商才有权限)
      * @apiGroup   CMS
      * @apiVersion 3.0.0
      * @apiDescription    CMS管理端-小卖部管理-商品管理-新增商品
      * @apiExample {post}  请求样例:
      *    {
-     *       "supplier_id": 1,
-     *       "category_id": 2,
      *       "name": "鸡蛋",
      *       "price": 8,
      *       "unit": "元/500g",
      *       "count": 100,
      *       "image": "/static/image/a.png",
      *     }
-     * @apiParam (请求参数说明) {int} supplier_id  供应商id
-     * @apiParam (请求参数说明) {int} category_id  类型id
      * @apiParam (请求参数说明) {string} name  商品名称
      * @apiParam (请求参数说明) {float} price  价格
      * @apiParam (请求参数说明) {string} unit  单位
@@ -53,23 +49,19 @@ class Shop extends BaseController
     }
 
     /**
-     * @api {POST} /api/v1/shop/product/update  CMS管理端-小卖部管理-商品管理-修改商品
+     * @api {POST} /api/v1/shop/product/update  CMS管理端-小卖部管理-商品管理-修改商品(只有供应商才有权限)
      * @apiGroup   CMS
      * @apiVersion 3.0.0
      * @apiDescription    CMS管理端-小卖部管理-商品管理-修改商品
      * @apiExample {post}  请求样例:
      *    {
      *       "id": 5,
-     *       "supplier_id": 1,
-     *       "category_id": 2,
      *       "name": "鸡蛋",
      *       "price": 8,
      *       "unit": "元/500g",
      *       "image": "/static/image/a.png",
      *     }
      * @apiParam (请求参数说明) {int} id  商品id
-     * @apiParam (请求参数说明) {int} supplier_id  供应商id
-     * @apiParam (请求参数说明) {int} category_id  类型id
      * @apiParam (请求参数说明) {string} name  商品名称
      * @apiParam (请求参数说明) {float} price  价格
      * @apiParam (请求参数说明) {string} unit  单位
@@ -86,6 +78,36 @@ class Shop extends BaseController
         (new ShopService())->updateProduct($params);
         return json(new SuccessMessage());
     }
+
+    /**
+     * @api {POST} /api/v1/shop/product/handel   CMS管理端-小卖部管理-商品管理-商品状态操作(只有供应商才有权限)
+     * @apiGroup   CMS
+     * @apiVersion 3.0.0
+     * @apiDescription     CMS管理端-小卖部管理-商品管理-商品状态操作
+     * @apiExample {post}  请求样例:
+     *    {
+     *       "id": 1,
+     *       "state": 2,
+     *     }
+     * @apiParam (请求参数说明) {int} id  商品id
+     * @apiParam (请求参数说明) {int} state  状态：1|上架；2|下架；3|删除
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     */
+    public function handel()
+    {
+        //供应商才有权限
+        $id = Request::param('id');
+        $state = Request::param('state');
+        $product = ShopProductT::update(['state' => $state], ['id' => $id]);
+        if (!$product) {
+            throw new UpdateException();
+        }
+        return json(new SuccessMessage());
+    }
+
 
     /**
      * @api {GET} /api/v1/shop/product  CMS管理端-小卖部管理-商品管理-获取商品信息
@@ -117,37 +139,9 @@ class Shop extends BaseController
         return json(new SuccessMessageWithData(['data' => $product]));
     }
 
-    /**
-     * @api {POST} /api/v1/shop/product/handel   CMS管理端-小卖部管理-商品管理-商品状态操作
-     * @apiGroup   CMS
-     * @apiVersion 3.0.0
-     * @apiDescription     CMS管理端-小卖部管理-商品管理-商品状态操作
-     * @apiExample {post}  请求样例:
-     *    {
-     *       "id": 1,
-     *       "state": 2,
-     *     }
-     * @apiParam (请求参数说明) {int} id  商品id
-     * @apiParam (请求参数说明) {int} state  状态：1|上架；2|下架；3|删除
-     * @apiSuccessExample {json} 返回样例:
-     * {"msg":"ok","errorCode":0,"code":200}
-     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
-     * @apiSuccess (返回参数说明) {string} msg 信息描述
-     */
-    public function handel()
-    {
-        //供应商才有权限
-        $id = Request::param('id');
-        $state = Request::param('state');
-        $product = ShopProductT::update(['state' => $state], ['id' => $id]);
-        if (!$product) {
-            throw new UpdateException();
-        }
-        return json(new SuccessMessage());
-    }
 
     /**
-     * @api {POST} /api/v1/shop/stock/save  CMS管理端-小卖部管理-商品管理-商品入库
+     * @api {POST} /api/v1/shop/stock/save  CMS管理端-小卖部管理-商品管理-商品入库(供应商才有权限)
      * @apiGroup   CMS
      * @apiVersion 3.0.0
      * @apiDescription    CMS管理端-小卖部管理-商品管理-商品入库
