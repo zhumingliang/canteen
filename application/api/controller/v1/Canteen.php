@@ -331,7 +331,8 @@ class Canteen extends BaseController
      * @apiVersion 3.0.0
      * @apiDescription  CMS管理端--选择饭堂查看餐次列表
      * @apiExample {get}  请求样例:
-     * http://canteen.tonglingok.com/api/v1/canteen/dinners
+     * http://canteen.tonglingok.com/api/v1/canteen/dinners?canteen_id=3
+     * @apiParam (请求参数说明) {int} canteen_id  饭堂id
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200,"data":[{"id":5,"name":"早餐"},{"id":6,"name":"中餐"},{"id":7,"name":"晚餐"}]}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
@@ -341,7 +342,7 @@ class Canteen extends BaseController
      */
     public function canteenDinners()
     {
-        $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
+        $canteen_id = Request::param('canteen_id');
         $dinners = (new CanteenService())->getDinnerNames($canteen_id);
         return json(new SuccessMessageWithData(['data' => $dinners]));
 
