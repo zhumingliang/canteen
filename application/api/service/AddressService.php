@@ -62,11 +62,11 @@ class AddressService
         if ($address->default == CommonEnum::STATE_IS_OK) {
             return true;
         }
+        $u_id = Token::getCurrentUid();
+        UserAddressT::update(['default' => CommonEnum::STATE_IS_FAIL],
+            ['u_id' => $u_id, 'default' => CommonEnum::STATE_IS_OK]);
         $address->default = CommonEnum::STATE_IS_OK;
-        $res = $address->save();
-        if (!$res) {
-            throw new UpdateException();
-        }
+        $address->save();
     }
 
 }

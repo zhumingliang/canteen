@@ -8,6 +8,7 @@ class Canteen extends BaseValidate
 {
     protected $rule = [
         'id' => 'require|isPositiveInteger',
+        'belong_id' => 'require|isPositiveInteger',
         'canteens' => 'require|isNotEmpty',
         'c_id' => 'require|isPositiveInteger',
         'company_id' => 'require|isPositiveInteger',
@@ -17,6 +18,7 @@ class Canteen extends BaseValidate
         'dinners' => 'require',
         'account' => 'require',
         'type' => 'require|in:1,2',
+        'machine_type' => 'require|in:canteen,shop',
         'clean_type' => 'require|in:1,2,3',
         'taste' => 'require|in:1,2,3,4,5',
         'service' => 'require|in:1,2,3,4,5',
@@ -38,7 +40,7 @@ class Canteen extends BaseValidate
         'saveComment' => ['taste', 'service'],
         'canteens' => ['company_id'],
         'getCanteensForCompany' => ['company_id'],
-        'saveMachine' => ['c_id', 'name', 'number', 'code', 'pwd'],
+        'saveMachine' => ['belong_id', 'machine_type', 'name', 'number', 'code', 'pwd'],
         'updateMachine' => ['id'],
         'deleteMachine' => ['id'],
     ];
