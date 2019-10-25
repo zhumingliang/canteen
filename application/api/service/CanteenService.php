@@ -279,6 +279,7 @@ class CanteenService
 
     }
 
+
     public function getDinnerNames($c_id)
     {
         return DinnerT::dinnerNames($c_id);
@@ -479,7 +480,8 @@ class CanteenService
     public function diningMode()
     {
         $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
-        $account = CanteenAccountT::where('c_id', $canteen_id)->field('dining_mode')
+        $account = CanteenAccountT::where('c_id', $canteen_id)
+            ->field('dining_mode')
             ->find();
         if (empty($account)) {
             throw new ParameterException(['msg' => '未设置饭堂账户信息']);

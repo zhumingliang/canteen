@@ -326,6 +326,29 @@ class Canteen extends BaseController
     }
 
     /**
+     * @api {GET} /api/v1/canteen/dinners CMS管理端--选择饭堂查看餐次列表
+     * @apiGroup  CMS
+     * @apiVersion 3.0.0
+     * @apiDescription  CMS管理端--选择饭堂查看餐次列表
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/canteen/dinners
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":[{"id":5,"name":"早餐"},{"id":6,"name":"中餐"},{"id":7,"name":"晚餐"}]}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {String} msg 信息描述
+     * @apiSuccess (返回参数说明) {int} id  餐次id
+     * @apiSuccess (返回参数说明) {string} name  餐次名称
+     */
+    public function canteenDinners()
+    {
+        $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
+        $dinners = (new CanteenService())->getDinnerNames($canteen_id);
+        return json(new SuccessMessageWithData(['data' => $dinners]));
+
+    }
+
+
+    /**
      * @api {POST} /api/v1/canteen/saveComment  微信端--个人选菜--评价饭堂
      * @apiGroup   Official
      * @apiVersion 3.0.0
@@ -357,7 +380,7 @@ class Canteen extends BaseController
      * @apiExample {post}  请求样例:
      *    {
      *       "belong_id": 6,
-     *       "type": "canteen",
+     *       "machine_type": "canteen",
      *       "name": "1号设备",
      *       "number": "001",
      *       "code": "dadas12121",
@@ -366,7 +389,7 @@ class Canteen extends BaseController
      * @apiParam (请求参数说明) {string} name  设备名称
      * @apiParam (请求参数说明) {int} belong_id  设备归属id
      * @apiParam (请求参数说明) {string} number  编号
-     * @apiParam (请求参数说明) {string} type  设备类别 canteen:饭堂id；shop：小卖部id
+     * @apiParam (请求参数说明) {string} machine_type  设备类别 canteen:饭堂id；shop：小卖部id
      * @apiParam (请求参数说明) {string} code  设备号
      * @apiParam (请求参数说明) {string} pwd  设备登陆密码
      * @apiSuccessExample {json} 返回样例:
@@ -404,7 +427,7 @@ class Canteen extends BaseController
     }
 
     /**
-     * @api {POST} /api/v1/canteen/updateMachine CMS管理端-企业管理-修改饭堂硬件信息
+     * @api {POST} /api/v1/canteen/updateMachine CMS管理端-企业管理-修改硬件信息(饭堂和小卖部)
      * @apiGroup   CMS
      * @apiVersion 3.0.0
      * @apiDescription    CMS管理端-企业管理-修改饭堂硬件信息
