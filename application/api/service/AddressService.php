@@ -29,7 +29,8 @@ class AddressService
 
     private function checkDefault($u_id)
     {
-        $userAddressCount = UserAddressT::where('u_id', $u_id)->count();
+        $userAddressCount = UserAddressT::where('u_id', $u_id)
+            ->where('default', CommonEnum::STATE_IS_OK)->count();
         if ($userAddressCount) {
             return 2;
         }
@@ -61,10 +62,11 @@ class AddressService
         if ($address->default == CommonEnum::STATE_IS_OK) {
             return true;
         }
-        $u_id = Token::getCurrentUid();
-        UserAddressT::update(['default' => CommonEnum::STATE_IS_FAIL], ['u_id' => $u_id, 'default' => CommonEnum::STATE_IS_OK]);
         $address->default = CommonEnum::STATE_IS_OK;
-        $address->save();
+        $res = $address->save();
+        if (!$res) {
+            throw new UpdateException();
+        }
     }
 
 }

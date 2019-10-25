@@ -167,20 +167,22 @@ class CompanyService
         } else if ($grade == AdminEnum::COMPANY_SUPER) {
             $companies = $this->companySuperGetCompanies();
         } else if ($grade == AdminEnum::COMPANY_OTHER) {
-            $companies = $this->companySuperGetCompanies();
+            $companies = $this->companySuperGetCompanies(false);
         } else {
             throw new AuthException();
         }
         return $companies;
     }
 
-    public function companySuperGetCompanies()
+    public function companySuperGetCompanies($item = true)
     {
         $company_id = Token::getCurrentTokenVar('company_id');
         $company = CompanyT::where('id', $company_id)
             ->field('id,name,parent_id')
             ->find();
-        $company['items'] = $this->getSonCompanies($company['id']);
+        if ($item) {
+            $company['items'] = $this->getSonCompanies($company['id']);
+        }
         return $company;
     }
 
