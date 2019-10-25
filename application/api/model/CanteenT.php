@@ -21,11 +21,6 @@ class CanteenT extends Model
 
     }
 
-    public function machines()
-    {
-        return $this->hasMany('MachineT', 'c_id', 'id');
-    }
-
     /*
         public function modules()
 
@@ -81,10 +76,7 @@ class CanteenT extends Model
                 'modules' => function ($query) {
                     $query->field('id,canteen_id,parent_id,type,name')
                         ->order('order');
-                },
-                'machines' => function ($query) {
-                    $query->field('id,c_id,name,code,number');
-                },
+                }
             ])
             ->field('id,c_id,name')
             ->select()->toArray();

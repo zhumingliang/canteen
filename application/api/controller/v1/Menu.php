@@ -83,7 +83,7 @@ class Menu extends BaseController
         $params = Request::param();
         $company_id = $params['company_id'];
         $canteen_id = $params['canteen_id'];
-        $menus = (new MenuService())->companyMenus($page, $size, $company_id,$canteen_id);
+        $menus = (new MenuService())->companyMenus($page, $size, $company_id, $canteen_id);
         return json(new SuccessMessageWithData(['data' => $menus]));
     }
 
@@ -113,5 +113,24 @@ class Menu extends BaseController
         return json(new SuccessMessageWithData(['data' => $menus]));
     }
 
+    /**
+     * @api {GET} /api/v1/menus/dinner CMS管理端-获取指定餐次菜单信息（查询类接口）
+     * @apiGroup  CMS
+     * @apiVersion 3.0.0
+     * @apiDescription  CMS管理端-获取指定餐次菜单信息（查询类接口）
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/menus/dinner?dinner_id=6
+     * @apiParam (请求参数说明) {String} dinner_id 餐次id
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":[{"id":3,"category":"汤"},{"id":4,"category":"荤菜"},{"id":5,"category":"荤菜"},{"id":6,"category":"汤"},{"id":7,"category":"素菜"}]}
+     * @apiSuccess (返回参数说明) {int} id 分类id
+     * @apiSuccess (返回参数说明) {string} category 分类名称
+     */
+    public function dinnerMenus()
+    {
+        $dinner_id = Request::param('dinner_id');
+        $menus = (new MenuService())->dinnerMenusCategory($dinner_id);
+        return json(new SuccessMessageWithData(['data' => $menus]));
+    }
 
 }

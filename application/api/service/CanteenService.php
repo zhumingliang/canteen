@@ -430,7 +430,6 @@ class CanteenService
     {
         $staffs = (new DepartmentService())->getCompanyStaffCounts($company_id);
         $canteens = CanteenT::getCanteensForCompany($company_id);
-        $canteens = $this->prefixCanteenMachineState($canteens);
         return [
             'staffs' => $staffs,
             'canteens' => $canteens
@@ -438,22 +437,14 @@ class CanteenService
 
     }
 
-    private function prefixCanteenMachineState($canteens)
+    private function prefixMachinesState($machines)
     {
-        if (count($canteens)) {
-            foreach ($canteens as $k => $v) {
-                $machines = $v['machines'];
-                if (count($machines)) {
-                    foreach ($machines as $k2 => $v2) {
-                        $machines[$k2]['state'] = $this->checkMachineState($v2['id']);
-                    }
-                    $canteens[$k]['machines'] = $machines;
-
-                }
+        if (count($machines)) {
+            foreach ($machines as $k => $v) {
+                $machines[$k]['state'] = $this->checkMachineState($v['id']);
             }
         }
-        return $canteens;
-
+        return $machines;
     }
 
     private function checkMachineState($machine_id)
@@ -487,6 +478,23 @@ class CanteenService
             throw new ParameterException(['msg' => '未设置饭堂账户信息']);
         }
         return $account;
+    }
+
+    public function machines($belong_id, $machine_type, $page, $size)
+    {
+        $machines = MachineT::machines($page, $size, $belong_id, $machine_type);
+
+        $data = $machines['data'];
+        $machines['data'] = $this->prefixMachinesState($data);
+        return $machines;
+    }
+
+    public function companyMachines($company_id, $page, $size)
+    {
+        $machines = MachineT::companyMachines($company_id, $page, $size);
+        $data = $machines['data'];
+        $machines['data'] = $this->prefixMachinesState($data);
+        return $machines;
     }
 
 }

@@ -348,7 +348,6 @@ class Canteen extends BaseController
 
     }
 
-
     /**
      * @api {POST} /api/v1/canteen/saveComment  微信端--个人选菜--评价饭堂
      * @apiGroup   Official
@@ -463,25 +462,20 @@ class Canteen extends BaseController
      * @apiVersion 3.0.0
      * @apiDescription CMS管理端--企业明细-查看企业饭堂信息
      * @apiExample {get}  请求样例:
-     * http://canteen.tonglingok.com/api/v1/canteens/company
+     * http://canteen.tonglingok.com/api/v1/canteens/company?company_id=3
+     * @apiParam (请求参数说明) {int} company_id  企业id
      * @apiSuccessExample {json} 返回样例:
-     * {"msg":"ok","errorCode":0,"code":200,"data":{"staffs":330,"canteens":[{"id":6,"c_id":3,"name":"饭堂1","modules":[{"id":1,"canteen_id":6,"parent_id":0,"type":1,"name":"设置"},{"id":2,"canteen_id":6,"parent_id":1,"type":2,"name":"小卖部"}],"machines":[{"id":2,"c_id":6,"name":"刷卡器1号","code":"a111111","number":"001","state":1}]},{"id":7,"c_id":3,"name":"饭堂2","modules":[{"id":1,"canteen_id":7,"parent_id":0,"type":1,"name":"设置"},{"id":2,"canteen_id":7,"parent_id":1,"type":2,"name":"小卖部"}],"machines":[]}]}}
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"staffs":331,"canteens":[{"id":6,"c_id":3,"name":"饭堂1","modules":[{"id":1,"canteen_id":6,"parent_id":0,"type":1,"name":"设置"},{"id":2,"canteen_id":6,"parent_id":1,"type":2,"name":"小卖部"}]},{"id":7,"c_id":3,"name":"饭堂2","modules":[{"id":2,"canteen_id":7,"parent_id":1,"type":2,"name":"小卖部"},{"id":1,"canteen_id":7,"parent_id":0,"type":1,"name":"设置"}]},{"id":17,"c_id":3,"name":"newCanteen","modules":[{"id":2,"canteen_id":17,"parent_id":1,"type":2,"name":"小卖部"},{"id":1,"canteen_id":17,"parent_id":0,"type":1,"name":"设置"}]}]}}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
      * @apiSuccess (返回参数说明) {String} msg 信息描述
      * @apiSuccess (返回参数说明) {int} staffs  企业人数
      * @apiSuccess (返回参数说明) {obj} canteens  饭堂信息
-     * @apiSuccess (返回参数说明) {string} canteens|name  饭堂名称
-     * @apiSuccess (返回参数说明) {obj} canteens|modules  饭堂模块信息
-     * @apiSuccess (返回参数说明) {int} modules|id 模块id
-     * @apiSuccess (返回参数说明) {string} modules|name  模块名称
-     * @apiSuccess (返回参数说明) {string} modules|parent_id  模块上级id
-     * @apiSuccess (返回参数说明) {int} modules|type  模块类别：1|pc端；2|小卖部
-     * @apiSuccess (返回参数说明) {obj} canteens|machines 饭堂设备信息
-     * @apiSuccess (返回参数说明) {int} machines|id 设备id
-     * @apiSuccess (返回参数说明) {string} machines|number 设备序号
-     * @apiSuccess (返回参数说明) {string} machines|code 设备硬件号
-     * @apiSuccess (返回参数说明) {string} machines|name 设备硬件名称
-     * @apiSuccess (返回参数说明) {int} machines|state 状态：1|正常；2|异常
+     * @apiSuccess (返回参数说明) {string} name  饭堂名称
+     * @apiSuccess (返回参数说明) {obj} modules  饭堂模块信息
+     * @apiSuccess (返回参数说明) {int} id 模块id
+     * @apiSuccess (返回参数说明) {string} name  模块名称
+     * @apiSuccess (返回参数说明) {string} parent_id  模块上级id
+     * @apiSuccess (返回参数说明) {int} type  模块类别：1|pc端；2|小卖部
      */
     public function getCanteensForCompany()
     {
@@ -548,5 +542,71 @@ class Canteen extends BaseController
     {
         $mode = (new CanteenService())->diningMode();
         return json(new SuccessMessageWithData(['data' => $mode]));
+    }
+
+    /**
+     * @api {GET} /api/v1/machines CMS管理端-企业管理-获取设备列表（小卖部/饭堂）
+     * @apiGroup  CMS
+     * @apiVersion 3.0.0
+     * @apiDescription CMS管理端-企业管理-获取设备列表（小卖部/饭堂）
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/machines?belong_id=1&machine_type=canteen&page=1&size=20
+     * @apiParam (请求参数说明) {int} page 当前页码
+     * @apiParam (请求参数说明) {int} size 每页多少条数据
+     * @apiParam (请求参数说明) {int} belong_id  归属id：饭堂id/小卖部id（和machine_type一一对应）
+     * @apiParam (请求参数说明) {int} machine_type 设备类别：canteen｜饭堂；shop|小卖部
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"total":1,"per_page":"20","current_page":1,"last_page":1,"data":[{"id":2,"machine_type":"canteen","name":"刷卡器1号","code":"a111111","number":"001","state":1}]}}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     * @apiSuccess (返回参数说明) {int} total 数据总数
+     * @apiSuccess (返回参数说明) {int} per_page 每页多少条数据
+     * @apiSuccess (返回参数说明) {int} current_page 当前页码
+     * @apiSuccess (返回参数说明) {int} last_page 最后页码
+     * @apiSuccess (返回参数说明) {int} id 设备id
+     * @apiSuccess (返回参数说明) {string} machine_type 设备类别
+     * @apiSuccess (返回参数说明) {string} number 设备序号
+     * @apiSuccess (返回参数说明) {string} code 设备硬件号
+     * @apiSuccess (返回参数说明) {string} name 设备硬件名称
+     * @apiSuccess (返回参数说明) {int} state 状态：1|正常；2|异常
+     */
+    public function machines($page = 1, $size = 20)
+    {
+        $belong_id = Request::param('belong_id');
+        $machine_type = Request::param('machine_type');
+        $machines = (new CanteenService())->machines($belong_id, $machine_type, $page, $size);
+        return json(new SuccessMessageWithData(['data' => $machines]));
+    }
+
+    /**
+     * @api {GET} /api/v1/machines/company CMS管理端-企业明细-获取企业设备列表
+     * @apiGroup  CMS
+     * @apiVersion 3.0.0
+     * @apiDescription CMS管理端-企业明细-获取企业设备列表
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/machines/company?company_id=1&page=1&size=20
+     * @apiParam (请求参数说明) {int} page 当前页码
+     * @apiParam (请求参数说明) {int} size 每页多少条数据
+     * @apiParam (请求参数说明) {int} company_id 企业id
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"total":1,"per_page":"20","current_page":1,"last_page":1,"data":[{"id":2,"machine_type":"canteen","name":"刷卡器1号","code":"a111111","number":"001","state":1}]}}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     * @apiSuccess (返回参数说明) {int} total 数据总数
+     * @apiSuccess (返回参数说明) {int} per_page 每页多少条数据
+     * @apiSuccess (返回参数说明) {int} current_page 当前页码
+     * @apiSuccess (返回参数说明) {int} last_page 最后页码
+     * @apiSuccess (返回参数说明) {int} id 设备id
+     * @apiSuccess (返回参数说明) {string} machine_type 设备类别
+     * @apiSuccess (返回参数说明) {string} number 设备序号
+     * @apiSuccess (返回参数说明) {string} code 设备硬件号
+     * @apiSuccess (返回参数说明) {string} name 设备硬件名称
+     * @apiSuccess (返回参数说明) {int} state 状态：1|正常；2|异常
+     */
+    public function companyMachines($page = 1, $size = 20)
+    {
+        $company_id = Request::param('company_id');
+        $machines = (new CanteenService())->companyMachines($company_id, $page, $size);
+        return json(new SuccessMessageWithData(['data' => $machines]));
     }
 }

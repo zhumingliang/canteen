@@ -18,7 +18,7 @@ class Canteen extends BaseValidate
         'dinners' => 'require',
         'account' => 'require',
         'type' => 'require|in:1,2',
-        'machine_type' => 'require|in:canteen,shop',
+        'machine_type' => 'require|in:canteen,shop,all',
         'clean_type' => 'require|in:1,2,3',
         'taste' => 'require|in:1,2,3,4,5',
         'service' => 'require|in:1,2,3,4,5',
@@ -44,5 +44,6 @@ class Canteen extends BaseValidate
         'saveMachine' => ['belong_id', 'machine_type', 'name', 'number', 'code', 'pwd'],
         'updateMachine' => ['id'],
         'deleteMachine' => ['id'],
+        'companyMachines' => ['company_id', 'machine_type'],
     ];
 }

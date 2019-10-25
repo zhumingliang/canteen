@@ -55,6 +55,8 @@ Route::get('api/:version/managerCanteens', 'api/:version.Canteen/managerCanteens
 Route::get('api/:version/canteen/dinners/user', 'api/:version.Canteen/currentCanteenDinners');
 Route::get('api/:version/canteen/dinners', 'api/:version.Canteen/canteenDinners');
 Route::get('api/:version/canteen/diningMode', 'api/:version.Canteen/diningMode');
+Route::get('api/:version/machines/company', 'api/:version.Canteen/companyMachines');
+Route::get('api/:version/machines', 'api/:version.Canteen/machines');
 
 Route::get('api/:version/roles', 'api/:version.Role/roles');
 Route::post('api/:version/role/save', 'api/:version.Role/save');
@@ -87,6 +89,7 @@ Route::rule('api/:version/image/upload', 'api/:version.Image/upload');
 Route::post('api/:version/menu/save', 'api/:version.Menu/save');
 Route::get('api/:version/menus/company', 'api/:version.Menu/companyMenus');
 Route::get('api/:version/menus/canteen', 'api/:version.Menu/canteenMenus');
+Route::get('api/:version/menus/dinner', 'api/:version.Menu/dinnerMenus');
 
 Route::post('api/:version/food/save', 'api/:version.Food/save');
 Route::post('api/:version/food/update', 'api/:version.Food/update');
