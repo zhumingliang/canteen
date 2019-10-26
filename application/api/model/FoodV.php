@@ -46,7 +46,7 @@ class FoodV extends BaseModel
                         ->field('id,f_id,name,count');
                 }
             ])
-            ->hidden(['canteen_id', 'company_id', 'f_type', 'create_time'])
+            ->hidden([ 'company_id', 'f_type', 'create_time'])
             ->find();
         return $info;
     }

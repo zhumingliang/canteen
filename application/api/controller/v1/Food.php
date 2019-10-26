@@ -169,6 +169,7 @@ class Food extends BaseController
      * @apiSuccess (返回参数说明) {string} price  菜品价格
      * @apiSuccess (返回参数说明) {string} chef  主厨名称
      * @apiSuccess (返回参数说明) {string} des  描述
+     * @apiSuccess (返回参数说明) {string} canteen_id  饭堂id
      * @apiSuccess (返回参数说明) {string} menu_id  菜品类别id
      * @apiSuccess (返回参数说明) {string} menu  菜品类别
      * @apiSuccess (返回参数说明) {string} dinner_id  餐次ID

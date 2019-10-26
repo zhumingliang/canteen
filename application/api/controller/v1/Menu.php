@@ -122,9 +122,9 @@ class Menu extends BaseController
      * http://canteen.tonglingok.com/api/v1/menus/dinner?dinner_id=6
      * @apiParam (请求参数说明) {String} dinner_id 餐次id
      * @apiSuccessExample {json} 返回样例:
-     * {"msg":"ok","errorCode":0,"code":200,"data":[{"id":3,"category":"汤"},{"id":4,"category":"荤菜"},{"id":5,"category":"荤菜"},{"id":6,"category":"汤"},{"id":7,"category":"素菜"}]}
+     * {"msg":"ok","errorCode":0,"code":200,"data":[{"id":3,"name":"汤"},{"id":4,"name":"荤菜"},{"id":5,"name":"荤菜"},{"id":6,"name":"汤"},{"id":7,"name":"素菜"}]}
      * @apiSuccess (返回参数说明) {int} id 分类id
-     * @apiSuccess (返回参数说明) {string} category 分类名称
+     * @apiSuccess (返回参数说明) {string} name 分类名称
      */
     public function dinnerMenus()
     {
