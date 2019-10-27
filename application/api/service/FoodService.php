@@ -26,7 +26,7 @@ class FoodService extends BaseService
     {
         try {
             Db::startTrans();
-            $params['state'] = CommonEnum::STATE_IS_FAIL;
+            $params['state'] = CommonEnum::STATE_IS_OK;
             $food = FoodT::create($params);
             if (!$food) {
                 throw new SaveException();
