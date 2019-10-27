@@ -171,14 +171,13 @@ class CanteenService
     {
         try {
             $c_id = $params['c_id'];
-            if (key_exists('dinners', $params) && strlen($params['dinners'])) {
+            if (!empty($params['dinners'])) {
                 $dinners = $params['dinners'];
                 $dinners = json_decode($dinners, true);
                 foreach ($dinners as $k => $v) {
                     if (!key_exists('id', $v)) {
                         $dinners[$k]['c_id'] = $c_id;
                         $dinners[$k]['state'] = CommonEnum::STATE_IS_OK;
-                        $add_data[] = $dinners[$k];
                     }
 
                 }
@@ -190,13 +189,15 @@ class CanteenService
                 }
 
             }
-            if (key_exists('account', $params) && strlen($params['account'])) {
+            if (!empty($params['account'])) {
                 $account = json_decode($params['account'], true);
 
                 if (!key_exists('id', $account)) {
-                    throw new ParameterException();
+                    $account['c_id'] = $c_id;
+                    $res = CanteenAccountT::create($account);
+                } else {
+                    $res = CanteenAccountT::update($account);
                 }
-                $res = CanteenAccountT::update($account);
                 if (!$res) {
                     throw new UpdateException();
                 }
