@@ -407,6 +407,7 @@ class CanteenService
         if (!empty($params['pwd'])) {
             $params['pwd'] = sha1($params['pwd']);
         }
+        $params['company_id'] = Token::getCurrentTokenVar('company_id');
         $machine = MachineT::create($params);
         if (!$machine) {
             throw new SaveException();
