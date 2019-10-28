@@ -174,8 +174,6 @@ Route::post('api/:version/shop/order/cancel', 'api/:version.Shop/orderCancel');
 Route::post('api/:version/shop/product/update', 'api/:version.Shop/updateProduct');
 Route::post('api/:version/shop/product/handel', 'api/:version.Shop/handel');
 Route::post('api/:version/shop/stock/save', 'api/:version.Shop/saveProductStock');
-Route::post('api/:version/shop/update', 'api/:version.Shop/update');
-Route::post('api/:version/shop/delete', 'api/:version.Shop/delete');
 Route::post('api/:version/shop/product/saveComment', 'api/:version.Shop/saveComment');
 Route::get('api/:version/shop/product', 'api/:version.Shop/product');
 Route::get('api/:version/shop/products', 'api/:version.Shop/products');
