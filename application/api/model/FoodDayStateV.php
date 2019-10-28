@@ -22,11 +22,11 @@ class FoodDayStateV extends BaseModel
     public static function foodsForOfficialPersonChoice($d_id)
     {
         $foods = self:: where('d_id', $d_id)
-            ->whereTime('day', '>=', date('Y-m-d H:i:s'))
+            ->whereTime('day', '>=', date('Y-m-d'))
             ->where('status',CommonEnum::STATE_IS_OK)
             ->where('f_type',FoodEnum::CHOICE)
             ->order('day')
-            ->select()->toArray();
+            ->select();
         return $foods;
     }
 

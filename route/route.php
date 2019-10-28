@@ -140,6 +140,7 @@ Route::get('api/:version/order/usersStatistic', 'api/:version.Order/orderUsersSt
 Route::get('api/:version/order/foodUsersStatistic', 'api/:version.Order/foodUsersStatistic');
 Route::get('api/:version/order/orderStatistic', 'api/:version.Order/orderStatistic');
 Route::get('api/:version/order/orderStatistic/detail', 'api/:version.Order/orderStatisticDetail');
+Route::get('api/:version/order/orderSettlement', 'api/:version.Order/orderSettlement');
 
 Route::post('api/:version/address/save', 'api/:version.Address/save');
 Route::post('api/:version/address/update', 'api/:version.Address/update');
@@ -173,6 +174,8 @@ Route::post('api/:version/shop/order/cancel', 'api/:version.Shop/orderCancel');
 Route::post('api/:version/shop/product/update', 'api/:version.Shop/updateProduct');
 Route::post('api/:version/shop/product/handel', 'api/:version.Shop/handel');
 Route::post('api/:version/shop/stock/save', 'api/:version.Shop/saveProductStock');
+Route::post('api/:version/shop/update', 'api/:version.Shop/update');
+Route::post('api/:version/shop/delete', 'api/:version.Shop/delete');
 Route::post('api/:version/shop/product/saveComment', 'api/:version.Shop/saveComment');
 Route::get('api/:version/shop/product', 'api/:version.Shop/product');
 Route::get('api/:version/shop/products', 'api/:version.Shop/products');

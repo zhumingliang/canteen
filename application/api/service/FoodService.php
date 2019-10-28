@@ -246,6 +246,7 @@ class FoodService extends BaseService
     public function foodsForOfficialPersonChoice($d_id)
     {
         $foods = FoodDayStateV::foodsForOfficialPersonChoice($d_id);
+        print_r($foods);
         $menus = (new MenuService())->dinnerMenus($d_id);
         $foods = $this->prefixPersonChoiceFoods($foods, $menus);
         return $foods;
