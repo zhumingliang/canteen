@@ -116,13 +116,13 @@ class UserService
 
     }
 
-    public function getUserCompanyInfo($phone, $company_id)
+    public function getUserCompanyInfo($phone, $canteen_id)
     {
         if (empty($phone)) {
             throw new AuthException(['msg' => '用户状态异常，未绑定手机号']);
         }
         $admin = CompanyStaffT::where('phone', $phone)
-            ->where('company_id', $company_id)
+            ->where('canteen_id', $canteen_id)
             ->where('state', CommonEnum::STATE_IS_OK)
             ->find();
         if (!$admin) {
