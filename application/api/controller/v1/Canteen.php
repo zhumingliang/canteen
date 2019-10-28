@@ -379,6 +379,7 @@ class Canteen extends BaseController
      * @apiDescription     CMS管理端-企业管理-添加饭堂硬件
      * @apiExample {post}  请求样例:
      *    {
+     *       "company_id": 3,
      *       "belong_id": 6,
      *       "machine_type": "canteen",
      *       "name": "1号设备",
@@ -387,6 +388,7 @@ class Canteen extends BaseController
      *       "pwd": "a111",
      *     }
      * @apiParam (请求参数说明) {string} name  设备名称
+     * @apiParam (请求参数说明) {int} company_id  企业id
      * @apiParam (请求参数说明) {int} belong_id  设备归属id
      * @apiParam (请求参数说明) {string} number  编号
      * @apiParam (请求参数说明) {string} machine_type  设备类别 canteen:饭堂id；shop：小卖部id

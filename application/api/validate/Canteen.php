@@ -41,7 +41,7 @@ class Canteen extends BaseValidate
         'canteens' => ['company_id'],
         'getCanteensForCompany' => ['company_id'],
         'canteenDinners' => ['canteen_id'],
-        'saveMachine' => ['belong_id', 'machine_type', 'name', 'number', 'code', 'pwd'],
+        'saveMachine' => ['company_id','belong_id', 'machine_type', 'name', 'number', 'code', 'pwd'],
         'updateMachine' => ['id'],
         'deleteMachine' => ['id'],
         'companyMachines' => ['company_id', 'machine_type'],
