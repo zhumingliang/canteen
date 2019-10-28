@@ -274,11 +274,11 @@ class Shop extends BaseController
      * @apiParam (请求参数说明) {int} distribution  取货方式：1|到店取；2|送货上门
      * @apiParam (请求参数说明) {int} address_id  配送地址id
      * @apiParam (请求参数说明) {obj} products 商品信息
-     * @apiParam (请求参数说明) {string} products|product_id 商品id
-     * @apiParam (请求参数说明) {string} products|price 商品实时单价
-     * @apiParam (请求参数说明) {string} products|count 商品数量
-     * @apiParam (请求参数说明) {string} products|name 商品名称
-     * @apiParam (请求参数说明) {string} products|unit 商品单位
+     * @apiParam (请求参数说明) {string} product_id 商品id
+     * @apiParam (请求参数说明) {string} price 商品实时单价
+     * @apiParam (请求参数说明) {string} count 商品数量
+     * @apiParam (请求参数说明) {string} name 商品名称
+     * @apiParam (请求参数说明) {string} unit 商品单位
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200,"data":{"id":1}}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
@@ -477,7 +477,7 @@ class Shop extends BaseController
     }
 
     /**
-     * @api {GET} /api/v1/canteen/takingMode  微信端--小卖部--获取当前小卖部取货方式
+     * @api {GET} /api/v1/shop/takingMode  微信端--小卖部--获取当前小卖部取货方式
      * @apiGroup  Official
      * @apiVersion 3.0.0
      * @apiDescription  微信端--小卖部--获取当前小卖部取货方式

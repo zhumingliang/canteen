@@ -253,7 +253,7 @@ class ShopService
             if ($params['distribution'] == ShopEnum::ORDER_GET_SELF) {
                 $this->prefixOrderQrcode($order->id);
             }
-            Db::commit();;
+            Db::commit();
         } catch (Exception $e) {
             Db::rollback();;
             throw  $e;
