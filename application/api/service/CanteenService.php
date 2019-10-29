@@ -229,7 +229,7 @@ class CanteenService
                 'c_id' => $c_id,
                 't_id' => $params['t_id'],
                 'd_id' => $v['id'],
-                'unordered_meals' => 1,
+                'unordered_meals' => $params['unordered_meals'],
                 'consumption_count' => 1,
                 'ordered_count' => 1,
                 'state' => CommonEnum::STATE_IS_OK
