@@ -6,6 +6,7 @@ namespace app\api\service;
 
 use app\api\model\OrderSettlementV;
 use app\api\model\OrderStatisticV;
+use app\api\model\OrderTakeoutStatisticV;
 use app\lib\enum\CommonEnum;
 
 class OrderStatisticService
@@ -53,6 +54,15 @@ class OrderStatisticService
 
         }
         return $data;
+    }
+
+    public function takeoutStatistic($page, $size,
+                                     $ordering_date, $company_ids,
+                                     $canteen_id, $dinner_id)
+    {
+        $records = OrderTakeoutStatisticV::statistic($page, $size,
+            $ordering_date, $company_ids, $canteen_id, $dinner_id);
+        return $records;
     }
 
 }

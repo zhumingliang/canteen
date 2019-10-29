@@ -183,3 +183,7 @@ Route::get('api/:version/shop/cms/products', 'api/:version.Shop/cmsProducts');
 Route::get('api/:version/shop/product/comments', 'api/:version.Shop/productComments');
 Route::get('api/:version/shop/order/deliveryCode', 'api/:version.Shop/deliveryCode');
 Route::get('api/:version/shop/takingMode', 'api/:version.Shop/takingMode');
+
+Route::get('api/:version/order/takeoutStatistic', 'api/:version.Takeout/statistic');
+Route::post('api/:version/order/used', 'api/:version.Takeout/used');
+

@@ -1081,4 +1081,13 @@ class OrderService extends BaseService
         }
         return $number;
     }
+
+    public function used($ids)
+    {
+        $order = OrderT::update(['used' => CommonEnum::STATE_IS_OK], ['id'=> ['in' => $ids]]);
+        if (!$order) {
+            throw new UpdateException();
+        }
+
+    }
 }
