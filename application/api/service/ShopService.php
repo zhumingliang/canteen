@@ -46,6 +46,9 @@ class ShopService
                 throw  new SaveException();
             }
             $this->saveDefaultShopModule($shop->id);
+            return [
+                'shop_id' => $shop->id
+            ];
         } catch (Exception $e) {
             Db::rollback();
             throw $e;
@@ -312,7 +315,7 @@ class ShopService
         $params['order_num'] = makeOrderNo();
 
         $phone = Token::getCurrentPhone();
-        $current_canteen_id = Token::getCurrentTokenVar('current_canteen_id');
+        // $current_canteen_id = Token::getCurrentTokenVar('current_canteen_id');
         $current_company_id = Token::getCurrentTokenVar('current_company_id');
         $staff = (new UserService())->getUserCompanyInfo($phone, $current_company_id);
         $params['staff_type_id'] = $staff->t_id;

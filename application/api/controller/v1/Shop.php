@@ -409,15 +409,15 @@ class Shop extends BaseController
      * @apiParam (请求参数说明) {string} name  小卖部名称
      * @apiParam (请求参数说明) {string} taking_mode  取货方式：1｜到店取；2｜送货上门；3｜全部都显示
      * @apiSuccessExample {json} 返回样例:
-     * {"msg":"ok","errorCode":0,"code":200}
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"shop_id":1}}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
      * @apiSuccess (返回参数说明) {string} msg 信息描述
      */
     public function saveShop()
     {
         $params = Request::param();
-        (new ShopService())->save($params);
-        return json(new SuccessMessage());
+        $shop = (new ShopService())->save($params);
+        return json(new SuccessMessageWithData(['data' => $shop]));
 
     }
 

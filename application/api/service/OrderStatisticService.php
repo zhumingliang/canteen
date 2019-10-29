@@ -6,6 +6,7 @@ namespace app\api\service;
 
 use app\api\model\OrderSettlementV;
 use app\api\model\OrderStatisticV;
+use app\lib\enum\CommonEnum;
 
 class OrderStatisticService
 {
@@ -28,19 +29,30 @@ class OrderStatisticService
         return $list;
     }
 
-    public static function orderSettlement($page, $size,
-                                           $name, $phone, $canteen_id, $department_id, $dinner_id,
-                                           $consumption_type, $time_begin, $time_end, $company_ids)
+    public function orderSettlement($page, $size,
+                                    $name, $phone, $canteen_id, $department_id, $dinner_id,
+                                    $consumption_type, $time_begin, $time_end, $company_ids)
     {
         $records = OrderSettlementV::orderSettlement($page, $size,
             $name, $phone, $canteen_id, $department_id, $dinner_id,
             $consumption_type, $time_begin, $time_end, $company_ids);
+        $records['data'] = $this->prefixSettlementConsumptionType($records['data']);
         return $records;
     }
 
-    private function prefixSettlementConsumptionType()
+    private function prefixSettlementConsumptionType($data)
     {
+        if (count($data)) {
+            foreach ($data as $k => $v) {
+                if ($v['booking'] == CommonEnum::STATE_IS_OK) {
+                    $data[$k]['consumption_type'] = $v['used'] == CommonEnum::STATE_IS_OK ? 1 : 2;
+                } else {
+                    $data[$k]['consumption_type'] = 3;
+                }
+            }
 
+        }
+        return $data;
     }
 
 }
