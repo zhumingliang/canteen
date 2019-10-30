@@ -347,7 +347,7 @@ class ModuleService
         $res = false;
         if ($type == ModuleEnum::CANTEEN) {
             $res = (new SystemCanteenModuleT())->saveAll($modules);
-        } else if (type == ModuleEnum::SHOP) {
+        } else if ($type == ModuleEnum::SHOP) {
             $res = (new SystemShopModuleT())->saveAll($modules);
         }
         if (!$res) {
