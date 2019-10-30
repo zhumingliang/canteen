@@ -185,5 +185,6 @@ Route::get('api/:version/shop/order/deliveryCode', 'api/:version.Shop/deliveryCo
 Route::get('api/:version/shop/takingMode', 'api/:version.Shop/takingMode');
 
 Route::get('api/:version/order/takeoutStatistic', 'api/:version.Takeout/statistic');
+Route::get('api/:version/order/info/print', 'api/:version.Takeout/infoToPrint');
 Route::post('api/:version/order/used', 'api/:version.Takeout/used');
 

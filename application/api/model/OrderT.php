@@ -99,5 +99,23 @@ class OrderT extends Model
         return $statistic;
     }
 
+    public static function infoToPrint($id)
+    {
+        $info = self::where('id', $id)
+            ->with([
+                'foods' => function ($query) {
+                    $query->where('state', CommonEnum::STATE_IS_OK)
+                        ->field('id as detail_id ,o_id,f_id as food_id,count,name,price');
+                },
+                'address' => function ($query) {
+                    $query->field('id,province,city,area,address,name,phone,sex');
+                }
+            ])
+            ->field('id,address_id,d_id,type,create_time')
+            ->find();
+
+        return $info;
+    }
+
 
 }

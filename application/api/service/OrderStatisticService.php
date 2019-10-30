@@ -4,10 +4,13 @@
 namespace app\api\service;
 
 
+use app\api\model\DinnerT;
 use app\api\model\OrderSettlementV;
 use app\api\model\OrderStatisticV;
+use app\api\model\OrderT;
 use app\api\model\OrderTakeoutStatisticV;
 use app\lib\enum\CommonEnum;
+use app\lib\exception\ParameterException;
 
 class OrderStatisticService
 {
@@ -58,11 +61,22 @@ class OrderStatisticService
 
     public function takeoutStatistic($page, $size,
                                      $ordering_date, $company_ids,
-                                     $canteen_id, $dinner_id)
+                                     $canteen_id, $dinner_id, $used)
     {
         $records = OrderTakeoutStatisticV::statistic($page, $size,
-            $ordering_date, $company_ids, $canteen_id, $dinner_id);
+            $ordering_date, $company_ids, $canteen_id, $dinner_id, $used);
         return $records;
+    }
+
+    public function infoToPrint($id)
+    {
+        $info = OrderT::infoToPrint($id);
+        if ($info->type != 2) {
+            throw new ParameterException(['msg' => '该订单不为外卖订单']);
+        }
+        $dinner = DinnerT::get($info->d_id);
+        $info['hidden'] = $dinner->fixed;
+        return $info;
     }
 
 }
