@@ -31,9 +31,6 @@ class AdminT extends Model
         $list = self::with([
             'canteen' => function ($query) use ($key) {
                 $query->field('id,admin_id,name');
-            },
-            'shop' => function ($query) use ($key) {
-                $query->field('id,admin_id,name');
             }
         ])
             ->where(function ($query) use ($key) {

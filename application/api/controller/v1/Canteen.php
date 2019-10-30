@@ -611,4 +611,6 @@ class Canteen extends BaseController
         $machines = (new CanteenService())->companyMachines($company_id, $page, $size);
         return json(new SuccessMessageWithData(['data' => $machines]));
     }
+
+
 }

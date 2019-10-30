@@ -19,16 +19,16 @@ class Role extends BaseController
      * @api {POST} /api/v1/role/save CMS管理端-新增角色信息
      * @apiGroup   CMS
      * @apiVersion 3.0.0
-     * @apiDescription    CMS管理端-新增角色信息
+     * @apiDescription    CMS管理端-新增角色信息(选择管理饭堂只能选择一家企业内部的饭堂，不能跨企业)
      * @apiExample {post}  请求样例:
      *    {
      *       "account": "admin123",
      *       "passwd": "a111111",
      *       "phone": "18956225230",
      *       "role": "饭堂管理员",
+     *       "c_id": 1,
+     *       "company": "企业A",
      *       "canteens":[{"c_id":1,"name":"饭堂1"},{"c_id":2,"name":"饭堂2"}],
-     *       "shops":[{"s_id":1,"name":"小卖部1"},{"s_id":2,"name":"小卖部2"}],
-     *       "company":"企业A,企业A",
      *       "remark": "新增饭堂管理员",
      *       "rules": "1,2,3,4"
      *     }
@@ -38,8 +38,8 @@ class Role extends BaseController
      * @apiParam (请求参数说明) {string} role  角色名称
      * @apiParam (请求参数说明) {string} remark  角色说明
      * @apiParam (请求参数说明) {string} canteens 管理饭堂列表
-     * @apiParam (请求参数说明) {string} shops  管理小卖部列表
-     * @apiParam (请求参数说明) {string} company 角色所属企业名称，多个用逗号分隔
+     * @apiParam (请求参数说明) {string} c_id 角色所属企业id
+     * @apiParam (请求参数说明) {string} company 角色所属企业名称
      * @apiParam (请求参数说明) {string} rules  可见模块，用逗号分隔。注意，一级模块也需要上传
      * @apiSuccessExample {json} 返回样例:
      *{"msg":"ok","errorCode":0}
@@ -66,8 +66,9 @@ class Role extends BaseController
      *       "phone": "18956225230",
      *       "passwd": "a111111",
      *       "role": "饭堂管理员",
+     *       "c_id": 1,
+     *       "company": "企业A",
      *       "canteens":{"add":[{"c_id":1,"name":"饭堂"}],"cancel":"1,2"},
-     *       "shops":{"add":[{"s_id":1,"name":"小卖部1"}],cancel:"3"},
      *       "remark": "新增饭堂管理员",
      *       "rules": "1,2,3,4"
      *     }
@@ -76,17 +77,14 @@ class Role extends BaseController
      * @apiParam (请求参数说明) {string} passwd  密码
      * @apiParam (请求参数说明) {string} phone  手机号
      * @apiParam (请求参数说明) {string} role  角色名称
+     * @apiParam (请求参数说明) {string} c_id 角色所属企业id
+     * @apiParam (请求参数说明) {string} company 角色所属企业名称
      * @apiParam (请求参数说明) {string} remark  角色说明
      * @apiParam (请求参数说明) {string} canteens 饭堂信息
      * @apiParam (请求参数说明) {string} canteens|add 新增用户管理饭堂
      * @apiParam (请求参数说明) {string} canteens|add|c_id 饭堂id
      * @apiParam (请求参数说明) {string} canteens|add|name 饭堂名称
      * @apiParam (请求参数说明) {string} canteens|cancel  取消用户管理饭堂信息，取消多个饭堂，则将用户和饭堂关系id用逗号分隔
-     * @apiParam (请求参数说明) {string} shops  管理小卖部列表
-     * @apiParam (请求参数说明) {string}  add 新增用户管理小卖部
-     * @apiParam (请求参数说明) {string} s_id 小卖部id
-     * @apiParam (请求参数说明) {string} name 小卖部名称
-     * @apiParam (请求参数说明) {string} cancel  取消用户管理小卖部信息，取消多个小卖部，则将用户和小卖部关系id用逗号分隔
      * @apiParam (请求参数说明) {string} rules  可见模块，用逗号分隔。注意，一级模块也需要上传
      * @apiSuccessExample {json} 返回样例:
      *{"msg":"ok","errorCode":0}
@@ -129,9 +127,6 @@ class Role extends BaseController
      * @apiSuccess (返回参数说明) {obj} canteen 用户管理饭堂信息
      * @apiSuccess (返回参数说明) {int} canteen|id 用户饭堂关联id：取消时需要传入该字段
      * @apiSuccess (返回参数说明) {int} canteen|name 饭堂名称
-     * @apiSuccess (返回参数说明) {obj} shop 用户管理小卖部信息
-     * @apiSuccess (返回参数说明) {int} shop|id 用户小卖部关联id：取消时需要传入该字段
-     * @apiSuccess (返回参数说明) {int} canteen|name 小卖部名称
      */
     public function roles($page = 1, $size = 10, $state = 3, $key = '', $c_name = "全部")
     {

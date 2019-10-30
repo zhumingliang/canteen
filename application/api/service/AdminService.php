@@ -26,13 +26,8 @@ class AdminService
         try {
             Db::startTrans();
             $canteens = [];
-            $shops = [];
             if (!empty($params['canteens'])) {
                 $canteens = json_decode($params['canteens'], true);
-            }
-            if (!empty($params['shops'])) {
-
-                $shops = json_decode($params['shops'], true);
             }
             //新增账户信息
             $params['parent_id'] = Token::getCurrentUid();
@@ -45,8 +40,6 @@ class AdminService
             }
             //新增角色-饭堂关联
             $this->saveAdminCS($admin_id, $canteens, 'canteen');
-            //新增角色-小卖部关联
-            $this->saveAdminCS($admin_id, $shops, 'shop');
             Db::commit();
         } catch (Exception $e) {
             Db::rollback();

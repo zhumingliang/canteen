@@ -166,13 +166,12 @@ class CompanyService
             $companies = getTree($companies, 0);
         } else if ($grade == AdminEnum::COMPANY_SUPER) {
             $companies = $this->companySuperGetCompanies();
-        } else if ($grade == AdminEnum::COMPANY_OTHER) {
-            $companies = $this->companySuperGetCompanies(false);
         } else {
             throw new AuthException();
         }
         return $companies;
     }
+
 
     public function companySuperGetCompanies($item = true)
     {
