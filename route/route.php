@@ -190,3 +190,5 @@ Route::get('api/:version/order/takeoutStatistic', 'api/:version.Takeout/statisti
 Route::get('api/:version/order/info/print', 'api/:version.Takeout/infoToPrint');
 Route::post('api/:version/order/used', 'api/:version.Takeout/used');
 
+Route::post('api/:version/waller/recharge/cash', 'api/:version.Wallet/rechargeCash');
+

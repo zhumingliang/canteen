@@ -17,28 +17,30 @@ class WalletService
         if (empty($detail)) {
             throw new ParameterException(['msg' => '充值用户信息格式错误']);
         }
-        $company_id = Token::getCurrentTokenVar('company_id');
+        $company_id = sToken::getCurrentTokenVar('company_id');
         $admin_id = Token::getCurrentUid();
-        $data = $this->prefixDetail($company_id, $admin_id, $detail, $params['money'],$params['remark']);
+        $data = $this->prefixDetail($company_id, $admin_id, $detail, $params['money'], $params['remark']);
         $cash = (new RechargeCashT())->saveAll($data);
         if (!$cash) {
             throw new SaveException();
         }
     }
 
-    private function prefixDetail($company_id, $admin_id, $detail,$money, $remark)
+    private function prefixDetail($company_id, $admin_id, $detail, $money, $remark)
     {
-        $data = [];
+        $dataList = [];
         foreach ($detail as $k => $v) {
+            $data = [];
             $data['company_id'] = $company_id;
-            $data['money'] = $v['money'];
+            $data['money'] = $money;
             $data['phone'] = $v['phone'];
             $data['card_num'] = $v['card_num'];
             $data['state'] = CommonEnum::STATE_IS_OK;
             $data['admin_id'] = $admin_id;
             $data['remark'] = $remark;
+            array_push($dataList, $data);
         }
-        return $data;
+        return $dataList;
     }
 
 }
