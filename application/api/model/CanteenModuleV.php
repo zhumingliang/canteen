@@ -16,9 +16,9 @@ class CanteenModuleV extends Model
         return $modules;
     }
 
-    public static function canteenModules($c_id)
+    public static function canteenModules($company_id)
     {
-        $modules = self::where('canteen_id', $c_id)
+        $modules = self::where('company_id', $company_id)
             ->hidden(['canteen_id', 'company_id'])
             ->select()->toArray();
         return $modules;
@@ -30,6 +30,14 @@ class CanteenModuleV extends Model
             ->where('type', ModuleEnum::MOBILE)
             ->where('parent_id', '>', 0)
             ->field('category,name,url,icon')
+            ->select()->toArray();
+        return $modules;
+    }
+
+    public static function adminModulesWithID($ids)
+    {
+        $modules = self::whereIn('c_m_id', $ids)
+            ->field('id,parent_id,type,name,url,icon')
             ->select()->toArray();
         return $modules;
     }

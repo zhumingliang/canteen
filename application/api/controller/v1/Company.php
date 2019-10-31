@@ -122,10 +122,10 @@ class Company extends BaseController
     }
 
     /**
-     * @api {GET} /api/v1/admin/companies CMS管理端--系统管理员/企业超级管理员--查看可见企业
+     * @api {GET} /api/v1/admin/companies CMS管理端--系统管理员/企业超级管理员/企业管理员--查看可见企业
      * @apiGroup  CMS
      * @apiVersion 3.0.0
-     * @apiDescription CMS管理端--系统管理员/企业超级管理员--查看可见企业
+     * @apiDescription CMS管理端--系统管理员/企业超级管理员/企业管理员--查看可见企业
      * @apiExample {get}  请求样例:
      * http://canteen.tonglingok.com/api/v1/admin/companies
      * @apiSuccessExample {json} 返回样例:

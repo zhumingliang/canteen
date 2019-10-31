@@ -16,6 +16,7 @@ use app\api\model\SystemShopModuleT;
 use app\lib\enum\AdminEnum;
 use app\lib\enum\CommonEnum;
 use app\lib\enum\ModuleEnum;
+use app\lib\exception\AuthException;
 use app\lib\exception\ParameterException;
 use app\lib\exception\SaveException;
 use app\lib\exception\UpdateException;
@@ -54,42 +55,19 @@ class ModuleService
 
     public function handelModule($params)
     {
-        $type = $params['type'];
-        $res = null;
-        if ($type == ModuleEnum::CANTEEN) {
-            $res = SystemCanteenModuleT::update($params);
-        } elseif ($type == ModuleEnum::SYSTEM) {
-            $res = SystemModuleT::update($params);
-        } elseif ($type == ModuleEnum::SHOP) {
-            $res = SystemShopModuleT::update($params);
-        }
+        $res = SystemCanteenModuleT::update($params);
         if (!$res) {
             throw new UpdateException();
         }
     }
 
-    public function systemModules($type, $tree = 1)
+    public function systemModules($tree = 1)
     {
-        $modules = array();
-        if ($type == ModuleEnum::CANTEEN) {
-            $modules = SystemCanteenModuleT::where('state', CommonEnum::STATE_IS_OK)
-                ->hidden(['update_time'])
-                ->order('create_time desc')
-                ->select()
-                ->toArray();
-        } elseif ($type == ModuleEnum::SYSTEM) {
-            $modules = SystemModuleT::where('state', CommonEnum::STATE_IS_OK)
-                ->hidden(['update_time'])
-                ->order('create_time desc')
-                ->select()
-                ->toArray();
-        } elseif ($type == ModuleEnum::SHOP) {
-            $modules = SystemShopModuleT::where('state', CommonEnum::STATE_IS_OK)
-                ->hidden(['update_time'])
-                ->order('create_time desc')
-                ->select()
-                ->toArray();
-        }
+        $modules = SystemCanteenModuleT::where('state', CommonEnum::STATE_IS_OK)
+            ->hidden(['update_time'])
+            ->order('create_time desc')
+            ->select()
+            ->toArray();
         if (!$tree) {
             return $modules;
         }
@@ -101,15 +79,7 @@ class ModuleService
     public function updateModule($params)
     {
 
-        $type = $params['type'];
-        $res = null;
-        if ($type == ModuleEnum::CANTEEN) {
-            $res = SystemCanteenModuleT::update($params);
-        } elseif ($type == ModuleEnum::SYSTEM) {
-            $res = SystemModuleT::update($params);
-        } elseif ($type == ModuleEnum::SHOP) {
-            $res = SystemShopModuleT::update($params);
-        }
+        $res = SystemCanteenModuleT::update($params);
         if (!$res) {
             throw new UpdateException();
         }
@@ -121,16 +91,24 @@ class ModuleService
         $grade = Token::getCurrentTokenVar('grade');
         if ($grade == AdminEnum::SYSTEM_SUPER) {
             $modules = $this->getSuperModules();
-            return getTree($modules);
+        } else if ($grade == AdminEnum::COMPANY_SUPER) {
+            $company_id = Token::getCurrentTokenVar('company_id');
+            $modules = CanteenModuleT::companyModules($company_id);
+        } else if ($grade == AdminEnum::COMPANY_OTHER) {
+            $admin_id = Token::getCurrentUid();
+            $modules = $this->getAdminModules($admin_id);
+
+        } else {
+            throw new AuthException();
         }
-        return array();
+        return getTree($modules);
 
 
     }
 
     private function getSuperModules()
     {
-        $modules = SystemModuleT::getSuperModules();
+        $modules = SystemCanteenModuleT::getSuperModules();
         return $modules;
 
     }
@@ -138,21 +116,6 @@ class ModuleService
     public function canteenModulesWithSystem($c_id)
     {
         return $this->canteenModules($c_id);
-        /* return [
-             'canteen' => $this->canteenModules($c_id),
-             'shop' => $this->shopModules($c_id)
-         ];*/
-
-
-    }
-
-    public function shopModulesWithSystem($s_id)
-    {
-        return $this->shopModules($s_id);
-        /* return [
-             'canteen' => $this->canteenModules($c_id),
-             'shop' => $this->shopModules($c_id)
-         ];*/
 
 
     }
@@ -160,22 +123,13 @@ class ModuleService
     private function canteenModules($c_id)
     {
         $modules = CanteenModuleV::modules($c_id);
-        $system = $this->systemModules(ModuleEnum::CANTEEN, 0);
+        $system = $this->systemModules(0);
         $modules = $this->prefixModules($modules, $system);
         $modules = getTree($modules);
         return $modules;
 
     }
 
-
-    private function shopModules($s_id)
-    {
-        $modules = ShopModuleV::modules($s_id);
-        $system = $this->systemModules(ModuleEnum::SHOP, 0);
-        $modules = $this->prefixModules($modules, $system);
-        $modules = getTree($modules);
-        return $modules;
-    }
 
     private function prefixModules($modules, $system)
     {
@@ -197,14 +151,10 @@ class ModuleService
     public function updateCompanyModule($params)
     {
         try {
-            $canteen = $params['canteen'];
-            $shop = $params['shop'];
             $company_id = $params['company_id'];
+            $canteen = $params['canteen'];
             if (strlen($canteen)) {
-                $this->updateCanteenModule($canteen);
-            }
-            if (strlen($shop)) {
-                $this->updateShopModule($company_id, $shop);
+                $this->updateCanteenModule($canteen,$company_id);
             }
             Db::commit();
         } catch (Exception $e) {
@@ -215,20 +165,17 @@ class ModuleService
 
     }
 
-    private function updateCanteenModule($canteen)
+    private function
+    updateCanteenModule($canteen,$company_id)
     {
 
         $canteen = json_decode($canteen, true);
-        if (!key_exists('c_id', $canteen)) {
-            throw  new ParameterException();
-        }
-        $c_id = $canteen['c_id'];
         if (key_exists('add_modules', $canteen) && count($canteen['add_modules'])) {
             $add_data = [];
             $add_modules = $canteen['add_modules'];
             foreach ($add_modules as $k => $v) {
                 $add_data[] = [
-                    'c_id' => $c_id,
+                    'c_id' => $company_id,
                     'state' => CommonEnum::STATE_IS_OK,
                     'm_id' => $v['m_id'],
                     'order' => $v['order']
@@ -237,7 +184,7 @@ class ModuleService
 
             $res = (new CanteenModuleT())->saveAll($add_data);
             if (!$res) {
-                throw new SaveException(['msg' => '新增饭堂模块失败']);
+                throw new SaveException(['msg' => '新增企业模块失败']);
 
             }
 
@@ -245,7 +192,7 @@ class ModuleService
 
         if (key_exists('cancel_modules', $canteen) && strlen($canteen['cancel_modules'])) {
             $cancel_modules = $canteen['cancel_modules'];
-            $res = CanteenModuleT::where('c_id', $c_id)
+            $res = CanteenModuleT::where('c_id', $company_id)
                 ->whereIn('m_id', $cancel_modules)
                 ->update(['state' => CommonEnum::STATE_IS_FAIL]);
             if (!$res) {
@@ -301,9 +248,10 @@ class ModuleService
 
     }
 
-    public function canteenModulesWithoutSystem($c_id)
+    public function canteenModulesWithoutSystem()
     {
-        $modules = CanteenModuleV::canteenModules($c_id);
+        $company_id = Token::getCurrentTokenVar('company_id');
+        $modules = CanteenModuleV::canteenModules($company_id);
         return getTree($modules);
     }
 
@@ -330,6 +278,15 @@ class ModuleService
 
     }
 
+    public function getAdminModules($admin_id)
+    {
+        $adminModules = AdminCanteenT::where('admin_id', $admin_id)->find();
+        $rules = $adminModules->rules;
+        $modules = CanteenModuleV::adminModulesWithID($rules);
+        return $modules;
+
+    }
+
     private function companyNormalMobileModules($company_id)
     {
         $modules = CanteenModuleV::companyNormalMobileModules($company_id);
@@ -338,18 +295,12 @@ class ModuleService
 
     public function handelModuleDefaultStatus($params)
     {
-        $type = $params['type'];
         $modules = $params['modules'];
         $modules = json_decode($modules, true);
         if (empty($modules)) {
             throw new ParameterException();
         }
-        $res = false;
-        if ($type == ModuleEnum::CANTEEN) {
-            $res = (new SystemCanteenModuleT())->saveAll($modules);
-        } else if ($type == ModuleEnum::SHOP) {
-            $res = (new SystemShopModuleT())->saveAll($modules);
-        }
+        $res = (new SystemCanteenModuleT())->saveAll($modules);
         if (!$res) {
             throw new UpdateException();
         }

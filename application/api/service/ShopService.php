@@ -309,7 +309,7 @@ class ShopService
             throw new  SaveException(['msg' => '余额不足，请先充值']);
         }
         $params['u_id'] = $u_id;
-        $params['money'] = $money;
+        $params['money'] = $money * $params['count'];
         $params['pay_way'] = $payCheck;
         $params['pay'] = CommonEnum::STATE_IS_OK;
         $params['order_num'] = makeOrderNo();

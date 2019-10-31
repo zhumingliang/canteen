@@ -19,5 +19,14 @@ class SystemCanteenModuleT extends Model
 
     }
 
+    public static function getSuperModules()
+    {
+        $modules = self::where('state', CommonEnum::STATE_IS_OK)
+            ->field('id,type,name,parent_id,url')
+            ->select();
+        return $modules;
+
+    }
+
 
 }

@@ -167,6 +167,8 @@ class CompanyService
             $companies = getTree($companies, 0);
         } else if ($grade == AdminEnum::COMPANY_SUPER) {
             $companies = $this->companySuperGetCompanies();
+        } else if ($grade == AdminEnum::COMPANY_OTHER) {
+            $companies = CompanyT::getCompanyWitID(Token::getCurrentTokenVar('company_id'));
         } else {
             throw new AuthException();
         }
