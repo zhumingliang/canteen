@@ -17,13 +17,45 @@ class WalletService
         if (empty($detail)) {
             throw new ParameterException(['msg' => '充值用户信息格式错误']);
         }
-        $company_id = sToken::getCurrentTokenVar('company_id');
+        $company_id = Token::getCurrentTokenVar('company_id');
         $admin_id = Token::getCurrentUid();
         $data = $this->prefixDetail($company_id, $admin_id, $detail, $params['money'], $params['remark']);
         $cash = (new RechargeCashT())->saveAll($data);
         if (!$cash) {
             throw new SaveException();
         }
+    }
+
+    public function rechargeCashUpload($cash_excel)
+    {
+        $company_id = Token::getCurrentTokenVar('company_id');
+        $admin_id = Token::getCurrentUid();
+        $data = (new ExcelService())->saveExcel($cash_excel);
+        $dataList = $this->prefixUploadData($company_id, $admin_id, $data);
+        $cash = (new RechargeCashT())->saveAll($dataList);
+        if (!$cash) {
+            throw new SaveException();
+        }
+    }
+
+    private function prefixUploadData($company_id, $admin_id, $data)
+    {
+        $dataList = [];
+        foreach ($data as $k => $v) {
+            if ($k == 1) {
+                continue;
+            }
+            array_push($dataList, [
+                'admin_id' => $admin_id,
+                'company_id' => $company_id,
+                'phone' => $v[0],
+                'card_num' => $v[1],
+                'money' => $v[2],
+                'remark' => $v[3]
+            ]);
+        }
+        return $dataList;
+
     }
 
     private function prefixDetail($company_id, $admin_id, $detail, $money, $remark)
