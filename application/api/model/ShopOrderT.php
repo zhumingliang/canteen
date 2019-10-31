@@ -31,7 +31,7 @@ class ShopOrderT extends Model
                     $query->field('id,province,city,area,address,name,phone,sex');
                 }
             ])
-            ->field('id,distribution as order_type,u_id,count,"shop" as ordering_type,address_id,state')
+            ->field('id,distribution as order_type,u_id,count,"shop" as ordering_type,address_id,state,used')
             ->find();
         return $order;
     }

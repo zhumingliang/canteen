@@ -469,4 +469,19 @@ class DepartmentService
         return $departments;
     }
 
+    public function departmentsForRecharge()
+    {
+        $company_id = Token::getCurrentTokenVar('company_id');
+        $departments = CompanyDepartmentT::adminDepartments($company_id);
+        return $departments;
+    }
+
+    public function staffsForRecharge($page, $size, $department_id, $key)
+    {
+        $company_id = Token::getCurrentTokenVar('company_id');
+        $staffs = CompanyStaffV:: staffsForRecharge($page, $size, $department_id, $key,$company_id);
+        return $staffs;
+    }
+
+
 }

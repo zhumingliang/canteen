@@ -399,4 +399,57 @@ class Department extends BaseController
         $staffs = (new DepartmentService())->departmentStaffs($department_id);
         return json(new SuccessMessageWithData(['data' => $staffs]));
     }
+
+    /**
+     * @api {GET} /api/v1/departments/recharge CMS管理端-充值管理-获取用户可以查看部门列表
+     * @apiGroup  Official
+     * @apiVersion 3.0.0
+     * @apiDescription CMS管理端-充值管理-获取用户可以查看部门列表
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/departments/recharge
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":[{"id":3,"name":"董事会-修改"},{"id":4,"name":"A部门"},{"id":5,"name":"B部门"},{"id":6,"name":"A1部门"},{"id":7,"name":"A2部门"},{"id":8,"name":"B1部门"},{"id":9,"name":"B2部门"}]}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     * @apiSuccess (返回参数说明) {int} id 部门id
+     * @apiSuccess (返回参数说明) {String} name  部门名称
+     */
+    public function departmentsForRecharge()
+    {
+        $departments = (new DepartmentService())->departmentsForRecharge();
+        return json(new SuccessMessageWithData(['data' => $departments]));
+
+    }
+
+    /**
+     * @api {GET} /api/v1/department/staffs/recharge CMS管理端-充值管理--企业员工列表
+     * @apiGroup  CMS
+     * @apiVersion 3.0.0
+     * @apiDescription CMS管理端-充值管理--企业员工列表
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/department/staffs/recharge?page=1&size=10&department_id=4&key=
+     * @apiParam (请求参数说明) {int} page 当前页码
+     * @apiParam (请求参数说明) {int} size 每页多少条数据
+     * @apiParam (请求参数说明) {int} department_id 部门id 全部传0
+     * @apiParam (请求参数说明) {int} key 关键字查询
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"total":6,"per_page":20,"current_page":1,"last_page":1,"data":[{"id":364,"company":"一级企业","department":"董事会-修改","code":"0080808","username":"黄工","phone":"13411111111"},{"id":363,"company":"一级企业","department":"董事会-修改","code":"1014112221","username":"陈3","phone":"13452151123"},{"id":362,"company":"一级企业","department":"董事会-修改","code":"1014112","username":"陈2","phone":"13452151123"},{"id":361,"company":"一级企业","department":"董事会-修改","code":"10110","username":"陈工","phone":"13411201101"},{"id":360,"company":"一级企业","department":"董事会-修改","code":"10110","username":"陈同学","phone":"13725305169"},{"id":359,"company":"一级企业","department":"董事会-修改","code":"011001","username":"rush","phone":"13725305169"}]}}
+     * @apiSuccess (返回参数说明) {int} total 数据总数
+     * @apiSuccess (返回参数说明) {int} per_page 每页多少条数据
+     * @apiSuccess (返回参数说明) {int} current_page 当前页码
+     * @apiSuccess (返回参数说明) {int} last_page 最后页码
+     * @apiSuccess (返回参数说明) {int} id 员工id
+     * @apiSuccess (返回参数说明) {string} company 所属企业
+     * @apiSuccess (返回参数说明) {string} department 所属部门
+     * @apiSuccess (返回参数说明) {string} code 员工编号
+     * @apiSuccess (返回参数说明) {string} card_num 员工卡号
+     * @apiSuccess (返回参数说明) {string} username 姓名
+     * @apiSuccess (返回参数说明) {string} phone 手机号
+     */
+    public function staffsForRecharge($page = 1, $size = 20, $department_id = 0, $key = '')
+    {
+        $staffs = (new DepartmentService())->staffsForRecharge($page, $size, $department_id, $key);
+        return json(new SuccessMessageWithData(['data' => $staffs]));
+
+    }
 }

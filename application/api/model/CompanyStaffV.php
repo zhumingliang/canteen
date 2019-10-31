@@ -51,4 +51,24 @@ class CompanyStaffV extends BaseModel
             ->select();
         return $canteens;
     }
+
+    public static function staffsForRecharge($page, $size, $department_id, $key, $company_id)
+    {
+        $list = self::where('company_id', '=', $company_id)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->where(function ($query) use ($department_id) {
+                if ($department_id) {
+                    $query->where('d_id', '=', $department_id);
+                }
+            })
+            ->where(function ($query) use ($key) {
+                if ($key) {
+                    $query->where('username|phone|code', 'like', "%" . $key . "%");
+                }
+            })
+            ->field('id,company,department,code,card_num,username,phone')
+            ->order('create_time desc')
+            ->paginate($size, false, ['page' => $page]);
+        return $list;
+    }
 }
