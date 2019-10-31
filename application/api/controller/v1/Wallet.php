@@ -60,4 +60,5 @@ class Wallet extends BaseController
         return json(new SuccessMessage());
     }
 
+
 }

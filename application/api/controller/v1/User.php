@@ -100,14 +100,14 @@ class User extends BaseController
      * @apiSuccess (返回参数说明) {int} c_id 饭堂id
      * @apiSuccess (返回参数说明) {obj} name  饭堂名称
      * @apiSuccess (返回参数说明) {obj} dinner 餐次信息
-     * @apiSuccess (返回参数说明) {int} dinner|id 餐次id
-     * @apiSuccess (返回参数说明) {int} dinner|name 餐次名称
-     * @apiSuccess (返回参数说明) {obj} dinner|menus 餐次菜单设置信息
-     * @apiSuccess (返回参数说明) {int} dinner|menus|id 餐次菜单设置id
-     * @apiSuccess (返回参数说明) {int} dinner|menus|d_id 餐次id
-     * @apiSuccess (返回参数说明) {string} dinner|menus|category 分类信息
-     * @apiSuccess (返回参数说明) {string} dinner|menus|status 1|固定；2|动态
-     * @apiSuccess (返回参数说明) {string} dinner|menus|count 可选菜品数量
+     * @apiSuccess (返回参数说明) {int} id 餐次id
+     * @apiSuccess (返回参数说明) {int} name 餐次名称
+     * @apiSuccess (返回参数说明) {obj} menus 餐次菜单设置信息
+     * @apiSuccess (返回参数说明) {int} id 餐次菜单设置id
+     * @apiSuccess (返回参数说明) {int} d_id 餐次id
+     * @apiSuccess (返回参数说明) {string} category 分类信息
+     * @apiSuccess (返回参数说明) {string} status 1|固定；2|动态
+     * @apiSuccess (返回参数说明) {string} count 可选菜品数量
      */
     public function userCanteenMenus()
     {

@@ -280,4 +280,5 @@ class Role extends BaseController
         (new AdminService())->updatePasswd($params);
         return json(new SuccessMessage());
     }
+
 }

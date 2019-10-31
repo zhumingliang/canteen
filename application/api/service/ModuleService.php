@@ -136,7 +136,7 @@ class ModuleService
         foreach ($system as $k => $v) {
             $system[$k]['have'] = CommonEnum::STATE_IS_FAIL;
             foreach ($modules as $k2 => $v2) {
-                if ($v2['id'] == $v['id']) {
+                if ($v2['m_id'] == $v['id']) {
                     $system[$k]['have'] = CommonEnum::STATE_IS_OK;
                     unset($modules[$k2]);
                     continue;
@@ -154,7 +154,7 @@ class ModuleService
             $company_id = $params['company_id'];
             $canteen = $params['canteen'];
             if (strlen($canteen)) {
-                $this->updateCanteenModule($canteen,$company_id);
+                $this->updateCanteenModule($canteen, $company_id);
             }
             Db::commit();
         } catch (Exception $e) {
@@ -166,7 +166,7 @@ class ModuleService
     }
 
     private function
-    updateCanteenModule($canteen,$company_id)
+    updateCanteenModule($canteen, $company_id)
     {
 
         $canteen = json_decode($canteen, true);
