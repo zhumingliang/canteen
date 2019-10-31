@@ -162,10 +162,10 @@ class Module extends BaseController
      * @apiExample {get}  请求样例:
      * http://canteen.tonglingok.com/api/v1/modules/admin
      * @apiSuccessExample {json} 系统功能模块返回样例:
-     * {"msg":"ok","errorCode":0,"code":200,"data":[{"id":1,"name":"配置管理","url":"module\/system","state":1,"create_time":"2019-07-26 00:04:25","update_time":"2019-07-26 00:04:25","parent_id":0,"items":[{"id":2,"name":"企业管理","url":"module\/system","state":1,"create_time":"2019-07-26 00:05:43","update_time":"2019-07-26 00:05:43","parent_id":1},{"id":3,"name":"企业明细","url":"module\/system","state":1,"create_time":"2019-07-26 00:05:53","update_time":"2019-07-26 00:05:53","parent_id":1}]}]}
+     * {"msg":"ok","errorCode":0,"code":200,"data":[{"m_id":1,"name":"配置管理","url":"module\/system","state":1,"create_time":"2019-07-26 00:04:25","update_time":"2019-07-26 00:04:25","parent_id":0,"items":[{"m_id":2,"name":"企业管理","url":"module\/system","state":1,"create_time":"2019-07-26 00:05:43","update_time":"2019-07-26 00:05:43","parent_id":1},{"m_id":3,"name":"企业明细","url":"module\/system","state":1,"create_time":"2019-07-26 00:05:53","update_time":"2019-07-26 00:05:53","parent_id":1}]}]}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
      * @apiSuccess (返回参数说明) {String} msg 信息描述
-     * @apiSuccess (返回参数说明) {int} id 模块id
+     * @apiSuccess (返回参数说明) {int} m_id 模块id
      * @apiSuccess (返回参数说明) {string} url 模块路由
      * @apiSuccess (返回参数说明) {string} create_time 创建时间
      * @apiSuccess (返回参数说明) {string} parent_id 上级id；0表示顶级
