@@ -26,6 +26,11 @@ class AdminT extends Model
 
     }
 
+    public function rule()
+    {
+        return $this->hasOne('AdminModuleT', 'admin_id', 'id');
+    }
+
     public static function roles($page, $size, $state, $key, $c_name)
     {
         $list = self::with([

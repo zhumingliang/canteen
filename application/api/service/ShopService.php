@@ -318,6 +318,7 @@ class ShopService
         // $current_canteen_id = Token::getCurrentTokenVar('current_canteen_id');
         $current_company_id = Token::getCurrentTokenVar('current_company_id');
         $staff = (new UserService())->getUserCompanyInfo($phone, $current_company_id);
+        $params['staff_id'] = $staff->id;
         $params['staff_type_id'] = $staff->t_id;
         $params['department_id'] = $staff->d_id;
         $params['company_id'] = $current_company_id;

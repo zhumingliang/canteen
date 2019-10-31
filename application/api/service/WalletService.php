@@ -5,6 +5,8 @@ namespace app\api\service;
 
 
 use app\api\model\RechargeCashT;
+use app\api\model\RechargeV;
+use app\api\model\UserBalanceV;
 use app\lib\enum\CommonEnum;
 use app\lib\exception\ParameterException;
 use app\lib\exception\SaveException;
@@ -73,6 +75,23 @@ class WalletService
             array_push($dataList, $data);
         }
         return $dataList;
+    }
+
+    public function rechargeRecords($time_begin, $time_end,
+                                    $page, $size, $type, $admin_id, $username)
+    {
+        $company_id = Token::getCurrentTokenVar('company_id');
+        $records = RechargeV::rechargeRecords($time_begin, $time_end,
+            $page, $size, $type, $admin_id, $username, $company_id);
+        return $records;
+
+    }
+
+    public function usersBalance($page, $size, $department_id, $user, $phone)
+    {
+        $company_id = Token::getCurrentTokenVar('company_id');
+        $users = UserBalanceV::usersBalance($page, $size, $department_id, $user, $phone, $company_id);
+        return $users;
     }
 
 }

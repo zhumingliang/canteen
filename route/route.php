@@ -192,4 +192,7 @@ Route::post('api/:version/order/used', 'api/:version.Takeout/used');
 
 Route::post('api/:version/wallet/recharge/cash', 'api/:version.Wallet/rechargeCash');
 Route::post('api/:version/wallet/recharge/upload', 'api/:version.Wallet/rechargeCashUpload');
+Route::get('api/:version/wallet/recharge/admins', 'api/:version.Wallet/rechargeAdmins');
+Route::get('api/:version/wallet/recharges', 'api/:version.Wallet/rechargeRecords');
+Route::get('api/:version/wallet/users/balance', 'api/:version.Wallet/usersBalance');
 

@@ -306,4 +306,17 @@ class ModuleService
         }
 
     }
+
+    public function getModuleCompanyID($company_id, $module_id)
+    {
+        $module = CanteenModuleT::where('c_id', $company_id)
+            ->where('m_id', $module_id)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->find();
+        if (empty($module)) {
+            throw  new ParameterException(['msg' => '模块状态异常']);
+        }
+        return $module->id;
+
+    }
 }

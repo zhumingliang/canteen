@@ -231,5 +231,38 @@ class AdminService
         }
     }
 
+    public function rechargeAdmins($module_id)
+    {
+        $company_id = Token::getCurrentTokenVar('company_id');
+        //获取模块对应企业中关联id
+        $module_company_id = (new ModuleService())->getModuleCompanyID($company_id, $module_id);
+        //获取该企业下所有管理员
+        $admins = AdminT::where('c_id', $company_id)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->with(['rule'])
+            ->field('id,role')
+            ->select()->toArray();
+        if (empty($admins)) {
+            return $admins;
+        }
+        $admin = [];
+        foreach ($admins as $k => $v) {
+            if (!empty($v['rule']) && !empty($v['rule']['rules'])) {
+                $rules = explode(',', $v['rule']['rules']);
+                if (in_array($module_company_id, $rules)) {
+                    array_push($admin, [
+                        'id' => $v['id'],
+                        'role' => $v['role']
+                    ]);
+
+                }
+
+            }
+
+        }
+
+        return $admin;
+    }
+
 
 }
