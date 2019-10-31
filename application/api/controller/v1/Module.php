@@ -258,7 +258,7 @@ class Module extends BaseController
      * @apiDescription  CMS管理端-获取企业饭堂模块功能模块:包括系统模块
      * @apiExample {get}  请求样例:
      * http://canteen.tonglingok.com/api/v1/modules/canteen/withSystem?c_id=2
-     * @apiParam (请求参数说明) {int} c_id  饭堂id
+     * @apiParam (请求参数说明) {int} c_id  企业id
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200,"data":[{"id":1,"name":"设置","type":1,"default":1,"state":1,"create_time":"2019-07-26 00:09:41","url":"module\/system","icon":"http:\/\/icon.com","parent_id":0,"have":1,"items":[{"id":2,"name":"小卖部","type":2,"default":1,"state":1,"create_time":"2019-07-26 00:10:48","url":"module\/system","icon":"http:\/\/icon.com","parent_id":1,"have":1}]}]}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误

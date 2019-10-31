@@ -34,9 +34,9 @@ class CompanyService
             $c_id = $company->id;
             //新增默认饭堂
             (new CanteenService())->saveDefault($c_id, CanteenEnum::DEFAULT_NAME);
-            //新增默认小卖部
-            // (new ShopService())->save($c_id);
             //新增默认企业超级管理员账号
+            //新增企业默认功能模块
+            (new CanteenService())->saveDefaultCanteen($c_id);
             $account = $c_id . '-' . AdminEnum::DEFAULT_ACCOUNT;
             $admin_id = (new AdminService())->save($account, AdminEnum::DEFAULT_PASSWD,
                 '企业系统管理员',
@@ -53,6 +53,7 @@ class CompanyService
         }
 
     }
+
 
     private function getParentCompany($c_id)
     {

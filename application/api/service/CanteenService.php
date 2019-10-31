@@ -39,18 +39,7 @@ class CanteenService
         try {
             Db::startTrans();
             $c_id = $params['c_id'];
-            $canteens = $params['canteens'];
-            /*  Db::startTrans();
-              $canteens = $params['canteens'];
-              $canteens = json_decode($canteens, true);
-              $c_id = $params['c_id'];
-              foreach ($canteens as $K => $v) {
-                  $id = $this->saveDefault($c_id, $v);
-                  if (!$id) {
-                      throw new SaveException();
-                      break;
-                  }
-              }*/
+            $canteens = $params['canteens'];   //新增饭堂默认功能模块
             $id = $this->saveDefault($c_id, $canteens);
             Db::commit();
             return $id;
@@ -72,13 +61,11 @@ class CanteenService
         if (!$canteen) {
             throw new SaveException();
         }
-        //新增饭堂默认功能模块
-        $this->saveDefaultCanteen($canteen->id);
         return $canteen->id;
 
     }
 
-    private function saveDefaultCanteen($c_id)
+    public function saveDefaultCanteen($c_id)
     {
         $modules = SystemCanteenModuleT::defaultModules();
         $data = array();
