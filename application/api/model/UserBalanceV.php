@@ -26,10 +26,17 @@ class UserBalanceV extends Model
                     $query->where('username|code|card_num', 'like', '%' . $user . '%');
                 }
             })
-           ->field('username,code,card_num,phone,department,sum(money) as balance')
+            ->field('username,code,card_num,phone,department,sum(money) as balance')
             ->group('phone,company_id')
             ->paginate($size, false, ['page' => $page]);
         return $orderings;
     }
 
+    public static function userBalance($company_id, $phone)
+    {
+        $balance = self::where('phone', $phone)
+            ->where('company_id', $company_id)
+            ->sum('money');
+        return $balance;
+    }
 }

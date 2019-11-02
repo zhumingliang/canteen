@@ -190,7 +190,7 @@ class FoodService extends BaseService
                 'user_id' => Token::getCurrentUid()
             ];
             if (!empty($params['status'])) {
-                $data['v'] = $params['status'];
+                $data['status'] = $params['status'];
             }
             if (!empty($params['default'])) {
                 $data['default'] = $params['default'];

@@ -69,7 +69,7 @@ class Wallet extends BaseController
      * @apiDescription CMS管理端-充值管理-充值记录明细-充值人员列表
      * @apiExample {get}  请求样例:
      * http://canteen.tonglingok.com/api/v1/wallet/recharge/admins?&module_id=1
-     * @apiParam (请求参数说明) {int} page 模块id
+     * @apiParam (请求参数说明) {int} module_id 模块id
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200,"data":[{"id":7,"role":"饭堂管理员2"}]}
      * @apiSuccess (返回参数说明) {int} total 数据总数
@@ -153,6 +153,11 @@ class Wallet extends BaseController
     {
         $users = (new WalletService())->usersBalance($page, $size, $department_id, $user, $phone);
         return json(new SuccessMessageWithData(['data' => $users]));
+
+    }
+
+    public function clearBalance()
+    {
 
     }
 }
