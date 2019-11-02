@@ -34,8 +34,8 @@ class AdminT extends Model
     public static function roles($page, $size, $state, $key, $c_name)
     {
         $list = self::with([
-            'canteen' => function ($query) use ($key) {
-                $query->field('id,admin_id,name');
+            'canteen' => function ($query) {
+                $query->field('id,admin_id,role as name');
             }
         ])
             ->where(function ($query) use ($key) {

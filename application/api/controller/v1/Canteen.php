@@ -467,17 +467,13 @@ class Canteen extends BaseController
      * http://canteen.tonglingok.com/api/v1/canteens/company?company_id=3
      * @apiParam (请求参数说明) {int} company_id  企业id
      * @apiSuccessExample {json} 返回样例:
-     * {"msg":"ok","errorCode":0,"code":200,"data":{"staffs":331,"canteens":[{"id":6,"c_id":3,"name":"饭堂1","modules":[{"id":1,"canteen_id":6,"parent_id":0,"type":1,"name":"设置"},{"id":2,"canteen_id":6,"parent_id":1,"type":2,"name":"小卖部"}]},{"id":7,"c_id":3,"name":"饭堂2","modules":[{"id":2,"canteen_id":7,"parent_id":1,"type":2,"name":"小卖部"},{"id":1,"canteen_id":7,"parent_id":0,"type":1,"name":"设置"}]},{"id":17,"c_id":3,"name":"newCanteen","modules":[{"id":2,"canteen_id":17,"parent_id":1,"type":2,"name":"小卖部"},{"id":1,"canteen_id":17,"parent_id":0,"type":1,"name":"设置"}]}]}}
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"staffs":331,"canteens":[{"id":6,"c_id":3,"name":"饭堂1"},{"id":7,"c_id":3,"name":"饭堂2"},{"id":17,"c_id":3,"name":"newCanteen"},{"id":41,"c_id":3,"name":"开饭啦"}]}}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
-     * @apiSuccess (返回参数说明) {String} msg 信息描述
+     * @apiSuccess (返回参数说明) {String} msg 信息描述id
      * @apiSuccess (返回参数说明) {int} staffs  企业人数
      * @apiSuccess (返回参数说明) {obj} canteens  饭堂信息
+     * @apiSuccess (返回参数说明) {string} id  饭堂
      * @apiSuccess (返回参数说明) {string} name  饭堂名称
-     * @apiSuccess (返回参数说明) {obj} modules  饭堂模块信息
-     * @apiSuccess (返回参数说明) {int} id 模块id
-     * @apiSuccess (返回参数说明) {string} name  模块名称
-     * @apiSuccess (返回参数说明) {string} parent_id  模块上级id
-     * @apiSuccess (返回参数说明) {int} type  模块类别：1|pc端；2|小卖部
      */
     public function getCanteensForCompany()
     {

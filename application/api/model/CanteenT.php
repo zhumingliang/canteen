@@ -72,12 +72,6 @@ class CanteenT extends Model
     public static function getCanteensForCompany($company_id)
     {
         $canteens = self::where('c_id', $company_id)
-            ->with([
-                'modules' => function ($query) {
-                    $query->field('id,canteen_id,parent_id,type,name')
-                        ->order('order');
-                }
-            ])
             ->field('id,c_id,name')
             ->select()->toArray();
         return $canteens;

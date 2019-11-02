@@ -412,7 +412,7 @@ class CanteenService
     }
 
     /**
-     * 获取企业下所有饭堂信息和饭堂模块信息/设备信息
+     * 获取企业下所有饭堂信息
      */
     public function getCanteensForCompany($company_id)
     {
