@@ -16,7 +16,7 @@ class AdminT extends Model
 
     public function canteen()
     {
-        return $this->hasMany('AdminCanteenT', 'admin_id', 'id');
+        return $this->hasMany('AdminCanteenV', 'admin_id', 'id');
 
     }
 
@@ -35,7 +35,7 @@ class AdminT extends Model
     {
         $list = self::with([
             'canteen' => function ($query) {
-                $query->field('id,admin_id,role as name');
+                $query->field('id,admin_id,canteen_name');
             }
         ])
             ->where(function ($query) use ($key) {
