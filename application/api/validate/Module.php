@@ -26,9 +26,10 @@ class Module extends BaseValidate
         'saveSystemShop' => ['name', 'url', 'parent_id', 'type', 'default'],
         'modules' => ['type'],
         'handelSystem' => ['id', 'state'],
-        'updateModule' => ['id', ],
+        'updateModule' => ['id'],
         'canteenModule' => ['c_id'],
         'updateCompanyModule' => ['company_id','canteen'],
+        'canteenModulesWithoutSystem' => ['company_id'],
         'handelModuleDefaultStatus' => ['modules']
     ];
 

@@ -248,9 +248,9 @@ class ModuleService
 
     }
 
-    public function canteenModulesWithoutSystem()
+    public function canteenModulesWithoutSystem($company_id)
     {
-        $company_id = Token::getCurrentTokenVar('company_id');
+        //$company_id = Token::getCurrentTokenVar('company_id');
         $modules = CanteenModuleV::canteenModules($company_id);
         return getTree($modules);
     }

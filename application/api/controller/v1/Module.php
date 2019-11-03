@@ -241,7 +241,8 @@ class Module extends BaseController
      * @apiVersion 3.0.0
      * @apiDescription  CMS管理端-获取企业模块功能模块，用于新增角色时，给角色赋予权限
      * @apiExample {get}  请求样例:
-     * http://canteen.tonglingok.com/api/v1/modules/canteen/withoutSystem
+     * http://canteen.tonglingok.com/api/v1/modules/canteen/withoutSystem?company_id=3
+     * @apiParam (请求参数说明) {int} company_id  企业id
      * {"msg":"ok","errorCode":0,"code":200,"data":[{"c_m_id":15,"id":1,"category":1,"type":1,"name":"设置","url":"module\/system","icon":"http:\/\/icon.com","parent_id":0,"create_time":"2019-07-26 00:09:41","items":[{"c_m_id":16,"id":2,"category":1,"type":2,"name":"小卖部","url":"module\/system","icon":"http:\/\/icon.com","parent_id":1,"create_time":"2019-07-26 00:10:48"}]}]}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
      * @apiSuccess (返回参数说明) {String} msg 信息描述
@@ -258,7 +259,8 @@ class Module extends BaseController
      */
     public function canteenModulesWithoutSystem()
     {
-        $modules = (new ModuleService())->canteenModulesWithoutSystem();
+        $company_id = Request::param('company_id');
+        $modules = (new ModuleService())->canteenModulesWithoutSystem($company_id);
         return json(new SuccessMessageWithData(['data' => $modules]));
     }
 
