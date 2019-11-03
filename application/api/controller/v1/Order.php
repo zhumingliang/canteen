@@ -34,6 +34,7 @@ class Order extends BaseController
      *       "dinner": "早餐",
      *       "type": 1,
      *       "count": 1,
+     *       "address_id": 1,
      *       "detail":[{"menu_id":1,"foods":[{"food_id":1,"name":"商品1","price":5,""count":1},{"food_id":2,"name":"商品1","price":5,"count":1}]}]
      *     }
      * @apiParam (请求参数说明) {string} ordering_date  订餐日期
@@ -41,6 +42,7 @@ class Order extends BaseController
      * @apiParam (请求参数说明) {int} dinner 餐次名称
      * @apiParam (请求参数说明) {int} type 就餐类别：1|食堂；2|外卖
      * @apiParam (请求参数说明) {int} count 订餐数量
+     * @apiParam (请求参数说明) {int} address_id 配送地址id
      * @apiParam (请求参数说明) {obj} detail 订餐菜品明细
      * @apiParam (请求参数说明) {string} detail|menu_id 菜品类别id
      * @apiParam (请求参数说明) {obj} detail|foods 菜品明细
@@ -105,6 +107,7 @@ class Order extends BaseController
      * @apiSuccess (返回参数说明) {String} msg 信息描述
      * @apiSuccess (返回参数说明) {int} id  餐次id
      * @apiSuccess (返回参数说明) {string} name  餐次名称
+     * @apiSuccess (返回参数说明) {string} fixed  餐次金额是否为采用标准金额
      * @apiSuccess (返回参数说明) {string} type  时间设置类别：day|week 1、前n天是填写数字，说明每天的餐需要提前一个天数来订餐2、周，是只能填写周一到周日，说明一周的订餐规定需要在每周某天进行下周一整周的订餐
      * @apiSuccess (返回参数说明) {int} type_number 订餐时间类别对应数量（week：0-6；周日-周六）
      * @apiSuccess (返回参数说明) {string} limit_time  订餐限制时间

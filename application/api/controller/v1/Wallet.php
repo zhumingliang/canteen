@@ -156,8 +156,27 @@ class Wallet extends BaseController
 
     }
 
+    /**
+     * @api {POST} /api/v1/wallet/clearBalance CMS管理端--充值管理--饭卡余额查询-一键清零
+     * @apiGroup   CMS
+     * @apiVersion 3.0.0
+     * @apiDescription    CMS管理端--充值管理--饭卡余额查询-一键清零（企业管理员才有权限）
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     */
     public function clearBalance()
     {
+        (new WalletService())->clearBalance();
+        return json(new SuccessMessage());
 
+    }
+
+    public function rechargeSupplement()
+    {
+        $params = Request::param();
+        (new WalletService())->rechargeSupplement($params);
+        return json(new SuccessMessage());
     }
 }

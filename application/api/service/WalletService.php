@@ -8,8 +8,10 @@ use app\api\model\RechargeCashT;
 use app\api\model\RechargeV;
 use app\api\model\UserBalanceV;
 use app\lib\enum\CommonEnum;
+use app\lib\exception\AuthException;
 use app\lib\exception\ParameterException;
 use app\lib\exception\SaveException;
+use think\Db;
 
 class WalletService
 {
@@ -98,6 +100,30 @@ class WalletService
     {
         $balance = UserBalanceV::userBalance($company_id, $phone);
         return $balance;
+
+    }
+
+    public function clearBalance()
+    {
+        $grade = Token::getCurrentTokenVar('grade');
+        if ($grade != 2) {
+            throw new AuthException();
+        }
+        $company_id = Token::getCurrentTokenVar('company_id');
+        if (empty($company_id)) {
+            throw  new AuthException(['msg' => '账户异常']);
+        }
+        $admin_id = Token::getCurrentUid();
+        //调用存储过程，将账户清0
+        $resultSet = Db::query('call clear_money(:in_companyId,:in_adminID)', [
+            'in_companyId' => $company_id,
+            'in_adminID' => $admin_id
+        ]);
+    }
+
+    public function rechargeSupplement($params)
+    {
+
 
     }
 
