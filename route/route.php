@@ -59,6 +59,7 @@ Route::get('api/:version/machines/company', 'api/:version.Canteen/companyMachine
 Route::get('api/:version/machines', 'api/:version.Canteen/machines');
 
 Route::get('api/:version/roles', 'api/:version.Role/roles');
+Route::get('api/:version/role', 'api/:version.Role/role');
 Route::post('api/:version/role/save', 'api/:version.Role/save');
 Route::post('api/:version/role/update', 'api/:version.Role/update');
 Route::post('api/:version/role/passwd/update', 'api/:version.Role/updatePasswd');

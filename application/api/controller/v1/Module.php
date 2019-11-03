@@ -293,7 +293,6 @@ class Module extends BaseController
         return json(new SuccessMessage());
     }
 
-
     /**
      * @api {GET} /api/v1/modules/user  微信端-获取当前用户在微信端可见模块
      * @apiGroup  Official

@@ -8,6 +8,7 @@ use app\api\model\AdminCanteenT;
 use app\api\model\AdminModuleT;
 use app\api\model\AdminShopT;
 use app\api\model\AdminT;
+use app\api\model\CanteenModuleV;
 use app\api\model\StaffTypeT;
 use app\lib\enum\AdminEnum;
 use app\lib\enum\CommonEnum;
@@ -262,6 +263,24 @@ class AdminService
         }
 
         return $admin;
+    }
+
+    public function role($id)
+    {
+        $role = AdminT::admin($id);
+        $adminModules = AdminModuleT::where('admin_id', $role['id'])->field('rules')->find();
+        //获取企业所有模块
+        $modules = CanteenModuleV::modules($role['c_id']);
+        $adminModulesArr = explode(',', $adminModules['rules']);
+        foreach ($modules as $k => $v) {
+            $modules[$k]['have'] = CommonEnum::STATE_IS_FAIL;
+            if (in_array($v['c_m_id'], $adminModulesArr)) {
+                $modules[$k]['have'] = CommonEnum::STATE_IS_OK;
+            }
+
+        }
+        $role['modules'] = getTree($modules);
+        return $role;
     }
 
 

@@ -281,4 +281,36 @@ class Role extends BaseController
         return json(new SuccessMessage());
     }
 
+    /**
+     *  * @api {GET} /api/v1/role CMS管理端-设置-角色模块设置-获取角色信息
+     * @apiGroup  CMS
+     * @apiVersion 3.0.0
+     * @apiDescription CMS管理端-设置-角色模块设置-获取角色信息
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/role?id=10
+     * @apiParam (请求参数说明) {int} id 角色id
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"id":10,"role":"企业系统管理员","remark":"","c_id":10,"modules":[{"c_m_id":133,"company_id":10,"id":10,"m_id":10,"category":1,"type":1,"name":"订单管理","url":"Order","icon":"","parent_id":0,"create_time":"2019-10-31 13:48:28","order":6,"have":2,"items":[{"c_m_id":128,"company_id":10,"id":11,"m_id":11,"category":1,"type":1,"name":"订餐明细","url":"OrderStatistics","icon":"","parent_id":10,"create_time":"2019-10-31 13:57:03","order":1,"have":2},{"c_m_id":129,"company_id":10,"id":22,"m_id":22,"category":1,"type":1,"name":"订餐统计","url":"statistics","icon":"","parent_id":10,"create_time":"2019-11-01 13:53:01","order":2,"have":2}]},{"c_m_id":134,"company_id":10,"id":14,"m_id":14,"category":1,"type":1,"name":"充值管理","url":"chargeManage","icon":"","parent_id":0,"create_time":"2019-10-31 14:01:34","order":7,"have":2,"items":[{"c_m_id":130,"company_id":10,"id":21,"m_id":21,"category":1,"type":1,"name":"饭卡余额查询","url":"reamain","icon":"","parent_id":14,"create_time":"2019-11-01 13:52:37","order":3,"have":2},{"c_m_id":131,"company_id":10,"id":16,"m_id":16,"category":1,"type":1,"name":"充值记录明细","url":"chargingStatistics","icon":"","parent_id":14,"create_time":"2019-10-31 14:02:32","order":4,"have":2},{"c_m_id":132,"company_id":10,"id":15,"m_id":15,"category":1,"type":1,"name":"现金充值","url":"cashCharge","icon":"","parent_id":14,"create_time":"2019-10-31 14:01:54","order":5,"have":2}]}]}}
+     * @apiSuccess (返回参数说明) {int} id 角色id
+     * @apiSuccess (返回参数说明) {int} role 角色
+     * @apiSuccess (返回参数说明) {int} remark 备注
+     * @apiSuccess (返回参数说明) {obj} modules 模块信息
+     * @apiSuccess (返回参数说明) {int} id 模块id
+     * @apiSuccess (返回参数说明) {int} c_m_id 模块与企业关联id
+     * @apiSuccess (返回参数说明) {string} url 模块路由
+     * @apiSuccess (返回参数说明) {string} name 模块名称
+     * @apiSuccess (返回参数说明) {int} type  模块类别：1|pc;2|手机端
+     * @apiSuccess (返回参数说明) {int} have  该用户是否拥有该模块：1|是;2|否
+     * @apiSuccess (返回参数说明) {string} create_time 创建时间
+     * @apiSuccess (返回参数说明) {string}icon  模块图标
+     * @apiSuccess (返回参数说明) {string} parent_id 上级id；0表示顶级
+     * @apiSuccess (返回参数说明) {obj} items 当前模块子级
+     */
+    public function role()
+    {
+        $id = Request::param('id');
+        $role = (new AdminService())->role($id);
+        return json(new SuccessMessageWithData(['data' => $role]));
+    }
+
 }

@@ -60,4 +60,12 @@ class AdminT extends Model
 
     }
 
+    public static function admin($id)
+    {
+        $role = self::where('id', $id)
+            ->field('id,role,remark,c_id')
+            ->find();
+        return $role;
+    }
+
 }
