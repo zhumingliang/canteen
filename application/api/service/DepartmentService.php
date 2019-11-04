@@ -393,7 +393,7 @@ class DepartmentService
     function updateQrcode($params)
     {
         $code = getRandChar(12);
-        $url = sprintf(config("setting.qrcode_url"), $code);
+        $url = sprintf(config("setting.qrcode_url"), 'user',$code);
         $qrcode_url = (new QrcodeService())->qr_code($url);
         $s_id = $params['id'];
         $params['code'] = $code;
