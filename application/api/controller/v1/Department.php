@@ -268,7 +268,7 @@ class Department extends BaseController
     }
 
     /**
-     * @api {POST} /api/v1/staff/delete CMS管理端-删除员工
+     * @api {POST} /api/v1/department/staff/delete CMS管理端-删除员工
      * @apiGroup   CMS
      * @apiVersion 3.0.0
      * @apiDescription  CMS管理端-删除员工

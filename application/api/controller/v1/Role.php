@@ -282,7 +282,7 @@ class Role extends BaseController
     }
 
     /**
-     *  * @api {GET} /api/v1/role CMS管理端-设置-角色模块设置-获取角色信息
+     * @api {GET} /api/v1/role CMS管理端-设置-角色模块设置-获取角色信息
      * @apiGroup  CMS
      * @apiVersion 3.0.0
      * @apiDescription CMS管理端-设置-角色模块设置-获取角色信息

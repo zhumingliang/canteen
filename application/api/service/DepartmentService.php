@@ -379,7 +379,7 @@ class DepartmentService
         $data = [
             'code' => $code,
             's_id' => $s_id,
-            'minute' => config("setting.qrcode_expire_in"),
+            'expiry_date' => config("setting.qrcode_expire_in"),
             'url' => $qrcode_url
         ];
         $qrcode = StaffQrcodeT::create($data);
