@@ -376,10 +376,12 @@ class DepartmentService
         $code = getRandChar(12);
         $url = sprintf(config("setting.qrcode_url"), 'canteen', $code);
         $qrcode_url = (new QrcodeService())->qr_code($url);
+        $expiry_date = date('Y-m-d H:i:s', strtotime("+" . config("setting.qrcode_expire_in") . "minute", time()));
         $data = [
             'code' => $code,
             's_id' => $s_id,
-            'expiry_date' => config("setting.qrcode_expire_in"),
+            'minute' => config("setting.qrcode_expire_in"),
+            'expiry_date' => $expiry_date,
             'url' => $qrcode_url
         ];
         $qrcode = StaffQrcodeT::create($data);
@@ -393,7 +395,7 @@ class DepartmentService
     function updateQrcode($params)
     {
         $code = getRandChar(12);
-        $url = sprintf(config("setting.qrcode_url"), 'user',$code);
+        $url = sprintf(config("setting.qrcode_url"), 'user', $code);
         $qrcode_url = (new QrcodeService())->qr_code($url);
         $s_id = $params['id'];
         $params['code'] = $code;
@@ -479,7 +481,7 @@ class DepartmentService
     public function staffsForRecharge($page, $size, $department_id, $key)
     {
         $company_id = Token::getCurrentTokenVar('company_id');
-        $staffs = CompanyStaffV:: staffsForRecharge($page, $size, $department_id, $key,$company_id);
+        $staffs = CompanyStaffV:: staffsForRecharge($page, $size, $department_id, $key, $company_id);
         return $staffs;
     }
 
