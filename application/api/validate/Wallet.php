@@ -11,7 +11,7 @@ class Wallet extends BaseValidate
         'module_id' => 'require|isPositiveInteger',
         'canteen_id' => 'require|isPositiveInteger',
         'dinner_id' => 'require|isPositiveInteger',
-        'staff_id' => 'require|isPositiveInteger',
+        'staff_ids' => 'require|isNotEmpty',
         'type' => 'require|in:1,2',
         'phone' => 'require|isMobile',
         'detail' => 'require|isNotEmpty',
@@ -25,7 +25,7 @@ class Wallet extends BaseValidate
 
     protected $scene = [
         'rechargeCash' => ['detail','money'],
-        'rechargeSupplement' => ['canteen_id','money','staff_id','type','consumption_date','dinner_id'],
+        'rechargeSupplement' => ['canteen_id','money','staff_ids','type','consumption_date','dinner_id'],
         'rechargeAdmins' => ['module_id'],
         'rechargeRecords' => ['time_begin','time_end']
     ];

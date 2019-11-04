@@ -72,6 +72,7 @@ Route::post('api/:version/role/handel/type', 'api/:version.Role/handelType');
 
 Route::post('api/:version/department/save', 'api/:version.Department/save');
 Route::post('api/:version/department/update', 'api/:version.Department/update');
+Route::post('api/:version/department/delete', 'api/:version.Department/delete');
 Route::get('api/:version/departments', 'api/:version.Department/departments');
 Route::get('api/:version/departments/recharge', 'api/:version.Department/departmentsForRecharge');
 Route::get('api/:version/department/staffs', 'api/:version.Department/departmentStaffs');
@@ -197,4 +198,6 @@ Route::post('api/:version/wallet/clearBalance', 'api/:version.Wallet/clearBalanc
 Route::get('api/:version/wallet/recharge/admins', 'api/:version.Wallet/rechargeAdmins');
 Route::get('api/:version/wallet/recharges', 'api/:version.Wallet/rechargeRecords');
 Route::get('api/:version/wallet/users/balance', 'api/:version.Wallet/usersBalance');
+Route::post('api/:version/wallet/supplement', 'api/:version.Wallet/rechargeSupplement');
+Route::post('api/:version/wallet/supplement/upload', 'api/:version.Wallet/rechargeSupplementUpload');
 

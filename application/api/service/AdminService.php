@@ -193,12 +193,12 @@ class AdminService
 
     public function handel($params)
     {
-        if ($params['state'] = CommonEnum::STATE_IS_OK) {
+        if ($params['state'] == CommonEnum::STATE_IS_OK) {
             if (Token::getCurrentTokenVar('grade') != AdminEnum::COMPANY_SUPER) {
                 throw new AuthException();
             }
         }
-        $res = AdminT::update($params);
+        $res = AdminT::update(['state' => $params['state']], ['id' => $params['id']]);
         if (!$res) {
             throw  new UpdateException();
         }

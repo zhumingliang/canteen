@@ -173,10 +173,57 @@ class Wallet extends BaseController
 
     }
 
+    /**
+     * @api {POST} /api/v1/wallet/supplement CMS管理端--设置--补录管理-单个充值
+     * @apiGroup   CMS
+     * @apiVersion 3.0.0
+     * @apiDescription    CMS管理端--设置--补录管理-单个充值
+     * @apiExample {post}  请求样例:
+     *    {
+     *       "canteen_id": 7,
+     *       "remark": 备注,
+     *       "consumption_date":2019-11-04,
+     *       "dinner_id":7,
+     *       "money":10,
+     *       "staff_ids":"1,2,3",
+     *       "type":1,
+     *     }
+     * @apiParam (请求参数说明) {int} money 充值金额
+     * @apiParam (请求参数说明) {int} remark 备注
+     * @apiParam (请求参数说明) {obj} canteen_id  饭堂id
+     * @apiParam (请求参数说明) {string} consumption_date  消费日期
+     * @apiParam (请求参数说明) {string} dinner_id  餐次id
+     * @apiParam (请求参数说明) {string} staff_ids  d多用户id，用逗号分隔：1,2,3
+     * @apiParam (请求参数说明) {string} type  消费状态：1：补充；2：补扣
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     */
     public function rechargeSupplement()
     {
         $params = Request::param();
         (new WalletService())->rechargeSupplement($params);
+        return json(new SuccessMessage());
+    }
+
+    /**
+     * @api {POST}  /api/v1/wallet/supplement/upload CMS管理端--设置--补录管理--批量充值
+     * @apiGroup  CMS
+     * @apiVersion 3.0.0
+     * @apiDescription  用file控件上传excel ，文件名称为：supplement
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200}
+     * @apiSuccess (返回参数说明) {int} error_code 错误代码 0 表示没有错误
+     * @apiSuccess (返回参数说明) {String} msg 操作结果描述
+     */
+    public function rechargeSupplementUpload()
+    {
+        $supplement_excel = request()->file('supplement');
+        if (is_null($supplement_excel)) {
+            throw  new ParameterException(['msg' => '缺少excel文件']);
+        }
+        (new WalletService())->rechargeSupplementUpload($supplement_excel);
         return json(new SuccessMessage());
     }
 }
