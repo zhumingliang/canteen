@@ -46,7 +46,7 @@ class DinnerT extends Model
                         ->field('id,d_id,category,status,count');
                 }
             ])
-            ->field('id,name')
+            ->field('id,name,fixed,type,type_number,limit_time')
             ->select();
 
         return $menus;

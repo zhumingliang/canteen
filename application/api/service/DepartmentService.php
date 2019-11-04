@@ -71,6 +71,7 @@ class DepartmentService
     {
         try {
             Db::startTrans();
+            $this->checkStaffExits($params['company_id'],$params['phone']);
             $params['state'] = CommonEnum::STATE_IS_OK;
             $staff = CompanyStaffT::create($params);
             if (!$staff) {
@@ -85,6 +86,17 @@ class DepartmentService
             Db::rollback();
             throw $e;
         }
+    }
+
+    private function checkStaffExits($company_id, $phone)
+    {
+        $staff = CompanyStaffT::where('company_id', $company_id)
+            ->where('phone', $phone)
+            ->count('id');
+        if ($staff) {
+            throw  new SaveException(['msg' => '用户企业已存在']);
+        }
+
     }
 
     public function updateStaff($params)

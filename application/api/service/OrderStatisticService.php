@@ -48,6 +48,10 @@ class OrderStatisticService
     {
         if (count($data)) {
             foreach ($data as $k => $v) {
+                if ($v['type'] == 'recharge') {
+                    $data[$k]['consumption_type'] = 4;
+                    continue;
+                }
                 if ($v['booking'] == CommonEnum::STATE_IS_OK) {
                     $data[$k]['consumption_type'] = $v['used'] == CommonEnum::STATE_IS_OK ? 1 : 2;
                 } else {

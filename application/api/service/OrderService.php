@@ -488,7 +488,8 @@ class OrderService extends BaseService
     public function infoForOnline()
     {
         $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
-        $t_id = Token::getCurrentTokenVar('t_id');
+        $phone = Token::getCurrentPhone();
+        $t_id = (new UserService())->getUserStaffTypeByPhone($phone);
         $dinner = (new CanteenService())->getDinners($canteen_id);
         $strategies = (new CanteenService())->staffStrategy($canteen_id, $t_id);
         foreach ($dinner as $k => $v) {
@@ -1084,10 +1085,28 @@ class OrderService extends BaseService
 
     public function used($ids)
     {
-        $order = OrderT::update(['used' => CommonEnum::STATE_IS_OK], ['id'=> ['in' => $ids]]);
+        $order = OrderT::update(['used' => CommonEnum::STATE_IS_OK], ['id' => ['in' => $ids]]);
         if (!$order) {
             throw new UpdateException();
         }
 
+    }
+
+    public function infoForPersonChoiceOnline()
+    {
+        $canteen_id = 6;//Token::getCurrentTokenVar('current_canteen_id');
+        $phone = '18956225230';//Token::getCurrentPhone();
+        $t_id = (new UserService())->getUserStaffTypeByPhone($phone);
+        $dinner = DinnerT::canteenDinnerMenus($canteen_id);
+        $strategies = (new CanteenService())->staffStrategy($canteen_id, $t_id);
+        foreach ($dinner as $k => $v) {
+            foreach ($strategies as $k2 => $v2) {
+                if ($v['id'] = $v2['d_id']) {
+                    $dinner[$k]['ordered_count'] = $v2['ordered_count'];
+                    unset($strategies[$k2]);
+                }
+            }
+        }
+        return $dinner;
     }
 }

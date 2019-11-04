@@ -100,7 +100,7 @@ class Order extends BaseController
      * @apiVersion 3.0.0
      * @apiDescription  微信端-线上订餐-获取饭堂餐次配置信息（确定是否可以订餐、可以定几餐）
      * @apiExample {get}  请求样例:
-     * http://canteen.tonglingok.com/api/v1/order/online/info?
+     * http://canteen.tonglingok.com/api/v1/order/online/info
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200,"data":[{"id":7,"c_id":6,"name":"早餐","type":"day","create_time":"2019-07-30 02:07:17","type_number":10,"meal_time_begin":"07:00:00","meal_time_end":"08:00:00","limit_time":"09:00:00","ordered_count":1},{"id":6,"c_id":6,"name":"中餐","type":"day","create_time":"2019-07-30 02:07:17","type_number":10,"meal_time_begin":"12:00:00","meal_time_end":"13:00:00","limit_time":"10:00:00"},{"id":7,"c_id":6,"name":"晚餐","type":"day","create_time":"2019-07-30 11:24:36","type_number":10,"meal_time_begin":"18:00:00","meal_time_end":"19:00:00","limit_time":"10:00:00"}]}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
@@ -676,7 +676,7 @@ class Order extends BaseController
      * @apiParam (请求参数说明) {string} time_end  查询结束时间
      * @apiParam (请求参数说明) {string} phone  手机号查询
      * @apiParam (请求参数说明) {string} name  姓名查询
-     * @apiParam (请求参数说明) {int} consumption_type  消费类型，1：订餐就餐；2：订餐未就餐；3：未订餐就餐
+     * @apiParam (请求参数说明) {int} consumption_type  消费类型，1：订餐就餐；2：订餐未就餐；3：未订餐就餐；4：补录；5：全部
      * @apiSuccessExample {json}返回样例:
      * {"msg":"ok","errorCode":0,"code":200,"data":{"total":1,"per_page":"20","current_page":1,"last_page":1,"data":[{"order_id":8,"used_time":"0000-00-00 00:00:00","username":"张三","phone":"18956225230","canteen":"饭堂1","department":"董事会-修改","dinner":"中餐","booking":1,"used":2,"consumption_type":2}]}}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
@@ -691,7 +691,7 @@ class Order extends BaseController
      * @apiSuccess (返回参数说明) {string} department 部门
      * @apiSuccess (返回参数说明) {string} name 用户姓名
      * @apiSuccess (返回参数说明) {string} dinner 餐次
-     * @apiSuccess (返回参数说明) {string} consumption_type  消费类型，1：订餐就餐；2：订餐未就餐；3：未订餐就餐
+     * @apiSuccess (返回参数说明) {string} consumption_type  消费类型，1：订餐就餐；2：订餐未就餐；3：未订餐就餐；4：补录
      */
     public function orderSettlement($page = 1, $size = 20, $name = '',
                                     $phone = '',
@@ -707,5 +707,34 @@ class Order extends BaseController
             $consumption_type, $time_begin, $time_end, $company_ids);
         return json(new SuccessMessageWithData(['data' => $records]));
     }
+
+    /**
+     * @api {GET} /api/v1/order/personChoice/info  微信端-线上订餐-获取饭堂餐次配置信息
+     * @apiGroup  Official
+     * @apiVersion 3.0.0
+     * @apiDescription  微信端-线上订餐-获取饭堂餐次配置信息（确定是否可以订餐、可以定几餐）
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/order/personChoice/info
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":[{"id":7,"name":"早餐","fixed":2,"type":"day","type_number":10,"limit_time":"09:00:00","ordered_count":1,"menus":[{"id":3,"d_id":5,"category":"汤","status":2,"count":0},{"id":4,"d_id":5,"category":"荤菜","status":1,"count":0},{"id":5,"d_id":5,"category":"荤菜","status":1,"count":0},{"id":6,"d_id":5,"category":"汤","status":1,"count":0},{"id":7,"d_id":5,"category":"素菜","status":1,"count":0}]},{"id":6,"name":"中餐","fixed":2,"type":"day","type_number":10,"limit_time":"10:00:00","menus":[{"id":1,"d_id":6,"category":"荤菜","status":1,"count":3},{"id":2,"d_id":6,"category":"汤","status":2,"count":0}]},{"id":7,"name":"晚餐","fixed":2,"type":"day","type_number":10,"limit_time":"10:00:00","menus":[]}]}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {String} msg 信息描述
+     * @apiSuccess (返回参数说明) {int} id  餐次id
+     * @apiSuccess (返回参数说明) {string} name  餐次名称
+     * @apiSuccess (返回参数说明) {string} fixed  餐次金额是否为采用标准金额
+     * @apiSuccess (返回参数说明) {string} type  时间设置类别：day|week 1、前n天是填写数字，说明每天的餐需要提前一个天数来订餐2、周，是只能填写周一到周日，说明一周的订餐规定需要在每周某天进行下周一整周的订餐
+     * @apiSuccess (返回参数说明) {int} type_number 订餐时间类别对应数量（week：0-6；周日-周六）
+     * @apiSuccess (返回参数说明) {string} limit_time  订餐限制时间
+     * @apiSuccess (返回参数说明) {int} ordered_count  可订餐数量
+     * @apiSuccess (返回参数说明) {obj} menus  菜品类别信息
+     * @apiSuccess (返回参数说明) {int} id  菜品类别id
+     * @apiSuccess (返回参数说明) {int} count  可选数量
+     */
+    public function infoForPersonChoiceOnline()
+    {
+        $info = (new OrderService())->infoForPersonChoiceOnline();
+        return json(new SuccessMessageWithData(['data' => $info]));
+    }
+
 
 }
