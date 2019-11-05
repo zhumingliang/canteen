@@ -64,7 +64,7 @@ class OrderT extends Model
             ->with([
                 'foods' => function ($query) {
                     $query->where('state', CommonEnum::STATE_IS_OK)
-                        ->field('id as detail_id ,o_id,f_id as food_id,count,name');
+                        ->field('id as detail_id ,o_id,f_id as food_id,count,name,price');
                 },
                 'address' => function ($query) {
                     $query->field('id,province,city,area,address,name,phone,sex');
