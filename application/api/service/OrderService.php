@@ -48,8 +48,8 @@ class OrderService extends BaseService
             unset($params['detail']);
 
             $params['ordering_type'] = OrderEnum::ORDERING_CHOICE;
-            $u_id = 5;//Token::getCurrentUid();
-            $canteen_id = 6;//Token::getCurrentTokenVar('current_canteen_id');
+            $u_id = Token::getCurrentUid();
+            $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
 
             //获取餐次信息
             $dinner = DinnerT::dinnerInfo($dinner_id);
@@ -154,7 +154,7 @@ class OrderService extends BaseService
         $consumptionCount = OrderingV::getRecordForDayOrdering($u_id, $day, $dinner->name);
 
         //检测消费策略
-        $phone = '15521323081';//Token::getCurrentPhone();
+        $phone = Token::getCurrentPhone();
         $t_id = (new UserService())->getUserStaffTypeByPhone($phone);
         //获取指定用户消费策略
         $strategies = (new CanteenService())->getStaffConsumptionStrategy($canteen_id, $dinner->id, $t_id);
@@ -272,20 +272,21 @@ class OrderService extends BaseService
                 break;
             }
         }
-        return $returnMoney;
+     return $returnMoney;
     }
 
     private
     function checkMenu($dinner_id, $detail)
     {
         if (empty($detail)) {
-            throw new ParameterException(['菜品明细数据格式不对']);
+            throw new ParameterException(['msg'=>'菜品明细数据格式不对']);
         }
         //获取餐次下所有菜品类别
         $menus = (new MenuService())->dinnerMenus($dinner_id);
         if (!count($menus)) {
             throw new ParameterException(['msg' => '指定餐次未设置菜单信息']);
         }
+
 
         $detailMoney = 0;
         foreach ($detail as $k => $v) {
@@ -1092,8 +1093,8 @@ class OrderService extends BaseService
 
     public function infoForPersonChoiceOnline()
     {
-        $canteen_id = 6;//Token::getCurrentTokenVar('current_canteen_id');
-        $phone = '18956225230';//Token::getCurrentPhone();
+        $canteen_id =Token::getCurrentTokenVar('current_canteen_id');
+        $phone = Token::getCurrentPhone();
         $t_id = (new UserService())->getUserStaffTypeByPhone($phone);
         $dinner = DinnerT::canteenDinnerMenus($canteen_id);
         $strategies = (new CanteenService())->staffStrategy($canteen_id, $t_id);
