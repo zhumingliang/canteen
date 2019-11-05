@@ -643,7 +643,7 @@ class Order extends BaseController
      * @apiSuccess (返回参数说明) {string} ordering_date 订餐日期
      * @apiSuccess (返回参数说明) {string} canteen 消费地点
      * @apiSuccess (返回参数说明) {string} department 部门
-     * @apiSuccess (返回参数说明) {string} name 用户姓名
+     * @apiSuccess (返回参数说明) {string} username 用户姓名
      * @apiSuccess (返回参数说明) {string} dinner 餐次
      */
     public function orderStatisticDetail($page = 1, $size = 20, $name = '', $phone = '', $canteen_id = 0, $department_id = 0, $dinner_id = 0)

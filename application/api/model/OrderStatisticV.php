@@ -64,7 +64,7 @@ class OrderStatisticV extends Model
                     }
                 }
             })
-            ->field('order_id,ordering_date,canteen,department,dinner')
+            ->field('order_id,ordering_date,username,canteen,department,dinner')
             ->order('order_id DESC')
             ->paginate($size, false, ['page' => $page]);
         return $list;
