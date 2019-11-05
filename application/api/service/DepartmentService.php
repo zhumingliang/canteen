@@ -71,7 +71,7 @@ class DepartmentService
     {
         try {
             Db::startTrans();
-            $this->checkStaffExits($params['company_id'],$params['phone']);
+            $this->checkStaffExits($params['company_id'], $params['phone']);
             $params['state'] = CommonEnum::STATE_IS_OK;
             $staff = CompanyStaffT::create($params);
             if (!$staff) {
@@ -253,7 +253,7 @@ class DepartmentService
         $name = $data[4];
         $phone = $data[5];
         $card_num = $data[6];
-        $state = $data[7];
+        $state = $data[7] == "启用" ? 1 : 2;
         $canteen_ids = [];
         //判断人员类型是否存在
         $t_id = $this->checkParamExits($types, $staffType);
@@ -354,7 +354,7 @@ class DepartmentService
         $staff_canteen_list = array();
         foreach ($staffs as $k => $v) {
             $code = getRandChar(12);
-            $url = sprintf(config("setting.qrcode_url"), 'canteen',$code);
+            $url = sprintf(config("setting.qrcode_url"), 'canteen', $code);
             $qrcode_url = (new QrcodeService())->qr_code($url);
             $list[] = [
                 'code' => $code,
