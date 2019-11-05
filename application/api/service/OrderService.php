@@ -272,14 +272,14 @@ class OrderService extends BaseService
                 break;
             }
         }
-     return $returnMoney;
+        return $returnMoney;
     }
 
     private
     function checkMenu($dinner_id, $detail)
     {
         if (empty($detail)) {
-            throw new ParameterException(['msg'=>'菜品明细数据格式不对']);
+            throw new ParameterException(['msg' => '菜品明细数据格式不对']);
         }
         //获取餐次下所有菜品类别
         $menus = (new MenuService())->dinnerMenus($dinner_id);
@@ -1091,9 +1091,10 @@ class OrderService extends BaseService
 
     }
 
-    public function infoForPersonChoiceOnline()
+    public function infoForPersonChoiceOnline($day)
     {
-        $canteen_id =Token::getCurrentTokenVar('current_canteen_id');
+        $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
+        $u_id = Token::getCurrentUid();
         $phone = Token::getCurrentPhone();
         $t_id = (new UserService())->getUserStaffTypeByPhone($phone);
         $dinner = DinnerT::canteenDinnerMenus($canteen_id);
@@ -1102,6 +1103,7 @@ class OrderService extends BaseService
             foreach ($strategies as $k2 => $v2) {
                 if ($v['id'] = $v2['d_id']) {
                     $dinner[$k]['ordered_count'] = $v2['ordered_count'];
+                    $dinner[$k]['ordering_count'] = OrderingV::getRecordForDayOrdering($u_id, $day, $dinner->name);;
                     unset($strategies[$k2]);
                 }
             }

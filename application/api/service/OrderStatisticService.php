@@ -5,6 +5,7 @@ namespace app\api\service;
 
 
 use app\api\model\DinnerT;
+use app\api\model\OrderMaterialV;
 use app\api\model\OrderSettlementV;
 use app\api\model\OrderStatisticV;
 use app\api\model\OrderT;
@@ -86,7 +87,9 @@ class OrderStatisticService
 
     public function orderMaterialsStatistic($page, $size, $time_begin, $time_end, $canteen_id)
     {
-
+        $company_id = 0;//Token::getCurrentTokenVar('company_id');
+        $statistic = OrderMaterialV::orderMaterialsStatistic($page, $size, $time_begin, $time_end, $canteen_id, $company_id);
+        return $statistic;
     }
 
 }

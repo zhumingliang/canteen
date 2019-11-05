@@ -709,12 +709,13 @@ class Order extends BaseController
     }
 
     /**
-     * @api {GET} /api/v1/order/personChoice/info  微信端-线上订餐-获取饭堂餐次配置信息
+     * @api {GET} /api/v1/order/personChoice/info  微信端-个人选菜-获取饭堂餐次配置信息
      * @apiGroup  Official
      * @apiVersion 3.0.0
-     * @apiDescription  微信端-线上订餐-获取饭堂餐次配置信息（确定是否可以订餐、可以定几餐）
+     * @apiDescription  微信端-个人选菜-获取饭堂餐次配置信息
      * @apiExample {get}  请求样例:
-     * http://canteen.tonglingok.com/api/v1/order/personChoice/info
+     * http://canteen.tonglingok.com/api/v1/order/personChoice/info?day=2019-11-07
+     * @apiParam (请求参数说明) {string} day  查询日期
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200,"data":[{"id":7,"name":"早餐","fixed":2,"type":"day","type_number":10,"limit_time":"09:00:00","ordered_count":1,"menus":[{"id":3,"d_id":5,"category":"汤","status":2,"count":0},{"id":4,"d_id":5,"category":"荤菜","status":1,"count":0},{"id":5,"d_id":5,"category":"荤菜","status":1,"count":0},{"id":6,"d_id":5,"category":"汤","status":1,"count":0},{"id":7,"d_id":5,"category":"素菜","status":1,"count":0}]},{"id":6,"name":"中餐","fixed":2,"type":"day","type_number":10,"limit_time":"10:00:00","menus":[{"id":1,"d_id":6,"category":"荤菜","status":1,"count":3},{"id":2,"d_id":6,"category":"汤","status":2,"count":0}]},{"id":7,"name":"晚餐","fixed":2,"type":"day","type_number":10,"limit_time":"10:00:00","menus":[]}]}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
@@ -726,13 +727,14 @@ class Order extends BaseController
      * @apiSuccess (返回参数说明) {int} type_number 订餐时间类别对应数量（week：0-6；周日-周六）
      * @apiSuccess (返回参数说明) {string} limit_time  订餐限制时间
      * @apiSuccess (返回参数说明) {int} ordered_count  可订餐数量
+     * @apiSuccess (返回参数说明) {int} ordering_count  已订餐数量
      * @apiSuccess (返回参数说明) {obj} menus  菜品类别信息
      * @apiSuccess (返回参数说明) {int} id  菜品类别id
      * @apiSuccess (返回参数说明) {int} count  可选数量
      */
-    public function infoForPersonChoiceOnline()
+    public function infoForPersonChoiceOnline($day)
     {
-        $info = (new OrderService())->infoForPersonChoiceOnline();
+        $info = (new OrderService())->infoForPersonChoiceOnline($day);
         return json(new SuccessMessageWithData(['data' => $info]));
     }
 
