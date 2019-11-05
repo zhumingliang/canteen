@@ -354,7 +354,7 @@ class DepartmentService
         $staff_canteen_list = array();
         foreach ($staffs as $k => $v) {
             $code = getRandChar(12);
-            $url = sprintf(config("setting.qrcode_url"), $code);
+            $url = sprintf(config("setting.qrcode_url"), 'canteen',$code);
             $qrcode_url = (new QrcodeService())->qr_code($url);
             $list[] = [
                 'code' => $code,
