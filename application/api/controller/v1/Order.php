@@ -745,8 +745,7 @@ class Order extends BaseController
         $canteen_id = Request::param('canteen_id');
         $statistic = (new OrderStatisticService())
             ->orderMaterialsStatistic($page, $size, $time_begin, $time_end, $canteen_id);
-        return json(new
-        SuccessMessageWithData(['data' => $statistic]));
+        return json(new SuccessMessageWithData(['data' => $statistic]));
     }
 
 

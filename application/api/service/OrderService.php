@@ -1103,7 +1103,7 @@ class OrderService extends BaseService
             foreach ($strategies as $k2 => $v2) {
                 if ($v['id'] = $v2['d_id']) {
                     $dinner[$k]['ordered_count'] = $v2['ordered_count'];
-                    $dinner[$k]['ordering_count'] = OrderingV::getRecordForDayOrdering($u_id, $day, $dinner->name);;
+                    $dinner[$k]['ordering_count'] = OrderingV::getRecordForDayOrdering($u_id, $day, $v["name"]);;
                     unset($strategies[$k2]);
                 }
             }

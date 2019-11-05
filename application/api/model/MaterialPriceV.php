@@ -34,13 +34,13 @@ class MaterialPriceV extends Model
     {
 
         $list = self::where(function ($query) use ($selectField, $selectValue) {
-                if (strpos($selectValue, ',') !== false) {
-                    $query->whereIn($selectField, $selectValue);
-                } else {
-                    $query->where($selectField, $selectValue);
-                }
-            })
-            ->where('state',CommonEnum::STATE_IS_OK)
+            if (strpos($selectValue, ',') !== false) {
+                $query->whereIn($selectField, $selectValue);
+            } else {
+                $query->where($selectField, $selectValue);
+            }
+        })
+            ->where('state', CommonEnum::STATE_IS_OK)
             ->where(function ($query) use ($key) {
                 if (!empty($key)) {
                     $query->where('name', 'like', '%' . $key . '%');
@@ -50,6 +50,21 @@ class MaterialPriceV extends Model
             ->order('create_time desc')
             ->select()->toArray();
         return $list;
+    }
+
+    public static function materialsForOrder($canteen_id, $company_id)
+    {
+        $list = self::where('state', CommonEnum::STATE_IS_OK)
+            ->where(function ($query) use ($company_id, $canteen_id) {
+                if (empty($canteen_id)) {
+                    $query->where('company_id', $company_id);
+                } else {
+                    $query->where('canteen_id', $canteen_id);
+                }
+            })
+            ->select();
+        return $list;
+
     }
 
 }

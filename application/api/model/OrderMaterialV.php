@@ -20,7 +20,7 @@ class OrderMaterialV extends Model
             }
         })
             ->whereBetweenTime('ordering_date', $time_begin, $time_end)
-            ->field('order_id,detail_id,ordering_date,dinner_id,dinner,sum(order_count) as order_count,sum(material_count) as material_count')
+            ->field('order_id,detail_id,ordering_date,material,dinner_id,dinner,sum(order_count) as order_count,sum(material_count) as material_count')
             ->group('ordering_date,dinner_id,material')
             ->paginate($size, false, ['page' => $page])->toArray();
         return $statistic;
