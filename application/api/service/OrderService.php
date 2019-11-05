@@ -48,8 +48,8 @@ class OrderService extends BaseService
             unset($params['detail']);
 
             $params['ordering_type'] = OrderEnum::ORDERING_CHOICE;
-            $u_id = Token::getCurrentUid();
-            $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
+            $u_id = 5;//Token::getCurrentUid();
+            $canteen_id = 6;//Token::getCurrentTokenVar('current_canteen_id');
 
             //获取餐次信息
             $dinner = DinnerT::dinnerInfo($dinner_id);
@@ -57,7 +57,6 @@ class OrderService extends BaseService
             $this->checkDinnerForPersonalChoice($dinner, $ordering_date);
             //检测用户是否可以订餐并返回订单金额
             $orderMoney = $this->checkUserCanOrder($u_id, $dinner, $ordering_date, $canteen_id, $count, $detail);
-
             $pay_way = $this->checkBalance($u_id, $canteen_id, $orderMoney['money'] * $count + $orderMoney['sub_money'] * $count);
             if (!$pay_way) {
                 throw new SaveException(['errorCode' => 49000, 'msg' => '余额不足']);
@@ -155,11 +154,10 @@ class OrderService extends BaseService
         $consumptionCount = OrderingV::getRecordForDayOrdering($u_id, $day, $dinner->name);
 
         //检测消费策略
-        $phone = Token::getCurrentPhone();
+        $phone = '15521323081';//Token::getCurrentPhone();
         $t_id = (new UserService())->getUserStaffTypeByPhone($phone);
         //获取指定用户消费策略
         $strategies = (new CanteenService())->getStaffConsumptionStrategy($canteen_id, $dinner->id, $t_id);
-
         $orderMoneyFixed = $dinner->fixed;
         $strategyMoney = $this->checkConsumptionStrategy($strategies, $count, $consumptionCount);
         if ($ordering_type == "person_choice") {
@@ -235,7 +233,7 @@ class OrderService extends BaseService
         if ($consumptionCount >= $strategies->consumption_count) {
             throw new SaveException(['msg' => '消费次数已达到上限，最大消费次数为：' . $strategies->ordered_count]);
         }
-        $detail = json_decode($strategies->detail, true);
+        $detail = $strategies->detail;// json_decode($strategies->detail, true);
         if (empty($detail)) {
             throw new ParameterException(['msg' => "消费策略设置异常"]);
         }

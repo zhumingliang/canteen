@@ -107,7 +107,8 @@ class UserService
         if (empty($phone)) {
             throw new AuthException(['msg' => '用户状态异常，未绑定手机号']);
         }
-        $admin = CompanyStaffT::where('phone', $phone)->where('state', CommonEnum::STATE_IS_OK)
+        $admin = CompanyStaffT::where('phone', $phone)
+            ->where('state', CommonEnum::STATE_IS_OK)
             ->find();
         if (!$admin) {
             throw new AuthException(['msg' => '用户状态异常，不属于任何企业']);
