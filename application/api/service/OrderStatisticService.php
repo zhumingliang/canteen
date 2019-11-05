@@ -6,6 +6,7 @@ namespace app\api\service;
 
 use app\api\model\DinnerT;
 use app\api\model\MaterialPriceV;
+use app\api\model\OrderMaterialUpdateT;
 use app\api\model\OrderMaterialV;
 use app\api\model\OrderSettlementV;
 use app\api\model\OrderStatisticV;
@@ -92,17 +93,27 @@ class OrderStatisticService
         $statistic = OrderMaterialV::orderMaterialsStatistic($page, $size, $time_begin, $time_end, $canteen_id, $company_id);
         //获取该企业/饭堂下所有材料价格
         $materials = MaterialPriceV::materialsForOrder($canteen_id, $company_id);
-       //获取指定修改记录
-        $statistic['data'] = $this->prefixMaterials($statistic['data'], $materials);
+        //获取指定修改记录
+        $updateRecords = OrderMaterialUpdateT::orderRecords($time_begin, $time_end, $canteen_id, $company_id);
+        $statistic['data'] = $this->prefixMaterials($statistic['data'], $materials, $updateRecords);
         return $statistic;
     }
 
-    private function prefixMaterials($data, $materials)
+    private function prefixMaterials($data, $materials, $updateRecords)
     {
         if (count($data)) {
             foreach ($data as $k => $v) {
                 $data[$k]['material_price'] = 0;
                 $data[$k]['material_count'] = $v['order_count'];
+                $data[$k]['update'] = CommonEnum::STATE_IS_OK;
+                $update = CommonEnum::STATE_IS_FAIL;
+                if (count($updateRecords)) {
+                    foreach ($updateRecords as $k3 => $v3) {
+                        //if ()
+
+                    }
+
+                }
                 foreach ($materials as $k2 => $v2) {
                     if ($v['material'] == $v2['name']) {
                         $data[$k]['material_price'] = $v2['price'];

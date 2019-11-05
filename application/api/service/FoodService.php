@@ -31,8 +31,8 @@ class FoodService extends BaseService
             if (!$food) {
                 throw new SaveException();
             }
-            $c_id = $params['c_id'];
-            if (!empty($params['material']) && $this->checkCanteenHasMaterialModule($c_id)) {
+            $company_id = Token::getCurrentTokenVar('company_id');
+            if (!empty($params['material']) && $this->checkCanteenHasMaterialModule($company_id)) {
                 $this->prefixMaterial($params['material'], $food->id);
             }
 
@@ -96,12 +96,12 @@ class FoodService extends BaseService
 
     }
 
-    private function checkCanteenHasMaterialModule($c_id)
+    private function checkCanteenHasMaterialModule($company_id)
     {
 
         $name = "材料管理";
         $count = CanteenModuleV::where('name', $name)
-            ->where('canteen_id', $c_id)
+            ->where('company_id', $company_id)
             ->count('c_m_id');
         return $count;
 

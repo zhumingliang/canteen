@@ -9,7 +9,7 @@ use think\Model;
 
 class OrderMaterialUpdateT extends Model
 {
-    public function orderRecords($time_begin,$time_end,$canteen_id,$company_id)
+    public static function orderRecords($time_begin,$time_end,$canteen_id,$company_id)
     {
         $list = self::where('state', CommonEnum::STATE_IS_OK)
             ->whereBetweenTime('ordering_date', $time_begin, $time_end)
