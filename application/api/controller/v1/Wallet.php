@@ -94,7 +94,7 @@ class Wallet extends BaseController
      * @apiVersion 3.0.0
      * @apiDescription CMS管理端-企业明细-企业列表
      * @apiExample {get}  请求样例:
-     * http://canteen.tonglingok.com/api/v1/recharges?time_begin=2019-09-01&time_end=2019-11-01&admin_id=0&username&type=all&page=1&size=10
+     * http://canteen.tonglingok.com/api/v1/wallet/recharges?time_begin=2019-09-01&time_end=2019-11-01&admin_id=0&username&type=all&page=1&size=10
      * @apiParam (请求参数说明) {int} page 当前页码
      * @apiParam (请求参数说明) {int} size 每页多少条数据
      * @apiParam (请求参数说明) {string} time_begin 查询开始时间

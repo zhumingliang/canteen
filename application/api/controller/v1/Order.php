@@ -609,7 +609,7 @@ class Order extends BaseController
     {
         $time_begin = Request::param('time_begin');
         $time_end = Request::param('time_end');
-        $company_ids = Request::param('company_id');
+        $company_ids = Request::param('company_ids');
         $list = (new OrderStatisticService())->statistic($time_begin, $time_end, $company_ids, $canteen_id, $page, $size);
         return json(new SuccessMessageWithData(['data' => $list]));
     }
@@ -734,6 +734,17 @@ class Order extends BaseController
     {
         $info = (new OrderService())->infoForPersonChoiceOnline();
         return json(new SuccessMessageWithData(['data' => $info]));
+    }
+
+    public function orderMaterialsStatistic($page = 1, $size = 20)
+    {
+        $time_begin = Request::param('time_begin');
+        $time_end = Request::param('time_end');
+        $canteen_id = Request::param('canteen_id');
+        $statistic = (new OrderStatisticService())
+            ->orderMaterialsStatistic($page, $size, $time_begin, $time_end, $canteen_id);
+        return json(new
+        SuccessMessageWithData(['data' => $statistic]));
     }
 
 

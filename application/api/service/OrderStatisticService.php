@@ -83,4 +83,10 @@ class OrderStatisticService
         return $info;
     }
 
+
+    public function orderMaterialsStatistic($page, $size, $time_begin, $time_end, $canteen_id)
+    {
+
+    }
+
 }
