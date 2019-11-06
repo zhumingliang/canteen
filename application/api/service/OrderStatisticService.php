@@ -14,6 +14,7 @@ use app\api\model\OrderT;
 use app\api\model\OrderTakeoutStatisticV;
 use app\lib\enum\CommonEnum;
 use app\lib\exception\ParameterException;
+use app\lib\exception\SaveException;
 
 class OrderStatisticService
 {
@@ -89,7 +90,7 @@ class OrderStatisticService
 
     public function orderMaterialsStatistic($page, $size, $time_begin, $time_end, $canteen_id)
     {
-        $company_id = 0;//Token::getCurrentTokenVar('company_id');
+        $company_id = Token::getCurrentTokenVar('company_id');
         $statistic = OrderMaterialV::orderMaterialsStatistic($page, $size, $time_begin, $time_end, $canteen_id, $company_id);
         //获取该企业/饭堂下所有材料价格
         $materials = MaterialPriceV::materialsForOrder($canteen_id, $company_id);
@@ -109,21 +110,59 @@ class OrderStatisticService
                 $update = CommonEnum::STATE_IS_FAIL;
                 if (count($updateRecords)) {
                     foreach ($updateRecords as $k3 => $v3) {
-                        //if ()
+                        if ($v['detail_id'] == $v3['detail_id'] && $v['material'] == $v3['material']) {
+                            $data[$k]['material_price'] = $v3['price'];
+                            $data[$k]['material_count'] = $v3['count'];
+                        }
+                        unset($updateRecords[$k3]);
+                        $data[$k]['update'] = CommonEnum::STATE_IS_FAIL;
+                        $update = CommonEnum::STATE_IS_OK;
+                        break;
 
                     }
 
                 }
-                foreach ($materials as $k2 => $v2) {
-                    if ($v['material'] == $v2['name']) {
-                        $data[$k]['material_price'] = $v2['price'];
-                    }
+                if ($update == CommonEnum::STATE_IS_FAIL && count($materials)) {
+                    foreach ($materials as $k2 => $v2) {
+                        if ($v['material'] == $v2['name']) {
+                            $data[$k]['material_price'] = $v2['price'];
+                        }
 
+                    }
                 }
             }
         }
         return $data;
+    }
+
+    public function updateOrderMaterial($title, $detail_id, $material, $count, $price)
+    {
+        $this->checkMaterialUpdated($detail_id, $material);
+        $update = OrderMaterialUpdateT::create([
+            'title' => $title,
+            'detail_id' => $detail_id,
+            'material' => $material,
+            'count' => $count,
+            'price' => $price,
+            'state' => CommonEnum::STATE_IS_OK,
+            'admin_id' => Token::getCurrentUid()
+        ]);
+        if (!$update) {
+            throw new SaveException();
+        }
 
     }
 
+    private function checkMaterialUpdated($detail_id, $material)
+    {
+        $count = OrderMaterialUpdateT::where('detail_id', $detail_id)
+            ->where('material', $material)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->count();
+        if ($count) {
+            throw new SaveException(['msg' => '已经修改，不能重复修改']);
+        }
+
+
+    }
 }

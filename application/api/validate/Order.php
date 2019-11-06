@@ -49,5 +49,6 @@ class Order extends BaseValidate
         'handelOrderedNoMeal' => ['dinner_id', 'consumption_time'],
         'orderStatistic' => ['company_ids','time_begin', 'time_end'],
         'orderStatisticDetail' => ['company_ids','time_begin', 'time_end'],
+        'orderMaterialsStatistic' => ['time_begin', 'time_end'],
     ];
 }

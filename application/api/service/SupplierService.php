@@ -55,7 +55,7 @@ class SupplierService
 
     public function companySuppliers()
     {
-        $company_id = Token::getCurrentTokenVar('c_id');
+        $company_id = Token::getCurrentTokenVar('company_id');
         if (empty($company_id)) {
             throw new AuthException(['msg' => '该用户没有归属企业']);
         }

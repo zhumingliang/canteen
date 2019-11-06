@@ -738,14 +738,57 @@ class Order extends BaseController
         return json(new SuccessMessageWithData(['data' => $info]));
     }
 
-    public function orderMaterialsStatistic($page = 1, $size = 20)
+    /**
+     * @api {GET} /api/v1/order/materialsStatistic CMS管理端-材料管理-材料下单表
+     * @apiGroup  CMS管理端
+     * @apiVersion 3.0.0
+     * @apiDescription CMS管理端-材料管理-材料下单表
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/order/materialsStatistic?canteen_id=0&time_begin=2019-09-07&time_end=2019-12-07&page=1&size=20
+     * @apiParam (请求参数说明) {int} page 当前页码
+     * @apiParam (请求参数说明) {int} size 每页多少条数据
+     * @apiParam (请求参数说明) {string} canteen_id  饭堂id：选择某一个饭堂时传入饭堂id，选择全部时，饭堂id传入0
+     * @apiParam (请求参数说明) {string} time_begin  查询开始时间
+     * @apiParam (请求参数说明) {string} time_end  查询结束时间
+     * @apiSuccessExample {json}返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"total":5,"per_page":"20","current_page":1,"last_page":1,"data":[{"order_id":8,"detail_id":5,"ordering_date":"2019-09-07","material":null,"dinner_id":6,"dinner":"中餐","order_count":"1","material_count":"1","material_price":0,"update":1},{"order_id":8,"detail_id":6,"ordering_date":"2019-09-07","material":"土豆","dinner_id":6,"dinner":"中餐","order_count":"1","material_count":"1","material_price":5,"update":1},{"order_id":8,"detail_id":6,"ordering_date":"2019-09-07","material":"牛肉","dinner_id":6,"dinner":"中餐","order_count":"1","material_count":"1","material_price":60,"update":1},{"order_id":8,"detail_id":6,"ordering_date":"2019-09-07","material":"西红柿","dinner_id":6,"dinner":"中餐","order_count":"1","material_count":"1","material_price":5,"update":1},{"order_id":16,"detail_id":11,"ordering_date":"2019-11-07","material":null,"dinner_id":6,"dinner":"中餐","order_count":"1","material_count":"1","material_price":0,"update":1}]}}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {String} msg 信息描述
+     * @apiSuccess (返回参数说明) {int} total 数据总数
+     * @apiSuccess (返回参数说明) {int} per_page 每页多少条数据
+     * @apiSuccess (返回参数说明) {int} current_page 当前页码
+     * @apiSuccess (返回参数说明) {int} last_page 最后页码
+     * @apiSuccess (返回参数说明) {int} order_id 订单id
+     * @apiSuccess (返回参数说明) {int} detail_id 订单明细id
+     * @apiSuccess (返回参数说明) {string} ordering_date 日期
+     * @apiSuccess (返回参数说明) {string} dinner 餐次
+     * @apiSuccess (返回参数说明) {string} department 部门
+     * @apiSuccess (返回参数说明) {string} material 材料名称
+     * @apiSuccess (返回参数说明) {float} order_count 材料数量
+     * @apiSuccess (返回参数说明) {float} order_count 材料数量
+     * @apiSuccess (返回参数说明) {float} material_count 订货数量
+     * @apiSuccess (返回参数说明) {float} material_price 订货单价
+     * @apiSuccess (返回参数说明) {int} update 是否可以修改：订货数量和订货单价；1｜可以；2｜不可以
+     */
+    public function orderMaterialsStatistic($page = 1, $size = 20, $canteen_id = 0)
     {
         $time_begin = Request::param('time_begin');
         $time_end = Request::param('time_end');
-        $canteen_id = Request::param('canteen_id');
         $statistic = (new OrderStatisticService())
             ->orderMaterialsStatistic($page, $size, $time_begin, $time_end, $canteen_id);
         return json(new SuccessMessageWithData(['data' => $statistic]));
+    }
+
+    public function updateOrderMaterial()
+    {
+        $detail_id = Request::param('detail_id');
+        $material = Request::param('material');
+        $title = Request::param('$title');
+        $count = Request::param('count');
+        $price = Request::param('price');
+        (new OrderStatisticService())->updateOrderMaterial($title,$detail_id, $material, $count, $price);
+        return json(new SuccessMessage());
+
     }
 
 
