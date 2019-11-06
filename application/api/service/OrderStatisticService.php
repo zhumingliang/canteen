@@ -7,6 +7,7 @@ namespace app\api\service;
 use app\api\model\DinnerT;
 use app\api\model\MaterialPriceV;
 use app\api\model\OrderMaterialUpdateT;
+use app\api\model\OrderMaterialUpdateV;
 use app\api\model\OrderMaterialV;
 use app\api\model\OrderSettlementV;
 use app\api\model\OrderStatisticV;
@@ -90,12 +91,12 @@ class OrderStatisticService
 
     public function orderMaterialsStatistic($page, $size, $time_begin, $time_end, $canteen_id)
     {
-        $company_id = Token::getCurrentTokenVar('company_id');
+        $company_id = 2;//Token::getCurrentTokenVar('company_id');
         $statistic = OrderMaterialV::orderMaterialsStatistic($page, $size, $time_begin, $time_end, $canteen_id, $company_id);
         //获取该企业/饭堂下所有材料价格
         $materials = MaterialPriceV::materialsForOrder($canteen_id, $company_id);
         //获取指定修改记录
-        $updateRecords = OrderMaterialUpdateT::orderRecords($time_begin, $time_end, $canteen_id, $company_id);
+        $updateRecords = OrderMaterialUpdateV::orderRecords($time_begin, $time_end, $canteen_id, $company_id);
         $statistic['data'] = $this->prefixMaterials($statistic['data'], $materials, $updateRecords);
         return $statistic;
     }
@@ -113,11 +114,11 @@ class OrderStatisticService
                         if ($v['detail_id'] == $v3['detail_id'] && $v['material'] == $v3['material']) {
                             $data[$k]['material_price'] = $v3['price'];
                             $data[$k]['material_count'] = $v3['count'];
+                            unset($updateRecords[$k3]);
+                            $data[$k]['update'] = CommonEnum::STATE_IS_FAIL;
+                            $update = CommonEnum::STATE_IS_OK;
+                            break;
                         }
-                        unset($updateRecords[$k3]);
-                        $data[$k]['update'] = CommonEnum::STATE_IS_FAIL;
-                        $update = CommonEnum::STATE_IS_OK;
-                        break;
 
                     }
 
@@ -137,7 +138,7 @@ class OrderStatisticService
 
     public function updateOrderMaterial($title, $detail_id, $material, $count, $price)
     {
-        $this->checkMaterialUpdated($detail_id, $material);
+        $this->checkMaterialCanUpdate($detail_id, $material);
         $update = OrderMaterialUpdateT::create([
             'title' => $title,
             'detail_id' => $detail_id,
@@ -153,7 +154,7 @@ class OrderStatisticService
 
     }
 
-    private function checkMaterialUpdated($detail_id, $material)
+    private function checkMaterialCanUpdate($detail_id, $material)
     {
         $count = OrderMaterialUpdateT::where('detail_id', $detail_id)
             ->where('material', $material)

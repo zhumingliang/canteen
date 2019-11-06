@@ -779,11 +779,35 @@ class Order extends BaseController
         return json(new SuccessMessageWithData(['data' => $statistic]));
     }
 
+    /**
+     * @api {POST} /api/v1/order/material/update CMS管理端-材料管理-材料下单表-提交材料修改
+     * @apiGroup   Official
+     * @apiVersion 3.0.0
+     * @apiDescription    CMS管理端-材料管理-材料下单表-提交材料修改
+     * @apiExample {post}  请求样例:
+     *    {
+     *       "title": "报表名称",
+     *       "detail_id": 8,
+     *       "material": "西红柿",
+     *       "price": 1,
+     *       "count": 1,
+     *     }
+     * @apiParam (请求参数说明) {string} title  报表名称
+     * @apiParam (请求参数说明) {int} detail_id 订单明细id
+     * @apiParam (请求参数说明) {string} material 材料名称
+     * @apiParam (请求参数说明) {int} price 单价-元
+     * @apiParam (请求参数说明) {int} count 订货数量-kg
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"id":1}}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     * @apiSuccess (返回参数说明) {int} id 订单id
+     */
     public function updateOrderMaterial()
     {
         $detail_id = Request::param('detail_id');
         $material = Request::param('material');
-        $title = Request::param('$title');
+        $title = Request::param('title');
         $count = Request::param('count');
         $price = Request::param('price');
         (new OrderStatisticService())->updateOrderMaterial($title,$detail_id, $material, $count, $price);

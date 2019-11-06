@@ -1100,10 +1100,10 @@ class OrderService extends BaseService
         $dinner = DinnerT::canteenDinnerMenus($canteen_id);
         $strategies = (new CanteenService())->staffStrategy($canteen_id, $t_id);
         foreach ($dinner as $k => $v) {
+            $dinner[$k]['ordering_count'] = OrderingV::getRecordForDayOrdering($u_id, $day, $v["name"]);;
             foreach ($strategies as $k2 => $v2) {
-                if ($v['id'] = $v2['d_id']) {
+                if ($v['id'] == $v2['d_id']) {
                     $dinner[$k]['ordered_count'] = $v2['ordered_count'];
-                    $dinner[$k]['ordering_count'] = OrderingV::getRecordForDayOrdering($u_id, $day, $v["name"]);;
                     unset($strategies[$k2]);
                 }
             }
