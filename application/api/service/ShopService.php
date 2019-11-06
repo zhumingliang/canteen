@@ -229,7 +229,7 @@ class ShopService
 
     public function cmsProducts($supplier_id, $category_id, $page, $size)
     {
-        $company_id = Token::getCurrentTokenVar('c_id');
+        $company_id = Token::getCurrentTokenVar('company_id');
         if (empty($company_id)) {
             throw new AuthException();
         }
