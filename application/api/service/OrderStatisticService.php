@@ -17,6 +17,8 @@ use app\api\model\OrderTakeoutStatisticV;
 use app\lib\enum\CommonEnum;
 use app\lib\exception\ParameterException;
 use app\lib\exception\SaveException;
+use think\Db;
+use think\Exception;
 
 class OrderStatisticService
 {
@@ -102,7 +104,37 @@ class OrderStatisticService
         return $statistic;
     }
 
-    private function prefixMaterials($data, $materials, $updateRecords)
+    private function prefixMaterials($data, $materials, $updateRecords=array())
+    {
+        if (count($data)) {
+            foreach ($data as $k => $v) {
+                $data[$k]['material_price'] = 0;
+                $data[$k]['material_count'] = $v['order_count'];
+                if (count($updateRecords)) {
+                    foreach ($updateRecords as $k3 => $v3) {
+                        if ($v['detail_id'] == $v3['detail_id'] && $v['material'] == $v3['material']) {
+                            $data[$k]['material_price'] = $v3['price'];
+                            $data[$k]['material_count'] = $v3['count'];
+                            unset($updateRecords[$k3]);
+                            break;
+                        }
+
+                    }
+
+                }
+               if (count($materials)){
+                   foreach ($materials as $k2 => $v2) {
+                       if ($v['material'] == $v2['name']) {
+                           $data[$k]['material_price'] = $v2['price'];
+                       }
+
+                   }
+               }
+            }
+        }
+        return $data;
+    }
+    private function prefixMaterialsForReport($data, $materials, $updateRecords)
     {
         if (count($data)) {
             foreach ($data as $k => $v) {
@@ -139,20 +171,47 @@ class OrderStatisticService
 
     public function updateOrderMaterial($params)
     {
-        $this->checkMaterialCanUpdate($params['canteen_id'], $params['time_begin'], $params['time_end']);
-        /*$update = MaterialReportDetailT::create([
-            'title' => $title,
-            'detail_id' => $detail_id,
-            'material' => $material,
-            'count' => $count,
-            'price' => $price,
-            'state' => CommonEnum::STATE_IS_OK,
-            'admin_id' => Token::getCurrentUid()
-        ]);*/
-       /* if (!$update) {
-            throw new SaveException();
-        }*/
+        try {
+            Db::startTrans();
+            $this->checkMaterialCanUpdate($params['canteen_id'], $params['time_begin'], $params['time_end']);
+            $report = MaterialReportT::create([
+                'company_id' => Token::getCurrentTokenVar('company_id'),
+                'canteen_id' => $params['canteen_id'],
+                'title' => $params['title'],
+                'time_begin' => $params['time_begin'],
+                'time_end' => $params['time_end'],
+                'admin_id' => Token::getCurrentUid(),
+            ]);
+            if (!$report) {
+                throw new SaveException(['msg' => '新增报表失败']);
+            }
+            $materials = $params['materials'];
+            $materials = json_decode($materials, true);
+            if (empty($materials)) {
+                throw new ParameterException(['msg' => '参数格式错误']);
+            }
+            $dataList = [];
+            foreach ($materials as $k => $v) {
+                array_push($dataList, [
+                    'report_id' => $report->id,
+                    'material' => $v['material'],
+                    'count' => $v['count'],
+                    'price' => $v['price'],
+                    'detail_id' => $v['detail_id'],
+                    'ordering_date' => $v['ordering_date'],
+                    'state' => CommonEnum::STATE_IS_OK
+                ]);
 
+            }
+            $detail = (new MaterialReportDetailT())->saveAll($dataList);
+            if (!$detail) {
+                throw new SaveException(['msg' => '保存报表详情失败']);
+            }
+            Db::commit();
+        } catch (Exception $e) {
+            Db::rollback();
+            throw  $e;
+        }
     }
 
     private function checkMaterialCanUpdate($canteen_id, $time_begin, $time_end)
@@ -163,7 +222,7 @@ class OrderStatisticService
             ') or ( time_end > ' . $time_begin . ' and ' . 'time_end < ' . $time_end . ')' .
             ' or (time_begin < ' . $time_begin . ' and time_end > ' . '$time_end )';
         $count = MaterialReportT::where('canteen_id', $canteen_id)
-            ->where('state',CommonEnum::STATE_IS_OK)
+            ->where('state', CommonEnum::STATE_IS_OK)
             ->whereRaw($sql)
             ->where('state', CommonEnum::STATE_IS_OK)
             ->count();

@@ -96,6 +96,7 @@ Route::get('api/:version/menus/canteen', 'api/:version.Menu/canteenMenus');
 Route::get('api/:version/menus/dinner', 'api/:version.Menu/dinnerMenus');
 
 Route::post('api/:version/food/save', 'api/:version.Food/save');
+Route::post('api/:version/food/saveComment', 'api/:version.Food/saveComment');
 Route::post('api/:version/food/update', 'api/:version.Food/update');
 Route::post('api/:version/food/handel', 'api/:version.Food/handel');
 Route::post('api/:version/food/day/handel', 'api/:version.Food/handelFoodsDayStatus');
