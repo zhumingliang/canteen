@@ -290,7 +290,7 @@ class FoodService extends BaseService
     public function infoToComment($food_id)
     {
         $food = FoodT::infoForComment($food_id);
-        $canteen_id = Token::getCurrentTokenVar('current_current_id');
+        $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
         return [
             'food' => $food,
             'canteenScore' => (new CanteenService())->canteenScore($canteen_id)
