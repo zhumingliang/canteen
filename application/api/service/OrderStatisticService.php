@@ -140,7 +140,7 @@ class OrderStatisticService
     public function updateOrderMaterial($params)
     {
         $this->checkMaterialCanUpdate($params['canteen_id'], $params['time_begin'], $params['time_end']);
-        $update = MaterialReportDetailT::create([
+        /*$update = MaterialReportDetailT::create([
             'title' => $title,
             'detail_id' => $detail_id,
             'material' => $material,
@@ -148,10 +148,10 @@ class OrderStatisticService
             'price' => $price,
             'state' => CommonEnum::STATE_IS_OK,
             'admin_id' => Token::getCurrentUid()
-        ]);
-        if (!$update) {
+        ]);*/
+       /* if (!$update) {
             throw new SaveException();
-        }
+        }*/
 
     }
 
