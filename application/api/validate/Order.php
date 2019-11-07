@@ -21,6 +21,7 @@ class Order extends BaseValidate
         'ordering_date' => 'require|isNotEmpty',
         'title' => 'require|isNotEmpty',
         'detail' => 'require|isNotEmpty',
+        'materials' => 'require|isNotEmpty',
         'time_begin' => 'require|isNotEmpty',
         'time_end' => 'require|isNotEmpty',
         'consumption_time' => 'require|isNotEmpty',
@@ -51,6 +52,6 @@ class Order extends BaseValidate
         'orderStatistic' => ['company_ids', 'time_begin', 'time_end'],
         'orderStatisticDetail' => ['company_ids', 'time_begin', 'time_end'],
         'orderMaterialsStatistic' => ['time_begin', 'time_end','canteen_id'],
-        'updateOrderMaterial' => ['time_begin', 'time_end', 'canteen_id', 'title', 'detail'],
+        'updateOrderMaterial' => ['time_begin', 'time_end', 'canteen_id', 'title', 'materials'],
     ];
 }

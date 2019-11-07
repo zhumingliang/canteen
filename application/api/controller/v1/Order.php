@@ -789,7 +789,7 @@ class Order extends BaseController
      *       "canteen_id":3,
      *       "time_begin": 2019-11-01,
      *       "time_end": 2019-11-20,
-     *       "materials": [{"detail_id": 8,"material":"西红柿","price": 1,"count": 1,"ordering_date":2019-11-07}]
+     *       "materials": [{"detail_id": 8,"material":"西红柿","price": 1,"count": 1,"ordering_date":"2019-11-07"}]
      *     }
      * @apiParam (请求参数说明) {string} title  报表名称
      * @apiParam (请求参数说明) {string} canteen_id  饭堂id

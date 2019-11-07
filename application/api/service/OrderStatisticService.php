@@ -221,7 +221,7 @@ class OrderStatisticService
         $time_end = 'date_format("' . $time_end . '","%Y-%m-%d")';
         $sql = '(time_begin > ' . $time_begin . ' and time_begin < ' . $time_end .
             ') or ( time_end > ' . $time_begin . ' and ' . 'time_end < ' . $time_end . ')' .
-            ' or (time_begin < ' . $time_begin . ' and time_end > ' . '$time_end )';
+            ' or (time_begin < ' . $time_begin . ' and time_end > ' . $time_end . ')';
         $count = MaterialReportT::where('canteen_id', $canteen_id)
             ->where('state', CommonEnum::STATE_IS_OK)
             ->whereRaw($sql)
