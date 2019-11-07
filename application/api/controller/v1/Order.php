@@ -780,19 +780,23 @@ class Order extends BaseController
     }
 
     /**
-     * @api {POST} /api/v1/order/material/update CMS管理端-材料管理-材料下单表-提交材料修改
+     * @api {POST} /api/v1/order/material/update CMS管理端-材料管理-材料下单表-提交生成报表
      * @apiGroup   Official
      * @apiVersion 3.0.0
      * @apiDescription    CMS管理端-材料管理-材料下单表-提交材料修改
      * @apiExample {post}  请求样例:
      *    {
      *       "title": "报表名称",
-     *       "detail_id": 8,
-     *       "material": "西红柿",
-     *       "price": 1,
-     *       "count": 1,
+     *       "canteen_id":3,
+     *       "time_begin": 2019-11-01,
+     *       "time_end": 2019-11-20,
+     *       "materials": [{"detail_id": 8,"material":"西红柿","price": 1,"count": 1,}]
      *     }
      * @apiParam (请求参数说明) {string} title  报表名称
+     * @apiParam (请求参数说明) {string} canteen_id  饭堂id
+     * @apiParam (请求参数说明) {string} time_begin  开始时间
+     * @apiParam (请求参数说明) {string} time_end  结束时间
+     * @apiParam (请求参数说明) {string} materials 修改材料价格明细：json字符串
      * @apiParam (请求参数说明) {int} detail_id 订单明细id
      * @apiParam (请求参数说明) {string} material 材料名称
      * @apiParam (请求参数说明) {int} price 单价-元
@@ -805,12 +809,8 @@ class Order extends BaseController
      */
     public function updateOrderMaterial()
     {
-        $detail_id = Request::param('detail_id');
-        $material = Request::param('material');
-        $title = Request::param('title');
-        $count = Request::param('count');
-        $price = Request::param('price');
-        (new OrderStatisticService())->updateOrderMaterial($title,$detail_id, $material, $count, $price);
+        $params = Request::param();
+        (new OrderStatisticService())->updateOrderMaterial($params);
         return json(new SuccessMessage());
 
     }

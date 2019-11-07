@@ -7,7 +7,7 @@ namespace app\api\model;
 use app\lib\enum\CommonEnum;
 use think\Model;
 
-class OrderMaterialUpdateT extends Model
+class MaterialReportDetailT extends Model
 {
 
 

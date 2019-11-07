@@ -7,7 +7,7 @@ namespace app\api\model;
 use app\lib\enum\CommonEnum;
 use think\Model;
 
-class OrderMaterialUpdateV extends Model
+class MaterialReportDetailV extends Model
 {
     public static function orderRecords($time_begin,$time_end,$canteen_id,$company_id)
     {

@@ -260,13 +260,13 @@ class OrderService extends BaseService
                     $returnMoney = [
                         'consumption_type' => 'no_meals_ordered',
                         'money' => $no_meal_money,
-                        'sub_money' => $no_meal_money
+                        'sub_money' => $no_meal_sub_money
                     ];
                 } else {
                     $returnMoney = [
                         'consumption_type' => 'ordering_meals',
                         'money' => $meal_money,
-                        'sub_money' => $meal_money
+                        'sub_money' => $meal_sub_money
                     ];
                 }
                 break;
@@ -334,8 +334,8 @@ class OrderService extends BaseService
             if (empty($detail)) {
                 throw new ParameterException(['msg' => '订餐数据格式错误']);
             }
-            $u_id = Token::getCurrentUid();
-            $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
+            $u_id =Token::getCurrentUid();
+            $canteen_id =Token::getCurrentTokenVar('current_canteen_id');
             $data = $this->prefixOnlineOrderingData($u_id, $canteen_id, $detail);
             $money = $data['all_money'];
             $pay_way = $this->checkBalance($u_id, $canteen_id, $money);
@@ -347,7 +347,7 @@ class OrderService extends BaseService
             if (!$ordering) {
                 throw  new SaveException();
             }
-            Db::commit();
+             Db::commit();
         } catch (Exception $e) {
             Db::rollback();
             throw $e;
@@ -384,7 +384,6 @@ class OrderService extends BaseService
             $ordering_data = $v['ordering'];
             $dinner = DinnerT::dinnerInfo($v['d_id']);
             $strategies = (new CanteenService())->getStaffConsumptionStrategy($canteen_id, $v['d_id'], $staff_type_id);
-
             if (!empty($ordering_data)) {
                 foreach ($ordering_data as $k2 => $v2) {
                     //检测是否可以订餐
@@ -401,13 +400,13 @@ class OrderService extends BaseService
                     $data['count'] = $v2['count'];
                     $data['order_num'] = makeOrderNo();
                     $data['ordering_type'] = OrderEnum::ORDERING_ONLINE;
-                    $params['money'] = $checkOrder['money'] * $v2['count'];
-                    $params['sub_money'] = $checkOrder['sub_money'] * $v2['count'];
-                    $params['consumption_type'] = $checkOrder['consumption_type'];
+                    $data['money'] = $checkOrder['money'] * $v2['count'];
+                    $data['sub_money'] = $checkOrder['sub_money'] * $v2['count'];
+                    $data['consumption_type'] = $checkOrder['consumption_type'];
                     $data['pay_way'] = '';
                     $data['pay'] = CommonEnum::STATE_IS_OK;
                     array_push($data_list, $data);
-                    $all_money += $params['money'] + $params['sub_money'];
+                    $all_money += $data['money'] + $data['sub_money'];
                 }
 
             }

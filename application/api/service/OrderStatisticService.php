@@ -6,8 +6,9 @@ namespace app\api\service;
 
 use app\api\model\DinnerT;
 use app\api\model\MaterialPriceV;
-use app\api\model\OrderMaterialUpdateT;
-use app\api\model\OrderMaterialUpdateV;
+use app\api\model\MaterialReportDetailT;
+use app\api\model\MaterialReportDetailV;
+use app\api\model\MaterialReportT;
 use app\api\model\OrderMaterialV;
 use app\api\model\OrderSettlementV;
 use app\api\model\OrderStatisticV;
@@ -96,7 +97,7 @@ class OrderStatisticService
         //获取该企业/饭堂下所有材料价格
         $materials = MaterialPriceV::materialsForOrder($canteen_id, $company_id);
         //获取指定修改记录
-        $updateRecords = OrderMaterialUpdateV::orderRecords($time_begin, $time_end, $canteen_id, $company_id);
+        $updateRecords = MaterialReportDetailV::orderRecords($time_begin, $time_end, $canteen_id, $company_id);
         $statistic['data'] = $this->prefixMaterials($statistic['data'], $materials, $updateRecords);
         return $statistic;
     }
@@ -136,10 +137,10 @@ class OrderStatisticService
         return $data;
     }
 
-    public function updateOrderMaterial($title, $detail_id, $material, $count, $price)
+    public function updateOrderMaterial($params)
     {
-        $this->checkMaterialCanUpdate($detail_id, $material);
-        $update = OrderMaterialUpdateT::create([
+        $this->checkMaterialCanUpdate($params['canteen_id'], $params['time_begin'], $params['time_end']);
+        $update = MaterialReportDetailT::create([
             'title' => $title,
             'detail_id' => $detail_id,
             'material' => $material,
@@ -154,10 +155,16 @@ class OrderStatisticService
 
     }
 
-    private function checkMaterialCanUpdate($detail_id, $material)
+    private function checkMaterialCanUpdate($canteen_id, $time_begin, $time_end)
     {
-        $count = OrderMaterialUpdateT::where('detail_id', $detail_id)
-            ->where('material', $material)
+        $time_begin = 'date_format("' . $time_begin . '","%Y-%m-%d")';
+        $time_end = 'date_format("' . $time_end . '","%Y-%m-%d")';
+        $sql = '(time_begin > ' . $time_begin . ' and time_begin < ' . $time_end .
+            ') or ( time_end > ' . $time_begin . ' and ' . 'time_end < ' . $time_end . ')' .
+            ' or (time_begin < ' . $time_begin . ' and time_end > ' . '$time_end )';
+        $count = MaterialReportT::where('canteen_id', $canteen_id)
+            ->where('state',CommonEnum::STATE_IS_OK)
+            ->whereRaw($sql)
             ->where('state', CommonEnum::STATE_IS_OK)
             ->count();
         if ($count) {

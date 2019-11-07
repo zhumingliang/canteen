@@ -32,6 +32,7 @@ class OfficialToken extends Token
         return [
             'token' => $token,
             'phone' => empty($cachedValue['phone']) ? 2 : 1,
+            'canteen_id' => $cachedValue['current_canteen_id'],
             'canteen_selected' => empty($cachedValue['current_canteen_id']) ? 2 : 1
         ];
     }

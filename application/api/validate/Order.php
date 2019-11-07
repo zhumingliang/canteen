@@ -19,6 +19,7 @@ class Order extends BaseValidate
         'count' => 'require|isPositiveInteger',
         'type' => 'require|in:1,2,3',
         'ordering_date' => 'require|isNotEmpty',
+        'title' => 'require|isNotEmpty',
         'detail' => 'require|isNotEmpty',
         'time_begin' => 'require|isNotEmpty',
         'time_end' => 'require|isNotEmpty',
@@ -47,8 +48,9 @@ class Order extends BaseValidate
         'orderUsersStatistic' => ['dinner_id', 'consumption_time', 'consumption_type'],
         'foodUsersStatistic' => ['dinner_id', 'food_id', 'consumption_time'],
         'handelOrderedNoMeal' => ['dinner_id', 'consumption_time'],
-        'orderStatistic' => ['company_ids','time_begin', 'time_end'],
-        'orderStatisticDetail' => ['company_ids','time_begin', 'time_end'],
+        'orderStatistic' => ['company_ids', 'time_begin', 'time_end'],
+        'orderStatisticDetail' => ['company_ids', 'time_begin', 'time_end'],
         'orderMaterialsStatistic' => ['time_begin', 'time_end'],
+        'updateOrderMaterial' => ['time_begin', 'time_end', 'canteen_id', 'title', 'detail'],
     ];
 }
