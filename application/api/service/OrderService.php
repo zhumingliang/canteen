@@ -471,7 +471,7 @@ class OrderService extends BaseService
      */
     public function userOrdering($consumption_time)
     {
-        $u_id = 5;//Token::getCurrentUid();
+        $u_id = Token::getCurrentUid();
         $orderings = OrderingV::userOrdering($u_id, $consumption_time);
         return $orderings;
 

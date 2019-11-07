@@ -27,7 +27,7 @@ class OrderingV extends Model
     {
         $consumption_time = 'ordering_month = date_format("' . $consumption_time . '","%Y-%m")';
         $orderings = self::where('u_id', $u_id)
-           ->whereOrRaw($consumption_time)
+            ->whereRaw($consumption_time)
             ->where('state', CommonEnum::STATE_IS_OK)
             ->select();
         return $orderings;

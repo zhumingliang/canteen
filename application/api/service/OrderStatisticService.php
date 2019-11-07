@@ -94,7 +94,7 @@ class OrderStatisticService
 
     public function orderMaterialsStatistic($page, $size, $time_begin, $time_end, $canteen_id)
     {
-        $company_id = 2;//Token::getCurrentTokenVar('company_id');
+        $company_id = Token::getCurrentTokenVar('company_id');
         $statistic = OrderMaterialV::orderMaterialsStatistic($page, $size, $time_begin, $time_end, $canteen_id, $company_id);
         //获取该企业/饭堂下所有材料价格
         $materials = MaterialPriceV::materialsForOrder($canteen_id, $company_id);
@@ -104,7 +104,7 @@ class OrderStatisticService
         return $statistic;
     }
 
-    private function prefixMaterials($data, $materials, $updateRecords=array())
+    private function prefixMaterials($data, $materials, $updateRecords = array())
     {
         if (count($data)) {
             foreach ($data as $k => $v) {
@@ -122,18 +122,19 @@ class OrderStatisticService
                     }
 
                 }
-               if (count($materials)){
-                   foreach ($materials as $k2 => $v2) {
-                       if ($v['material'] == $v2['name']) {
-                           $data[$k]['material_price'] = $v2['price'];
-                       }
+                if (count($materials)) {
+                    foreach ($materials as $k2 => $v2) {
+                        if ($v['material'] == $v2['name']) {
+                            $data[$k]['material_price'] = $v2['price'];
+                        }
 
-                   }
-               }
+                    }
+                }
             }
         }
         return $data;
     }
+
     private function prefixMaterialsForReport($data, $materials, $updateRecords)
     {
         if (count($data)) {
@@ -230,6 +231,11 @@ class OrderStatisticService
             throw new SaveException(['msg' => '已经修改，不能重复修改']);
         }
 
+    }
 
+    public function materialReports($page, $size, $time_begin, $time_end, $canteen_id)
+    {
+        $list = MaterialReportT::reports($page, $size, $time_begin, $time_end, $canteen_id);
+        return $list;
     }
 }

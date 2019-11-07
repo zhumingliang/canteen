@@ -815,9 +815,14 @@ class Order extends BaseController
 
     }
 
-    public function materialReport()
+    public function materialReports($page = 1, $size = 20)
     {
-
+        $time_begin = Request::param('time_begin');
+        $time_end = Request::param('time_end');
+        $canteen_id = Request::param('canteen_id');
+        $report = (new OrderStatisticService())
+            ->materialReports($page, $size, $time_begin, $time_end, $canteen_id);
+        return json(new SuccessMessageWithData(['data' => $report]));
     }
 
 
