@@ -334,8 +334,8 @@ class OrderService extends BaseService
             if (empty($detail)) {
                 throw new ParameterException(['msg' => '订餐数据格式错误']);
             }
-            $u_id =Token::getCurrentUid();
-            $canteen_id =Token::getCurrentTokenVar('current_canteen_id');
+            $u_id = Token::getCurrentUid();
+            $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
             $data = $this->prefixOnlineOrderingData($u_id, $canteen_id, $detail);
             $money = $data['all_money'];
             $pay_way = $this->checkBalance($u_id, $canteen_id, $money);
@@ -347,7 +347,7 @@ class OrderService extends BaseService
             if (!$ordering) {
                 throw  new SaveException();
             }
-             Db::commit();
+            Db::commit();
         } catch (Exception $e) {
             Db::rollback();
             throw $e;
@@ -471,7 +471,7 @@ class OrderService extends BaseService
      */
     public function userOrdering($consumption_time)
     {
-        $u_id = Token::getCurrentUid();
+        $u_id = 5;//Token::getCurrentUid();
         $orderings = OrderingV::userOrdering($u_id, $consumption_time);
         return $orderings;
 
@@ -492,7 +492,7 @@ class OrderService extends BaseService
         $strategies = (new CanteenService())->staffStrategy($canteen_id, $t_id);
         foreach ($dinner as $k => $v) {
             foreach ($strategies as $k2 => $v2) {
-                if ($v['id'] = $v2['d_id']) {
+                if ($v['id'] == $v2['d_id']) {
                     $dinner[$k]['ordered_count'] = $v2['ordered_count'];
                     unset($strategies[$k2]);
                 }

@@ -46,7 +46,11 @@ class UserService
 
     public function bindCanteen($canteen_id)
     {
-        $staff = CompanyStaffT::where('phone', Token::getCurrentTokenVar('phone'))
+        $phone = Token::getCurrentTokenVar('phone');
+        $company_id = (new CanteenService())->getCanteenCompanyID($canteen_id);
+        $staff = CompanyStaffT::where('phone', $phone)
+            ->where('company_id', $company_id)
+            ->where('state', CommonEnum::STATE_IS_OK)
             ->find();
         if (!$staff) {
             throw  new AuthException(['msg' => '用户信息不存在']);

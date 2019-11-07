@@ -30,6 +30,7 @@ use app\lib\exception\SaveException;
 use app\lib\exception\UpdateException;
 use think\Db;
 use think\Exception;
+use think\Model;
 
 class CanteenService
 {
@@ -483,6 +484,15 @@ class CanteenService
         $data = $machines['data'];
         $machines['data'] = $this->prefixMachinesState($data);
         return $machines;
+    }
+
+    public function getCanteenCompanyID($canteen_id)
+    {
+        $canteen = CanteenT::get($canteen_id);
+        if (!$canteen) {
+            throw  new ParameterException(['msg' => '饭堂不存在']);
+        }
+        return $canteen->c_id;
     }
 
 }
