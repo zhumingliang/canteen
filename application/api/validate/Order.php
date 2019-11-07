@@ -53,5 +53,6 @@ class Order extends BaseValidate
         'orderStatisticDetail' => ['company_ids', 'time_begin', 'time_end'],
         'orderMaterialsStatistic' => ['time_begin', 'time_end','canteen_id'],
         'updateOrderMaterial' => ['time_begin', 'time_end', 'canteen_id', 'title', 'materials'],
+        'materialReports' => ['time_begin', 'time_end', 'canteen_id'],
     ];
 }

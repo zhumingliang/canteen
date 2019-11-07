@@ -149,6 +149,7 @@ Route::get('api/:version/order/orderStatistic/detail', 'api/:version.Order/order
 Route::get('api/:version/order/orderSettlement', 'api/:version.Order/orderSettlement');
 Route::get('api/:version/order/materialsStatistic', 'api/:version.Order/orderMaterialsStatistic');
 Route::post('api/:version/order/material/update', 'api/:version.Order/updateOrderMaterial');
+Route::get('api/:version/order/material/reports', 'api/:version.Order/materialReports');
 
 Route::post('api/:version/address/save', 'api/:version.Address/save');
 Route::post('api/:version/address/update', 'api/:version.Address/update');

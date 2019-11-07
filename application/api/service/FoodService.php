@@ -281,6 +281,7 @@ class FoodService extends BaseService
     public function saveComment($params)
     {
         $params['u_id'] = Token::getCurrentUid();
+        $params['f_id'] = $params['food_id'];
         $comment = FoodCommentT::create($params);
         if (!$comment) {
             throw  new SaveException();
