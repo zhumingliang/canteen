@@ -512,7 +512,7 @@ class OrderService extends BaseService
         if (!$order) {
             throw new ParameterException(['msg' => '指定订餐信息不存在']);
         }
-        $this->checkOrderCanHandel($order->d_id,$order->ordering_date);
+        $this->checkOrderCanHandel($order->d_id, $order->ordering_date);
         $order->state = CommonEnum::STATE_IS_FAIL;
         $res = $order->save();
         if (!$res) {
@@ -520,7 +520,7 @@ class OrderService extends BaseService
         }
     }
 
-    private function checkOrderCanHandel($d_id,$ordering_date)
+    private function checkOrderCanHandel($d_id, $ordering_date)
     {
         //获取餐次设置
         $dinner = DinnerT::dinnerInfo($d_id);
@@ -568,7 +568,7 @@ class OrderService extends BaseService
             throw new ParameterException(['msg' => '指定订餐信息不存在']);
         }
         //检测订单是否可操作
-        $this->checkOrderCanHandel($order->d_id);
+        $this->checkOrderCanHandel($order->d_id, $order->ordering_date);
         //检测订单修改数量是否合法
         $strategy = (new CanteenService())->getStaffConsumptionStrategy($order->c_id, $order->d_id, $order->t_id);
         if (!$strategy) {
