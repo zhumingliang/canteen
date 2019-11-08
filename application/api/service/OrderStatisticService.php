@@ -19,6 +19,7 @@ use app\lib\exception\ParameterException;
 use app\lib\exception\SaveException;
 use think\Db;
 use think\Exception;
+use think\Request;
 
 class OrderStatisticService
 {
@@ -94,14 +95,15 @@ class OrderStatisticService
 
     public function orderMaterialsStatistic($page, $size, $time_begin, $time_end, $canteen_id)
     {
-        $company_id = Token::getCurrentTokenVar('company_id');
+        $company_id = 3;//Token::getCurrentTokenVar('company_id');
         $statistic = OrderMaterialV::orderMaterialsStatistic($page, $size, $time_begin, $time_end, $canteen_id, $company_id);
         //获取该企业/饭堂下所有材料价格
         $materials = MaterialPriceV::materialsForOrder($canteen_id, $company_id);
-        //获取指定修改记录
-        $updateRecords = MaterialReportDetailV::orderRecords($time_begin, $time_end, $canteen_id, $company_id);
-        $statistic['data'] = $this->prefixMaterials($statistic['data'], $materials, $updateRecords);
-        return $statistic;
+        $statistic['data'] = $this->prefixMaterials($statistic['data'], $materials);
+        return [
+            'list' => $statistic,
+            'money' => $this->getMaterialMoney($time_begin, $time_end, $canteen_id, 0, $materials)
+        ];
     }
 
     private function prefixMaterials($data, $materials, $updateRecords = array())
@@ -110,18 +112,6 @@ class OrderStatisticService
             foreach ($data as $k => $v) {
                 $data[$k]['material_price'] = 0;
                 $data[$k]['material_count'] = $v['order_count'];
-                if (count($updateRecords)) {
-                    foreach ($updateRecords as $k3 => $v3) {
-                        if ($v['detail_id'] == $v3['detail_id'] && $v['material'] == $v3['material']) {
-                            $data[$k]['material_price'] = $v3['price'];
-                            $data[$k]['material_count'] = $v3['count'];
-                            unset($updateRecords[$k3]);
-                            break;
-                        }
-
-                    }
-
-                }
                 if (count($materials)) {
                     foreach ($materials as $k2 => $v2) {
                         if ($v['material'] == $v2['name']) {
@@ -130,45 +120,26 @@ class OrderStatisticService
 
                     }
                 }
-            }
-        }
-        return $data;
-    }
-
-    private function prefixMaterialsForReport($data, $materials, $updateRecords)
-    {
-        if (count($data)) {
-            foreach ($data as $k => $v) {
-                $data[$k]['material_price'] = 0;
-                $data[$k]['material_count'] = $v['order_count'];
-                $data[$k]['update'] = CommonEnum::STATE_IS_OK;
-                $update = CommonEnum::STATE_IS_FAIL;
                 if (count($updateRecords)) {
                     foreach ($updateRecords as $k3 => $v3) {
-                        if ($v['detail_id'] == $v3['detail_id'] && $v['material'] == $v3['material']) {
+                        if (strtotime($v['ordering_date']) == strtotime($v3['ordering_date'])
+                            && $v['dinner_id'] == $v3['dinner_id']
+                            && $v['material'] == $v3['material']) {
                             $data[$k]['material_price'] = $v3['price'];
                             $data[$k]['material_count'] = $v3['count'];
                             unset($updateRecords[$k3]);
-                            $data[$k]['update'] = CommonEnum::STATE_IS_FAIL;
-                            $update = CommonEnum::STATE_IS_OK;
                             break;
                         }
 
                     }
 
                 }
-                if ($update == CommonEnum::STATE_IS_FAIL && count($materials)) {
-                    foreach ($materials as $k2 => $v2) {
-                        if ($v['material'] == $v2['name']) {
-                            $data[$k]['material_price'] = $v2['price'];
-                        }
 
-                    }
-                }
             }
         }
         return $data;
     }
+
 
     public function updateOrderMaterial($params)
     {
@@ -198,7 +169,7 @@ class OrderStatisticService
                     'material' => $v['material'],
                     'count' => $v['count'],
                     'price' => $v['price'],
-                    'detail_id' => $v['detail_id'],
+                    'dinner_id' => $v['dinner_id'],
                     'ordering_date' => $v['ordering_date'],
                     'state' => CommonEnum::STATE_IS_OK
                 ]);
@@ -237,5 +208,73 @@ class OrderStatisticService
     {
         $list = MaterialReportT::reports($page, $size, $time_begin, $time_end, $canteen_id);
         return $list;
+    }
+
+    public function materialReport($report_id, $page, $size)
+    {
+        $report = MaterialReportT::get($report_id);
+        if (empty($report)) {
+            throw new ParameterException(['msg' => '导出报表不存在']);
+        }
+        if ($report->state == CommonEnum::STATE_IS_FAIL) {
+            throw new ParameterException(['msg' => '报表已废除']);
+        }
+
+        $time_begin = $report->time_begin;
+        $time_end = $report->time_end;
+        $canteen_id = $report->canteen_id;
+        $company_id = $report->company_id;
+        $statistic = OrderMaterialV::orderMaterialsStatistic($page, $size, $time_begin, $time_end, $canteen_id, $company_id);
+        //获取该企业/饭堂下所有材料价格
+        $materials = MaterialPriceV::materialsForOrder($canteen_id, $company_id);
+        //获取指定修改记录
+        $updateRecords = MaterialReportDetailV::orderRecords($report_id);
+        $statistic['data'] = $this->prefixMaterials($statistic['data'], $materials, $updateRecords);
+        return [
+            'list' => $statistic,
+            'money' => $this->getMaterialMoney($time_begin, $time_end, $canteen_id, $report_id, $materials)
+        ];
+
+    }
+
+    private function getMaterialMoney($time_begin, $time_end, $canteen_id, $report_id, $materials)
+    {
+        $money = 0;
+        $allRecords = OrderMaterialV::allRecords($time_begin, $time_end, $canteen_id);
+        if (!count($allRecords)) {
+            return $money;
+        }
+        $updateRecords = array();
+        if ($report_id) {
+            $updateRecords = MaterialReportDetailT::statistic($report_id);
+        }
+        foreach ($allRecords as $k => $v) {
+            $check = true;
+            if (count($updateRecords)) {
+                foreach ($updateRecords as $k2 => $v2) {
+                    if (strtotime($v['ordering_date']) == strtotime($v2['ordering_date'])
+                        && $v['dinner_id'] == $v2['dinner_id']
+                        && $v['material'] == $v2['material']) {
+                        $money += $v2['count'] * $v2['price'];
+                        unset($updateRecords[$k2]);
+                        $check = false;
+                        break;
+                    }
+                }
+            }
+            if (count($materials) && $check) {
+                if (count($materials)) {
+                    foreach ($materials as $k3 => $v3) {
+                        if ($v['material'] == $v3['name']) {
+                            $money += $v['order_count'] * $v3['price'];
+                            break;
+                        }
+
+                    }
+                }
+            }
+
+        }
+        return $money;
     }
 }

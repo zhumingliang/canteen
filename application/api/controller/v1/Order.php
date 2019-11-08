@@ -10,6 +10,7 @@ namespace app\api\controller\v1;
 
 
 use app\api\controller\BaseController;
+use app\api\model\MaterialReportT;
 use app\api\model\OnlineOrderingT;
 use app\api\model\PersonalChoiceT;
 use app\api\service\OrderService;
@@ -747,13 +748,14 @@ class Order extends BaseController
      * http://canteen.tonglingok.com/api/v1/order/materialsStatistic?canteen_id=0&time_begin=2019-09-07&time_end=2019-12-07&page=1&size=20
      * @apiParam (请求参数说明) {int} page 当前页码
      * @apiParam (请求参数说明) {int} size 每页多少条数据
-     * @apiParam (请求参数说明) {string} canteen_id  饭堂id：选择某一个饭堂时传入饭堂id，选择全部时，饭堂id传入0
+     * @apiParam (请求参数说明) {string} canteen_id  饭堂id
      * @apiParam (请求参数说明) {string} time_begin  查询开始时间
      * @apiParam (请求参数说明) {string} time_end  查询结束时间
      * @apiSuccessExample {json}返回样例:
-     * {"msg":"ok","errorCode":0,"code":200,"data":{"total":4,"per_page":"20","current_page":1,"last_page":1,"data":[{"order_id":8,"detail_id":5,"ordering_date":"2019-09-07","material":null,"dinner_id":6,"dinner":"中餐","order_count":"1","material_count":"1","material_price":0},{"order_id":8,"detail_id":6,"ordering_date":"2019-09-07","material":"土豆","dinner_id":6,"dinner":"中餐","order_count":"1","material_count":"1","material_price":0},{"order_id":8,"detail_id":6,"ordering_date":"2019-09-07","material":"牛肉","dinner_id":6,"dinner":"中餐","order_count":"1","material_count":"1","material_price":0},{"order_id":8,"detail_id":6,"ordering_date":"2019-09-07","material":"西红柿","dinner_id":6,"dinner":"中餐","order_count":"1","material_count":"1","material_price":0}]}}
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"list":{"total":8,"per_page":"20","current_page":1,"last_page":1,"data":[{"order_id":8,"ordering_date":"2019-09-07","material":null,"dinner_id":6,"dinner":"中餐","order_count":null,"material_price":0,"material_count":null},{"order_id":8,"ordering_date":"2019-09-07","material":"土豆","dinner_id":6,"dinner":"中餐","order_count":10,"material_price":5,"material_count":10},{"order_id":8,"ordering_date":"2019-09-07","material":"牛肉","dinner_id":6,"dinner":"中餐","order_count":15,"material_price":60,"material_count":15},{"order_id":8,"ordering_date":"2019-09-07","material":"西红柿","dinner_id":6,"dinner":"中餐","order_count":10,"material_price":5,"material_count":10},{"order_id":16,"ordering_date":"2019-11-07","material":null,"dinner_id":6,"dinner":"中餐","order_count":null,"material_price":0,"material_count":null},{"order_id":18,"ordering_date":"2019-11-18","material":"土豆","dinner_id":6,"dinner":"中餐","order_count":10,"material_price":5,"material_count":10},{"order_id":18,"ordering_date":"2019-11-18","material":"牛肉","dinner_id":6,"dinner":"中餐","order_count":15,"material_price":60,"material_count":15},{"order_id":18,"ordering_date":"2019-11-18","material":"西红柿","dinner_id":6,"dinner":"中餐","order_count":10,"material_price":5,"material_count":10}]},"money":2000}}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
      * @apiSuccess (返回参数说明) {String} msg 信息描述
+     * @apiSuccess (返回参数说明) {int} list 报表列表
      * @apiSuccess (返回参数说明) {int} total 数据总数
      * @apiSuccess (返回参数说明) {int} per_page 每页多少条数据
      * @apiSuccess (返回参数说明) {int} current_page 当前页码
@@ -767,6 +769,7 @@ class Order extends BaseController
      * @apiSuccess (返回参数说明) {float} order_count 材料数量
      * @apiSuccess (返回参数说明) {float} material_count 订货数量
      * @apiSuccess (返回参数说明) {float} material_price 订货单价
+     * @apiSuccess (返回参数说明) {float} money 报表总价
      */
     public function orderMaterialsStatistic($page = 1, $size = 20)
     {
@@ -789,14 +792,14 @@ class Order extends BaseController
      *       "canteen_id":3,
      *       "time_begin": 2019-11-01,
      *       "time_end": 2019-11-20,
-     *       "materials": [{"detail_id": 8,"material":"西红柿","price": 1,"count": 1,"ordering_date":"2019-11-07"}]
+     *       "materials": [{"dinner_id": 8,"material":"西红柿","price": 1,"count": 1,"ordering_date":"2019-11-07"}]
      *     }
      * @apiParam (请求参数说明) {string} title  报表名称
      * @apiParam (请求参数说明) {string} canteen_id  饭堂id
      * @apiParam (请求参数说明) {string} time_begin  开始时间
      * @apiParam (请求参数说明) {string} time_end  结束时间
      * @apiParam (请求参数说明) {string} materials 修改材料价格明细：json字符串
-     * @apiParam (请求参数说明) {int} detail_id 订单明细id
+     * @apiParam (请求参数说明) {int} dinner_id 餐次id
      * @apiParam (请求参数说明) {string} material 材料名称
      * @apiParam (请求参数说明) {int} price 单价-元
      * @apiParam (请求参数说明) {int} count 订货数量-kg
@@ -816,34 +819,30 @@ class Order extends BaseController
     }
 
     /**
-     * @api {GET} /api/v1/order/materialsStatistic CMS管理端-材料管理-入库材料报表-列表
+     * @api {GET} /api/v1/order/material/reports CMS管理端-材料管理-入库材料报表-列表
      * @apiGroup  CMS管理端
      * @apiVersion 3.0.0
-     * @apiDescription CMS管理端-材料管理-材料下单表
+     * @apiDescription CMS管理端-材料管理-入库材料报表-列表
      * @apiExample {get}  请求样例:
-     * http://canteen.tonglingok.com/api/v1/order/materialsStatistic?canteen_id=0&time_begin=2019-09-07&time_end=2019-12-07&page=1&size=20
+     * http://canteen.tonglingok.com/api/v1/order/material/reports?canteen_id=6&time_begin=2019-09-07&time_end=2019-12-07&page=1&size=20
      * @apiParam (请求参数说明) {int} page 当前页码
      * @apiParam (请求参数说明) {int} size 每页多少条数据
-     * @apiParam (请求参数说明) {string} canteen_id  饭堂id：选择某一个饭堂时传入饭堂id，选择全部时，饭堂id传入0
+     * @apiParam (请求参数说明) {string} canteen_id  饭堂id
      * @apiParam (请求参数说明) {string} time_begin  查询开始时间
      * @apiParam (请求参数说明) {string} time_end  查询结束时间
      * @apiSuccessExample {json}返回样例:
-     * {"msg":"ok","errorCode":0,"code":200,"data":{"total":4,"per_page":"20","current_page":1,"last_page":1,"data":[{"order_id":8,"detail_id":5,"ordering_date":"2019-09-07","material":null,"dinner_id":6,"dinner":"中餐","order_count":"1","material_count":"1","material_price":0},{"order_id":8,"detail_id":6,"ordering_date":"2019-09-07","material":"土豆","dinner_id":6,"dinner":"中餐","order_count":"1","material_count":"1","material_price":0},{"order_id":8,"detail_id":6,"ordering_date":"2019-09-07","material":"牛肉","dinner_id":6,"dinner":"中餐","order_count":"1","material_count":"1","material_price":0},{"order_id":8,"detail_id":6,"ordering_date":"2019-09-07","material":"西红柿","dinner_id":6,"dinner":"中餐","order_count":"1","material_count":"1","material_price":0}]}}
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"total":1,"per_page":20,"current_page":1,"last_page":1,"data":[{"id":4,"canteen_id":6,"title":"2019-11-01~2019-11-07材料报表","create_time":"2019-11-08 00:10:34","canteen":{"id":6,"name":"饭堂1"}}]}}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
      * @apiSuccess (返回参数说明) {String} msg 信息描述
      * @apiSuccess (返回参数说明) {int} total 数据总数
      * @apiSuccess (返回参数说明) {int} per_page 每页多少条数据
      * @apiSuccess (返回参数说明) {int} current_page 当前页码
      * @apiSuccess (返回参数说明) {int} last_page 最后页码
-     * @apiSuccess (返回参数说明) {int} order_id 订单id
-     * @apiSuccess (返回参数说明) {int} detail_id 订单明细id
-     * @apiSuccess (返回参数说明) {string} ordering_date 日期
-     * @apiSuccess (返回参数说明) {string} dinner 餐次
-     * @apiSuccess (返回参数说明) {string} material 材料名称
-     * @apiSuccess (返回参数说明) {float} order_count 材料数量
-     * @apiSuccess (返回参数说明) {float} order_count 材料数量
-     * @apiSuccess (返回参数说明) {float} material_count 订货数量
-     * @apiSuccess (返回参数说明) {float} material_price 订货单价
+     * @apiSuccess (返回参数说明) {int} id 报表id
+     * @apiSuccess (返回参数说明) {int} title 报表名称
+     * @apiSuccess (返回参数说明) {string} create_time 日期
+     * @apiSuccess (返回参数说明) {obj} canteen 饭堂信息
+     * @apiSuccess (返回参数说明) {string} name 饭堂名称
      */
     public function materialReports($page = 1, $size = 20)
     {
@@ -853,6 +852,69 @@ class Order extends BaseController
         $report = (new OrderStatisticService())
             ->materialReports($page, $size, $time_begin, $time_end, $canteen_id);
         return json(new SuccessMessageWithData(['data' => $report]));
+    }
+
+    /**
+     * @api {GET} /api/v1/order/material/report CMS管理端-材料管理-入库材料报表-报表详情
+     * @apiGroup  CMS管理端
+     * @apiVersion 3.0.0
+     * @apiDescription CMS管理端-材料管理-入库材料报表-报表详情
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/order/material/report?canteen_id=6&time_begin=2019-09-07&time_end=2019-12-07&page=1&size=20
+     * @apiParam (请求参数说明) {int} page 当前页码
+     * @apiParam (请求参数说明) {int} size 每页多少条数据
+     * @apiParam (请求参数说明) {string} id 报表id
+     * @apiSuccessExample {json}返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"list":{"total":5,"per_page":20,"current_page":1,"last_page":1,"data":[{"order_id":8,"ordering_date":"2019-09-07","material":null,"dinner_id":6,"dinner":"中餐","order_count":"1","material_count":"1","material_price":0},{"order_id":8,"ordering_date":"2019-09-07","material":"土豆","dinner_id":6,"dinner":"中餐","order_count":"1","material_count":"1","material_price":5},{"order_id":8,"ordering_date":"2019-09-07","material":"牛肉","dinner_id":6,"dinner":"中餐","order_count":"1","material_count":"1","material_price":60},{"order_id":8,"ordering_date":"2019-09-07","material":"西红柿","dinner_id":6,"dinner":"中餐","order_count":"1","material_count":"1","material_price":5},{"order_id":16,"ordering_date":"2019-11-07","material":null,"dinner_id":6,"dinner":"中餐","order_count":"1","material_count":"1","material_price":0}]},"money":1000}}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {String} msg 信息描述
+     * @apiSuccess (返回参数说明) {int} list 报表列表
+     * @apiSuccess (返回参数说明) {int} total 数据总数
+     * @apiSuccess (返回参数说明) {int} per_page 每页多少条数据
+     * @apiSuccess (返回参数说明) {int} current_page 当前页码
+     * @apiSuccess (返回参数说明) {int} last_page 最后页码
+     * @apiSuccess (返回参数说明) {int} ordering_date
+     * @apiSuccess (返回参数说明) {int} order_id 订单id
+     * @apiSuccess (返回参数说明) {int} detail_id 订单明细id
+     * @apiSuccess (返回参数说明) {string} ordering_date 日期
+     * @apiSuccess (返回参数说明) {string} dinner 餐次
+     * @apiSuccess (返回参数说明) {string} material 材料名称
+     * @apiSuccess (返回参数说明) {float} order_count 材料数量
+     * @apiSuccess (返回参数说明) {float} material_count 订货数量
+     * @apiSuccess (返回参数说明) {float} material_price 订货单价
+     * @apiSuccess (返回参数说明) {float} money 报表总价
+     */
+    public function materialReport($page = 1, $size = 20)
+    {
+        $report_id = Request::param('id');
+        $report = (new OrderStatisticService())->materialReport($report_id, $page, $size);
+        return json(new SuccessMessageWithData(['data' => $report]));
+    }
+
+    /**
+     * @api {POST} /api/v1/order/material/report/delete  CMS管理端-材料管理-入库材料报表-废除
+     * @apiGroup   CMS
+     * @apiVersion 3.0.0
+     * @apiDescription    CMS管理端-材料管理-入库材料报表-废除
+     * @apiExample {post}  请求样例:
+     *    {
+     *       "id": 4
+     *     }
+     * @apiParam (请求参数说明) {int} id 报表id
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     * @apiSuccess (返回参数说明) {int} id 订单id
+     */
+    public function materialReportHandel()
+    {
+        $id = Request::param('id');
+        $report = MaterialReportT::update(['state' => CommonEnum::STATE_IS_FAIL], ['id' => $id]);
+        if (!$report) {
+            throw new UpdateException();
+        }
+        return json(new SuccessMessage());
     }
 
 
