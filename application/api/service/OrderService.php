@@ -512,7 +512,7 @@ class OrderService extends BaseService
         if (!$order) {
             throw new ParameterException(['msg' => '指定订餐信息不存在']);
         }
-        $this->checkOrderCanHandel($order->d_id);
+        $this->checkOrderCanHandel($order->d_id,$order->ordering_date);
         $order->state = CommonEnum::STATE_IS_FAIL;
         $res = $order->save();
         if (!$res) {
@@ -520,7 +520,7 @@ class OrderService extends BaseService
         }
     }
 
-    private function checkOrderCanHandel($d_id)
+    private function checkOrderCanHandel($d_id,$ordering_date)
     {
         //获取餐次设置
         $dinner = DinnerT::dinnerInfo($d_id);
@@ -528,12 +528,12 @@ class OrderService extends BaseService
         $limit_time = $dinner->limit_time;
         $type_number = $dinner->type_number;
         if ($type == 'day') {
-            $expiryDate = $this->prefixExpiryDateForOrder($dinner->ordering_date, $type_number, '-');
+            $expiryDate = $this->prefixExpiryDateForOrder($ordering_date, $type_number, '-');
             if (strtotime(date('Y-m-d H:i:s', time())) > strtotime($expiryDate . ' ' . $limit_time)) {
                 throw  new  SaveException(['msg' => '当前时间不可操作订单']);
             }
         } else if ($type == 'week') {
-            $ordering_date_week = date('W', strtotime($dinner->ordering_date));
+            $ordering_date_week = date('W', strtotime($ordering_date));
             $now_week = date('W', time());
             if ($ordering_date_week <= $now_week) {
                 throw  new  SaveException(['msg' => '当前时间不可操作订单']);
