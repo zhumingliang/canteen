@@ -8,7 +8,9 @@ use app\api\model\CanteenCommentT;
 use app\api\model\ShopModuleT;
 use app\api\model\ShopOrderDetailT;
 use app\api\model\ShopOrderQrcodeT;
+use app\api\model\ShopOrderSupplierV;
 use app\api\model\ShopOrderT;
+use app\api\model\ShopOrderV;
 use app\api\model\ShopProductCommentT;
 use app\api\model\ShopProductStockBalanceV;
 use app\api\model\ShopProductStockT;
@@ -457,5 +459,20 @@ class ShopService
         $shop = ShopT::where('c_id', $company_id)->field('taking_mode')
             ->find();
         return $shop;
+    }
+
+    public function orderDetailStatisticToSupplier($page, $size, $category_id, $product_id, $time_begin, $time_end)
+    {
+        $supplier_id = Token::getCurrentUid();
+        $statistic = ShopOrderSupplierV::orderDetailStatisticToSupplier($page, $size, $category_id, $product_id, $time_begin, $time_end, $supplier_id);
+        return $statistic;
+    }
+
+    public function orderStatisticToManager($page, $size, $department_id, $name, $phone, $status, $time_begin, $time_end)
+    {
+        $company_id = Token::getCurrentTokenVar('company_id');
+        $statistic = ShopOrderV::orderStatisticToManager($page, $size, $department_id, $name, $phone, $status, $time_begin, $time_end, $company_id);
+        return $statistic;
+
     }
 }

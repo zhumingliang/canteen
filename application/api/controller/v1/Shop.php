@@ -495,7 +495,85 @@ class Shop extends BaseController
         return json(new SuccessMessageWithData(['data' => $mode]));
     }
 
+    /**
+     * @api {GET} /api/v1/shop/order/statistic/supplier CMS管理端-小卖部管理-订单明细查询-供应商
+     * @apiGroup  CMS管理端
+     * @apiVersion 3.0.0
+     * @apiDescription CMS管理端-材料管理-入库材料报表-列表
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/shop/order/statistic/supplier?category_id=0&product_id=0&time_begin=2019-09-07&time_end=2019-12-07&page=1&size=20
+     * @apiParam (请求参数说明) {int} page 当前页码
+     * @apiParam (请求参数说明) {int} size 每页多少条数据
+     * @apiParam (请求参数说明) {int} category_id  商品类型id：0表示全部
+     * @apiParam (请求参数说明) {int} product_id  商品id：0表示全部
+     * @apiParam (请求参数说明) {string} time_begin  查询开始时间
+     * @apiParam (请求参数说明) {string} time_end  查询结束时间
+     * @apiSuccessExample {json}返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"total":10,"per_page":1,"current_page":1,"last_page":10,"data":[{"create_time":"2019-10-28 23:49:27","product":"langbing","price":"17.0","count":1,"category":"商品12"}]}}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {String} msg 信息描述
+     * @apiSuccess (返回参数说明) {int} total 数据总数
+     * @apiSuccess (返回参数说明) {int} per_page 每页多少条数据
+     * @apiSuccess (返回参数说明) {int} current_page 当前页码
+     * @apiSuccess (返回参数说明) {int} last_page 最后页码
+     * @apiSuccess (返回参数说明) {string} create_time 下单时间
+     * @apiSuccess (返回参数说明) {string} product 商品名称
+     * @apiSuccess (返回参数说明) {string} count 数量
+     * @apiSuccess (返回参数说明) {obj} price 单价
+     * @apiSuccess (返回参数说明) {string} category 类别
+     */
+    public function orderDetailStatisticToSupplier($page = 1, $size = 20, $category_id = 0, $product_id = 0)
+    {
+        $time_begin = Request::param('time_begin');
+        $time_end = Request::param('time_end');
+        $statistic = (new ShopService())->orderDetailStatisticToSupplier($page, $size,
+            $category_id, $product_id, $time_begin, $time_end);
+        return json(new SuccessMessageWithData(['data' => $statistic]));
+    }
 
+    /**
+     * @api {GET} /api/v1/shop/order/statistic/manager CMS管理端-小卖部管理-订单明细查询-管理员
+     * @apiGroup  CMS管理端
+     * @apiVersion 3.0.0
+     * @apiDescription CMS管理端-小卖部管理-订单明细查询-管理员
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/shop/order/statistic/manager?department_id=0&status=0&name=''&phone=''&time_begin=2019-09-07&time_end=2019-12-07&page=1&size=20
+     * @apiParam (请求参数说明) {int} page 当前页码
+     * @apiParam (请求参数说明) {int} size 每页多少条数据
+     * @apiParam (请求参数说明) {int} department_id  部门id：0表示全部
+     * @apiParam (请求参数说明) {int} status 状态：0表示全部；1：已完成；2：已取消；3：待取货；4：待送货
+     * @apiParam (请求参数说明) {string} time_begin  查询开始时间
+     * @apiParam (请求参数说明) {string} time_end  查询结束时间
+     * @apiSuccessExample {json}返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"total":11,"per_page":1,"current_page":1,"last_page":11,"data":[{"order_id":6,"create_time":"2019-09-28 08:14:10","used_time":null,"username":"LANGBIN","phone":"15521323081","order_count":2,"money":10,"address_id":1,"address":{"id":1,"address":"江门市白石大道东4号路3栋"}}]}}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {String} msg 信息描述
+     * @apiSuccess (返回参数说明) {int} total 数据总数
+     * @apiSuccess (返回参数说明) {int} per_page 每页多少条数据
+     * @apiSuccess (返回参数说明) {int} current_page 当前页码
+     * @apiSuccess (返回参数说明) {int} last_page 最后页码
+     * @apiSuccess (返回参数说明) {int} order_id 订单id
+     * @apiSuccess (返回参数说明) {string} create_time 下单时间
+     * @apiSuccess (返回参数说明) {string} used_time 结束时间
+     * @apiSuccess (返回参数说明) {string} username 用户姓名
+     * @apiSuccess (返回参数说明) {string} phone 手机号
+     * @apiSuccess (返回参数说明) {float} money 订单金额
+     * @apiSuccess (返回参数说明) {int} address_id 地址id
+     * @apiSuccess (返回参数说明) {obj} address 地址信息
+     * @apiSuccess (返回参数说明) {string} address 地址详情
+     */
+    public function orderStatisticToManager($page = 1, $size = 20, $department_id = 0, $name = '', $phone = '', $status = 0)
+    {
+        $time_begin = Request::param('time_begin');
+        $time_end = Request::param('time_end');
+        $statistic = (new ShopService())->orderStatisticToManager($page, $size,
+            $department_id, $name, $phone, $status, $time_begin, $time_end);
+        return json(new SuccessMessageWithData(['data' => $statistic]));
+    }
 
+    public function salesReport()
+    {
+
+    }
 
 }

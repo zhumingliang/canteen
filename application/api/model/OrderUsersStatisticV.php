@@ -29,5 +29,4 @@ class OrderUsersStatisticV extends Model
 
     }
 
-
 }

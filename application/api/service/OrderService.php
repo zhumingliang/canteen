@@ -962,13 +962,14 @@ class OrderService extends BaseService
             }
         }
         if (strtotime($dinnerEndTime) > time()) {
-            throw new UpdateException(['msg' => '餐次就餐时间未截止，不能一键扣费']);
+            throw new UpdateException(['msg' => '就餐时间未结束，，不能一键扣费操作，请在' . $dinnerEndTime .
+                '(消费策略时间)后进行操作']);
         }
         if ($checkCleanTime && strtotime($cleanTime) < time()) {
             throw new UpdateException(['msg' => '超出系统扣费时间，不能一键扣费']);
         }
         //将订餐未就餐改为订餐就餐信息进行缓存
-        $list = OrderUsersStatisticV::orderUsersNoUsed($dinner_id, $consumption_time);
+        $list = OrderT::orderUsersNoUsed($dinner_id, $consumption_time);
         $dataList = [];
         foreach ($list as $k => $v) {
             $dataList[] = [
