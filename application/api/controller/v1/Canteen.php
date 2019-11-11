@@ -488,7 +488,7 @@ class Canteen extends BaseController
      * @apiVersion 3.0.0
      * @apiDescription CMS管理端--查询类接口-获取企业下饭堂列表
      * @apiExample {get}  请求样例:
-     * http://canteen.tonglingok.com/api/v1/canteens?company=1
+     * http://canteen.tonglingok.com/api/v1/canteens?company_id=1
      * @apiParam (请求参数说明) {int} company_id  企业id,无企业列表传入0
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200,"data":[{"id":6,"name":"饭堂1"},{"id":7,"name":"饭堂2"}]}

@@ -139,7 +139,7 @@ class WalletService
                 'staff_id' => $v,
                 'consumption_date' => $params['consumption_date'],
                 'remark' => empty($params['remark']) ? '' : $params['remark'],
-                'dinner_id' => $params['dinner_id'],
+                'dinner_id' => $params['dinner_id']
             ]);
         }
         $supplement = (new RechargeSupplementT())->saveAll($dataList);
