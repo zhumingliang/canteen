@@ -8,10 +8,12 @@ use app\api\model\CanteenCommentT;
 use app\api\model\ShopModuleT;
 use app\api\model\ShopOrderDetailT;
 use app\api\model\ShopOrderQrcodeT;
+use app\api\model\ShopOrderStatisticV;
 use app\api\model\ShopOrderSupplierV;
 use app\api\model\ShopOrderT;
 use app\api\model\ShopOrderV;
 use app\api\model\ShopProductCommentT;
+use app\api\model\ShopProductStatisticV;
 use app\api\model\ShopProductStockBalanceV;
 use app\api\model\ShopProductStockT;
 use app\api\model\ShopProductStockV;
@@ -463,6 +465,7 @@ class ShopService
 
     public function orderDetailStatisticToSupplier($page, $size, $category_id, $product_id, $time_begin, $time_end)
     {
+        (new AuthorService())->checkAuthorSupplier();
         $supplier_id = Token::getCurrentUid();
         $statistic = ShopOrderSupplierV::orderDetailStatisticToSupplier($page, $size, $category_id, $product_id, $time_begin, $time_end, $supplier_id);
         return $statistic;
@@ -473,6 +476,33 @@ class ShopService
         $company_id = Token::getCurrentTokenVar('company_id');
         $statistic = ShopOrderV::orderStatisticToManager($page, $size, $department_id, $name, $phone, $status, $time_begin, $time_end, $company_id);
         return $statistic;
+    }
 
+    public function salesReportToSupplier($page, $size, $time_begin, $time_end)
+    {
+        (new AuthorService())->checkAuthorSupplier();
+        $supplier_id = Token::getCurrentTokenVar('id');
+        //获取供应商所有商品
+        $products = ShopProductT::supplierProducts($page, $size, $time_begin, $time_end, $supplier_id);
+        $sale_money = ShopProductStatisticV::saleMoney($supplier_id, $time_begin, $time_end);
+        $products['money'] = $sale_money;
+        return $products;
+
+    }
+
+    public function salesReportToManager($page, $size, $time_begin, $time_end, $supplier_id)
+    {
+        $products = ShopProductT::supplierProducts($page, $size, $time_begin, $time_end, $supplier_id);
+        $sale_money = ShopProductStatisticV::saleMoney($supplier_id, $time_begin, $time_end);
+        $products['money'] = $sale_money;
+        return $products;
+    }
+
+    public function shopOrderConsumptionStatisticToSupplier($page, $size, $category_id, $product_id,
+                                                            $status, $time_begin, $time_end, $type)
+    {
+        $supplier_id = (new AuthorService())->checkAuthorSupplier();
+        $statistic = ShopOrderStatisticV::shopOrderConsumptionStatisticToSupplier($page, $size, $category_id, $product_id,
+            $status, $time_begin, $time_end, $type);
     }
 }

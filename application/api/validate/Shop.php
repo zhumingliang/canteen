@@ -19,7 +19,9 @@ class Shop extends BaseValidate
         'count' => 'require|isPositiveInteger',
         'state' => 'require|in:1,2,3',
         'distribution' => 'require|in:1,2',
-        'products' => 'require|isNotEmpty'
+        'products' => 'require|isNotEmpty',
+        'time_begin' => 'require|isNotEmpty',
+        'time_end' => 'require|isNotEmpty',
     ];
 
     protected $scene = [
@@ -31,5 +33,7 @@ class Shop extends BaseValidate
         'saveProductStock' => ['product_id', 'count'],
         'saveOrder' => ['count', 'distribution', 'products'],
         'orderCancel' => ['id'],
+        'orderStatisticToManager' => ['time_begin','time_end'],
+        'orderDetailStatisticToSupplier' => ['time_begin','time_end'],
     ];
 }

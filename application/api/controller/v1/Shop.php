@@ -571,9 +571,86 @@ class Shop extends BaseController
         return json(new SuccessMessageWithData(['data' => $statistic]));
     }
 
-    public function salesReport()
+    /**
+     * @api {GET} /api/v1/shop/salesReport/supplier CMS管理端-小卖部管理-进销报表-供应商
+     * @apiGroup  CMS管理端
+     * @apiVersion 3.0.0
+     * @apiDescription CMS管理端-小卖部管理-进销报表-供应商
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/shop/salesReport/supplier?time_begin=2019-09-07&time_end=2019-12-07&page=1&size=20
+     * @apiParam (请求参数说明) {int} page 当前页码
+     * @apiParam (请求参数说明) {int} size 每页多少条数据
+     * @apiParam (请求参数说明) {string} time_begin  查询开始时间
+     * @apiParam (请求参数说明) {string} time_end  查询结束时间
+     * @apiSuccessExample {json}返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"total":4,"per_page":"20","current_page":1,"last_page":1,"data":[{"id":29,"name":"超烧饭","price":"18.0","unit":"盒","purchase_sum":"20","sale_sum":"3"},{"id":30,"name":"炒牛肉","price":"18.0","unit":"份","purchase_sum":"20","sale_sum":"5"},{"id":31,"name":"河粉","price":"20.0","unit":"份","purchase_sum":"20","sale_sum":"1"},{"id":32,"name":"捞面","price":"8.0","unit":"份","purchase_sum":"100","sale_sum":"1"}],"money":172}}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {String} msg 信息描述
+     * @apiSuccess (返回参数说明) {int} total 数据总数
+     * @apiSuccess (返回参数说明) {int} per_page 每页多少条数据
+     * @apiSuccess (返回参数说明) {int} current_page 当前页码
+     * @apiSuccess (返回参数说明) {int} last_page 最后页码
+     * @apiSuccess (返回参数说明) {int} id 商品id
+     * @apiSuccess (返回参数说明) {string} name 名称
+     * @apiSuccess (返回参数说明) {string} price 价格
+     * @apiSuccess (返回参数说明) {string} unit 单位
+     * @apiSuccess (返回参数说明) {int} purchase_sum 总进货量
+     * @apiSuccess (返回参数说明) {int} sale_sum 总销售量
+     * @apiSuccess (返回参数说明) {float} money 报表总销售额
+     */
+    public function salesReportToSupplier($page = 1, $size = 20)
     {
+        $time_begin = Request::param('time_begin');
+        $time_end = Request::param('time_end');
+        $statistic = (new ShopService())->salesReportToSupplier($page, $size, $time_begin, $time_end);
+        return json(new SuccessMessageWithData(['data' => $statistic]));
+    }
 
+    /**
+     * @api {GET} /api/v1/shop/salesReport/manager CMS管理端-小卖部管理-进销报表-管理员
+     * @apiGroup  CMS管理端
+     * @apiVersion 3.0.0
+     * @apiDescription CMS管理端-小卖部管理-进销报表-供应商
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/shop/salesReport/supplier?supplier_id=1&time_begin=2019-09-07&time_end=2019-12-07&page=1&size=20
+     * @apiParam (请求参数说明) {int} page 当前页码
+     * @apiParam (请求参数说明) {int} size 每页多少条数据
+     * @apiParam (请求参数说明) {int} supplier_id  供应商id
+     * @apiParam (请求参数说明) {string} time_begin  查询开始时间
+     * @apiParam (请求参数说明) {string} time_end  查询结束时间
+     * @apiSuccessExample {json}返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"total":4,"per_page":"20","current_page":1,"last_page":1,"data":[{"id":29,"name":"超烧饭","price":"18.0","unit":"盒","purchase_sum":"20","sale_sum":"3"},{"id":30,"name":"炒牛肉","price":"18.0","unit":"份","purchase_sum":"20","sale_sum":"5"},{"id":31,"name":"河粉","price":"20.0","unit":"份","purchase_sum":"20","sale_sum":"1"},{"id":32,"name":"捞面","price":"8.0","unit":"份","purchase_sum":"100","sale_sum":"1"}],"money":172}}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {String} msg 信息描述
+     * @apiSuccess (返回参数说明) {int} total 数据总数
+     * @apiSuccess (返回参数说明) {int} per_page 每页多少条数据
+     * @apiSuccess (返回参数说明) {int} current_page 当前页码
+     * @apiSuccess (返回参数说明) {int} last_page 最后页码
+     * @apiSuccess (返回参数说明) {int} id 商品id
+     * @apiSuccess (返回参数说明) {string} name 名称
+     * @apiSuccess (返回参数说明) {string} price 价格
+     * @apiSuccess (返回参数说明) {string} unit 单位
+     * @apiSuccess (返回参数说明) {int} purchase_sum 总进货量
+     * @apiSuccess (返回参数说明) {int} sale_sum 总销售量
+     * @apiSuccess (返回参数说明) {float} money 报表总销售额
+     */
+    public function salesReportToManager($page = 1, $size = 20)
+    {
+        $time_begin = Request::param('time_begin');
+        $time_end = Request::param('time_end');
+        $supplier_id = Request::param('supplier_id');
+        $statistic = (new ShopService())->salesReportToManager($page, $size, $time_begin, $time_end, $supplier_id);
+        return json(new SuccessMessageWithData(['data' => $statistic]));
+    }
+
+    public function shopOrderConsumptionStatisticToSupplier($page = 1, $size = 20, $category_id = 0,
+                                                            $product_id = 0, $status = 0, $type = 1)
+    {
+        $time_begin = Request::param('time_begin');
+        $time_end = Request::param('time_end');
+        $statistic = (new ShopService())->shopOrderConsumptionStatisticToSupplier($page, $size, $category_id, $product_id,
+            $status, $time_begin, $time_end,$type);
+        return json(new SuccessMessageWithData(['data' => $statistic]));
     }
 
 }

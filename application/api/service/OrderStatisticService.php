@@ -95,7 +95,7 @@ class OrderStatisticService
 
     public function orderMaterialsStatistic($page, $size, $time_begin, $time_end, $canteen_id)
     {
-        $company_id = 3;//Token::getCurrentTokenVar('company_id');
+        $company_id = Token::getCurrentTokenVar('company_id');
         $statistic = OrderMaterialV::orderMaterialsStatistic($page, $size, $time_begin, $time_end, $canteen_id, $company_id);
         //获取该企业/饭堂下所有材料价格
         $materials = MaterialPriceV::materialsForOrder($canteen_id, $company_id);

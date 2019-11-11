@@ -198,6 +198,9 @@ class CanteenService
 
     public function companyCanteens($company_id)
     {
+        if (empty($company_id)) {
+            $company_id = Token::getCurrentTokenVar('company_id');
+        }
         $canteens = CanteenT::where('c_id', $company_id)
             ->field('id,name')->select()->toArray();
         return $canteens;

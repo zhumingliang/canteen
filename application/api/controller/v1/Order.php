@@ -875,7 +875,7 @@ class Order extends BaseController
      * @apiSuccess (返回参数说明) {int} last_page 最后页码
      * @apiSuccess (返回参数说明) {int} ordering_date
      * @apiSuccess (返回参数说明) {int} order_id 订单id
-     * @apiSuccess (返回参数说明) {int} detail_id 订单明细id
+     * @apiSuccess (返回参数说明) {int} dinner_id 餐次id
      * @apiSuccess (返回参数说明) {string} ordering_date 日期
      * @apiSuccess (返回参数说明) {string} dinner 餐次
      * @apiSuccess (返回参数说明) {string} material 材料名称

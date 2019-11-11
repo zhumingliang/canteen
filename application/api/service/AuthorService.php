@@ -14,6 +14,7 @@ class AuthorService
         if ($type != "supplier") {
             throw new AuthException();
         }
+        return Token::getCurrentUid();
     }
 
 }

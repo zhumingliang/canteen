@@ -196,6 +196,8 @@ Route::get('api/:version/shop/order/deliveryCode', 'api/:version.Shop/deliveryCo
 Route::get('api/:version/shop/order/statistic/supplier', 'api/:version.Shop/orderDetailStatisticToSupplier');
 Route::get('api/:version/shop/order/statistic/manager', 'api/:version.Shop/orderStatisticToManager');
 Route::get('api/:version/shop/takingMode', 'api/:version.Shop/takingMode');
+Route::get('api/:version/shop/salesReport/supplier', 'api/:version.Shop/salesReportToSupplier');
+Route::get('api/:version/shop/salesReport/manager', 'api/:version.Shop/salesReportToManager');
 
 Route::get('api/:version/order/takeoutStatistic', 'api/:version.Takeout/statistic');
 Route::get('api/:version/order/info/print', 'api/:version.Takeout/infoToPrint');
