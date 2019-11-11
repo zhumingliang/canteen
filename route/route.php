@@ -198,6 +198,7 @@ Route::get('api/:version/shop/order/statistic/manager', 'api/:version.Shop/order
 Route::get('api/:version/shop/takingMode', 'api/:version.Shop/takingMode');
 Route::get('api/:version/shop/salesReport/supplier', 'api/:version.Shop/salesReportToSupplier');
 Route::get('api/:version/shop/salesReport/manager', 'api/:version.Shop/salesReportToManager');
+Route::get('api/:version/shop/orderConsumption', 'api/:version.Shop/consumptionStatistic');
 
 Route::get('api/:version/order/takeoutStatistic', 'api/:version.Takeout/statistic');
 Route::get('api/:version/order/info/print', 'api/:version.Takeout/infoToPrint');

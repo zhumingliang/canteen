@@ -35,5 +35,6 @@ class Shop extends BaseValidate
         'orderCancel' => ['id'],
         'orderStatisticToManager' => ['time_begin','time_end'],
         'orderDetailStatisticToSupplier' => ['time_begin','time_end'],
+        'consumptionStatistic' => ['time_begin','time_end'],
     ];
 }

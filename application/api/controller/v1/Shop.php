@@ -612,7 +612,7 @@ class Shop extends BaseController
      * @apiVersion 3.0.0
      * @apiDescription CMS管理端-小卖部管理-进销报表-供应商
      * @apiExample {get}  请求样例:
-     * http://canteen.tonglingok.com/api/v1/shop/salesReport/supplier?supplier_id=1&time_begin=2019-09-07&time_end=2019-12-07&page=1&size=20
+     * http://canteen.tonglingok.com/api/v1/shop/salesReport/manager?supplier_id=1&time_begin=2019-09-07&time_end=2019-12-07&page=1&size=20
      * @apiParam (请求参数说明) {int} page 当前页码
      * @apiParam (请求参数说明) {int} size 每页多少条数据
      * @apiParam (请求参数说明) {int} supplier_id  供应商id
@@ -643,13 +643,54 @@ class Shop extends BaseController
         return json(new SuccessMessageWithData(['data' => $statistic]));
     }
 
-    public function shopOrderConsumptionStatisticToSupplier($page = 1, $size = 20, $category_id = 0,
-                                                            $product_id = 0, $status = 0, $type = 1)
+    /**
+     * @api {GET} /api/v1/shop/orderConsumption CMS管理端-小卖部管理-消费订单汇总查询-供应商/管理员
+     * @apiGroup  CMS管理端
+     * @apiVersion 3.0.0
+     * @apiDescription CMS管理端-小卖部管理-消费订单汇总查询-供应商/管理员
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/shop/orderConsumption?time_begin=2019-09-07&time_end=2019-12-07&page=1&size=20&category_id=0&product_id=0&status=0&status=1&department_id=0&username=
+     * @apiParam (请求参数说明) {int} page 当前页码
+     * @apiParam (请求参数说明) {int} size 每页多少条数据
+     * @apiParam (请求参数说明) {int} department_id  部门id：全部传入0
+     * @apiParam (请求参数说明) {int} username  用户名
+     * @apiParam (请求参数说明) {int} category_id  类型id：全部传入0
+     * @apiParam (请求参数说明) {int} category_id  类型id：全部传入0
+     * @apiParam (请求参数说明) {int} product_id  商品id：全部传入0
+     * @apiParam (请求参数说明) {int} status  状态：全部传入0；1：已完成；2：已取消；3：待取货；4：待送货
+     * @apiParam (请求参数说明) {int} type  汇总类型：1：按类型进行汇总；2：按商品进行汇总；3：按状态进行汇总；4：按姓名进行汇总；5：按部门进行汇总
+     * @apiParam (请求参数说明) {string} time_begin  查询开始时间
+     * @apiParam (请求参数说明) {string} time_end  查询结束时间
+     * @apiSuccessExample {json}返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"total":2,"per_page":20,"current_page":1,"last_page":1,"data":[{"statistic":"商品12","create_time":"2019-10-28 23:49:27","used_time":null,"username":"\/","department":"\/","category":"商品12","unit":"kg","product":"\/","order_count":"7","order_money":"119.00"},{"statistic":"公司餐","create_time":"2019-10-29 10:20:17","used_time":null,"username":"\/","department":"\/","category":"公司餐","unit":"元\/500g","product":"\/","order_count":"6","order_money":"48.00"}],"statistic":{"statisticCount":2,"money":167}}}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {String} msg 信息描述
+     * @apiSuccess (返回参数说明) {int} total 数据总数
+     * @apiSuccess (返回参数说明) {int} per_page 每页多少条数据
+     * @apiSuccess (返回参数说明) {int} current_page 当前页码
+     * @apiSuccess (返回参数说明) {int} last_page 最后页码
+     * @apiSuccess (返回参数说明) {string} statistic 统计变量
+     * @apiSuccess (返回参数说明) {string} create_time 开始时间
+     * @apiSuccess (返回参数说明) {string} used_time 结束时间
+     * @apiSuccess (返回参数说明) {string} username 姓名
+     * @apiSuccess (返回参数说明) {string} department 部门
+     * @apiSuccess (返回参数说明) {string} category 类型
+     * @apiSuccess (返回参数说明) {string} product 商品名称
+     * @apiSuccess (返回参数说明) {string} unit 单位
+     * @apiSuccess (返回参数说明) {int} order_count 数量
+     * @apiSuccess (返回参数说明) {float} order_money 报表总销售额
+     * @apiSuccess (返回参数说明) {float} statistic 报表合计统计
+     * @apiSuccess (返回参数说明) {int} statisticCount 报表合计-统计变量
+     * @apiSuccess (返回参数说明) {float} statisticMoney 报表合计-金额
+     */
+    public function consumptionStatistic($page = 1, $size = 20, $category_id = 0,
+                                                            $product_id = 0, $status = 0, $type = 1,
+                                                            $department_id = 0, $username = '', $supplier_id = 0)
     {
         $time_begin = Request::param('time_begin');
         $time_end = Request::param('time_end');
-        $statistic = (new ShopService())->shopOrderConsumptionStatisticToSupplier($page, $size, $category_id, $product_id,
-            $status, $time_begin, $time_end,$type);
+        $statistic = (new ShopService())->consumptionStatistic($page, $size, $category_id, $product_id,
+            $status, $time_begin, $time_end, $type, $department_id, $username, $supplier_id);
         return json(new SuccessMessageWithData(['data' => $statistic]));
     }
 

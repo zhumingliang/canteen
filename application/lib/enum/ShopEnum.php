@@ -18,4 +18,14 @@ class ShopEnum
 
     const ORDER_GET_SELF = 1;
 
+    const STATISTIC_BY_CATEGORY = 1;
+
+    const STATISTIC_BY_PRODUCT = 2;
+
+    const STATISTIC_BY_STATUS = 3;
+
+    const STATISTIC_BY_USERNAME = 4;
+
+    const STATISTIC_BY_DEPARTMENT = 5;
+
 }
