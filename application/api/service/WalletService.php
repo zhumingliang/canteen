@@ -128,9 +128,9 @@ class WalletService
         $admin_id = Token::getCurrentUid();
         $company_id = Token::getCurrentTokenVar('company_id');
         $staffs = explode(',', $params['staff_ids']);
-        $dataList = [];
+        $dataList = array();
         foreach ($staffs as $k => $v) {
-            array_push($dataList[], [
+            $data = [
                 'source' => 'save',
                 'admin_id' => $admin_id,
                 'company_id' => $company_id,
@@ -140,7 +140,8 @@ class WalletService
                 'consumption_date' => $params['consumption_date'],
                 'remark' => empty($params['remark']) ? '' : $params['remark'],
                 'dinner_id' => $params['dinner_id']
-            ]);
+            ];
+            array_push($dataList, $data);
         }
         $supplement = (new RechargeSupplementT())->saveAll($dataList);
         if (!$supplement) {
