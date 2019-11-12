@@ -9,16 +9,19 @@ use app\api\model\MaterialPriceV;
 use app\api\model\MaterialReportDetailT;
 use app\api\model\MaterialReportDetailV;
 use app\api\model\MaterialReportT;
+use app\api\model\OrderConsumptionV;
 use app\api\model\OrderMaterialV;
 use app\api\model\OrderSettlementV;
 use app\api\model\OrderStatisticV;
 use app\api\model\OrderT;
 use app\api\model\OrderTakeoutStatisticV;
 use app\lib\enum\CommonEnum;
+use app\lib\enum\OrderEnum;
 use app\lib\exception\ParameterException;
 use app\lib\exception\SaveException;
 use think\Db;
 use think\Exception;
+use think\Model;
 use think\Request;
 
 class OrderStatisticService
@@ -92,7 +95,6 @@ class OrderStatisticService
         return $info;
     }
 
-
     public function orderMaterialsStatistic($page, $size, $time_begin, $time_end, $canteen_id)
     {
         $company_id = Token::getCurrentTokenVar('company_id');
@@ -139,7 +141,6 @@ class OrderStatisticService
         }
         return $data;
     }
-
 
     public function updateOrderMaterial($params)
     {
@@ -276,5 +277,42 @@ class OrderStatisticService
 
         }
         return $money;
+    }
+
+    public function consumptionStatistic($page, $size,
+                                         $canteen_id, $status, $type,
+                                         $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id)
+    {
+        switch ($type) {
+            case OrderEnum::STATISTIC_BY_DEPARTMENT:
+                return $this->consumptionStatisticByDepartment($page, $size,
+                    $canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id);
+                break;
+            case OrderEnum::STATISTIC_BY_USERNAME:
+                return 2;
+                break;
+            case OrderEnum::STATISTIC_BY_STAFF_TYPE:
+                return 3;
+                break;
+            case OrderEnum::STATISTIC_BY_CANTEEN:
+                return 4;
+                break;
+            case OrderEnum::STATISTIC_BY_STATUS:
+                return 5;
+                break;
+            default:
+                throw new ParameterException();
+        }
+    }
+
+    private function consumptionStatisticByDepartment($page, $size, $canteen_id, $status, $department_id,
+                                                      $username, $staff_type_id, $time_begin,
+                                                      $time_end, $company_id)
+    {
+        $statistic = OrderConsumptionV::consumptionStatisticByDepartment($page, $size, $canteen_id, $status, $department_id,
+            $username, $staff_type_id, $time_begin,
+            $time_end, $company_id);
+        return $statistic;
+
     }
 }

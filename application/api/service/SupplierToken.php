@@ -97,7 +97,7 @@ class SupplierToken extends Token
             'u_id' => $admin->id,
             'account' => $admin->account,
             'name' => $admin->name,
-            'c_id' => $admin->c_id,
+            'company_id' => $admin->c_id,
             'type' => 'supplier'
         ];
         return $cachedValue;

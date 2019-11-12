@@ -376,7 +376,7 @@ class Order extends BaseController
     public function consumptionRecords($page = 1, $size = 20)
     {
         $consumption_time = Request::param('consumption_time');
-        $records = (new OrderService())->consumptionRecords($consumption_time, $page = 1, $size = 20);
+        $records = (new OrderService())->consumptionRecords($consumption_time, $page, $size);
         return json(new SuccessMessageWithData(['data' => $records]));
     }
 
@@ -915,6 +915,20 @@ class Order extends BaseController
             throw new UpdateException();
         }
         return json(new SuccessMessage());
+    }
+
+    public function consumptionStatistic($page = 1, $size = 20,
+                                         $canteen_id = 0, $status = 0, $type = 1,
+                                         $department_id = 0, $username = '', $staff_type_id = 0)
+    {
+        $time_begin = Request::param('time_begin');
+        $time_end = Request::param('time_end');
+        $company_id = Request::param('company_id');
+        $statistic = (new OrderStatisticService())->consumptionStatistic($page, $size,
+            $canteen_id, $status, $type,
+            $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id);
+        return json(new SuccessMessageWithData(['data' => $statistic]));
+
     }
 
 

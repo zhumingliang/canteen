@@ -225,23 +225,6 @@ class ShopOrderStatisticV extends Model
                 }
             })
             ->where(function ($query) use ($status) {
-                /*  if ($status == 1) {
-                      //已完成
-                      $query->where('used', CommonEnum::STATE_IS_OK);
-                  } elseif ($status == 2) {
-                      //已取消
-                      $query->where('state', CommonEnum::STATE_IS_FAIL);
-                  } elseif ($status == 3) {
-                      //待取货
-                      $query->where('state', CommonEnum::STATE_IS_OK)
-                          ->where('distribution', 1)
-                          ->where('used', CommonEnum::STATE_IS_FAIL);
-                  } elseif ($status == 4) {
-                      //待送货
-                      $query->where('state', CommonEnum::STATE_IS_OK)
-                          ->where('distribution', 2)
-                          ->where('used', CommonEnum::STATE_IS_FAIL);
-                  }*/
                 if ($status) {
                     $query->where('status', $status);
                 }
@@ -275,23 +258,6 @@ class ShopOrderStatisticV extends Model
                 }
             })
             ->where(function ($query) use ($status) {
-                /*  if ($status == 1) {
-                      //已完成
-                      $query->where('used', CommonEnum::STATE_IS_OK);
-                  } elseif ($status == 2) {
-                      //已取消
-                      $query->where('state', CommonEnum::STATE_IS_FAIL);
-                  } elseif ($status == 3) {
-                      //待取货
-                      $query->where('state', CommonEnum::STATE_IS_OK)
-                          ->where('distribution', 1)
-                          ->where('used', CommonEnum::STATE_IS_FAIL);
-                  } elseif ($status == 4) {
-                      //待送货
-                      $query->where('state', CommonEnum::STATE_IS_OK)
-                          ->where('distribution', 2)
-                          ->where('used', CommonEnum::STATE_IS_FAIL);
-                  }*/
                 if ($status) {
                     $query->where('status', $status);
                 }

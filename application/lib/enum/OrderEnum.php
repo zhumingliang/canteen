@@ -33,4 +33,15 @@ class OrderEnum
     const USER_ORDER_OUTSIDE = 2;
 
     const USER_ORDER_SHOP = 3;
+
+    const STATISTIC_BY_DEPARTMENT = 1;
+
+    const STATISTIC_BY_USERNAME = 2;
+
+    const STATISTIC_BY_STAFF_TYPE = 3;
+
+    const STATISTIC_BY_CANTEEN = 4;
+
+    const STATISTIC_BY_STATUS = 5;
+
 }
