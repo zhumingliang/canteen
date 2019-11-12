@@ -195,7 +195,7 @@ class ShopService
         return $this->prefixOfficialProducts($categories, $products);
     }
 
-    private function companyProducts($company_id)
+    public function companyProducts($company_id)
     {
         $products = ShopProductT::companyProducts($company_id);
         return $products;
@@ -273,17 +273,23 @@ class ShopService
         $code = getRandChar(12);
         $url = sprintf(config("setting.qrcode_url"), 'shop', $code);
         $qrcode_url = (new QrcodeService())->qr_code($url);
+        $time_begin = date('Y-m-d H:i:s');
+        $time_end = date('Y-m-d H:i:s', strtotime("+" . config("setting.shop_qrcode_expire_in") . "minute", time()));
         $data = [
             'code' => $code,
             'o_id' => $o_id,
             'url' => $qrcode_url,
-            'end_time' => date('Y-m-d H:i:s', strtotime("+" . config("setting.shop_qrcode_expire_in") . "minute", time()))
+            'end_time' => $time_end
         ];
         $qrcode = ShopOrderQrcodeT::create($data);
         if (!$qrcode) {
             throw new SaveException(['msg' => '生成提货二维码失败']);
         }
-        return $qrcode_url;
+        return [
+            'time_begin' => $time_begin,
+            'time_end' => $time_end,
+            'url' => $qrcode_url
+        ];
     }
 
     private function updateOrderQrcode($id)
@@ -401,7 +407,7 @@ class ShopService
         if (!$order) {
             throw new ParameterException(['msg' => '订单不存在']);
         }
-        if ($order->complete = CommonEnum::STATE_IS_OK) {
+        if ($order->used = CommonEnum::STATE_IS_OK) {
             throw new UpdateException(['msg' => '订单已经完成，不能取消']);
         }
         if ($order->u_id != Token::getCurrentUid()) {
@@ -442,7 +448,11 @@ class ShopService
         if (strtotime($qrcode->end_time) < time() - config("setting.shop_qrcode_expire_in") * 60) {
             return $this->updateOrderQrcode($qrcode->id);
         }
-        return $qrcode->url;
+        return [
+            'time_begin' => $qrcode->update_time,
+            'time_end' => $qrcode->end_time,
+            'url' => $qrcode->url
+        ];
     }
 
     //获取商品评分
@@ -500,7 +510,7 @@ class ShopService
     }
 
     public function consumptionStatistic($page, $size, $category_id, $product_id,
-                                                  $status, $time_begin, $time_end, $type, $department_id, $username, $supplier_id)
+                                         $status, $time_begin, $time_end, $type, $department_id, $username, $supplier_id)
     {
         $field = '';
         if (empty($supplier_id)) {
@@ -544,4 +554,22 @@ class ShopService
         ];
         return $statistic;
     }
+
+    public function companyProductsToSearch($company_id, $product)
+    {
+        if (empty($company_id)) {
+            $company_id = Token::getCurrentTokenVar('company_id');
+        }
+        $products = ShopProductT::companyProductsToSearch($company_id, $product);
+        return $products;
+    }
+
+    public function supplierProductsToSearch($product)
+    {
+        $supplier_id = (new AuthorService())->checkAuthorSupplier();
+        $products = ShopProductT::supplierProductsToSearch($supplier_id, $product);
+        return $products;
+    }
+
+
 }

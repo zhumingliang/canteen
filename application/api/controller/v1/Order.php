@@ -210,16 +210,16 @@ class Order extends BaseController
      * @apiParam (请求参数说明) {int} count 订餐数量
      * @apiParam (请求参数说明) {obj} detail 订餐菜品明细
      * @apiParam (请求参数说明) {string} detail|menu_id 菜品类别id
-     * @apiParam (请求参数说明) {obj} detail|add_foods 新增菜品明细
-     * @apiParam (请求参数说明) {string} add_foods|food_id 菜品id
-     * @apiParam (请求参数说明) {string} add_foods|price 菜品实时单价
-     * @apiParam (请求参数说明) {string} add_foods|count 菜品数量
-     * @apiParam (请求参数说明) {string} add_foods|price 菜品实时单价
-     * @apiParam (请求参数说明) {string} add_foods|name 菜品名称
-     * @apiParam (请求参数说明) {obj} detail|update_foods 修改菜品明细
-     * @apiParam (请求参数说明) {string} update_foods|detail_id 订单菜品明细id
-     * @apiParam (请求参数说明) {string} update_foods|count 修改菜品数量
-     * @apiParam (请求参数说明) {string} detail|cancel_foods 取消菜品id列表，多个用逗号分隔，此id来自于订单信息中detail_id
+     * @apiParam (请求参数说明) {obj} add_foods 新增菜品明细
+     * @apiParam (请求参数说明) {string} food_id 菜品id
+     * @apiParam (请求参数说明) {string} price 菜品实时单价
+     * @apiParam (请求参数说明) {string} count 菜品数量
+     * @apiParam (请求参数说明) {string} price 菜品实时单价
+     * @apiParam (请求参数说明) {string} name 菜品名称
+     * @apiParam (请求参数说明) {obj} update_foods 修改菜品明细
+     * @apiParam (请求参数说明) {string} detail_id 订单菜品明细id
+     * @apiParam (请求参数说明) {string} count 修改菜品数量
+     * @apiParam (请求参数说明) {string} cancel_foods 取消菜品id列表，多个用逗号分隔，此id来自于订单信息中detail_id
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误

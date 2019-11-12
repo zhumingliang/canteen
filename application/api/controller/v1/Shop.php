@@ -382,10 +382,12 @@ class Shop extends BaseController
      * http://canteen.tonglingok.com/api/v1/shop/order/deliveryCode?id=8
      * @apiParam (请求参数说明) {int} id  订单id
      * @apiSuccessExample {json} 返回样例:
-     * {"msg":"ok","errorCode":0,"code":200,"data":{"url":""}}
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"time_begin":"","time_end":"","url":""}}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
-     * @apiSuccess (返回参数说明) {String} msg 信息描述
-     * @apiSuccess (返回参数说明) {int} url  提货二维码地址
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     * @apiSuccess (返回参数说明) {string} time_begin  申请时间
+     * @apiSuccess (返回参数说明) {string} time_end  有效时间
+     * @apiSuccess (返回参数说明) {string} url  提货二维码地址
      */
     public function deliveryCode()
     {
@@ -684,14 +686,58 @@ class Shop extends BaseController
      * @apiSuccess (返回参数说明) {float} statisticMoney 报表合计-金额
      */
     public function consumptionStatistic($page = 1, $size = 20, $category_id = 0,
-                                                            $product_id = 0, $status = 0, $type = 1,
-                                                            $department_id = 0, $username = '', $supplier_id = 0)
+                                         $product_id = 0, $status = 0, $type = 1,
+                                         $department_id = 0, $username = '', $supplier_id = 0)
     {
         $time_begin = Request::param('time_begin');
         $time_end = Request::param('time_end');
         $statistic = (new ShopService())->consumptionStatistic($page, $size, $category_id, $product_id,
             $status, $time_begin, $time_end, $type, $department_id, $username, $supplier_id);
         return json(new SuccessMessageWithData(['data' => $statistic]));
+    }
+
+    /**
+     * @api {GET} /api/v1/shop/companyProducts/search CMS管理端-获取企业商品列表-查询接口
+     * @apiGroup  CMS
+     * @apiVersion 3.0.0
+     * @apiDescription  CMS管理端-获取企业商品列表-查询接口
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/shop/companyProducts/search?company_id=1&product=''
+     * @apiParam (请求参数说明) {int} company_id  企业id，没有时，不需要传入此参数
+     * @apiParam (请求参数说明) {int} product 商品关键词
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":[{"id":2,"name":"鸡蛋"}]}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {String} msg 信息描述
+     * @apiSuccess (返回参数说明) {int} id 商品id
+     * @apiSuccess (返回参数说明) {string} name 商品名称
+     */
+    public function companyProductsToSearch($company_id = 0, $product = '')
+    {
+        $products = (new ShopService())->companyProductsToSearch($company_id, $product);
+        return json(new SuccessMessageWithData(['data' => $products]));
+    }
+
+    /**
+     * @api {GET} /api/v1/shop/supplierProducts/search CMS管理端-供应商获取商品列表-查询接口
+     * @apiGroup  CMS
+     * @apiVersion 3.0.0
+     * @apiDescription  CMS管理端-供应商获取商品列表-查询接口
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/shop/companyProducts/search?product=''
+     * @apiParam (请求参数说明) {int} product 商品关键词
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":[{"id":2,"name":"鸡蛋"}]}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {String} msg 信息描述
+     * @apiSuccess (返回参数说明) {int} id 商品id
+     * @apiSuccess (返回参数说明) {string} name 商品名称
+     */
+    public function supplierProductsToSearch($product = '')
+    {
+        $products = (new ShopService())->supplierProductsToSearch($product);
+        return json(new SuccessMessageWithData(['data' => $products]));
+
     }
 
 }

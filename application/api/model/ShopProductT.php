@@ -55,4 +55,33 @@ class ShopProductT extends BaseModel
         return $products;
     }
 
+    public static function companyProductsToSearch($company_id, $product)
+    {
+        $products = self::where('company_id', $company_id)
+            ->where('state', ShopEnum::PRODUCT_STATE_UP)
+            ->where(function ($query) use ($product) {
+                if (!empty($product)) {
+                    $query->where('name', 'like', '%' . $product . '%');
+                }
+            })
+            ->field('id,name')
+            ->order('create_time')
+            ->select()->toArray();
+        return $products;
+    }
+    public static function supplierProductsToSearch($supplier_id, $product)
+    {
+        $products = self::where('company_id', $supplier_id)
+            ->where('state', ShopEnum::PRODUCT_STATE_UP)
+            ->where(function ($query) use ($product) {
+                if (!empty($product)) {
+                    $query->where('name', 'like', '%' . $product . '%');
+                }
+            })
+            ->field('id,name')
+            ->order('create_time')
+            ->select()->toArray();
+        return $products;
+    }
+
 }
