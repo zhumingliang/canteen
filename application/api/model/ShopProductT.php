@@ -71,7 +71,7 @@ class ShopProductT extends BaseModel
     }
     public static function supplierProductsToSearch($supplier_id, $product)
     {
-        $products = self::where('company_id', $supplier_id)
+        $products = self::where('supplier_id', $supplier_id)
             ->where('state', ShopEnum::PRODUCT_STATE_UP)
             ->where(function ($query) use ($product) {
                 if (!empty($product)) {

@@ -8,7 +8,7 @@ use think\Model;
 
 class OrderConsumptionV extends Model
 {
-    public static function consumptionStatisticByDepartment($page, $size, $canteen_id, $status, $department_id,
+    public static function consumptionStatisticByDepartment( $canteen_id, $status, $department_id,
                                                             $username, $staff_type_id, $time_begin,
                                                             $time_end, $company_id)
     {
@@ -24,7 +24,7 @@ class OrderConsumptionV extends Model
                 }
             }
         })
-            ->whereBetweenTime('ordering_date', $time_begin, $time_end)
+            ->whereBetweenTime('consumption_date', $time_begin, $time_end)
             ->where(function ($query) use (
                 $status, $department_id,
                 $username, $staff_type_id
@@ -43,8 +43,8 @@ class OrderConsumptionV extends Model
                 }
 
             })
-            ->field('')
-            ->group('department_id')
+            ->field('department_id,department,dinner_id,dinner,sum(order_count) as order_count,sum(order_money) as order_money')
+            ->group('department_id,dinner_id')
             ->select()
             ->toArray();
         return $statistic;

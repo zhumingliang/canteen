@@ -279,14 +279,12 @@ class OrderStatisticService
         return $money;
     }
 
-    public function consumptionStatistic($page, $size,
-                                         $canteen_id, $status, $type,
+    public function consumptionStatistic($canteen_id, $status, $type,
                                          $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id)
     {
         switch ($type) {
             case OrderEnum::STATISTIC_BY_DEPARTMENT:
-                return $this->consumptionStatisticByDepartment($page, $size,
-                    $canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id);
+                return $this->consumptionStatisticByDepartment($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id);
                 break;
             case OrderEnum::STATISTIC_BY_USERNAME:
                 return 2;
@@ -305,11 +303,11 @@ class OrderStatisticService
         }
     }
 
-    private function consumptionStatisticByDepartment($page, $size, $canteen_id, $status, $department_id,
+    private function consumptionStatisticByDepartment( $canteen_id, $status, $department_id,
                                                       $username, $staff_type_id, $time_begin,
                                                       $time_end, $company_id)
     {
-        $statistic = OrderConsumptionV::consumptionStatisticByDepartment($page, $size, $canteen_id, $status, $department_id,
+        $statistic = OrderConsumptionV::consumptionStatisticByDepartment( $canteen_id, $status, $department_id,
             $username, $staff_type_id, $time_begin,
             $time_end, $company_id);
         return $statistic;
