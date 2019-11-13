@@ -287,30 +287,129 @@ class OrderStatisticService
                 return $this->consumptionStatisticByDepartment($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id);
                 break;
             case OrderEnum::STATISTIC_BY_USERNAME:
-                return 2;
+                return $this->consumptionStatisticByUsername($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id);
                 break;
             case OrderEnum::STATISTIC_BY_STAFF_TYPE:
-                return 3;
+                return $this->consumptionStatisticByStatus($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id);
                 break;
             case OrderEnum::STATISTIC_BY_CANTEEN:
-                return 4;
+                return $this->consumptionStatisticByCanteen($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id);
                 break;
             case OrderEnum::STATISTIC_BY_STATUS:
-                return 5;
+                return $this->consumptionStatisticByStaff($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id);
                 break;
             default:
                 throw new ParameterException();
         }
     }
 
-    private function consumptionStatisticByDepartment( $canteen_id, $status, $department_id,
+    private function consumptionStatisticByDepartment($canteen_id, $status, $department_id,
                                                       $username, $staff_type_id, $time_begin,
                                                       $time_end, $company_id)
     {
-        $statistic = OrderConsumptionV::consumptionStatisticByDepartment( $canteen_id, $status, $department_id,
+        $statistic = OrderConsumptionV::consumptionStatisticByDepartment($canteen_id, $status, $department_id,
             $username, $staff_type_id, $time_begin,
             $time_end, $company_id);
+        $statistic = $this->prefixStatistic($statistic, 'department', $time_begin, $time_end);
         return $statistic;
 
     }
+
+    private function prefixStatistic($statistic, $field, $time_begin, $time_end)
+    {
+        $fieldArr = [];
+        $data = [];
+        $allMoney = 0;
+        $allCount = 0;
+        if (count($statistic)) {
+            foreach ($statistic as $k => $v) {
+                $allMoney += $v['order_money'];
+                $allCount += $v['order_count'];
+                if (in_array($v[$field], $fieldArr)) {
+                    continue;
+                }
+                array_push($fieldArr, $v[$field]);
+
+            }
+            foreach ($fieldArr as $k => $v) {
+                $dinnerStatistic = [];
+                foreach ($statistic as $k2 => $v2) {
+                    if ($v == $v2[$field]) {
+                        array_push($dinnerStatistic, [
+                            'dinner_id' => $v2['dinner_id'],
+                            'dinner' => $v2['dinner'],
+                            'order_count' => $v2['order_count'],
+                            'order_money' => $v2['order_money'],
+                        ]);
+                    }
+                }
+                array_push($data, [
+                    'statistic' => $v,
+                    'time_begin' => $time_begin,
+                    'time_end' => $time_end,
+                    $field => $v,
+                    'dinnerStatistic' => $dinnerStatistic
+                ]);
+
+            }
+        }
+        return [
+            'statistic' => $data,
+            'allMoney' => $allMoney,
+            'allCount' => $allCount
+        ];
+    }
+
+    private function consumptionStatisticByUsername($canteen_id, $status, $department_id,
+                                                    $username, $staff_type_id, $time_begin,
+                                                    $time_end, $company_id)
+    {
+        //获取人员信息
+       // $users
+       /* $statistic = OrderConsumptionV::consumptionStatisticByUsername($canteen_id, $status, $department_id,
+            $username, $staff_type_id, $time_begin,
+            $time_end, $company_id);
+        $statistic = $this->prefixStatisticUsername($statistic, $time_begin, $time_end);
+        return $statistic;*/
+
+    }
+
+
+    private function consumptionStatisticByStatus($canteen_id, $status, $department_id,
+                                                  $username, $staff_type_id, $time_begin,
+                                                  $time_end, $company_id)
+    {
+        $statistic = OrderConsumptionV::consumptionStatisticByStatus($canteen_id, $status, $department_id,
+            $username, $staff_type_id, $time_begin,
+            $time_end, $company_id);
+        $statistic = $this->prefixStatistic($statistic, 'status',$time_begin, $time_end);
+        return $statistic;
+
+    }
+
+    private function consumptionStatisticByCanteen($canteen_id, $status, $department_id,
+                                                  $username, $staff_type_id, $time_begin,
+                                                  $time_end, $company_id)
+    {
+        $statistic = OrderConsumptionV::consumptionStatisticByCanteen($canteen_id, $status, $department_id,
+            $username, $staff_type_id, $time_begin,
+            $time_end, $company_id);
+        $statistic = $this->prefixStatistic($statistic, 'canteen',$time_begin, $time_end);
+        return $statistic;
+
+    }
+
+    private function consumptionStatisticByStaff($canteen_id, $status, $department_id,
+                                                   $username, $staff_type_id, $time_begin,
+                                                   $time_end, $company_id)
+    {
+        $statistic = OrderConsumptionV::consumptionStatisticByStaff($canteen_id, $status, $department_id,
+            $username, $staff_type_id, $time_begin,
+            $time_end, $company_id);
+        $statistic = $this->prefixStatistic($statistic, 'staff_type',$time_begin, $time_end);
+        return $statistic;
+
+    }
+
+
 }

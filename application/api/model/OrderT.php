@@ -70,7 +70,8 @@ class OrderT extends Model
                     $query->field('id,province,city,area,address,name,phone,sex');
                 }
             ])
-            ->field('id,u_id,type as order_type,ordering_type,ordering_date,count,address_id,state,used,c_id as canteen_id')
+            ->field('id,u_id,type as order_type,ordering_type,ordering_date,count,address_id,state,used,
+            c_id as canteen_id,d_id as dinner_id')
             ->find();
         return $info;
     }
