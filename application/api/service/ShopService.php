@@ -491,8 +491,8 @@ class ShopService
 
     public function salesReportToSupplier($page, $size, $time_begin, $time_end)
     {
-        (new AuthorService())->checkAuthorSupplier();
-        $supplier_id = Token::getCurrentTokenVar('id');
+
+        $supplier_id =  (new AuthorService())->checkAuthorSupplier();
         //获取供应商所有商品
         $products = ShopProductT::supplierProducts($page, $size, $time_begin, $time_end, $supplier_id);
         $sale_money = ShopProductStatisticV::saleMoney($supplier_id, $time_begin, $time_end);
