@@ -4,6 +4,7 @@
 namespace app\api\service;
 
 
+use app\api\model\CompanyStaffT;
 use app\api\model\DinnerT;
 use app\api\model\MaterialPriceV;
 use app\api\model\MaterialReportDetailT;
@@ -362,15 +363,15 @@ class OrderStatisticService
 
     private function consumptionStatisticByUsername($canteen_id, $status, $department_id,
                                                     $username, $staff_type_id, $time_begin,
-                                                    $time_end, $company_id)
+                                                    $time_end, $company_id, $page, $size)
     {
         //获取人员信息
-       // $users
-       /* $statistic = OrderConsumptionV::consumptionStatisticByUsername($canteen_id, $status, $department_id,
-            $username, $staff_type_id, $time_begin,
-            $time_end, $company_id);
-        $statistic = $this->prefixStatisticUsername($statistic, $time_begin, $time_end);
-        return $statistic;*/
+        //$users =CompanyStaffT::
+        /* $statistic = OrderConsumptionV::consumptionStatisticByUsername($canteen_id, $status, $department_id,
+             $username, $staff_type_id, $time_begin,
+             $time_end, $company_id);
+         $statistic = $this->prefixStatisticUsername($statistic, $time_begin, $time_end);
+         return $statistic;*/
 
     }
 
@@ -382,31 +383,31 @@ class OrderStatisticService
         $statistic = OrderConsumptionV::consumptionStatisticByStatus($canteen_id, $status, $department_id,
             $username, $staff_type_id, $time_begin,
             $time_end, $company_id);
-        $statistic = $this->prefixStatistic($statistic, 'status',$time_begin, $time_end);
+        $statistic = $this->prefixStatistic($statistic, 'status', $time_begin, $time_end);
         return $statistic;
 
     }
 
     private function consumptionStatisticByCanteen($canteen_id, $status, $department_id,
-                                                  $username, $staff_type_id, $time_begin,
-                                                  $time_end, $company_id)
+                                                   $username, $staff_type_id, $time_begin,
+                                                   $time_end, $company_id)
     {
         $statistic = OrderConsumptionV::consumptionStatisticByCanteen($canteen_id, $status, $department_id,
             $username, $staff_type_id, $time_begin,
             $time_end, $company_id);
-        $statistic = $this->prefixStatistic($statistic, 'canteen',$time_begin, $time_end);
+        $statistic = $this->prefixStatistic($statistic, 'canteen', $time_begin, $time_end);
         return $statistic;
 
     }
 
     private function consumptionStatisticByStaff($canteen_id, $status, $department_id,
-                                                   $username, $staff_type_id, $time_begin,
-                                                   $time_end, $company_id)
+                                                 $username, $staff_type_id, $time_begin,
+                                                 $time_end, $company_id)
     {
         $statistic = OrderConsumptionV::consumptionStatisticByStaff($canteen_id, $status, $department_id,
             $username, $staff_type_id, $time_begin,
             $time_end, $company_id);
-        $statistic = $this->prefixStatistic($statistic, 'staff_type',$time_begin, $time_end);
+        $statistic = $this->prefixStatistic($statistic, 'staff_type', $time_begin, $time_end);
         return $statistic;
 
     }

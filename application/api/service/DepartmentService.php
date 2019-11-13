@@ -63,6 +63,9 @@ class DepartmentService
 
     public function departments($c_id)
     {
+        if (empty($c_id)) {
+            $c_id = Token::getCurrentTokenVar('company_id');
+        }
         $departments = DepartmentV::departments($c_id);
         return getTree($departments);
     }
@@ -479,7 +482,13 @@ class DepartmentService
 
     public function adminDepartments()
     {
-        $company_id = Token::getCurrentTokenVar('current_company_id');
+        if (Token::getCurrentTokenVar('type') == 'official') {
+            $company_id = Token::getCurrentTokenVar('current_company_id');
+
+        } else {
+            $company_id = Token::getCurrentTokenVar('company_id');
+
+        }
         $departments = CompanyDepartmentT::adminDepartments($company_id);
         return $departments;
     }
