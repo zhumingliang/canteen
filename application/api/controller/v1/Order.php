@@ -320,19 +320,20 @@ class Order extends BaseController
      * @apiSuccess (返回参数说明) {string} ordering_type  订单类别：shop|小卖部；personal_choice|个人选菜；online|在线订餐
      * @apiSuccess (返回参数说明) {string} ordering_date  饭堂订单中订餐日期
      * @apiSuccess (返回参数说明) {obj} address 地址信息：order_type=2时此数据不为空
-     * @apiSuccess (返回参数说明) {string} address|province  省
-     * @apiSuccess (返回参数说明) {string} address|city  城市
-     * @apiSuccess (返回参数说明) {string} address|area  区
-     * @apiSuccess (返回参数说明) {string} address|address  详细地址
-     * @apiSuccess (返回参数说明) {string} address|name  姓名
-     * @apiSuccess (返回参数说明) {string} address|phone  手机号
-     * @apiSuccess (返回参数说明) {int} address|sex  性别：1|男；2|女
+     * @apiSuccess (返回参数说明) {string} province  省
+     * @apiSuccess (返回参数说明) {string} city  城市
+     * @apiSuccess (返回参数说明) {string} area  区
+     * @apiSuccess (返回参数说明) {string} address  详细地址
+     * @apiSuccess (返回参数说明) {string} name  姓名
+     * @apiSuccess (返回参数说明) {string} phone  手机号
+     * @apiSuccess (返回参数说明) {int} sex  性别：1|男；2|女
      * @apiSuccess (返回参数说明) {obj} foods ：order_type=2时此数据不为空
-     * @apiSuccess (返回参数说明) {int} foods|food_id 菜品id
-     * @apiSuccess (返回参数说明) {string} foods|price 菜品实时单价
-     * @apiSuccess (返回参数说明) {string} foods|count 菜品数量
-     * @apiSuccess (返回参数说明) {string} foods|name 菜品名称
-     * @apiSuccess (返回参数说明) {string} foods|unit 小卖部商品单位
+     * @apiSuccess (返回参数说明) {int} food_id 菜品id
+     * @apiSuccess (返回参数说明) {string} price 菜品实时单价
+     * @apiSuccess (返回参数说明) {string} count 菜品数量
+     * @apiSuccess (返回参数说明) {string} name 菜品名称
+     * @apiSuccess (返回参数说明) {string} unit 小卖部商品单位
+     * @apiSuccess (返回参数说明) {int} menu_id 菜单id
      */
     public function orderDetail()
     {

@@ -282,14 +282,14 @@ class OrderStatisticService
     }
 
     public function consumptionStatistic($canteen_id, $status, $type,
-                                         $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id,$page,$size)
+                                         $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id, $page, $size)
     {
         switch ($type) {
             case OrderEnum::STATISTIC_BY_DEPARTMENT:
                 return $this->consumptionStatisticByDepartment($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id);
                 break;
             case OrderEnum::STATISTIC_BY_USERNAME:
-                return $this->consumptionStatisticByUsername($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id,$page,$size);
+                return $this->consumptionStatisticByUsername($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id, $page, $size);
                 break;
             case OrderEnum::STATISTIC_BY_STAFF_TYPE:
                 return $this->consumptionStatisticByStatus($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id);
@@ -367,16 +367,16 @@ class OrderStatisticService
                                                     $time_end, $company_id, $page, $size)
     {
         //获取人员信息
-        $users = StaffCanteenV::getStaffsForStatistic($company_id, $canteen_id, $page, $size,$status, $department_id,
+        $users = StaffCanteenV::getStaffsForStatistic($company_id, $canteen_id, $page, $size, $status, $department_id,
             $username, $staff_type_id, $time_begin,
             $time_end);
-        return $users;
-        /* $statistic = OrderConsumptionV::consumptionStatisticByUsername($canteen_id, $status, $department_id,
-             $username, $staff_type_id, $time_begin,
-             $time_end, $company_id);
-         $statistic = $this->prefixStatisticUsername($statistic, $time_begin, $time_end);
-         return $statistic;*/
-
+        $data = $users['data'];
+        foreach ($data as $k => $v) {
+            $data[$k]['time_begin'] = $time_begin;
+            $data[$k]['time_end'] = $time_end;
+        }
+        //  $statistic = OrderConsumptionV::consumptionStatisticByUsername();
+        return $users['data'] = $data;
     }
 
 
