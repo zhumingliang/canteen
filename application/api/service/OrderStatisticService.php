@@ -16,6 +16,7 @@ use app\api\model\OrderSettlementV;
 use app\api\model\OrderStatisticV;
 use app\api\model\OrderT;
 use app\api\model\OrderTakeoutStatisticV;
+use app\api\model\StaffCanteenV;
 use app\lib\enum\CommonEnum;
 use app\lib\enum\OrderEnum;
 use app\lib\exception\ParameterException;
@@ -281,14 +282,14 @@ class OrderStatisticService
     }
 
     public function consumptionStatistic($canteen_id, $status, $type,
-                                         $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id)
+                                         $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id,$page,$size)
     {
         switch ($type) {
             case OrderEnum::STATISTIC_BY_DEPARTMENT:
                 return $this->consumptionStatisticByDepartment($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id);
                 break;
             case OrderEnum::STATISTIC_BY_USERNAME:
-                return $this->consumptionStatisticByUsername($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id);
+                return $this->consumptionStatisticByUsername($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id,$page,$size);
                 break;
             case OrderEnum::STATISTIC_BY_STAFF_TYPE:
                 return $this->consumptionStatisticByStatus($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id);
@@ -366,7 +367,10 @@ class OrderStatisticService
                                                     $time_end, $company_id, $page, $size)
     {
         //获取人员信息
-        //$users =CompanyStaffT::
+        $users = StaffCanteenV::getStaffsForStatistic($company_id, $canteen_id, $page, $size,$status, $department_id,
+            $username, $staff_type_id, $time_begin,
+            $time_end);
+        return $users;
         /* $statistic = OrderConsumptionV::consumptionStatisticByUsername($canteen_id, $status, $department_id,
              $username, $staff_type_id, $time_begin,
              $time_end, $company_id);

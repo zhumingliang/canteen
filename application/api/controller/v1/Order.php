@@ -13,6 +13,7 @@ use app\api\controller\BaseController;
 use app\api\model\MaterialReportT;
 use app\api\model\OnlineOrderingT;
 use app\api\model\PersonalChoiceT;
+use app\api\model\ShopOrderDetailV;
 use app\api\service\OrderService;
 use app\api\service\OrderStatisticService;
 use app\lib\enum\CommonEnum;
@@ -918,13 +919,13 @@ class Order extends BaseController
     }
 
     public function consumptionStatistic($canteen_id = 0, $status = 0, $type = 1,
-                                         $department_id = 0, $username = '', $staff_type_id = 0)
+                                         $department_id = 0, $username = '', $staff_type_id = 0, $page = 1, $size = 10)
     {
         $time_begin = Request::param('time_begin');
         $time_end = Request::param('time_end');
         $company_id = Request::param('company_id');
         $statistic = (new OrderStatisticService())->consumptionStatistic($canteen_id, $status, $type,
-            $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id);
+            $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id, $page, $size);
         return json(new SuccessMessageWithData(['data' => $statistic]));
 
     }

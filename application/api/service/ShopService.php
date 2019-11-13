@@ -510,30 +510,32 @@ class ShopService
     }
 
     public function consumptionStatistic($page, $size, $category_id, $product_id,
-                                         $status, $time_begin, $time_end, $type, $department_id, $username, $supplier_id)
+                                         $status, $time_begin, $time_end, $type, $department_id, $username)
     {
         $field = '';
-        if (empty($supplier_id)) {
+        $supplier_id = 0;
+        if (Token::getCurrentTokenVar('type') == 'supplier') {
             $supplier_id = (new AuthorService())->checkAuthorSupplier();
         }
+        $company_id = Token::getCurrentTokenVar('company_id');
         if ($type == ShopEnum::STATISTIC_BY_CATEGORY) {
             $statistic = ShopOrderStatisticV::consumptionStatisticGroupByCategoryID($page, $size, $category_id, $product_id,
-                $status, $time_begin, $time_end, $supplier_id, $department_id, $username);
+                $status, $time_begin, $time_end, $supplier_id, $department_id, $username,$company_id);
             $field = 'category_id';
         } else if ($type == ShopEnum::STATISTIC_BY_PRODUCT) {
             $statistic = ShopOrderStatisticV::consumptionStatisticGroupByProductID($page, $size, $category_id, $product_id,
-                $status, $time_begin, $time_end, $supplier_id, $department_id, $username);
+                $status, $time_begin, $time_end, $supplier_id, $department_id, $username,$company_id);
             $field = 'product_id';
         } else if ($type == ShopEnum::STATISTIC_BY_STATUS) {
             $statistic = ShopOrderStatisticV::consumptionStatisticGroupByStatus($page, $size, $category_id, $product_id,
-                $status, $time_begin, $time_end, $supplier_id, $department_id, $username);
+                $status, $time_begin, $time_end, $supplier_id, $department_id, $username,$company_id);
         } else if ($type == ShopEnum::STATISTIC_BY_DEPARTMENT) {
             $statistic = ShopOrderStatisticV::consumptionStatisticGroupByDepartmentID($page, $size, $category_id, $product_id,
-                $status, $time_begin, $time_end, $supplier_id, $department_id, $username);
+                $status, $time_begin, $time_end, $supplier_id, $department_id, $username,$company_id);
             $field = 'department_id';
         } else if ($type == ShopEnum::STATISTIC_BY_USERNAME) {
             $statistic = ShopOrderStatisticV::consumptionStatisticGroupByUsername($page, $size, $category_id, $product_id,
-                $status, $time_begin, $time_end, $supplier_id, $department_id, $username);
+                $status, $time_begin, $time_end, $supplier_id, $department_id, $username,$company_id);
             $field = 'staff_id';
         } else {
             throw new ParameterException();
@@ -543,11 +545,11 @@ class ShopService
             $statisticCount = 0;
         } else {
             $statisticCount = ShopOrderStatisticV::statisticCount($category_id, $product_id,
-                $status, $time_begin, $time_end, $supplier_id, $field, $department_id, $username);
+                $status, $time_begin, $time_end, $supplier_id, $field, $department_id, $username,$company_id);
         }
 
         $money = ShopOrderStatisticV::statisticMoney($category_id, $product_id,
-            $status, $time_begin, $time_end, $supplier_id, $department_id, $username);
+            $status, $time_begin, $time_end, $supplier_id, $department_id, $username,$company_id);
         $statistic['statistic'] = [
             'statisticCount' => $statisticCount,
             'statisticMoney' => $money

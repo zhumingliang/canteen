@@ -86,21 +86,4 @@ class CompanyStaffT extends Model
             ->select();
     }
 
-
-    public static function getStaffsFor($company_id,$canteen_id)
-    {
-        return self::where(function ($query) use ($company_id, $canteen_id) {
-            if (!empty($canteen_id)) {
-                $query->where('canteen_id', $canteen_id);
-            } else {
-                if (strpos($company_id, ',') !== false) {
-                    $query->whereIn('company_id', $company_id);
-                } else {
-                    $query->where('company_id', $company_id);
-                }
-            }
-        })
-            ->where('state', CommonEnum::STATE_IS_OK)
-            ->select();
-    }
 }

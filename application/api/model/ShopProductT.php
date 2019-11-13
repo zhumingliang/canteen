@@ -26,6 +26,7 @@ class ShopProductT extends BaseModel
 
     }
 
+
     public static function companyProducts($company_id)
     {
         $products = self::where('company_id', $company_id)

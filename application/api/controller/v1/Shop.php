@@ -5,6 +5,8 @@ namespace app\api\controller\v1;
 
 
 use app\api\controller\BaseController;
+use app\api\model\ShopOrderDetailV;
+use app\api\model\ShopOrderT;
 use app\api\model\ShopProductT;
 use app\api\model\ShopT;
 use app\api\service\ShopService;
@@ -687,12 +689,12 @@ class Shop extends BaseController
      */
     public function consumptionStatistic($page = 1, $size = 20, $category_id = 0,
                                          $product_id = 0, $status = 0, $type = 1,
-                                         $department_id = 0, $username = '', $supplier_id = 0)
+                                         $department_id = 0, $username = '')
     {
         $time_begin = Request::param('time_begin');
         $time_end = Request::param('time_end');
         $statistic = (new ShopService())->consumptionStatistic($page, $size, $category_id, $product_id,
-            $status, $time_begin, $time_end, $type, $department_id, $username, $supplier_id);
+            $status, $time_begin, $time_end, $type, $department_id, $username);
         return json(new SuccessMessageWithData(['data' => $statistic]));
     }
 
@@ -736,6 +738,44 @@ class Shop extends BaseController
     public function supplierProductsToSearch($product = '')
     {
         $products = (new ShopService())->supplierProductsToSearch($product);
+        return json(new SuccessMessageWithData(['data' => $products]));
+
+    }
+
+    /**
+     * @api {GET} /api/v1/shop/order/products CMS管理端-小卖部管理-订单明细查询-订单明细
+     * @apiGroup  CMS管理端
+     * @apiVersion 3.0.0
+     * @apiDescription CMS管理端-CMS管理端-小卖部管理-订单明细查询-订单明细
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/shop/order/products?order_id=11
+     * @apiParam (请求参数说明) {int} order_id 订单id
+     * @apiSuccessExample {json}返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"id":11,"order_type":1,"u_id":5,"count":4,"ordering_type":"shop","address_id":3,"state":1,"used":2,"products":[{"detail_id":6,"order_id":11,"name":"langbing","count":1,"price":"17.00","unit":"kg","category":"商品12"},{"detail_id":7,"order_id":11,"name":"炒牛肉","count":1,"price":"18.00","unit":"份","category":"商品12"},{"detail_id":8,"order_id":11,"name":"超烧饭","count":1,"price":"18.00","unit":"盒","category":"商品12"},{"detail_id":9,"order_id":11,"name":"鸡蛋xxx","count":1,"price":"8.00","unit":"元\/500g","category":"公司餐"}],"address":{"id":3,"province":"广东省","city":"江门市","area":"蓬江区","address":"江门市白石大道东4号路3栋 ","name":"陈梓","phone":"18956225230","sex":2}}}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {String} msg 信息描述
+     * @apiSuccess (返回参数说明) {int} id 订单id
+     * @apiSuccess (返回参数说明) {int} count  订餐数量
+     * @apiSuccess (返回参数说明) {string} ordering_date  饭堂订单中订餐日期
+     * @apiSuccess (返回参数说明) {obj} address 地址信息
+     * @apiSuccess (返回参数说明) {string} province  省
+     * @apiSuccess (返回参数说明) {string} city  城市
+     * @apiSuccess (返回参数说明) {string} area  区
+     * @apiSuccess (返回参数说明) {string} address  详细地址
+     * @apiSuccess (返回参数说明) {string} name  姓名
+     * @apiSuccess (返回参数说明) {string} phone  手机号
+     * @apiSuccess (返回参数说明) {int} sex  性别：1|男；2|女
+     * @apiSuccess (返回参数说明) {obj} products
+     * @apiSuccess (返回参数说明) {int} food_id 菜品id
+     * @apiSuccess (返回参数说明) {string} price 菜品实时单价
+     * @apiSuccess (返回参数说明) {string} count 菜品数量
+     * @apiSuccess (返回参数说明) {string} name 菜品名称
+     * @apiSuccess (返回参数说明) {string} unit 小卖部商品单位
+     * @apiSuccess (返回参数说明) {string} category 类别
+     */
+    public function shopOrderProducts($order_id)
+    {
+        $products = ShopOrderT::orderInfoForStatistic($order_id);
         return json(new SuccessMessageWithData(['data' => $products]));
 
     }
