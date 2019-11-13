@@ -612,7 +612,7 @@ class OrderService extends BaseService
             $order = OrderT::where('id', $id)->find();
             //检测订单是否可操作
             $count = $order->count;
-            $this->checkOrderCanHandel($order->d_id);
+            $this->checkOrderCanHandel($order->d_id, $order->ordering_date);
             if (!empty($params['count']) && ($params['count'] != $count)) {
                 //检测订单修改数量是否合法
                 $count = $params['count'];
