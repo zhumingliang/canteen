@@ -375,8 +375,15 @@ class OrderStatisticService
             $data[$k]['time_begin'] = $time_begin;
             $data[$k]['time_end'] = $time_end;
         }
-        //  $statistic = OrderConsumptionV::consumptionStatisticByUsername();
-        return $users['data'] = $data;
+        $statistic = OrderConsumptionV::consumptionStatisticByUsername($canteen_id, $status, $department_id,
+            $username, $staff_type_id, $time_begin,
+            $time_end, $company_id);
+        $users['data'] = $data;
+        return [
+            'statistic' => $users,
+            'allMoney' => $statistic['order_money'],
+            'allCount' => $statistic['order_count']
+        ];
     }
 
 

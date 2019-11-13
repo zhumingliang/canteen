@@ -919,6 +919,45 @@ class Order extends BaseController
         return json(new SuccessMessage());
     }
 
+    /**
+     * @api {GET} /api/v1/order/consumptionStatistic CMS管理端-结算管理-结算报表
+     * @apiGroup  CMS管理端
+     * @apiVersion 3.0.0
+     * @apiDescription CMS管理端-结算管理-结算报表
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/order/consumptionStatistic?time_begin=2019-09-07&time_end=2019-12-07&page=1&size=20&category_id=0&product_id=0&status=0&status=1&department_id=0&username=
+     * @apiParam (请求参数说明) {int} page 当前页码
+     * @apiParam (请求参数说明) {int} size 每页多少条数据
+     * @apiParam (请求参数说明) {int} department_id  部门id：全部传入0
+     * @apiParam (请求参数说明) {string} username  用户名
+     * @apiParam (请求参数说明) {int} staff_type_id  人员类型id：全部传入0
+     * @apiParam (请求参数说明) {int} canteen_id  消费地点，饭堂id：全部传入0
+     * @apiParam (请求参数说明) {int} company_id  企业id：全部，将所有ID用逗号分隔
+     * @apiParam (请求参数说明) {int} status  消费类型：全部传入0；1：订餐就餐；2：未订餐就餐；3：未订餐就餐；4：补录操作
+     * @apiParam (请求参数说明) {int} type  汇总类型：1：按部门进行汇总；2：按姓名进行汇总；3：按人员类型进行汇总；4：按消费地点进行汇总；5：按消费类型进行汇总
+     * @apiParam (请求参数说明) {string} time_begin  查询开始时间
+     * @apiParam (请求参数说明) {string} time_end  查询结束时间
+     * @apiSuccessExample {json}汇总类型为：1/3/4/5返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"statistic":[{"statistic":"股东","time_begin":"2019-10-11","time_end":"2019-11-30","department":"股东","dinnerStatistic":[{"dinner_id":6,"dinner":"中餐","order_count":"8","order_money":28},{"dinner_id":5,"dinner":"早餐","order_count":"2","order_money":4},{"dinner_id":7,"dinner":"晚餐","order_count":"5","order_money":3}]}],"allMoney":35,"allCount":15}}
+     * @apiSuccessExample {json}汇总类型为：2返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"statistic":{"total":10,"per_page":10,"current_page":1,"last_page":1,"data":[{"staff_id":365,"statistic":"LANGBIN","username":"LANGBIN","department":"B1部门","dinner_statistic":[],"time_begin":"2019-10-11","time_end":"2019-11-30"},{"staff_id":368,"statistic":"rush","username":"rush","department":"股东","dinner_statistic":[],"time_begin":"2019-10-11","time_end":"2019-11-30"},{"staff_id":369,"statistic":"rush23","username":"rush23","department":"股东","dinner_statistic":[],"time_begin":"2019-10-11","time_end":"2019-11-30"},{"staff_id":370,"statistic":"rush233","username":"rush233","department":"股东","dinner_statistic":[],"time_begin":"2019-10-11","time_end":"2019-11-30"},{"staff_id":371,"statistic":"langbin","username":"langbin","department":"股东","dinner_statistic":[],"time_begin":"2019-10-11","time_end":"2019-11-30"},{"staff_id":372,"statistic":"llb","username":"llb","department":"股东","dinner_statistic":[],"time_begin":"2019-10-11","time_end":"2019-11-30"},{"staff_id":373,"statistic":"13510","username":"13510","department":"股东","dinner_statistic":[],"time_begin":"2019-10-11","time_end":"2019-11-30"},{"staff_id":374,"statistic":"langbin","username":"langbin","department":"股东","dinner_statistic":[{"staff_id":374,"dinner_id":6,"dinner":"中餐","order_count":"8","order_money":28},{"staff_id":374,"dinner_id":5,"dinner":"早餐","order_count":"2","order_money":4},{"staff_id":374,"dinner_id":7,"dinner":"晚餐","order_count":"5","order_money":3}],"time_begin":"2019-10-11","time_end":"2019-11-30"},{"staff_id":375,"statistic":"rush2333","username":"rush2333","department":"股东","dinner_statistic":[],"time_begin":"2019-10-11","time_end":"2019-11-30"},{"staff_id":376,"statistic":"1103","username":"1103","department":"股东","dinner_statistic":[],"time_begin":"2019-10-11","time_end":"2019-11-30"}]},"allMoney":35,"allCount":"15"}}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {String} msg 信息描述
+     * @apiSuccess (返回参数说明) {int} total 数据总数
+     * @apiSuccess (返回参数说明) {int} per_page 每页多少条数据
+     * @apiSuccess (返回参数说明) {int} current_page 当前页码
+     * @apiSuccess (返回参数说明) {int} last_page 最后页码
+     * @apiSuccess (返回参数说明) {string} statistic 统计变量
+     * @apiSuccess (返回参数说明) {string} time_begin 开始时间
+     * @apiSuccess (返回参数说明) {string} time_end 结束时间
+     * @apiSuccess (返回参数说明) {string} username 姓名
+     * @apiSuccess (返回参数说明) {string} department 部门
+     * @apiSuccess (返回参数说明) {string} status 消费类型
+     * @apiSuccess (返回参数说明) {string} canteen 消费地点
+     * @apiSuccess (返回参数说明) {string} staff_type 人员类型
+     * @apiSuccess (返回参数说明) {int} allMoney 合计-总数量
+     * @apiSuccess (返回参数说明) {int} allCount 合计-总金额
+     */
     public function consumptionStatistic($canteen_id = 0, $status = 0, $type = 1,
                                          $department_id = 0, $username = '', $staff_type_id = 0, $page = 1, $size = 10)
     {

@@ -28,7 +28,8 @@ class StaffCanteenV extends Model
                     $query->where('company_id', $company_id);
                 }
             }
-        })->where(function ($query) use ($department_id,
+        })->where(function ($query) use (
+            $department_id,
             $username, $staff_type_id
         ) {
             if (!empty($department_id)) {
@@ -46,9 +47,19 @@ class StaffCanteenV extends Model
                 'dinnerStatistic' => function ($query) use (
                     $status, $department_id,
                     $username, $staff_type_id, $time_begin,
-                    $time_end
+                    $time_end, $company_id, $canteen_id
                 ) {
-                    $query->whereBetweenTime('consumption_date', $time_begin, $time_end)
+                    $query->where(function ($query) use ($company_id, $canteen_id) {
+                        if (!empty($canteen_id)) {
+                            $query->where('canteen_id', $canteen_id);
+                        } else {
+                            if (strpos($company_id, ',') !== false) {
+                                $query->whereIn('company_id', $company_id);
+                            } else {
+                                $query->where('company_id', $company_id);
+                            }
+                        }
+                    })->whereBetweenTime('consumption_date', $time_begin, $time_end)
                         ->where(function ($query2) use (
                             $status, $department_id,
                             $username, $staff_type_id

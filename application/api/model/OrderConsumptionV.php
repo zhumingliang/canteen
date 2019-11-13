@@ -92,10 +92,8 @@ class OrderConsumptionV extends Model
                 }
 
             })
-            ->field('staff_id,username,department,dinner_id,dinner,sum(order_count) as order_count,sum(order_money) as order_money')
-            ->group('staff_id,dinner')
-            ->select()
-            ->toArray();
+            ->field('sum(order_count) as order_count,sum(order_money) as order_money')
+            ->find();
         return $statistic;
     }
 
@@ -224,7 +222,6 @@ class OrderConsumptionV extends Model
             ->toArray();
         return $statistic;
     }
-
 
 
 }
