@@ -649,9 +649,9 @@ class OrderService extends BaseService
         $data_list = [];
         foreach ($new_detail as $k => $v) {
             $menu_id = $v['menu_id'];
-            $add_foods = $v['add_foods'];
-            $update_foods = $v['update_foods'];
-            $cancel_foods = $v['cancel_foods'];
+            $add_foods = empty($v['add_foods']) ? [] : $v['add_foods'];
+            $update_foods = empty($v['update_foods']) ? [] : $v['update_foods'];
+            $cancel_foods = empty($v['cancel_foods']) ? [] : $v['cancel_foods'];
             if (!empty($add_foods)) {
                 foreach ($add_foods as $k2 => $v2) {
                     $data = [
@@ -1109,5 +1109,13 @@ class OrderService extends BaseService
             }
         }
         return $dinner;
+    }
+
+    public function changeOrderAddress($order_id, $address_id)
+    {
+        $order = OrderT::update(['address_id' => $address_id], ['id' => $order_id]);
+        if (!$order) {
+            throw new UpdateException();
+        }
     }
 }

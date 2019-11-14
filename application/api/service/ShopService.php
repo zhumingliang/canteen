@@ -407,7 +407,7 @@ class ShopService
         if (!$order) {
             throw new ParameterException(['msg' => '订单不存在']);
         }
-        if ($order->used = CommonEnum::STATE_IS_OK) {
+        if ($order->used == CommonEnum::STATE_IS_OK) {
             throw new UpdateException(['msg' => '订单已经完成，不能取消']);
         }
         if ($order->u_id != Token::getCurrentUid()) {
@@ -416,7 +416,7 @@ class ShopService
         $distribution = $order->distribution;
         if ($distribution == OrderEnum::USER_ORDER_OUTSIDE) {
             //外送
-            if ($order->send = CommonEnum::STATE_IS_OK) {
+            if ($order->send == CommonEnum::STATE_IS_OK) {
                 throw new UpdateException(['msg' => '订单正在派送，不能取消']);
             }
         }

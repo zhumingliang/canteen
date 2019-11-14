@@ -970,5 +970,30 @@ class Order extends BaseController
 
     }
 
+    /**
+     * @api {POST} /api/v1/order/changeAddress CMS管理端-修改订单地址
+     * @apiGroup   Official
+     * @apiVersion 3.0.0
+     * @apiDescription    CMS管理端-材料管理-材料下单表-提交材料修改
+     * @apiExample {post}  请求样例:
+     *    {
+     *       "order_id": 1,
+     *       "address_id":3,
+         }
+     * @apiParam (请求参数说明) {string} order_id  订单id
+     * @apiParam (请求参数说明) {string} address_id  地址id
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     */
+    public function changeOrderAddress()
+    {
+        $order_id = Request::param('order_id');
+        $address_id = Request::param('address_id');
+        (new OrderService())->changeOrderAddress($order_id, $address_id);
+        return json(new SuccessMessage());
+    }
+
 
 }
