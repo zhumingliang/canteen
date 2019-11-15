@@ -231,7 +231,7 @@ class OrderService extends BaseService
             throw new SaveException(['msg' => '订餐数量超过最大订餐数量，最大订餐数量为：' . $strategies->ordered_count]);
         }
         if ($consumptionCount >= $strategies->consumption_count) {
-            throw new SaveException(['msg' => '消费次数已达到上限，最大消费次数为：' . $strategies->ordered_count]);
+            throw new SaveException(['msg' => '消费次数已达到上限，最大消费次数为：' . $strategies->$strategies->consumption_count]);
         }
         $detail = $strategies->detail;// json_decode($strategies->detail, true);
         if (empty($detail)) {

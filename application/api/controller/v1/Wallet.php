@@ -228,4 +228,35 @@ class Wallet extends BaseController
     }
 
 
+    public function saveOrder()
+    {
+
+    }
+
+    /**
+     * @api {GET} /api/v1/wallet/pay/getPreOrder  微信端-余额充值-获取支付信息
+     * @apiGroup  Official
+     * @apiVersion 1.0.1
+     * @apiDescription 微信端-余额充值-微信支付获取支付信息
+     * @apiExample {get}  请求样例:
+     * http://mengant.cn/api/v1/wallet/pay/getPreOrder?id=1
+     * @apiParam (请求参数说明) {int} id 订单id
+     * @apiSuccessExample {json} 返回样例:
+     * {
+     * "jsApiParameters": "{\"appId\":\"wxe259f1f58695b35e\",\"nonceStr\":\"m8l2v92he4ca4vjpfscpgbt5u0l8optz\",\"package\":\"prepay_id=wx201705061742181721b8ef8e0586973210\",\"signType\":\"MD5\",\"timeStamp\":\"1494063753\",\"paySign\":\"2177F2F635987A96D0F05B72299CF855\"}"
+     * }
+     * @apiSuccess (返回参数说明) {String} jsApiParameters 前端支付所需数据
+     */
+    public function getPreOrder()
+    {
+
+    }
+
+
+    public function WXNotifyUrl()
+    {
+
+    }
+
+
 }
