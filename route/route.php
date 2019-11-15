@@ -217,5 +217,7 @@ Route::get('api/:version/wallet/recharges', 'api/:version.Wallet/rechargeRecords
 Route::get('api/:version/wallet/users/balance', 'api/:version.Wallet/usersBalance');
 Route::post('api/:version/wallet/supplement', 'api/:version.Wallet/rechargeSupplement');
 Route::post('api/:version/wallet/supplement/upload', 'api/:version.Wallet/rechargeSupplementUpload');
+Route::post('api/:version/wallet/pay', 'api/:version.Wallet/saveOrder');
+Route::get('api/:version/wallet/pay/getPreOrder', 'api/:version.Wallet/getPreOrder');
 Route::rule('api/:version/wallet/WXNotifyUrl', 'api/:version.Wallet/WXNotifyUrl');
 

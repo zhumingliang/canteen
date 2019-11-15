@@ -227,9 +227,29 @@ class Wallet extends BaseController
         return json(new SuccessMessage());
     }
 
-
+    /**
+     * @api {POST} /api/v1/wallet/pay 微信端--用户充值
+     * @apiGroup   Official
+     * @apiVersion 3.0.0
+     * @apiDescription    微信端--用户充值
+     * @apiExample {post}  请求样例:
+     *    {
+     *       "method_id": 1,
+     *       "money": 100
+     *     }
+     * @apiParam (请求参数说明) {int} money 充值金额
+     * @apiParam (请求参数说明) {int} method_id  充值方式：1：微信支付
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"id":1}}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     * @apiSuccess (返回参数说明) {int} id 订单id
+     */
     public function saveOrder()
     {
+        $params = Request::param();
+        $order_id = (new WalletService())->saveOrder($params);
+        return json(new SuccessMessageWithData(['data' => $order_id]));
 
     }
 
@@ -249,13 +269,46 @@ class Wallet extends BaseController
      */
     public function getPreOrder()
     {
+        $order_id = Request::param('order_id');
+        $info = (new WalletService())->getPreOrder($order_id);
+        return json(new SuccessMessageWithData(['data' => $info]));
 
     }
 
 
     public function WXNotifyUrl()
     {
+        $app = app('wechat.payment');
+        $response = $app->handlePaidNotify(function ($message, $fail) {
+            // 使用通知里的 "微信支付订单号" 或者 "商户订单号" 去自己的数据库找到订单
+            $order = [];//查询订单($message['out_trade_no']);
 
+            if (!$order || $order->paid_at) { // 如果订单不存在 或者 订单已经支付过了
+                return true; // 告诉微信，我已经处理完了，订单没找到，别再通知我了
+            }
+
+            ///////////// <- 建议在这里调用微信的【订单查询】接口查一下该笔订单的情况，确认是已经支付 /////////////
+/*
+            if ($message['return_code'] === 'SUCCESS') { // return_code 表示通信状态，不代表支付状态
+                // 用户是否支付成功
+                if (array_get($message, 'result_code') === 'SUCCESS') {
+                    $order->paid_at = time(); // 更新支付时间为当前时间
+                    $order->status = 'paid';
+
+                    // 用户支付失败
+                } elseif (array_get($message, 'result_code') === 'FAIL') {
+                    $order->status = 'paid_fail';
+                }
+            } else {
+                return $fail('通信失败，请稍后再通知我');
+            }*/
+
+            $order->save(); // 保存订单
+
+            return true; // 返回处理完成
+        });
+
+        $response->send();
     }
 
 

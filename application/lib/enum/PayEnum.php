@@ -17,5 +17,7 @@ class PayEnum
 
     const PAY_OVERDRAFT = 3;
 
-    const PAY_WEIXIN =42;
+    const PAY_WEIXIN = 4;
+
+    const PAY_METHOD_WX = 1;
 }

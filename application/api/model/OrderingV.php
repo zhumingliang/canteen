@@ -18,8 +18,8 @@ class OrderingV extends Model
     {
         $record = self::where('u_id', $u_id)
             ->where('ordering_date', $ordering_date)
-            ->where('dinner', $dinner)
             ->where('state', CommonEnum::STATE_IS_OK)
+            ->where('dinner', $dinner)
             ->count();
         return $record;
     }

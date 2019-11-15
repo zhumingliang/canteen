@@ -5,15 +5,19 @@ namespace app\api\service;
 
 
 use app\api\model\DinnerV;
+use app\api\model\PayT;
 use app\api\model\RechargeCashT;
 use app\api\model\RechargeSupplementT;
 use app\api\model\RechargeV;
 use app\api\model\UserBalanceV;
 use app\lib\enum\CommonEnum;
+use app\lib\enum\PayEnum;
 use app\lib\exception\AuthException;
 use app\lib\exception\ParameterException;
 use app\lib\exception\SaveException;
 use think\Db;
+use think\Model;
+use think\Request;
 
 class WalletService
 {
@@ -223,6 +227,83 @@ class WalletService
         }
         return $dinnerID;
 
+    }
+
+    public function saveOrder($params)
+    {
+        $company_id = 3;//Token::getCurrentTokenVar('current_company_id');
+        $openid = "oSi030oELLvP4suMSvOxTAF8HrLE";//Token::getCurrentOpenid();
+        $u_id = 5;//Token::getCurrentUid();
+        $data = [
+            'openid' => $openid,
+            'company_id' => $company_id,
+            'u_id' => $u_id,
+            'order_num' => time(),
+            'money' => $params['money'],
+            'method_id' => $params['method_id']
+        ];
+        $order = PayT::create($data);
+        if (!$order) {
+            throw new SaveException();
+        }
+        return [
+            'id' => $order->id
+        ];
+    }
+
+    public function getPreOrder($order_id)
+    {
+        $openid = "oSi030oELLvP4suMSvOxTAF8HrLE";//Token::getCurrentOpenid();
+        $status = $this->checkOrderValid($order_id, $openid);
+        $method_id = $status['method_id'];
+        switch ($method_id) {
+            case PayEnum::PAY_METHOD_WX:
+                return $this->getPreOrderForWX($status['orderNumber'], $status['orderPrice'], $openid);
+                break;
+            default:
+                throw new ParameterException();
+        }
+    }
+
+    private function getPreOrderForWX($orderNumber, $orderPrice, $openid)
+    {
+        $data = [
+            'openid' => $openid,
+            'total_fee' => $orderPrice,
+            'body' => '云饭堂充值中心-电子饭卡余额充值',
+            'out_trade_no' => $orderNumber
+        ];
+        $payInfo = (new WeiXinPayService())->getPayInfo($data);
+        return $payInfo;
+
+
+    }
+
+    private
+    function checkOrderValid($order_id, $openid)
+    {
+        $order = PayT::get($order_id);
+
+        if (!$order) {
+            throw new ParameterException(['msg' => '订单不存在']);
+        }
+        if ($order->state == CommonEnum::STATE_IS_FAIL) {
+            throw new ParameterException(['msg' => '订单已经取消，不能支付']);
+        }
+        if (!empty($order->pay_id)) {
+            throw new ParameterException(['msg' => '订单已经支付，不能重复支付']);
+        }
+        if ($openid != $order->openid) {
+            throw new ParameterException(['msg' => '用户与订单不匹配']);
+        }
+        $status = [
+            'method_id' => $order->method_id,
+            'orderNumber' => $order->order_num,
+            'orderPrice' => $order->money,
+            'companyID' => $order->company_id
+        ];
+
+        return $status;
     }
 
 
