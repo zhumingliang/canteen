@@ -426,7 +426,7 @@ class DepartmentService
         $staff = CompanyStaffT::get($s_id);
         return [
             'usernmae' => $staff->username,
-            'url' => config('setting.domain') . $qrcode->url,
+            'url' =>$qrcode->url,
             'create_time' => $qrcode->create_time,
             'expiry_date' => $qrcode->expiry_date
         ];
