@@ -234,13 +234,16 @@ class WalletService
         $company_id = 3;//Token::getCurrentTokenVar('current_company_id');
         $openid = "oSi030oELLvP4suMSvOxTAF8HrLE";//Token::getCurrentOpenid();
         $u_id = 5;//Token::getCurrentUid();
+        $phone = "15521323081";//Token::getCurrentTokenVar('phone');
+        $staff = (new UserService())->getUserCompanyInfo($phone, $company_id);
         $data = [
             'openid' => $openid,
             'company_id' => $company_id,
             'u_id' => $u_id,
             'order_num' => time(),
             'money' => $params['money'],
-            'method_id' => $params['method_id']
+            'method_id' => $params['method_id'],
+            'staff_id' =>$staff->id
         ];
         $order = PayT::create($data);
         if (!$order) {
@@ -269,12 +272,15 @@ class WalletService
     {
         $data = [
             'openid' => $openid,
-            'total_fee' => $orderPrice,
+            'total_fee' => $orderPrice * 100,//转换单位为分
             'body' => '云饭堂充值中心-电子饭卡余额充值',
             'out_trade_no' => $orderNumber
         ];
-        $payInfo = (new WeiXinPayService())->getPayInfo($data);
-        return $payInfo;
+        $wxOrder = (new WeiXinPayService())->getPayInfo($data);
+        if ($wxOrder['result_code'] != 'SUCCESS' || $wxOrder['return_code'] != 'SUCCESS') {
+            throw new ParameterException(['msg' => '获取微信支付信息失败']);
+        }
+        return $wxOrder;
 
 
     }

@@ -373,7 +373,9 @@ class ShopService
 
     private function checkMoney($u_id, $money)
     {
-        $balance = 100;
+        $company_id = Token::getCurrentTokenVar('current_company_id');
+        $phone = Token::getCurrentTokenVar('phone');
+        $balance = (new WalletService())->getUserBalance($company_id, $phone);
         if ($balance < $money) {
             throw new SaveException(['errorCode' => 49000, 'msg' => '余额不足']);
         }
@@ -491,7 +493,7 @@ class ShopService
     public function salesReportToSupplier($page, $size, $time_begin, $time_end)
     {
 
-        $supplier_id =  (new AuthorService())->checkAuthorSupplier();
+        $supplier_id = (new AuthorService())->checkAuthorSupplier();
         //获取供应商所有商品
         $products = ShopProductT::supplierProducts($page, $size, $time_begin, $time_end, $supplier_id);
         $sale_money = ShopProductStatisticV::saleMoney($supplier_id, $time_begin, $time_end);
@@ -519,22 +521,22 @@ class ShopService
         $company_id = Token::getCurrentTokenVar('company_id');
         if ($type == ShopEnum::STATISTIC_BY_CATEGORY) {
             $statistic = ShopOrderStatisticV::consumptionStatisticGroupByCategoryID($page, $size, $category_id, $product_id,
-                $status, $time_begin, $time_end, $supplier_id, $department_id, $username,$company_id);
+                $status, $time_begin, $time_end, $supplier_id, $department_id, $username, $company_id);
             $field = 'category_id';
         } else if ($type == ShopEnum::STATISTIC_BY_PRODUCT) {
             $statistic = ShopOrderStatisticV::consumptionStatisticGroupByProductID($page, $size, $category_id, $product_id,
-                $status, $time_begin, $time_end, $supplier_id, $department_id, $username,$company_id);
+                $status, $time_begin, $time_end, $supplier_id, $department_id, $username, $company_id);
             $field = 'product_id';
         } else if ($type == ShopEnum::STATISTIC_BY_STATUS) {
             $statistic = ShopOrderStatisticV::consumptionStatisticGroupByStatus($page, $size, $category_id, $product_id,
-                $status, $time_begin, $time_end, $supplier_id, $department_id, $username,$company_id);
+                $status, $time_begin, $time_end, $supplier_id, $department_id, $username, $company_id);
         } else if ($type == ShopEnum::STATISTIC_BY_DEPARTMENT) {
             $statistic = ShopOrderStatisticV::consumptionStatisticGroupByDepartmentID($page, $size, $category_id, $product_id,
-                $status, $time_begin, $time_end, $supplier_id, $department_id, $username,$company_id);
+                $status, $time_begin, $time_end, $supplier_id, $department_id, $username, $company_id);
             $field = 'department_id';
         } else if ($type == ShopEnum::STATISTIC_BY_USERNAME) {
             $statistic = ShopOrderStatisticV::consumptionStatisticGroupByUsername($page, $size, $category_id, $product_id,
-                $status, $time_begin, $time_end, $supplier_id, $department_id, $username,$company_id);
+                $status, $time_begin, $time_end, $supplier_id, $department_id, $username, $company_id);
             $field = 'staff_id';
         } else {
             throw new ParameterException();
@@ -544,11 +546,11 @@ class ShopService
             $statisticCount = 0;
         } else {
             $statisticCount = ShopOrderStatisticV::statisticCount($category_id, $product_id,
-                $status, $time_begin, $time_end, $supplier_id, $field, $department_id, $username,$company_id);
+                $status, $time_begin, $time_end, $supplier_id, $field, $department_id, $username, $company_id);
         }
 
         $money = ShopOrderStatisticV::statisticMoney($category_id, $product_id,
-            $status, $time_begin, $time_end, $supplier_id, $department_id, $username,$company_id);
+            $status, $time_begin, $time_end, $supplier_id, $department_id, $username, $company_id);
         $statistic['statistic'] = [
             'statisticCount' => $statisticCount,
             'statisticMoney' => $money

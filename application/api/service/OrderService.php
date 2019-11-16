@@ -127,7 +127,9 @@ class OrderService extends BaseService
     public
     function checkBalance($u_id, $canteen_id, $money)
     {
-        $balance = 10000;
+        $company_id = Token::getCurrentTokenVar('current_company_id');
+        $phone = Token::getCurrentTokenVar('phone');
+        $balance = (new WalletService())->getUserBalance($company_id, $phone);
         if ($balance >= $money) {
             return PayEnum::PAY_BALANCE;
         }
