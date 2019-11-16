@@ -155,7 +155,7 @@ class UserService
 
         $newQrode = (new DepartmentService())->updateQrcode($qrcode->toArray());
 
-        return ['url' => $newQrode->url];
+        return $newQrode;
     }
 
 }
