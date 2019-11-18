@@ -31,7 +31,7 @@ class WeiXinPayService
     public function getPayInfo($data)
     {
         $app = app('wechat.payment');
-        $app->setSubMerchant('sub-merchant-id', 'sub-app-id');
+        $app->setSubMerchant('sub-merchant-id', '1563520781');
         $result = $app->order->unify([
             'body' => $data['body'],
             'out_trade_no' => $data['out_trade_no'],
