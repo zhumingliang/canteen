@@ -140,5 +140,24 @@ class User extends BaseController
         return json(new SuccessMessageWithData(['data' => $canteens]));
     }
 
+    /**
+     * @api {GET} /api/v1/user/phone 微信端-获取当前用户手机号
+     * @apiGroup  Official
+     * @apiVersion 3.0.0
+     * @apiDescription  微信端-获取当前用户手机号
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/user/phone
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"phone":"18956225230"}}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     * @apiSuccess (返回参数说明) {string} phone 手机号
+     */
+    public function userPhone()
+    {
+        $phone = \app\api\service\Token::getCurrentPhone();
+        return json(new SuccessMessageWithData(['data' => ['phone' => $phone]]));
+    }
+
 
 }
