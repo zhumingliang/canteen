@@ -243,7 +243,7 @@ class WalletService
             'order_num' => time(),
             'money' => $params['money'],
             'method_id' => $params['method_id'],
-            'staff_id' =>$staff->id
+            'staff_id' => $staff->id
         ];
         $order = PayT::create($data);
         if (!$order) {
@@ -277,9 +277,10 @@ class WalletService
             'out_trade_no' => $orderNumber
         ];
         $wxOrder = (new WeiXinPayService())->getPayInfo($data);
-        if ($wxOrder['result_code'] != 'SUCCESS' || $wxOrder['return_code'] != 'SUCCESS') {
+        print_r($wxOrder);
+      /*  if ($wxOrder['result_code'] != 'SUCCESS' || $wxOrder['return_code'] != 'SUCCESS') {
             throw new ParameterException(['msg' => '获取微信支付信息失败']);
-        }
+        }*/
         return $wxOrder;
 
 
