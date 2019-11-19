@@ -20,6 +20,7 @@ class SendSMSService
         $code = rand(10000, 99999);
         $params = ['code' => $code];
         $res = SendSms::instance()->send($phone, $params, $type);
+        print_r($res);
         $token = Request::header('token');
         if (key_exists('Code', $res) && $res['Code'] == 'OK') {
             $redis = new Redis();
@@ -46,6 +47,7 @@ class SendSMSService
         try {
             $redis = new Redis();
             $lenth = $redis->llen('canteen_send_message');
+            echo $lenth;
             if (!$lenth) {
                 return true;
             }
@@ -56,6 +58,7 @@ class SendSMSService
                     continue;
                 }
                 $res = SendSms::instance()->send($data_arr['phone'], $data_arr['params'], $data_arr['type']);
+                print_r($res);
                 $data = [
                     'phone' => $data_arr['phone'],
                     'params' => $data_arr['params'],
