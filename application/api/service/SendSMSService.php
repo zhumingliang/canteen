@@ -38,19 +38,19 @@ class SendSMSService
             'token' => $token,
             'failCount' => 0
         ];
-        Redis::instance()->lPush('send_message', json_encode($data));
+        Redis::instance()->lPush('canteen_send_message', json_encode($data));
     }
 
     public function sendHandel()
     {
         try {
             $redis = new Redis();
-            $lenth = $redis->llen('send_message');
+            $lenth = $redis->llen('canteen_send_message');
             if (!$lenth) {
                 return true;
             }
             for ($i = 0; $i < 10; $i++) {
-                $data = $redis->rPop('send_message');//从结尾处弹出一个值,超时时间为60s
+                $data = $redis->rPop('canteen_send_message');//从结尾处弹出一个值,超时时间为60s
                 $data_arr = json_decode($data, true);
                 if (empty($data_arr['phone'])) {
                     continue;
@@ -63,7 +63,7 @@ class SendSMSService
                     'failCount' => $data_arr['failCount'] + 1
                 ];
                 if (key_exists('Code', $res) && $res['Code'] == 'OK') {
-                    $redis->lPush('send_message_success', json_encode($data));
+                    $redis->lPush('canteen_send_message_success', json_encode($data));
                     if (!empty($data_arr['token'])) {
                         $redis = new Redis();
                         $redis->set($data_arr['token'], $data_arr['phone'] . '-' . $data_arr['params']['code'], 120);
@@ -71,10 +71,10 @@ class SendSMSService
                 } else {
                     if ($data_arr['failCount'] > 2) {
                         $data['failMsg'] = json_encode($res);
-                        $redis->lPush('send_message_fail', json_encode($data));
+                        $redis->lPush('canteen_send_message_fail', json_encode($data));
 
                     } else {
-                        $redis->lPush('send_message', json_encode($data));
+                        $redis->lPush('canteen_send_message', json_encode($data));
                     }
                 }
                 usleep(100000);//微秒，调用第三方接口，需要注意频率，

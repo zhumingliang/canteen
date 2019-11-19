@@ -36,4 +36,13 @@ class SendSMS extends BaseController
 
     }
 
+    /**
+     * 处理没有成功发送短信
+     */
+    public function sendHandel()
+    {
+        (new SendSMSService())->sendHandel();
+
+    }
+
 }

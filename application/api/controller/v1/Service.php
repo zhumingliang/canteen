@@ -6,6 +6,7 @@ namespace app\api\controller\v1;
 
 use app\api\controller\BaseController;
 use app\api\service\OrderService;
+use app\api\service\SendSMSService;
 
 class Service extends BaseController
 {
@@ -13,6 +14,11 @@ class Service extends BaseController
     public function orderStateHandel()
     {
         (new OrderService())->orderStateHandel();
+    }
+
+    public function sendMsgHandel()
+    {
+        (new SendSMSService())->sendHandel();
     }
 
 }
