@@ -8,6 +8,7 @@ use app\api\controller\BaseController;
 use app\api\service\SendSMSService;
 use app\lib\exception\SuccessMessage;
 use think\Cache;
+use think\facade\Request;
 use think\facade\Session;
 
 class SendSMS extends BaseController
@@ -29,8 +30,8 @@ class SendSMS extends BaseController
      */
     public function sendCode()
     {
-        $phone = $this->request->param('phone');
-        (new SendSMSService())->sendCode($phone);
+        $phone = Request::param('phone');
+        (new SendSMSService())->sendCode($phone,'register');
         return json(new SuccessMessage());
 
     }
