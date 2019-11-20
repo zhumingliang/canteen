@@ -294,11 +294,11 @@ class Wallet extends BaseController
                 // 用户是否支付成功
                 if ($message['result_code'] === 'SUCCESS') {
                     //保存支付记录
-                    $data=[
-                        'out_trade_no'=>$message['out_trade_no'],
-                        'openid'=>$message['openid'],
-                        'total_fee'=>$message['total_fee'],
-                        'transaction_id'=>$message['transaction_id']
+                    $data = [
+                        'out_trade_no' => $message['out_trade_no'],
+                        'openid' => $message['openid'],
+                        'total_fee' => $message['total_fee'],
+                        'transaction_id' => $message['transaction_id']
                     ];
                     PayWxT::create($data);
 
@@ -318,6 +318,16 @@ class Wallet extends BaseController
         });
 
         $response->send();
+    }
+
+    public function agriculturalSearch()
+    {
+
+    }
+
+    public function agriculturalNotify()
+    {
+
     }
 
 

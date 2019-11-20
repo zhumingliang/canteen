@@ -21,13 +21,13 @@ class UserService
     {
         $token = Request::header('token');
         $current_code = Redis::instance()->get($token);
+        var_dump($current_code);
         if (!$current_code) {
             throw new UpdateException(['errorCode' => '10007', 'msg' => '验证码过期，请重新获取']);
         }
         if ($current_code != $phone . '-' . $code) {
             throw new UpdateException(['errorCode' => '10002', 'msg' => '验证码不正确']);
         }
-
 
         $u_id = Token::getCurrentUid();
         $user = UserT::get($u_id);
