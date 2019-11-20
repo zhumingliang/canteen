@@ -47,6 +47,7 @@ class SendSMSService
         try {
             $redis = new Redis();
             $lenth = $redis->llen('canteen_send_message');
+            var_dump($lenth);
             echo $lenth;
             if (!$lenth) {
                 return true;
