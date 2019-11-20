@@ -21,6 +21,7 @@ class UserService
     {
         $token = Request::header('token');
         $current_code = Redis::instance()->get($token);
+        var_dump($token);
         var_dump($current_code);
         if (!$current_code) {
             throw new UpdateException(['errorCode' => '10007', 'msg' => '验证码过期，请重新获取']);
