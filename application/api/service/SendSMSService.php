@@ -45,16 +45,11 @@ class SendSMSService
     public function sendHandel()
     {
         try {
-            $redis = new Redis();
-            $lenth = $redis->llen('canteen_send_message');
-            var_dump($lenth);
-            echo $lenth;
-            if (!$lenth) {
-                return true;
-            }
+            $redis =Redis::instance();
             for ($i = 0; $i < 10; $i++) {
                 $data = $redis->rPop('canteen_send_message');//从结尾处弹出一个值,超时时间为60s
                 $data_arr = json_decode($data, true);
+                print_r($data_arr);
                 if (empty($data_arr['phone'])) {
                     continue;
                 }
