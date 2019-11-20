@@ -38,7 +38,7 @@ class CanteenModuleV extends Model
     public static function adminModulesWithID($ids)
     {
         $modules = self::whereIn('c_m_id', $ids)
-            ->field('id,parent_id,type,name,url,icon')
+            ->field('id,m_id,parent_id,type,name,url,icon')
             ->select()->toArray();
         return $modules;
     }

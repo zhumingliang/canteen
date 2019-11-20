@@ -22,8 +22,8 @@ class SystemCanteenModuleT extends Model
     public static function getSuperModules()
     {
         $modules = self::where('state', CommonEnum::STATE_IS_OK)
-            ->field('id as m_id,type,name,parent_id,url')
-            ->select();
+            ->field('id,id as m_id,type,name,parent_id,url')
+            ->select()->toArray();
         return $modules;
 
     }
