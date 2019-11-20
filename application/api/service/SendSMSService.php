@@ -20,7 +20,6 @@ class SendSMSService
         $code = rand(10000, 99999);
         $params = ['code' => $code];
         $res = SendSms::instance()->send($phone, $params, $type);
-        print_r($res);
         $token = Request::header('token');
         if (key_exists('Code', $res) && $res['Code'] == 'OK') {
             $redis = new Redis();
@@ -49,12 +48,10 @@ class SendSMSService
             for ($i = 0; $i < 10; $i++) {
                 $data = $redis->rPop('canteen_send_message');//从结尾处弹出一个值,超时时间为60s
                 $data_arr = json_decode($data, true);
-                print_r($data_arr);
                 if (empty($data_arr['phone'])) {
                     continue;
                 }
                 $res = SendSms::instance()->send($data_arr['phone'], $data_arr['params'], $data_arr['type']);
-                print_r($res);
                 $data = [
                     'phone' => $data_arr['phone'],
                     'params' => $data_arr['params'],
