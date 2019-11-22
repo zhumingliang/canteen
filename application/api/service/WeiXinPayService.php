@@ -20,7 +20,8 @@ class WeiXinPayService
             // 如需使用敏感接口（如退款、发送红包等）需要配置 API 证书路径(登录商户平台下载 API 证书)
             'cert_path' => 'path/to/your/cert.pem', // XXX: 绝对路径！！！！
             'key_path' => 'path/to/your/key',      // XXX: 绝对路径！！！！
-            'sub_mch_id' => '',
+            'sub_app_id' => 'wx60f330220b4ed8c9',
+            'sub_mch_id' => '1563901631',
             'notify_url' => 'http://canteen.tonglingok.com/api/v1/wallet/WXNotifyUrl',     // 你也可以在下单时单独设置来想覆盖它
         ];
 
@@ -30,8 +31,9 @@ class WeiXinPayService
 
     public function getPayInfo($data)
     {
-        $app = app('wechat.payment');
-        $app->setSubMerchant('sub_mch_id', '1563520781');
+        $app=$this->getApp();
+       /* $app = app('wechat.payment');
+        $app->setSubMerchant('sub_mch_id', '1563901631');*/
         $result = $app->order->unify([
             'body' => $data['body'],
             'out_trade_no' => $data['out_trade_no'],

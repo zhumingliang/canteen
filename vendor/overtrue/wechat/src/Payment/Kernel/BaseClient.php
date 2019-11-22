@@ -78,7 +78,6 @@ class BaseClient
         ];
 
         $params = array_filter(array_merge($base, $this->prepends(), $params));
-
         $secretKey = $this->app->getKey($endpoint);
         if ('HMAC-SHA256' === ($params['sign_type'] ?? 'MD5')) {
             $encryptMethod = function ($str) use ($secretKey) {
@@ -96,7 +95,6 @@ class BaseClient
         $this->pushMiddleware($this->logMiddleware(), 'log');
 
         $response = $this->performRequest($endpoint, $method, $options);
-
         return $returnResponse ? $response : $this->castResponseToType($response, $this->app->config->get('response_type'));
     }
 

@@ -301,7 +301,6 @@ class Wallet extends BaseController
                         'transaction_id' => $message['transaction_id']
                     ];
                     PayWxT::create($data);
-
                     $order->paid_at = time(); // 更新支付时间为当前时间
                     $order->status = 'paid';
                     // 用户支付失败
