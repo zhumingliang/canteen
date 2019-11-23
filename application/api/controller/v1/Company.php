@@ -6,6 +6,7 @@ namespace app\api\controller\v1;
 
 use app\api\controller\BaseController;
 use app\api\service\CompanyService;
+use app\lib\exception\SuccessMessage;
 use app\lib\exception\SuccessMessageWithData;
 use think\facade\Request;
 
@@ -163,6 +164,32 @@ class Company extends BaseController
         $company_id = Request::param('company_id');
         $locations = (new CompanyService())->consumptionLocation($company_id);
         return json(new SuccessMessageWithData(['data' => $locations]));
+    }
+
+    /**
+     * @api {POST} /api/v1/company/wxConfig/save CMS管理端--企业管理--添加企业微信支付配置信息
+     * @apiGroup   CMS
+     * @apiVersion 3.0.0
+     * @apiDescription    CMS管理端--企业管理--添加企业微信支付配置信息
+     * @apiExample {post}  请求样例:
+     *    {
+     *       "company_id": 1,
+     *       "app_id": wx60311f2f47c86a3e,
+     *       "mch_id": 1555725021
+     *     }
+     * @apiParam (请求参数说明) {int} company_id  企业id
+     * @apiParam (请求参数说明) {string} app_id  公众号app_id
+     * @apiParam (请求参数说明) {string} mch_id  支付商户id
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     */
+    public function saveCompanyWxConfig()
+    {
+        $params = Request::param();
+        (new CompanyService())->saveCompanyWxConfig($params);
+        return json(new SuccessMessage());
     }
 
 }

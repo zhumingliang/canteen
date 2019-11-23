@@ -5,6 +5,7 @@ namespace app\api\service;
 
 
 use app\api\model\CompanyT;
+use app\api\model\PayWxConfigT;
 use app\api\model\ShopT;
 use app\api\model\StaffV;
 use app\lib\enum\AdminEnum;
@@ -217,6 +218,19 @@ class CompanyService
             'canteen' => $canteens,
             'shop' => $shop
         ];
+    }
+
+    public function saveCompanyWxConfig($params)
+    {
+        $config = PayWxConfigT::info($params['company_id']);
+        if ($config) {
+            throw new SaveException(['msg' => '该企业配置已创建']);
+        }
+        $params['state'] = CommonEnum::STATE_IS_OK;
+        $config = PayWxConfigT::create($params);
+        if (!$config) {
+            throw new SaveException();
+        }
     }
 
 

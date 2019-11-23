@@ -31,6 +31,7 @@ Route::get('api/:version/modules/user', 'api/:version.Module/userMobileModules')
 Route::get('api/:version/modules/admin', 'api/:version.Module/adminModules');
 
 Route::post('api/:version/company/save', 'api/:version.Company/save');
+Route::post('api/:version/company/wxConfig/save', 'api/:version.Company/saveCompanyWxConfig');
 Route::get('api/:version/companies', 'api/:version.Company/companies');
 Route::get('api/:version/company/consumptionLocation', 'api/:version.Company/consumptionLocation');
 Route::get('api/:version/manager/companies', 'api/:version.Company/managerCompanies');
