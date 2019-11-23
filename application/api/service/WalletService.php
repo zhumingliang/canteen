@@ -259,16 +259,17 @@ class WalletService
         $openid = Token::getCurrentOpenid();
         $status = $this->checkOrderValid($order_id, $openid);
         $method_id = $status['method_id'];
+        $company_id = $status['companyID'];
         switch ($method_id) {
             case PayEnum::PAY_METHOD_WX:
-                return $this->getPreOrderForWX($status['orderNumber'], $status['orderPrice'], $openid);
+                return $this->getPreOrderForWX($status['orderNumber'], $status['orderPrice'], $openid, $company_id);
                 break;
             default:
                 throw new ParameterException();
         }
     }
 
-    private function getPreOrderForWX($orderNumber, $orderPrice, $openid)
+    private function getPreOrderForWX($orderNumber, $orderPrice, $openid, $company_id)
     {
         $data = [
             'openid' => $openid,
@@ -276,7 +277,7 @@ class WalletService
             'body' => '云饭堂充值中心-电子饭卡余额充值',
             'out_trade_no' => $orderNumber
         ];
-        $wxOrder = (new WeiXinPayService())->getPayInfo($data);
+        $wxOrder = (new WeiXinPayService($company_id))->getPayInfo($data);
         if ($wxOrder['result_code'] != 'SUCCESS' || $wxOrder['return_code'] != 'SUCCESS') {
             throw new ParameterException(['msg' => '获取微信支付信息失败']);
         }

@@ -3,10 +3,28 @@
 
 namespace app\api\service;
 
+use app\api\model\PayWxConfigT;
+use app\lib\exception\ParameterException;
 use EasyWeChat\Factory;
 
 class WeiXinPayService
 {
+    private $app;
+
+    public function __construct($company_id)
+    {
+
+        $this->app = $app = app('wechat.payment');
+        $config = PayWxConfigT::info($company_id);
+        if (!$config) {
+            throw  new ParameterException(['msg' =>'企业未设置微信支付配置']);
+        }
+        if (empty($config->mch_id)||empty($config->app_id)){
+            throw  new ParameterException(['msg' =>'微信支付配置异常']);
+        }
+        $app->setSubMerchant('sub_mch_id', $config->mch_id);
+        $app->setSubMerchant('sub_app_id', $config->app_id);
+    }
 
 
     public function getApp()
@@ -31,10 +49,8 @@ class WeiXinPayService
 
     public function getPayInfo($data)
     {
-        $app=$this->getApp();
-       /* $app = app('wechat.payment');
-        $app->setSubMerchant('sub_mch_id', '1563901631');*/
-        $result = $app->order->unify([
+
+        $result = $this->app->order->unify([
             'body' => $data['body'],
             'out_trade_no' => $data['out_trade_no'],
             'total_fee' => $data['total_fee'],
