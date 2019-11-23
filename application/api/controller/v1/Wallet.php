@@ -265,10 +265,8 @@ class Wallet extends BaseController
      * http://mengant.cn/api/v1/wallet/pay/getPreOrder?id=1
      * @apiParam (请求参数说明) {int} id 订单id
      * @apiSuccessExample {json} 返回样例:
-     * {
-     * "jsApiParameters": "{\"appId\":\"wxe259f1f58695b35e\",\"nonceStr\":\"m8l2v92he4ca4vjpfscpgbt5u0l8optz\",\"package\":\"prepay_id=wx201705061742181721b8ef8e0586973210\",\"signType\":\"MD5\",\"timeStamp\":\"1494063753\",\"paySign\":\"2177F2F635987A96D0F05B72299CF855\"}"
-     * }
-     * @apiSuccess (返回参数说明) {String} jsApiParameters 前端支付所需数据
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"return_code":"SUCCESS","return_msg":"OK","appid":"wx60311f2f47c86a3e","mch_id":"1555725021","sub_mch_id":"1563901631","nonce_str":"kU7RuppRQZDrFfwu","sign":"B4B16DDD14C77B5D94FFE9B8CA4A0D50","result_code":"SUCCESS","prepay_id":"wx221520364672093fca904b5d1308980100","trade_type":"JSAPI"}}
+     * @apiSuccess (返回参数说明) {String} data 前端支付所需数据
      */
     public function getPreOrder()
     {

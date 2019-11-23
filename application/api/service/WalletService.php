@@ -231,10 +231,10 @@ class WalletService
 
     public function saveOrder($params)
     {
-        $company_id = 3;//Token::getCurrentTokenVar('current_company_id');
-        $openid = "oSi030oELLvP4suMSvOxTAF8HrLE";//Token::getCurrentOpenid();
-        $u_id = 5;//Token::getCurrentUid();
-        $phone = "15521323081";//Token::getCurrentTokenVar('phone');
+        $company_id = Token::getCurrentTokenVar('current_company_id');
+        $openid = Token::getCurrentOpenid();
+        $u_id = Token::getCurrentUid();
+        $phone = Token::getCurrentTokenVar('phone');
         $staff = (new UserService())->getUserCompanyInfo($phone, $company_id);
         $data = [
             'openid' => $openid,
@@ -256,7 +256,7 @@ class WalletService
 
     public function getPreOrder($order_id)
     {
-        $openid = "oSi030oELLvP4suMSvOxTAF8HrLE";//Token::getCurrentOpenid();
+        $openid = Token::getCurrentOpenid();
         $status = $this->checkOrderValid($order_id, $openid);
         $method_id = $status['method_id'];
         switch ($method_id) {
@@ -277,10 +277,9 @@ class WalletService
             'out_trade_no' => $orderNumber
         ];
         $wxOrder = (new WeiXinPayService())->getPayInfo($data);
-        print_r($wxOrder);
-      /*  if ($wxOrder['result_code'] != 'SUCCESS' || $wxOrder['return_code'] != 'SUCCESS') {
+        if ($wxOrder['result_code'] != 'SUCCESS' || $wxOrder['return_code'] != 'SUCCESS') {
             throw new ParameterException(['msg' => '获取微信支付信息失败']);
-        }*/
+        }
         return $wxOrder;
 
 
