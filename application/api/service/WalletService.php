@@ -272,16 +272,16 @@ class WalletService
     private function getPreOrderForWX($orderNumber, $orderPrice, $openid, $company_id)
     {
         $data = [
+            'company_id' => $company_id,
             'openid' => $openid,
             'total_fee' => $orderPrice * 100,//转换单位为分
             'body' => '云饭堂充值中心-电子饭卡余额充值',
             'out_trade_no' => $orderNumber
         ];
-        $wxOrder = (new WeiXinPayService($company_id))->getPayInfo($data);
-        LogService::save(json_encode($wxOrder));
-        /*if ($wxOrder['result_code'] != 'SUCCESS' || $wxOrder['return_code'] != 'SUCCESS') {
+        $wxOrder = (new WeiXinPayService())->getPayInfo($data);
+        if (empty($wxOrder['result_code']) || $wxOrder['result_code'] != 'SUCCESS' || $wxOrder['return_code'] != 'SUCCESS') {
             throw new ParameterException(['msg' => '获取微信支付信息失败']);
-        }*/
+        }
         return $wxOrder;
 
 

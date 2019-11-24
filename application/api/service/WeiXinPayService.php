@@ -9,12 +9,10 @@ use EasyWeChat\Factory;
 
 class WeiXinPayService
 {
-    private $app;
 
-    public function __construct($company_id)
+
+    public function getApp($company_id)
     {
-
-        $app = app('wechat.payment');
         $config = PayWxConfigT::info($company_id);
         if (!$config) {
             throw  new ParameterException(['msg' => '企业未设置微信支付配置']);
@@ -22,25 +20,18 @@ class WeiXinPayService
         if (empty($config->mch_id) || empty($config->app_id)) {
             throw  new ParameterException(['msg' => '微信支付配置异常']);
         }
-        $app->setSubMerchant('sub_mch_id', $config->mch_id);
-        $app->setSubMerchant('sub_app_id', $config->app_id);
-        $this->app = $app;
-    }
-
-
-    public function getApp()
-    {
+        $sub_mch_id = $config->mch_id;
+        $sub_app_id = $config->app_id;
         $config = [
             // 必要配置
             'app_id' => 'wx60311f2f47c86a3e',
             'mch_id' => '1555725021',
             'key' => '1234567890qwertyuiopasdfghjklzxc',   // API 密钥
-
             // 如需使用敏感接口（如退款、发送红包等）需要配置 API 证书路径(登录商户平台下载 API 证书)
             'cert_path' => 'path/to/your/cert.pem', // XXX: 绝对路径！！！！
             'key_path' => 'path/to/your/key',      // XXX: 绝对路径！！！！
-            'sub_app_id' => 'wx60f330220b4ed8c9',
-            'sub_mch_id' => '1563901631',
+            'sub_app_id' =>$sub_app_id,
+            'sub_mch_id' => $sub_mch_id,
             'notify_url' => 'http://canteen.tonglingok.com/api/v1/wallet/WXNotifyUrl',     // 你也可以在下单时单独设置来想覆盖它
         ];
 
@@ -50,7 +41,7 @@ class WeiXinPayService
 
     public function getPayInfo($data)
     {
-        $app = $this->getApp();
+        $app = $this->getApp($data['company_id']);
         $result = $app->order->unify([
             'body' => $data['body'],
             'out_trade_no' => $data['out_trade_no'],
@@ -58,7 +49,6 @@ class WeiXinPayService
             'trade_type' => 'JSAPI',
             'openid' => $data['openid']
         ]);
-        var_dump($result);
         return $result;
     }
 
