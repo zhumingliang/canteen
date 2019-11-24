@@ -50,8 +50,8 @@ class WeiXinPayService
 
     public function getPayInfo($data)
     {
-
-        $result = $this->app->order->unify([
+        $app = $this->getApp();
+        $result = $app->order->unify([
             'body' => $data['body'],
             'out_trade_no' => $data['out_trade_no'],
             'total_fee' => $data['total_fee'],
