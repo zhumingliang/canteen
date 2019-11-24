@@ -14,16 +14,17 @@ class WeiXinPayService
     public function __construct($company_id)
     {
 
-        $this->app = $app = app('wechat.payment');
+        $app = app('wechat.payment');
         $config = PayWxConfigT::info($company_id);
         if (!$config) {
-            throw  new ParameterException(['msg' =>'企业未设置微信支付配置']);
+            throw  new ParameterException(['msg' => '企业未设置微信支付配置']);
         }
-        if (empty($config->mch_id)||empty($config->app_id)){
-            throw  new ParameterException(['msg' =>'微信支付配置异常']);
+        if (empty($config->mch_id) || empty($config->app_id)) {
+            throw  new ParameterException(['msg' => '微信支付配置异常']);
         }
         $app->setSubMerchant('sub_mch_id', $config->mch_id);
         $app->setSubMerchant('sub_app_id', $config->app_id);
+        $this->app = $app;
     }
 
 
@@ -57,6 +58,7 @@ class WeiXinPayService
             'trade_type' => 'JSAPI',
             'openid' => $data['openid']
         ]);
+
         return $result;
     }
 
