@@ -256,7 +256,7 @@ class WalletService
 
     public function getPreOrder($order_id)
     {
-        $openid = Token::getCurrentOpenid();
+        $openid = "oSi030oELLvP4suMSvOxTAF8HrLE";//Token::getCurrentOpenid();
         $status = $this->checkOrderValid($order_id, $openid);
         $method_id = $status['method_id'];
         $company_id = $status['companyID'];

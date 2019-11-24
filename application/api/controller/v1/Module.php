@@ -304,7 +304,7 @@ class Module extends BaseController
      * {"msg":"ok","errorCode":0,"code":200,"data":[{"name":"线上订餐","url":"module/system","icon":"http://icon.com","category":1}]}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
      * @apiSuccess (返回参数说明) {String} msg 信息描述
-     * @apiSuccess (返回参数说明) {int} category 饭堂内部模块类别：1|普通模块；2|特殊模块
+     * @apiSuccess (返回参数说明) {int} category 饭堂内部模块类别：1:普通模块；2:特殊模块
      * @apiSuccess (返回参数说明) {string} url 模块路由
      * @apiSuccess (返回参数说明) {string} name 模块名称
      * @apiSuccess (返回参数说明) {string}icon  模块图标

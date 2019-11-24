@@ -58,7 +58,7 @@ class WeiXinPayService
             'trade_type' => 'JSAPI',
             'openid' => $data['openid']
         ]);
-
+        var_dump($result);
         return $result;
     }
 
