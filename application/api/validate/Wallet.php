@@ -22,7 +22,7 @@ class Wallet extends BaseValidate
         'time_end' => 'require|isNotEmpty',
         'consumption_date' => 'require|isNotEmpty',
         'company_id' => 'require|isPositiveInteger',
-        'money' => 'require|isPositiveInteger',
+        'money' => 'require|isNotEmpty',
     ];
 
     protected $scene = [
