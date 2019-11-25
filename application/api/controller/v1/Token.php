@@ -116,7 +116,6 @@ class Token extends Controller
      */
     public function getOfficialToken()
     {
-        LogService::save('1');
         $info = session('wechat_oauth_user_default');
         $token = (new OfficialToken())->get($info);
         return json(new SuccessMessageWithData(['data' => $token]));

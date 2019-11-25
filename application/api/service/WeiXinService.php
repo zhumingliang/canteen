@@ -29,9 +29,19 @@ class WeiXinService
                 ]
             ]
         ];
+        $menus = [
+            [
+                "name" => "云饭堂3.0",
+                "sub_button" => [
+                    ["type" => "view",
+                        "name" => "进入饭堂",
+                        "url" => "http://yuncanteen3.51canteen.com/canteen3/wxcms"
+                    ]
+                ]
+            ]
+        ];
         $res = $this->app->menu->create($menus);
         var_dump($res);
-        LogService::save(json_encode($res));
         if (!$res) {
             throw new WeChatException(['msg' => '创建菜单失败']);
         }
