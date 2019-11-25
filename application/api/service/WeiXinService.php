@@ -36,6 +36,9 @@ class WeiXinService
                     ["type" => "view",
                         "name" => "进入饭堂",
                         "url" => "http://yuncanteen3.51canteen.com/canteen3/wxcms"
+                    ],["type" => "view",
+                        "name" => "获取信息",
+                        "url" => "http://canteen.tonglingok.com/api/v1/token/official"
                     ]
                 ]
             ]
