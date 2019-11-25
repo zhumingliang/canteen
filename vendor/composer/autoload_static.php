@@ -71,6 +71,7 @@ class ComposerStaticInit70d40b73347312909d23055a672be9f9
             'GuzzleHttp\\Psr7\\' => 16,
             'GuzzleHttp\\Promise\\' => 19,
             'GuzzleHttp\\' => 11,
+            'GatewayClient\\' => 14,
         ),
         'E' => 
         array (
@@ -189,6 +190,10 @@ class ComposerStaticInit70d40b73347312909d23055a672be9f9
         'GuzzleHttp\\' => 
         array (
             0 => __DIR__ . '/..' . '/guzzlehttp/guzzle/src',
+        ),
+        'GatewayClient\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/workerman/gatewayclient',
         ),
         'Endroid\\QrCode\\' => 
         array (

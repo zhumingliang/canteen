@@ -17,6 +17,7 @@ class OfficialToken extends Token
     public function get($info)
     {
         $user_info = $info->getOriginal();
+        LogService::save(json_encode($info));
         $openid = $user_info['openid'];
         $user = UserT::where('openid', $openid)->find();
         if (!$user) {
