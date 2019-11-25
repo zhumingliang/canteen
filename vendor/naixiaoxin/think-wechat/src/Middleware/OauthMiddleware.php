@@ -28,7 +28,9 @@ class OauthMiddleware
      */
     public function handle(Request $request, \Closure $next, $param = null)
     {
+        LogService::save('1');
         $params  = $this->getParam($param);
+        LogService::save(json_encode($params));
         $account = $params["account"];
         $scopes  = $params["scopes"];
         //定义session
