@@ -14,11 +14,13 @@ use think\facade\Request;
 class OfficialToken extends Token
 {
 
-    public function get($info)
+    public function get($code)
     {
-        $user_info = $info->getOriginal();
-        LogService::save(json_encode($info));
-        $openid = $user_info['openid'];
+        $app = app('wechat.official_account.default');
+       // $user_info = $info->getOriginal();
+        $session = $app->oauth->user();
+        LogService::save(json_encode($session));
+      /*  $openid = $user_info['openid'];
         $user = UserT::where('openid', $openid)->find();
         if (!$user) {
             $user = UserT::create($user_info);
@@ -35,7 +37,7 @@ class OfficialToken extends Token
             'phone' => empty($cachedValue['phone']) ? 2 : 1,
             'canteen_id' => $cachedValue['current_canteen_id'],
             'canteen_selected' => empty($cachedValue['current_canteen_id']) ? 2 : 1
-        ];
+        ];*/
     }
 
 

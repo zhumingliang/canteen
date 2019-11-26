@@ -13,7 +13,8 @@ Route::rule('/', 'api/v1.Index/index');
 Route::rule('api/:version/index', 'api/:version.Index/index');
 
 Route::post('api/:version/token/admin', 'api/:version.Token/getAdminToken');
-Route::rule('api/:version/token/official', 'api/:version.Token/getOfficialToken')->middleware(\Naixiaoxin\ThinkWechat\Middleware\OauthMiddleware::class);
+//Route::rule('api/:version/token/official', 'api/:version.Token/getOfficialToken')->middleware(\Naixiaoxin\ThinkWechat\Middleware\OauthMiddleware::class);
+Route::rule('api/:version/token/official', 'api/:version.Token/getOfficialToken');
 Route::post('api/:version/token/supplier', 'api/:version.Token/getSupplierToken');
 
 Route::post('api/:version/module/system/save', 'api/:version.Module/saveSystem');
