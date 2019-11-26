@@ -106,7 +106,8 @@ class Token extends Controller
      * @apiVersion 3.0.0
      * @apiDescription  公众号获取登录token
      * @apiExample {get}  请求样例:
-     * http://canteen.tonglingok.com/api/v1/token/official
+     * http://canteen.tonglingok.com/api/v1/token/official?code=121
+     * @apiParam (请求参数说明) {String} code    授权token
      * @apiSuccessExample {json} 返回样例:
      *{"msg":"ok","errorCode":0,"code":200,"data":{"token":"26837cbfd8c9c55d830d3f726927bfed","phone":1,"canteen_selected":2}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
@@ -116,9 +117,7 @@ class Token extends Controller
      */
     public function getOfficialToken()
     {
-        //$info = session('wechat_oauth_user_default');
         $code = Request::param('code');
-        echo $code;
         $token = (new OfficialToken())->get($code);
         return json(new SuccessMessageWithData(['data' => $token]));
 
