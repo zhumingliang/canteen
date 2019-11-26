@@ -52,7 +52,7 @@ return [
             'oauth' => [
                 'scopes'   => array_map('trim',
                     explode(',', env('WECHAT_OFFICIAL_ACCOUNT_OAUTH_SCOPES', 'snsapi_userinfo'))),
-                'callback' => env('WECHAT_OFFICIAL_ACCOUNT_OAUTH_CALLBACK', 'http://canteen.tonglingok.com/api/v1/token/official'),
+                'callback' => env('WECHAT_OFFICIAL_ACCOUNT_OAUTH_CALLBACK', 'http://yuncanteen3.51canteen.com/canteen3/wxcms/index.html'),
             ],
         ],
     ],
