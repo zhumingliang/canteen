@@ -19,7 +19,7 @@ class OfficialToken extends Token
         $app = app('wechat.official_account.default');
        // $user_info = $info->getOriginal();
         $session = $app->oauth->user();
-        LogService::save(json_encode($session));
+        var_dump($session);
       /*  $openid = $user_info['openid'];
         $user = UserT::where('openid', $openid)->find();
         if (!$user) {
