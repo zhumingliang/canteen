@@ -7,5 +7,6 @@ return [
     'qrcode_url' => 'http://canteen.tonglingok.com/api/v1/consumption/staff?type=%s&code=%s',
     'token_cms_expire_in' => 3600 * 24,
     'token_mini_expire_in' => 3600 * 2,
+    'token_machine_expire_in' => 3600 * 24 * 7,
     'token_official_expire_in' => 3600 * 24,
 ];

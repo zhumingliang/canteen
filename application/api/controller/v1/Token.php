@@ -15,6 +15,7 @@ use app\api\model\UserT;
 use app\api\service\AdminToken;
 use app\api\service\DriverToken;
 use app\api\service\LogService;
+use app\api\service\MachineToken;
 use app\api\service\OfficialToken;
 use app\api\service\SupplierToken;
 use app\api\service\UserToken;
@@ -120,6 +121,32 @@ class Token extends Controller
         $code = Request::param('code');
         $token = (new OfficialToken())->get($code);
         return json(new SuccessMessageWithData(['data' => $token]));
+
+    }
+
+    /**
+     * @api {GET} /api/v1/token/machine 消费机-获取登录token
+     * @apiGroup  Machine
+     * @apiVersion 3.0.0
+     * @apiDescription  公众号获取登录token
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/token/machine?code=121&passwd=111&client_id=11
+     * @apiParam (请求参数说明) {String} code    设备唯一识别码
+     * @apiParam (请求参数说明) {String} passwd    登录密码
+     * @apiParam (请求参数说明) {String} client_id   websocket服务返回的登录id
+     * @apiSuccessExample {json} 返回样例:
+     *{"msg":"ok","errorCode":0,"code":200,"data":{"token":"26837cbfd8c9c55d830d3f726927bfed"}}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     * @apiSuccess (返回参数说明) {string} token 登录token：有效期：7天
+     */
+    public function getMachineToken()
+    {
+        $code = Request::param('code');
+        $passwd = Request::param('passwd');
+        $client_id = Request::param('client_id');
+        $token=(new MachineToken())->get($code,$passwd,$client_id);
+        return json(new SuccessMessageWithData(['data'=>$token]));
 
     }
 
