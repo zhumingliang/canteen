@@ -125,12 +125,16 @@ class Token extends Controller
     }
 
     /**
-     * @api {GET} /api/v1/token/machine 消费机-获取登录token
+     * @api {POST} /api/v1/token/machine 消费机-获取登录token
      * @apiGroup  Machine
      * @apiVersion 3.0.0
-     * @apiDescription  公众号获取登录token
-     * @apiExample {get}  请求样例:
-     * http://canteen.tonglingok.com/api/v1/token/machine?code=121&passwd=111&client_id=11
+     * @apiDescription  消费机-获取登录token
+     * @apiExample {post}  请求样例:
+     *    {
+     *       "code": 212121,
+     *       "passwd": "a11111",
+     *       "client_id": 1
+     *     }
      * @apiParam (请求参数说明) {String} code    设备唯一识别码
      * @apiParam (请求参数说明) {String} passwd    登录密码
      * @apiParam (请求参数说明) {String} client_id   websocket服务返回的登录id
@@ -145,8 +149,8 @@ class Token extends Controller
         $code = Request::param('code');
         $passwd = Request::param('passwd');
         $client_id = Request::param('client_id');
-        $token=(new MachineToken())->get($code,$passwd,$client_id);
-        return json(new SuccessMessageWithData(['data'=>$token]));
+        $token = (new MachineToken())->get($code, $passwd, $client_id);
+        return json(new SuccessMessageWithData(['data' => $token]));
 
     }
 

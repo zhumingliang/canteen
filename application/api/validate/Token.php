@@ -15,11 +15,13 @@ class Token extends BaseValidate
         'grade' => 'require|in:2,3,4,5',
         'state' => 'require|in:1,2',
         'belong_ids' => 'require|isNotEmpty',
+        'client_id' => 'require|isNotEmpty',
     ];
 
     protected $scene = [
         'getAdminToken' => ['account', 'passwd'],
         'getAndroidToken' => ['account', 'passwd', 'code','type'],
+        'getMachineToken' => [ 'passwd', 'code','client_id'],
         'getMINIToken' => ['code'],
         'handel' => ['id', 'state'],
         'distribution' => ['id', 'belong_ids'],
