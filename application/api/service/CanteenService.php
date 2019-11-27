@@ -28,6 +28,7 @@ use app\lib\exception\DeleteException;
 use app\lib\exception\ParameterException;
 use app\lib\exception\SaveException;
 use app\lib\exception\UpdateException;
+use GatewayClient\Gateway;
 use think\Db;
 use think\Exception;
 use think\Model;
@@ -441,8 +442,10 @@ class CanteenService
 
     private function checkMachineState($machine_id)
     {
-        return 1;
-
+        if (Gateway::isUidOnline($machine_id)) {
+            return 1;
+        }
+        return 2;
     }
 
     public function deleteMachine($machine_id)
