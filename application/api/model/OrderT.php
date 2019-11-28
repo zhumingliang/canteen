@@ -118,5 +118,23 @@ class OrderT extends Model
         return $info;
     }
 
+    public static function infoToMachine($canteen_id, $staff_id, $dinner_id)
+    {
+        $info = self::where('c_id', $canteen_id)
+            ->where('staff_id', $staff_id)
+            ->where('d_id', $dinner_id)
+            ->whereTime('ordering_date', 'd')
+            ->with([
+                'foods' => function ($query) {
+                    $query->where('state', CommonEnum::STATE_IS_OK)
+                        ->field('id as detail_id ,o_id,f_id as food_id,count,name,price');
+                }
+            ])
+            ->field('id,d_id,type,pay_way,money,(money+sub_money) as all_money ')
+            ->find();
+
+        return $info;
+    }
+
 
 }

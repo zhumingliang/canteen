@@ -357,7 +357,7 @@ class DepartmentService
         $staff_canteen_list = array();
         foreach ($staffs as $k => $v) {
             $code = getRandChar(12);
-            $url = sprintf(config("setting.qrcode_url"), 'canteen', $code);
+            $url = sprintf(config("setting.qrcode_url"), 'canteen', $code,$v->id);
             $qrcode_url = (new QrcodeService())->qr_code($url);
             $list[] = [
                 'code' => $code,
@@ -389,7 +389,7 @@ class DepartmentService
     function saveQrcode($s_id)
     {
         $code = getRandChar(12);
-        $url = sprintf(config("setting.qrcode_url"), 'canteen', $code);
+        $url = sprintf(config("setting.qrcode_url"), 'canteen', $code,$s_id);
         $qrcode_url = (new QrcodeService())->qr_code($url);
         $expiry_date = date('Y-m-d H:i:s', strtotime("+" . config("setting.qrcode_expire_in") . "minute", time()));
         $data = [
@@ -410,7 +410,7 @@ class DepartmentService
     function updateQrcode($params)
     {
         $code = getRandChar(12);
-        $url = sprintf(config("setting.qrcode_url"), 'canteen', $code);
+        $url = sprintf(config("setting.qrcode_url"), 'canteen', $code,$params['id']);
         $qrcode_url = (new QrcodeService())->qr_code($url);
         $s_id = $params['id'];
         unset($params['id']);
