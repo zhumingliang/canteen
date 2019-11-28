@@ -48,6 +48,7 @@ class WeiXinPayService
             'out_trade_no' => $data['out_trade_no'],
             'total_fee' => $data['total_fee'],
             'trade_type' => 'JSAPI',
+            'sign_type' => 'MD5',
             'openid' => $data['openid']
         ]);
         return $result;
