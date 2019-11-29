@@ -140,7 +140,8 @@ class UserService
     public function mealCard()
     {
         $phone = Token::getCurrentTokenVar('phone');
-        $staff = CompanyStaffT::staff($phone);
+        $company_id = Token::getCurrentTokenVar('current_company_id');
+        $staff = CompanyStaffT::staff($phone, $company_id);
         if (!$staff) {
             throw  new  AuthException(['msg' => '用户信息不存在']);
         }
@@ -157,4 +158,17 @@ class UserService
         return $newQrode;
     }
 
+    public function userInfo()
+    {
+        $phone = Token::getCurrentTokenVar('phone');
+        $company_id = Token::getCurrentTokenVar('current_company_id');
+        $staff = CompanyStaffT::staff($phone, $company_id);
+        if (!$staff) {
+            throw  new  AuthException(['msg' => '用户信息不存在']);
+        }
+        return [
+            'phone'=>$phone,
+            'username'=>$staff->username
+        ];
+    }
 }

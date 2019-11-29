@@ -155,8 +155,8 @@ class User extends BaseController
      */
     public function userPhone()
     {
-        $phone = \app\api\service\Token::getCurrentPhone();
-        return json(new SuccessMessageWithData(['data' => ['phone' => $phone]]));
+        $user=(new UserService())->userInfo();
+        return json(new SuccessMessageWithData(['data' =>$user]));
     }
 
 

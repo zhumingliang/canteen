@@ -71,6 +71,10 @@ class OrderService extends BaseService
             $params['money'] = $orderMoney['money'] * $count;
             $params['sub_money'] = $orderMoney['sub_money'] * $count;
             $params['consumption_type'] = $orderMoney['consumption_type'];
+            $params['meal_money'] = $orderMoney['meal_money'];
+            $params['meal_sub_money'] = $orderMoney['meal_sub_money'];
+            $params['no_meal_money'] = $orderMoney['no_meal_money'];
+            $params['no_meal_sub_money'] = $orderMoney['no_meal_sub_money'];
             $params['pay'] = CommonEnum::STATE_IS_OK;
 
             $company_id = Token::getCurrentTokenVar('current_company_id');
@@ -203,25 +207,6 @@ class OrderService extends BaseService
         }
     }
 
-    //检测是否在订餐时间内
-    /*  public function checkDinnerForOnline($dinner, $ordering_date)
-      {
-          // $dinner = DinnerT::dinnerInfo($dinner_id);
-          if (!$dinner) {
-              throw new ParameterException(['msg' => '指定餐次未设置']);
-          }
-          $type = $dinner->type;
-          $limit_time = $dinner->limit_time;
-          $type_number = $dinner->type_number;
-          if ($type == 'week') {
-
-          }
-
-          $expiryDate = $this->prefixExpiryDate($ordering_date, [$type => $type_number]);
-          if (strtotime($limit_time) > strtotime($expiryDate)) {
-              throw  new  SaveException(['msg' => '超出订餐时间']);
-          }
-      }*/
 
     private
     function checkConsumptionStrategy($strategies, $orderCount, $consumptionCount)
@@ -235,7 +220,7 @@ class OrderService extends BaseService
         if ($consumptionCount >= $strategies->consumption_count) {
             throw new SaveException(['msg' => '消费次数已达到上限，最大消费次数为：' . $strategies->consumption_count]);
         }
-        $detail = $strategies->detail;// json_decode($strategies->detail, true);
+        $detail = $strategies->detail;
         if (empty($detail)) {
             throw new ParameterException(['msg' => "消费策略设置异常"]);
         }
@@ -258,6 +243,10 @@ class OrderService extends BaseService
                     }
                 }
 
+                $returnMoney['meal_money'] = $meal_money;
+                $returnMoney['meal_sub_money'] = $meal_sub_money;
+                $returnMoney['no_meal_money'] = $no_meal_money;
+                $returnMoney['no_meal_sub_money'] = $no_meal_sub_money;
                 if (($no_meal_money + $no_meal_sub_money) > ($meal_money + $meal_sub_money)) {
                     $returnMoney = [
                         'consumption_type' => 'no_meals_ordered',
@@ -405,6 +394,10 @@ class OrderService extends BaseService
                     $data['money'] = $checkOrder['money'] * $v2['count'];
                     $data['sub_money'] = $checkOrder['sub_money'] * $v2['count'];
                     $data['consumption_type'] = $checkOrder['consumption_type'];
+                    $data['meal_money'] = $checkOrder['meal_money'];
+                    $data['meal_sub_money'] = $checkOrder['meal_sub_money'];
+                    $data['no_meal_money'] = $checkOrder['no_meal_money'];
+                    $data['no_meal_sub_money'] = $checkOrder['no_meal_sub_money'];
                     $data['pay_way'] = '';
                     $data['pay'] = CommonEnum::STATE_IS_OK;
                     array_push($data_list, $data);

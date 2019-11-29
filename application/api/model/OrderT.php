@@ -130,7 +130,7 @@ class OrderT extends Model
                         ->field('id as detail_id ,o_id,f_id as food_id,count,name,price');
                 }
             ])
-            ->field('id,d_id,type,pay_way,money,(money+sub_money) as all_money ')
+            ->field('id,d_id,type,pay_way,money,sub_money,(money+sub_money) as all_money ,consumption_type,meal_sub_money,meal_money')
             ->find();
 
         return $info;

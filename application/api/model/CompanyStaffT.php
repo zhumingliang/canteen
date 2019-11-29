@@ -31,12 +31,30 @@ class CompanyStaffT extends Model
         return $this->belongsTo('CompanyT', 'company_id', 'id');
     }
 
-    public static function staff($phone)
+    public function department()
+    {
+        return $this->belongsTo('CompanyDepartmentT', 'd_id', 'id');
+    }
+
+    public static function staff($phone, $company_id = '')
     {
         return self::where('phone', $phone)
             ->where('state', CommonEnum::STATE_IS_OK)
+            ->where(function ($query)use($company_id) {
+              if (!empty($company_id)){
+                  $query->where('c_id',$company_id);
+              }
+            })
             ->with('qrcode')
             ->find();
+    }
+
+    public static function staffWithDepartment($staff_id)
+    {
+        $staff = self::where('id', $staff_id)
+            ->with('department')
+            ->find();
+        return $staff;
     }
 
     public static function departmentStaffs($d_ids)

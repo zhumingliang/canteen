@@ -27,6 +27,7 @@ class OrderEnum
 
     const ORDERING_ONLINE = 'online';
 
+    const ORDERING_NO = 'no';
 
     const USER_ORDER_CANTEEN = 1;
 

@@ -42,6 +42,20 @@ class ShopOrderT extends Model
         return $order;
     }
 
+    public static function orderInfoForMachine($id)
+    {
+        $order = self::where('id', $id)
+            ->with([
+                'foods' => function ($query) {
+                    $query->where('state', 1)
+                        ->field('o_id,name,unit,price,count');
+                }
+            ])
+            ->field('id,state,used,money,staff_id')
+            ->find();
+        return $order;
+    }
+
     public static function orderInfoForStatistic($id)
     {
         $order = self::where('id', $id)
