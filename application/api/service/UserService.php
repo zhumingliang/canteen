@@ -164,7 +164,7 @@ class UserService
         $user = UserT::get($u_id);
         $company_id =$user->current_company_id;
         $phone=$user->phone;
-        $staff = CompanyStaffT::staff($phone, $company_id);
+        $staff = CompanyStaffT::staffName($phone, $company_id);
         if (!$staff) {
             throw  new  AuthException(['msg' => '用户信息不存在']);
         }

@@ -42,10 +42,18 @@ class CompanyStaffT extends Model
             ->where('state', CommonEnum::STATE_IS_OK)
             ->where(function ($query)use($company_id) {
               if (!empty($company_id)){
-                  $query->where('c_id',$company_id);
+                  $query->where('company_id',$company_id);
               }
             })
             ->with('qrcode')
+            ->find();
+    }
+
+    public static function staffName($phone, $company_id )
+    {
+        return self::where('phone', $phone)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->where('company_id',$company_id)
             ->find();
     }
 
