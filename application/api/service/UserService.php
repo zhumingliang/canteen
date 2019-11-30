@@ -160,15 +160,17 @@ class UserService
 
     public function userInfo()
     {
-        $phone = Token::getCurrentTokenVar('phone');
-        $company_id = Token::getCurrentTokenVar('current_company_id');
+        $u_id = Token::getCurrentUid();
+        $user = UserT::get($u_id);
+        $company_id =$user->current_company_id;
+        $phone=$user->phone;
         $staff = CompanyStaffT::staff($phone, $company_id);
         if (!$staff) {
             throw  new  AuthException(['msg' => '用户信息不存在']);
         }
         return [
-            'phone'=>$phone,
-            'username'=>$staff->username
+            'phone' => $phone,
+            'username' => $staff->username
         ];
     }
 }
