@@ -285,7 +285,7 @@ class Wallet extends BaseController
             $order_num = $message['out_trade_no'];
             $order = PayT::where('order_num', $order_num)->find();
 
-            if (!$order || $order->paid=='paid') {
+            if (!$order || $order->status=='paid') {
                 return true;
             }
             if ($message['return_code'] === 'SUCCESS') { // return_code 表示通信状态，不代表支付状态
