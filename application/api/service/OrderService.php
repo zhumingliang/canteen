@@ -21,6 +21,7 @@ use app\api\model\OrderT;
 use app\api\model\OrderUsersStatisticV;
 use app\api\model\ShopOrderingV;
 use app\api\model\ShopOrderT;
+use app\api\model\UserBalanceV;
 use app\lib\enum\CommonEnum;
 use app\lib\enum\MenuEnum;
 use app\lib\enum\OrderEnum;
@@ -828,16 +829,18 @@ class OrderService extends BaseService
     {
         $u_id = Token::getCurrentUid();
         $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
+        $company_id = Token::getCurrentTokenVar('current_company_id');
+        $phone = Token::getCurrentTokenVar('phone');
         $records = ConsumptionRecordsV::records($u_id, $consumption_time, $page, $size);
         $consumptionMoney = ConsumptionRecordsV::monthConsumptionMoney($u_id, $consumption_time);
         return [
-            'balance' => $this->getUserBalance($u_id, $canteen_id),
+            'balance' => $this->getUserBalance($canteen_id, $company_id, $phone),
             'consumptionMoney' => $consumptionMoney,
             'records' => $records
         ];
     }
 
-    public function getUserBalance($u_id, $canteen_id)
+    public function getUserBalance($canteen_id, $company_id, $phone)
     {
 
         $canteenAccount = CanteenAccountT::where('c_id', $canteen_id)
@@ -846,14 +849,23 @@ class OrderService extends BaseService
             throw new ParameterException(['msg' => '该用户归属饭堂设置异常']);
         }
         $hidden = $canteenAccount->type;
-        $money = 0;
+        $all = 0;
+        $effective = 0;
         if ($hidden == CommonEnum::STATE_IS_FAIL) {
-            //不可透支消费，返回用户在该饭堂余额
-            $money = 100;
+            //不可透支消费，返回用户在该企业余额
+            $money = UserBalanceV::userBalanceGroupByEffective($company_id, $phone);
+            foreach ($money as $k => $v) {
+                $all += $v['money'];
+                if ($v['effective'] == CommonEnum::STATE_IS_OK) {
+                    $effective = $v['money'];
+                }
+            }
+
         }
         return [
             'hidden' => $hidden,
-            'money' => $money
+            'all_money' => $all,
+            'effective_money' => $effective
         ];
 
     }

@@ -7,6 +7,7 @@ namespace app\api\controller\v1;
 use app\api\controller\BaseController;
 use app\api\model\CanteenT;
 use app\api\model\Submitequity;
+use app\api\model\UserBalanceV;
 use app\api\service\AddressService;
 use app\api\service\CompanyService;
 use app\api\service\OrderService;
@@ -18,8 +19,9 @@ class Index extends BaseController
 {
     public function index()
     {
-        $cache = \app\api\service\Token::getCurrentTokenVar();
-        print_r($cache);
+        $money = UserBalanceV::userBalanceGroupByEffective(3, '15521323081');
+        print_r($money);
+
         /* $user = CanteenT::whereIn('id', "19")
              ->field('name')->select()->toArray();
          $user_ids = array();

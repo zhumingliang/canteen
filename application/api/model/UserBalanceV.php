@@ -39,4 +39,15 @@ class UserBalanceV extends Model
             ->sum('money');
         return $balance;
     }
+
+    public static function userBalanceGroupByEffective($company_id, $phone)
+    {
+        $balance = self::where('phone', $phone)
+            ->where('company_id', $company_id)
+            ->field('sum(money) as money,effective')
+            ->group('effective')
+            ->select()->toArray();
+        return $balance;
+    }
+
 }

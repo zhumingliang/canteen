@@ -24,7 +24,7 @@ class MachineToken
                 ->where('state', CommonEnum::STATE_IS_OK)
                 ->find();
 
-            if (is_null($machine) || (sha1($passwd) != $machine->passwd)) {
+            if (is_null($machine) || (sha1($passwd) != $machine->pwd)) {
                 throw new TokenException([
                     'msg' => '账号或密码不正确',
                     'errorCode' => 30000
