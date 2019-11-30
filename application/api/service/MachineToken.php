@@ -13,7 +13,7 @@ use GatewayClient\Gateway;
 use think\Exception;
 use think\facade\Cache;
 
-class MachineToken
+class MachineToken extends Token
 {
 
     public function get($code, $passwd, $client_id)
