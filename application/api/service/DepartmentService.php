@@ -418,7 +418,7 @@ class DepartmentService
         $expiry_date = date('Y-m-d H:i:s', time());
         $params['create_time'] = $expiry_date;
         $params['expiry_date'] = $this->prefixQrcodeExpiryDate($expiry_date, $params);
-        $qrcode = StaffQrcodeT::update($params, ['s_id' => $s_id]);
+        $qrcode = StaffQrcodeT::update($params);
         if (!$qrcode) {
             throw new SaveException();
         }
