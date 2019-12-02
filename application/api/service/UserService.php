@@ -139,8 +139,8 @@ class UserService
     //获取用户电子饭卡
     public function mealCard()
     {
-        $phone = "15057769808";//Token::getCurrentTokenVar('phone');
-        $company_id =28;// Token::getCurrentTokenVar('current_company_id');
+        $phone = Token::getCurrentTokenVar('phone');
+        $company_id = Token::getCurrentTokenVar('current_company_id');
         $staff = CompanyStaffT::staff($phone, $company_id);
         if (!$staff) {
             throw  new  AuthException(['msg' => '用户信息不存在']);
@@ -150,7 +150,12 @@ class UserService
         }
         $qrcode = $staff->qrcode;
         if (strtotime($qrcode->expiry_date) >= time()) {
-            return ['url' => $qrcode->url];
+            return [
+                'usernmae' => $staff->username,
+                'url' =>$qrcode->url,
+                'create_time' => $qrcode->create_time,
+                'expiry_date' => $qrcode->expiry_date
+            ];
         }
 
         $newQrode = (new DepartmentService())->updateQrcode($qrcode->toArray());
