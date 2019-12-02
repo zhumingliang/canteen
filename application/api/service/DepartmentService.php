@@ -413,7 +413,6 @@ class DepartmentService
         $url = sprintf(config("setting.qrcode_url"), 'canteen', $code,$params['id']);
         $qrcode_url = (new QrcodeService())->qr_code($url);
         $s_id = $params['id'];
-        unset($params['id']);
         $params['code'] = $code;
         $params['url'] = $qrcode_url;
         $expiry_date = date('Y-m-d H:i:s', time());

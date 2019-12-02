@@ -139,8 +139,8 @@ class UserService
     //获取用户电子饭卡
     public function mealCard()
     {
-        $phone = Token::getCurrentTokenVar('phone');
-        $company_id = Token::getCurrentTokenVar('current_company_id');
+        $phone = "15057769808";//Token::getCurrentTokenVar('phone');
+        $company_id =28;// Token::getCurrentTokenVar('current_company_id');
         $staff = CompanyStaffT::staff($phone, $company_id);
         if (!$staff) {
             throw  new  AuthException(['msg' => '用户信息不存在']);
