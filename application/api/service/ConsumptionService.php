@@ -278,6 +278,7 @@ class ConsumptionService
     function getNowDinner($canteen_id)
     {
         $dinners = DinnerT::dinners($canteen_id);
+        print_r($dinners);
         if ($dinners->isEmpty()) {
             throw new ParameterException(['msg' => '饭堂未设置餐次信息']);
         }
