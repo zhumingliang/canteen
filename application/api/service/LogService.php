@@ -11,7 +11,7 @@ class LogService
     public static function save($msg)
     {
         LogT::create([
-            'msg' => $msg
+            'content' => $msg
         ]);
 
     }
