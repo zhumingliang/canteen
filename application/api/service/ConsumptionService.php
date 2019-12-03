@@ -30,13 +30,14 @@ class ConsumptionService
             Db::startTrans();
             $company_id = Token::getCurrentTokenVar('company_id');
             $belong_id = Token::getCurrentTokenVar('belong_id');
+            LogService::save(json_encode(Token::getCurrentTokenVar()));
             $res = array();
             if ($type == 'canteen') {
                 $res = $this->handelCanteen($code, $company_id, $staff_id, $belong_id);
             } else if ($type == 'shop') {
                 $res = $this->handelShop($code);
             }
-            Db::commit();
+             Db::commit();
             return $res;
         } catch (Exception $e) {
             Db::rollback();
@@ -113,7 +114,7 @@ class ConsumptionService
         //获取当前餐次
         $dinner = $this->getNowDinner($canteen_id);
         //检测用户二维码是否过期
-        $this->checkCanteenQRCode($staff_id, $code);
+         $this->checkCanteenQRCode($staff_id, $code);
         //检测该用户是否有订单
         $order = $this->checkCanteenOrder($canteen_id, $staff_id, $dinner['id'], $dinner['fixed']);
         if (!$order) {
