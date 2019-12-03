@@ -28,8 +28,11 @@ class ConsumptionService
     {
         try {
             Db::startTrans();
+            LogService::save(1);
             $company_id = Token::getCurrentTokenVar('company_id');
             $belong_id = Token::getCurrentTokenVar('belong_id');
+            LogService::save("company_id:".$company_id);
+            LogService::save("belong_id:".$belong_id);
             LogService::save(json_encode(Token::getCurrentTokenVar()));
             $res = array();
             if ($type == 'canteen') {
