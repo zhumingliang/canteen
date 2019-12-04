@@ -354,9 +354,7 @@ class Department extends BaseController
     public function createStaffQrcode()
     {
         $params = Request::param();
-        $params['s_id'] = $params['id'];
-        unset($params['id']);
-        $info = (new DepartmentService())->updateQrcode($params);
+        $info = (new DepartmentService())->updateQrcode2($params);
         return json(new SuccessMessageWithData(['data' => $info]));
     }
 

@@ -152,13 +152,13 @@ class UserService
         if (strtotime($qrcode->expiry_date) >= time()) {
             return [
                 'usernmae' => $staff->username,
-                'url' =>$qrcode->url,
+                'url' => $qrcode->url,
                 'create_time' => $qrcode->create_time,
                 'expiry_date' => $qrcode->expiry_date
             ];
         }
-
-        $newQrode = (new DepartmentService())->updateQrcode($qrcode->toArray());
+        $codeObj = $qrcode->toArray();
+        $newQrode = (new DepartmentService())->updateQrcode($codeObj);
 
         return $newQrode;
     }
@@ -167,8 +167,8 @@ class UserService
     {
         $u_id = Token::getCurrentUid();
         $user = UserT::get($u_id);
-        $company_id =$user->current_company_id;
-        $phone=$user->phone;
+        $company_id = $user->current_company_id;
+        $phone = $user->phone;
         $staff = CompanyStaffT::staffName($phone, $company_id);
         if (!$staff) {
             throw  new  AuthException(['msg' => '用户信息不存在']);

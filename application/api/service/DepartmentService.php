@@ -357,7 +357,7 @@ class DepartmentService
         $staff_canteen_list = array();
         foreach ($staffs as $k => $v) {
             $code = getRandChar(12);
-            $url = sprintf(config("setting.qrcode_url"), 'canteen', $code,$v->id);
+            $url = sprintf(config("setting.qrcode_url"), 'canteen', $code, $v->id);
             $qrcode_url = (new QrcodeService())->qr_code($url);
             $list[] = [
                 'code' => $code,
@@ -389,7 +389,7 @@ class DepartmentService
     function saveQrcode($s_id)
     {
         $code = getRandChar(12);
-        $url = sprintf(config("setting.qrcode_url"), 'canteen', $code,$s_id);
+        $url = sprintf(config("setting.qrcode_url"), 'canteen', $code, $s_id);
         $qrcode_url = (new QrcodeService())->qr_code($url);
         $expiry_date = date('Y-m-d H:i:s', strtotime("+" . config("setting.qrcode_expire_in") . "minute", time()));
         $data = [
@@ -406,11 +406,39 @@ class DepartmentService
         return $qrcode_url;
     }
 
+
+    public
+    function updateQrcode2($params)
+    {
+        $code = getRandChar(12);
+        $staff_id = $params['id'];
+        unset($params['id']);
+        $url = sprintf(config("setting.qrcode_url"), 'canteen', $code, $staff_id);
+        $qrcode_url = (new QrcodeService())->qr_code($url);
+        $params['code'] = $code;
+        $params['url'] = $qrcode_url;
+        $expiry_date = date('Y-m-d H:i:s', time());
+        $params['create_time'] = $expiry_date;
+        $params['expiry_date'] = $this->prefixQrcodeExpiryDate($expiry_date, $params);
+        $qrcode = StaffQrcodeT::update($params, ['s_id' => $staff_id]);
+        if (!$qrcode) {
+            throw new SaveException();
+        }
+        $staff = CompanyStaffT::get($staff_id);
+        return [
+            'usernmae' => $staff->username,
+            'url' => $qrcode->url,
+            'create_time' => $qrcode->create_time,
+            'expiry_date' => $qrcode->expiry_date
+        ];
+    }
+
+
     public
     function updateQrcode($params)
     {
         $code = getRandChar(12);
-        $url = sprintf(config("setting.qrcode_url"), 'canteen', $code,$params['s_id']);
+        $url = sprintf(config("setting.qrcode_url"), 'canteen', $code, $params['s_id']);
         $qrcode_url = (new QrcodeService())->qr_code($url);
         $s_id = $params['id'];
         $params['code'] = $code;
@@ -425,7 +453,7 @@ class DepartmentService
         $staff = CompanyStaffT::get($s_id);
         return [
             'usernmae' => $staff->username,
-            'url' =>$qrcode->url,
+            'url' => $qrcode->url,
             'create_time' => $qrcode->create_time,
             'expiry_date' => $qrcode->expiry_date
         ];
