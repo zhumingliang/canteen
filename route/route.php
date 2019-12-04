@@ -41,6 +41,7 @@ Route::get('api/:version/user/companies', 'api/:version.Company/userCompanies');
 Route::get('api/:version/admin/companies', 'api/:version.Company/adminCompanies');
 
 Route::post('api/:version/canteen/save', 'api/:version.Canteen/save');
+Route::post('api/:version/canteen/dinner/delete', 'api/:version.Canteen/deleteDinner');
 Route::post('api/:version/canteen/configuration/save', 'api/:version.Canteen/saveConfiguration');
 Route::post('api/:version/canteen/configuration/update', 'api/:version.Canteen/updateConfiguration');
 Route::post('api/:version/canteen/consumptionStrategy/save', 'api/:version.Canteen/saveConsumptionStrategy');

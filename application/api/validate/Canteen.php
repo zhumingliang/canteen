@@ -13,6 +13,7 @@ class Canteen extends BaseValidate
         'c_id' => 'require|isPositiveInteger',
         'company_id' => 'require|isPositiveInteger',
         'canteen_id' => 'require|isPositiveInteger',
+        'dinner_id' => 'require|isPositiveInteger',
         'd_id' => 'require|isPositiveInteger',
         't_id' => 'require|isPositiveInteger',
         'dinners' => 'require',
@@ -45,5 +46,6 @@ class Canteen extends BaseValidate
         'updateMachine' => ['id'],
         'deleteMachine' => ['id'],
         'companyMachines' => ['company_id'],
+        'deleteDinner' => ['dinner_id'],
     ];
 }

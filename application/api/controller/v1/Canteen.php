@@ -6,8 +6,11 @@ namespace app\api\controller\v1;
 
 use app\api\controller\BaseController;
 use app\api\model\ConsumptionStrategyT;
+use app\api\model\DinnerT;
 use app\api\service\CanteenService;
 use app\api\service\Token;
+use app\lib\enum\CommonEnum;
+use app\lib\exception\DeleteException;
 use app\lib\exception\SuccessMessage;
 use app\lib\exception\SuccessMessageWithData;
 use app\lib\exception\UpdateException;
@@ -607,6 +610,31 @@ class Canteen extends BaseController
         $company_id = Request::param('company_id');
         $machines = (new CanteenService())->companyMachines($company_id, $page, $size);
         return json(new SuccessMessageWithData(['data' => $machines]));
+    }
+
+    /**
+     * @api {POST} /api/v1/canteen/dinner/delete  CMS管理端-删除饭堂餐次
+     * @apiGroup   CMS
+     * @apiVersion 3.0.0
+     * @apiDescription     CMS管理端-删除饭堂餐次
+     * @apiExample {post}  请求样例:
+     *    {
+     *       "dinner_id": "1"
+     *     }
+     * @apiParam (请求参数说明) {int} dinner_id  饭堂餐次id
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     */
+    public function deleteDinner()
+    {
+        $id = Request::param('dinner_id');
+        $res = DinnerT::update(['state' => CommonEnum::STATE_IS_FAIL], ['id' => $id]);
+        if (!$res) {
+            throw new DeleteException();
+        }
+        return json(new SuccessMessage());
     }
 
 
