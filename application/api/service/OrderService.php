@@ -249,17 +249,23 @@ class OrderService extends BaseService
                 $returnMoney['no_meal_money'] = $no_meal_money;
                 $returnMoney['no_meal_sub_money'] = $no_meal_sub_money;
                 if (($no_meal_money + $no_meal_sub_money) > ($meal_money + $meal_sub_money)) {
-                    $returnMoney = [
+                   /* $returnMoney = [
                         'consumption_type' => 'no_meals_ordered',
                         'money' => $no_meal_money,
                         'sub_money' => $no_meal_sub_money
-                    ];
+                    ];*/
+                   $returnMoney['consumption_type']='no_meals_ordered';
+                   $returnMoney['money']=$no_meal_money;
+                   $returnMoney['sub_money']=$no_meal_sub_money;
                 } else {
-                    $returnMoney = [
+                   /* $returnMoney = [
                         'consumption_type' => 'ordering_meals',
                         'money' => $meal_money,
                         'sub_money' => $meal_sub_money
-                    ];
+                    ];*/
+                    $returnMoney['consumption_type']='ordering_meals';
+                    $returnMoney['money']=$meal_money;
+                    $returnMoney['sub_money']=$meal_sub_money;
                 }
                 break;
             }

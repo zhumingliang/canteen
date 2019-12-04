@@ -114,7 +114,7 @@ class CanteenService
             $account = json_decode($params['account'], true);
             $this->prefixDinner($c_id, $dinners);
             $this->prefixCanteenAccount($c_id, $account);
-            // Db::commit();
+            Db::commit();
         } catch (Exception $e) {
             Db::rollback();
             throw  $e;
@@ -125,14 +125,50 @@ class CanteenService
     private function prefixDinner($c_id, $dinners)
     {
         foreach ($dinners as $k => $v) {
+            $sub = $dinners;
+            unset($sub[$k]);
+            $this->checkDinnerMealTime($v['meal_time_begin'], $v['meal_time_end'], $sub);
             $dinners[$k]['c_id'] = $c_id;
             $dinners[$k]['state'] = CommonEnum::STATE_IS_OK;
+
         }
         $res = (new DinnerT())->saveAll($dinners);
         if (!$res) {
             throw new SaveException();
         }
+    }
 
+    private function checkDinnerMealTime($time_begin, $time_end, $dinners)
+    {
+        $time_begin = strtotime($time_begin);
+        $time_end = strtotime($time_end);
+        foreach ($dinners as $k => $v) {
+            $check = $this->is_time_cross($time_begin, $time_end, strtotime($v['meal_time_begin']), strtotime($v['meal_time_end']));
+            if ($check) {
+                throw new SaveException(['msg' => '就餐时间段重复，请检查']);
+            }
+        }
+
+    }
+
+    private function is_time_cross($beginTime1 = '', $endTime1 = '', $beginTime2 = '', $endTime2 = '')
+    {
+        $status = $beginTime2 - $beginTime1;
+        if ($status > 0) {
+            $status2 = $beginTime2 - $endTime1;
+            if ($status2 >= 0) {
+                return false;
+            } else {
+                return true;
+            }
+        } else {
+            $status2 = $endTime2 - $beginTime1;
+            if ($status2 > 0) {
+                return true;
+            } else {
+                return false;
+            }
+        }
     }
 
     private function prefixCanteenAccount($c_id, $account)
@@ -164,6 +200,9 @@ class CanteenService
                 $dinners = $params['dinners'];
                 $dinners = json_decode($dinners, true);
                 foreach ($dinners as $k => $v) {
+                    $sub = $dinners;
+                    unset($sub[$k]);
+                    $this->checkDinnerMealTime($v['meal_time_begin'], $v['meal_time_end'], $sub);
                     if (!key_exists('id', $v)) {
                         $dinners[$k]['c_id'] = $c_id;
                         $dinners[$k]['state'] = CommonEnum::STATE_IS_OK;
