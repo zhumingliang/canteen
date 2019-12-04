@@ -473,7 +473,7 @@ class DepartmentService
         $type = ['minute', 'hour', 'day', 'month', 'year'];
         $exit = 0;
         foreach ($type as $k => $v) {
-            if (key_exists($v, $params)) {
+            if (key_exists($v, $params)&&!empty($params[$v])) {
                 $exit = 1;
                 $expiry_date = date('Y-m-d H:i:s', strtotime("+" . $params[$v] . "$v", strtotime($expiry_date)));
             }

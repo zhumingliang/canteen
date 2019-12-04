@@ -9,6 +9,16 @@ use think\Model;
 
 class DinnerT extends Model
 {
+
+    public function getMealTimeBeginAttr($value)
+    {
+        return date('H:i', strtotime($value));
+    }
+    public function getMealTimeEndAttr($value)
+    {
+        return date('H:i', strtotime($value));
+    }
+
     public function menus()
     {
 

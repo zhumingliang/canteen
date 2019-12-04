@@ -204,6 +204,8 @@ class ConsumptionService
         $data['sub_money'] = $money['sub_money'];
         $data['consumption_type'] = 'unordered_meals';
         $data['pay_way'] = $pay_way;
+        $data['used'] = CommonEnum::STATE_IS_OK;
+        $data['used_time'] = date('Y-m-d H:i:s');
         $data['pay'] = CommonEnum::STATE_IS_OK;
         $order = OrderT::create($data);
         if (!$order) {
