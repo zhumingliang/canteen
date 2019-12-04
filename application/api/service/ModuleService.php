@@ -63,8 +63,7 @@ class ModuleService
 
     public function systemModules($tree = 1)
     {
-        $modules = SystemCanteenModuleT::where('state', CommonEnum::STATE_IS_OK)
-            ->hidden(['update_time'])
+        $modules = SystemCanteenModuleT::hidden(['update_time'])
             ->order('create_time desc')
             ->select()
             ->toArray();

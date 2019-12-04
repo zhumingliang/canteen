@@ -30,7 +30,7 @@ class FoodV extends BaseModel
                     $query->where($selectField, $selectValue);
                 }
             })
-            ->where('state', '<>', CommonEnum::STATE_IS_DELETE)
+            ->where('state', CommonEnum::STATE_IS_OK)
             ->order('create_time desc')
             ->hidden(['menu_id', 'dinner_id', 'canteen_id', 'company_id', 'f_type', 'create_time'])
             ->paginate($size, false, ['page' => $page]);
@@ -68,7 +68,7 @@ class FoodV extends BaseModel
                         ->field('id,f_id,name,count,unit');
                 }
             ])
-            ->where('state', '<>', CommonEnum::STATE_IS_DELETE)
+            ->where('state', CommonEnum::STATE_IS_OK)
             ->order('create_time desc')
             ->field('id,company,canteen,dinner,name')
             ->paginate($size, false, ['page' => $page]);
