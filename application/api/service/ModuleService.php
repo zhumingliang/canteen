@@ -63,8 +63,7 @@ class ModuleService
 
     public function systemModules($tree = 1)
     {
-        $modules = SystemCanteenModuleT::hidden(['update_time'])
-            ->order('create_time desc')
+        $modules = SystemCanteenModuleT::order('create_time desc')
             ->select()
             ->toArray();
         if (!$tree) {
