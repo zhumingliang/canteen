@@ -230,4 +230,5 @@ Route::rule('api/:version/wallet/WXNotifyUrl', 'api/:version.Wallet/WXNotifyUrl'
 
 Route::rule('api/:version/service/orderStateHandel', 'api/:version.Service/orderStateHandel');
 Route::rule('api/:version/service/sendMsgHandel', 'api/:version.Service/sendMsgHandel');
+Route::rule('api/:version/service/noticeHandel', 'api/:version.Service/sendNoticeHandel');
 

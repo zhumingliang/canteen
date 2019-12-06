@@ -192,6 +192,11 @@ class Redis
         return $this->redisObj[$this->sn]->lpop($key);
     }
 
+    public function lLen($key)
+    {
+        return $this->redisObj[$this->sn]->llen($key);
+    }
+
     /*------------------------------------2.end list结构----------------------------------------------------*/
 
 

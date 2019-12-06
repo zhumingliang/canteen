@@ -62,6 +62,71 @@ class NoticeService
 
     }
 
+
+    /**
+     * 获取管理员发布公告
+     */
+    public function adminNotices($page, $size)
+    {
+        $u_id = Token::getCurrentUid();
+        $notices = NoticeT::adminNotices($u_id, $page, $size);
+        return $notices;
+
+    }
+
+    /**
+     * 删除公告
+     */
+    public function deleteNotice($id)
+    {
+        $res = NoticeT::update(['state' => CommonEnum::STATE_IS_FAIL], ['id' => $id]);
+        if (!$res) {
+            throw new DeleteException();
+        }
+    }
+
+    public function notice($id)
+    {
+        $notice = NoticeT::where('id', $id)
+            ->hidden(['state', 'update_time', 'u_id'])
+            ->find();
+        return $notice;
+    }
+
+    public function userNotices($page, $size)
+    {
+        $phone = Token::getCurrentPhone();
+        $company_id = Token::getCurrentTokenVar('current_company_id');
+        $staff = (new DepartmentService())->getStaffWithPhone($phone, $company_id);
+        if (empty($staff)) {
+            return [
+                'total' => 0,
+                'per_page' => 10,
+                'current_page' => 1,
+                'last_page' => 1,
+                'data' => array()
+            ];
+        }
+        return NoticeUserV::userNotices($staff->id, $page, $size);
+    }
+
+
+    public function sendNoticeHandel()
+    {
+        //获取推送未处理信息
+        $redis = Redis::instance();
+        $department_count = $redis->lLen('notice_d_send_no');
+        echo $department_count;
+        /*if ($department_count) {
+            for ($i = 0; $i < 2; $i++) {
+                $data = $redis->rPop('notice_d_send_no');
+            }//从结尾处弹出一个值
+        }*/
+
+
+
+    }
+
     private function sendNotice($n_id, $d_ids, $s_ids)
     {
         $data_list = [];
@@ -99,50 +164,4 @@ class NoticeService
         }
     }
 
-
-    /**
-     * 获取管理员发布公告
-     */
-    public function adminNotices($page, $size)
-    {
-        $u_id = Token::getCurrentUid();
-        $notices = NoticeT::adminNotices($u_id, $page, $size);
-        return $notices;
-
-    }
-
-    /**
-     * 删除公告
-     */
-    public function deleteNotice($id)
-    {
-        $res = NoticeT::update(['state' => CommonEnum::STATE_IS_FAIL], ['id' => $id]);
-        if (!$res) {
-            throw new DeleteException();
-        }
-    }
-
-    public function notice($id)
-    {
-        $notice = NoticeT::where('id', $id)
-            ->hidden(['state', 'update_time', 'u_id'])
-            ->find();
-        return $notice;
-    }
-
-    public function userNotices($page, $size)
-    {
-        $phone = Token::getCurrentPhone();
-        $staff = (new DepartmentService())->getStaffWithPhone($phone);
-        if (empty($staff)) {
-            return [
-                'total' => 0,
-                'per_page' => 10,
-                'current_page' => 1,
-                'last_page' => 1,
-                'data' => array()
-            ];
-        }
-        return NoticeUserV::userNotices($staff->id, $page, $size);
-    }
 }

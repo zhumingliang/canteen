@@ -71,7 +71,7 @@ class Notice extends BaseController
      * @apiSuccess (返回参数说明) {string} author  作者
      * @apiSuccess (返回参数说明) {string} create_time 创建时间
      */
-    public function adminNzotices($page = 1, $size = 10)
+    public function adminNotices($page = 1, $size = 10)
     {
         $notices = (new NoticeService())->adminNotices($page, $size);
         return json(new SuccessMessageWithData(['data' => $notices]));

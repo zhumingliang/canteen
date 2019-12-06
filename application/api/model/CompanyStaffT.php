@@ -40,20 +40,20 @@ class CompanyStaffT extends Model
     {
         return self::where('phone', $phone)
             ->where('state', CommonEnum::STATE_IS_OK)
-            ->where(function ($query)use($company_id) {
-              if (!empty($company_id)){
-                  $query->where('company_id',$company_id);
-              }
+            ->where(function ($query) use ($company_id) {
+                if (!empty($company_id)) {
+                    $query->where('company_id', $company_id);
+                }
             })
             ->with('qrcode')
             ->find();
     }
 
-    public static function staffName($phone, $company_id )
+    public static function staffName($phone, $company_id)
     {
         return self::where('phone', $phone)
             ->where('state', CommonEnum::STATE_IS_OK)
-            ->where('company_id',$company_id)
+            ->where('company_id', $company_id)
             ->find();
     }
 
@@ -78,9 +78,10 @@ class CompanyStaffT extends Model
         return $staffs;
     }
 
-    public static function getStaffWithPhone($phone)
+    public static function getStaffWithPhone($phone, $company_id)
     {
         return self::where('phone', $phone)
+            ->where('company_id', $company_id)
             ->where('state', CommonEnum::STATE_IS_OK)
             ->find();
     }

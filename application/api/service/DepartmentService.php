@@ -493,9 +493,9 @@ class DepartmentService
     }
 
     public
-    function getStaffWithPhone($phone)
+    function getStaffWithPhone($phone,$company_id)
     {
-        $staff = CompanyStaffT::getStaffWithPhone($phone);
+        $staff = CompanyStaffT::getStaffWithPhone($phone,$company_id);
         return $staff;
 
     }

@@ -5,6 +5,7 @@ namespace app\api\controller\v1;
 
 
 use app\api\controller\BaseController;
+use app\api\service\NoticeService;
 use app\api\service\OrderService;
 use app\api\service\SendSMSService;
 
@@ -19,6 +20,11 @@ class Service extends BaseController
     public function sendMsgHandel()
     {
         (new SendSMSService())->sendHandel();
+    }
+
+    public function sendNoticeHandel()
+    {
+        (new NoticeService())->sendNoticeHandel();
     }
 
 }
