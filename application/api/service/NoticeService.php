@@ -53,33 +53,32 @@ class NoticeService
 
         }
         if (strlen($s_ids)) {
-            $s_ids_arr = explode(',', $s_ids);
-            foreach ($s_ids_arr as $k => $v) {
-                $data = [
-                    'n_id' => $n_id,
-                    's_id' => $v
-                ];
-                Redis::instance()->lPush('notice_s_send_no', json_encode($data));
-            }
-
+            $data = [
+                'n_id' => $n_id,
+                's_ids' => $s_ids
+            ];
+            Redis::instance()->lPush('notice_s_send_no', json_encode($data));
         }
+
     }
 
     private function sendNotice($n_id, $d_ids, $s_ids)
     {
-        $staffs = (new DepartmentService())->departmentStaffs($d_ids);
         $data_list = [];
-        if (empty($staffs)) {
-            return true;
-        }
-        foreach ($staffs as $k => $v) {
-            $data = [
-                's_id' => $v['id'],
-                'n_id' => $n_id,
-                'read' => CommonEnum::STATE_IS_FAIL,
-                'state' => CommonEnum::STATE_IS_OK
-            ];
-            array_push($data_list, $data);
+        if (!empty($d_ids)) {
+            $staffs = (new DepartmentService())->departmentStaffs($d_ids);
+            if (empty($staffs)) {
+                return true;
+            }
+            foreach ($staffs as $k => $v) {
+                $data = [
+                    's_id' => $v['id'],
+                    'n_id' => $n_id,
+                    'read' => CommonEnum::STATE_IS_FAIL,
+                    'state' => CommonEnum::STATE_IS_OK
+                ];
+                array_push($data_list, $data);
+            }
         }
         if (strlen($s_ids)) {
             $ids = explode(',', $s_ids);
@@ -145,7 +144,5 @@ class NoticeService
             ];
         }
         return NoticeUserV::userNotices($staff->id, $page, $size);
-
-
     }
 }

@@ -164,7 +164,7 @@ class AdminService
 
     }
 
-    public function save($account, $passwd, $role, $grade, $c_id, $remark)
+    public function save($account, $passwd, $role, $grade, $c_id, $remark, $company = '')
     {
 
         $data = [
@@ -174,7 +174,8 @@ class AdminService
             'grade' => $grade,
             'state' => CommonEnum::STATE_IS_OK,
             'c_id' => $c_id,
-            'remark' => $remark
+            'remark' => $remark,
+            'company' =>$company
         ];
 
         $admin = AdminT::create($data);
