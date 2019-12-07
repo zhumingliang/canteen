@@ -113,31 +113,36 @@ class NoticeService
 
     public function sendNoticeHandel()
     {
-        //获取推送未处理信息
-        $redis = Redis::instance();
-        $department_count = $redis->lLen('notice_d_send_no');
-        if ($department_count) {
-            for ($i = 0; $i < 2; $i++) {
-                $data = $redis->rPop('notice_d_send_no');
-                $data = json_decode($data, true);
-                if (!empty($data['n_id']) && !empty($data['d_id'])) {
-                    $this->sendNotice($data['n_id'], $data['d_id'], 0);
-                }
-            }
-        } else {
-            $staff_count = $redis->lLen('notice_s_send_no');
-            if ($staff_count){
-                for ($i = 0; $i < 10; $i++) {
-                    $data = $redis->rPop('notice_s_send_no');
+        try {
+
+
+            //获取推送未处理信息
+            $redis = Redis::instance();
+            $department_count = $redis->lLen('notice_d_send_no');
+            if ($department_count) {
+                for ($i = 0; $i < 2; $i++) {
+                    $data = $redis->rPop('notice_d_send_no');
                     $data = json_decode($data, true);
                     if (!empty($data['n_id']) && !empty($data['d_id'])) {
-                        $this->sendNotice($data['n_id'], 0, $data['s_id']);
+                        $this->sendNotice($data['n_id'], $data['d_id'], 0);
                     }
                 }
+            } else {
+                $staff_count = $redis->lLen('notice_s_send_no');
+                if ($staff_count) {
+                    for ($i = 0; $i < 10; $i++) {
+                        $data = $redis->rPop('notice_s_send_no');
+                        $data = json_decode($data, true);
+                        if (!empty($data['n_id']) && !empty($data['d_id'])) {
+                            $this->sendNotice($data['n_id'], 0, $data['s_id']);
+                        }
+                    }
+                }
+
             }
-
+        } catch (Exception $e) {
+            LogService::save('sendNoticeHandel:'.$e->getMessage());
         }
-
 
     }
 
