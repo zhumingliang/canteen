@@ -117,7 +117,6 @@ class NoticeService
             //获取推送未处理信息
             $redis = Redis::instance();
             $department_count = $redis->lLen('notice_d_send_no');
-            echo $department_count;
             if ($department_count) {
                 for ($i = 0; $i < 2; $i++) {
                     $data = $redis->rPop('notice_d_send_no');
@@ -152,7 +151,6 @@ class NoticeService
         $data_list = [];
         if (!empty($d_ids)) {
             $staffs = (new DepartmentService())->departmentStaffs($d_ids);
-            print_r($staffs);
             if (empty($staffs)) {
                 return true;
             }
@@ -166,7 +164,6 @@ class NoticeService
                 array_push($data_list, $data);
             }
         }
-        print_r($data_list);
         if (strlen($s_ids)) {
             $ids = explode(',', $s_ids);
             foreach ($ids as $k => $v) {
