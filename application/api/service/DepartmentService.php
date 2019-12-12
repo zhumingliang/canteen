@@ -95,9 +95,10 @@ class DepartmentService
     {
         $staff = CompanyStaffT::where('company_id', $company_id)
             ->where('phone', $phone)
+            ->where('state', CommonEnum::STATE_IS_OK)
             ->count('id');
         if ($staff) {
-            throw  new SaveException(['msg' => '用户企业已存在']);
+            throw  new SaveException(['msg' => '该用户已存在']);
         }
 
     }
@@ -464,6 +465,37 @@ class DepartmentService
     {
         $staffs = CompanyStaffV::companyStaffs($page, $size, $c_id, $d_id);
         return $staffs;
+    }
+
+    public function exportStaffs($company_id, $department_id)
+    {
+        $staffs = CompanyStaffV::exportStaffs($company_id, $department_id);
+        $staffs = $this->prefixExportStaff($staffs);
+        $header = ['企业', '部门', '人员状态', '人员类型', '员工编号', '姓名', '手机号码', '卡号', '归属饭堂'];
+        $file_name = "企业员工导出";
+        $url = (new ExcelService())->makeExcel($header, $staffs, $file_name);
+        return [
+            'url' => config('setting.domain') . $url
+        ];
+    }
+
+    private function prefixExportStaff($staffs)
+    {
+        if (!count($staffs)) {
+            return $staffs;
+        }
+        foreach ($staffs as $k => $v) {
+            $canteen = [];
+            unset($staffs[$k]['id']);
+            $canteens = $v['canteens'];
+            unset($staffs[$k]['canteens']);
+            foreach ($canteens as $k2 => $v2) {
+                array_push($canteen, $v2['info']['name']);
+            }
+            $staffs[$k]['canteen'] = implode('|', $canteen);
+            $staffs[$k]['state'] = $v['state'] == 1 ? '启用' : '停用';
+        }
+        return $staffs;
 
     }
 
@@ -473,7 +505,7 @@ class DepartmentService
         $type = ['minute', 'hour', 'day', 'month', 'year'];
         $exit = 0;
         foreach ($type as $k => $v) {
-            if (key_exists($v, $params)&&!empty($params[$v])) {
+            if (key_exists($v, $params) && !empty($params[$v])) {
                 $exit = 1;
                 $expiry_date = date('Y-m-d H:i:s', strtotime("+" . $params[$v] . "$v", strtotime($expiry_date)));
             }
@@ -493,9 +525,9 @@ class DepartmentService
     }
 
     public
-    function getStaffWithPhone($phone,$company_id)
+    function getStaffWithPhone($phone, $company_id)
     {
-        $staff = CompanyStaffT::getStaffWithPhone($phone,$company_id);
+        $staff = CompanyStaffT::getStaffWithPhone($phone, $company_id);
         return $staff;
 
     }

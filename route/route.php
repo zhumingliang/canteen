@@ -89,6 +89,7 @@ Route::post('api/:version/department/staff/delete', 'api/:version.Department/del
 Route::post('api/:version/department/staff/upload', 'api/:version.Department/uploadStaffs');
 Route::post('api/:version/department/staff/move', 'api/:version.Department/moveStaffDepartment');
 Route::get('api/:version/staffs', 'api/:version.Department/staffs');
+Route::get('api/:version/export/staffs', 'api/:version.Department/exportStaffs');
 Route::post('api/:version/staff/qrcode/save', 'api/:version.Department/createStaffQrcode');
 
 Route::rule('api/:version/consumption/staff', 'api/:version.Consumption/staff');
@@ -111,6 +112,7 @@ Route::get('api/:version/foods/personChoice', 'api/:version.Food/foodsForOfficia
 Route::get('api/:version/foods/menu', 'api/:version.Food/foodsForOfficialMenu');
 Route::get('api/:version/food', 'api/:version.Food/food');
 Route::get('api/:version/food/info/comment', 'api/:version.Food/infoToComment');
+Route::post('api/:version/food/material/update', 'api/:version.Food/updateMaterial');
 
 Route::post('api/:version/material/save', 'api/:version.Material/save');
 Route::post('api/:version/material/update', 'api/:version.Material/update');

@@ -44,6 +44,31 @@ class CompanyStaffV extends BaseModel
 
     }
 
+    public static function exportStaffs($company_id, $department_id)
+    {
+        $list = self::where('company_id', $company_id)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->where(function ($query) use ($department_id) {
+                if ($department_id) {
+                    $query->where('d_id', $department_id);
+                }
+            })
+            ->with([
+                'canteens' => function ($query) {
+                    $query->with(['info' => function ($query2) {
+                        $query2->field('id,name');
+                    }])
+                        ->field('id,staff_id,canteen_id')
+                        ->where('state', '=', CommonEnum::STATE_IS_OK);
+                }
+            ])
+            ->field('id,company,department,state,type,code,username,phone,card_num')
+            ->order('create_time desc')
+            ->select()->toArray();
+        return $list;
+
+    }
+
     public static function userCanteens($company_id, $phone)
     {
         $canteens = self::where('phone', $phone)->where('company_id', $company_id)

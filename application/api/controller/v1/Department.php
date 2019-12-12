@@ -452,4 +452,28 @@ class Department extends BaseController
         return json(new SuccessMessageWithData(['data' => $staffs]));
 
     }
+
+    /**
+     * @api {GET} /api/v1/export/staffs CMS管理端-设置-部门人员设置-导出企业员工信息
+     * @apiGroup  CMS
+     * @apiVersion 3.0.0
+     * @apiDescription CMS管理端-设置-部门人员设置-导出企业员工信息
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/export/staffs?company_id=2&department_id=4
+     * @apiParam (请求参数说明) {int} company_id 企业id
+     * @apiParam (请求参数说明) {int} department_id 企业部门id,获取全部传入：0
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"url":"http:\/\/canteen.tonglingok.com\/static\/excel\/download\/企业员工导出_20191210235358.xls"}}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     * @apiSuccess (返回参数说明) {string} url 导出excel下载链接
+     */
+    public function exportStaffs()
+    {
+        $company_id = Request::param('company_id');
+        $department_id = Request::param('department_id');
+        $url = (new DepartmentService())->exportStaffs($company_id, $department_id);
+        return json(new SuccessMessageWithData(['data' => $url]));
+
+    }
 }

@@ -95,7 +95,7 @@ class Food extends BaseController
     }
 
     /**
-     * @api {POST} /api/v1/food/handel CMS管理端-菜品状态设置)(删除
+     * @api {POST} /api/v1/food/handel CMS管理端-菜品状态设置(删除）
      * @apiGroup   CMS
      * @apiVersion 3.0.0
      * @apiDescription   CMS管理端-菜品状态设置(删除）

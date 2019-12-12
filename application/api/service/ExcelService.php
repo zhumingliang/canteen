@@ -72,7 +72,7 @@ class ExcelService
     }
 
 
-    function makeExcel($columName, $list, $fileName, $excel2007 = false)
+   public function makeExcel($columName, $list, $fileName, $excel2007 = false)
     {
         if (empty($fileName)) $fileName = time();
 

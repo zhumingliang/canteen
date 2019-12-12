@@ -50,7 +50,7 @@ class Material extends BaseController
     /**
      * @api {POST} /api/v1/material/update CMS管理端-材料价格明细-更新价格明细
      * @apiGroup   CMS
-     * @apiVersion 3.0.0
+     * @apiVersion 3.0.0x
      * @apiDescription    CMS管理端-材料价格明细-更新价格明细
      * @apiExample {post}  请求样例:
      *    {
@@ -194,10 +194,10 @@ class Material extends BaseController
     }
 
     /**
-     * @api {GET} /api/v1/materials/food CMS管理端-菜品列表
+     * @api {GET} /api/v1/materials/food CMS管理端-材料管理-菜品材料明细
      * @apiGroup  CMS
      * @apiVersion 3.0.0
-     * @apiDescription CMS管理端-菜品列表
+     * @apiDescription CMS管理端-材料管理-菜品材料明细
      * @apiExample {get}  请求样例:
      * http://canteen.tonglingok.com/api/v1/materials/food?&page=1&size=10&dinner_ids='1'&canteen_ids='1'&company_ids='1'
      * @apiParam (请求参数说明) {int} page 当前页码
@@ -229,4 +229,8 @@ class Material extends BaseController
         return json(new SuccessMessageWithData(['data' => $foodMaterials]));
     }
 
+    public function exportMaterials()
+    {
+
+    }
 }
