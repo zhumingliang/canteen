@@ -6,8 +6,10 @@ namespace app\api\controller\v1;
 
 use app\api\controller\BaseController;
 use app\api\model\MaterialPriceT;
+use app\api\service\ExcelService;
 use app\api\service\FoodService;
 use app\api\service\MaterialService;
+use app\api\service\OrderStatisticService;
 use app\lib\enum\CommonEnum;
 use app\lib\exception\DeleteException;
 use app\lib\exception\ParameterException;
@@ -229,8 +231,37 @@ class Material extends BaseController
         return json(new SuccessMessageWithData(['data' => $foodMaterials]));
     }
 
-    public function exportMaterials()
+    /**
+     * @api {GET} /api/v1/material/exportFoodMaterials CMS管理端-材料管理-菜品材料明细-导出
+     * @apiGroup  CMS
+     * @apiVersion 3.0.0
+     * @apiDescription  CMS管理端-材料管理-菜品材料明细-导出
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/material/exportFoodMaterials?dinner_ids=6&canteen_ids=6&company_ids=3
+     * @apiParam (请求参数说明) {int} size 每页多少条数据
+     * @apiParam (请求参数说明) {String} dinner_ids 餐次ids，选择全部时传入所有id并逗号分隔，选择此选择项其他筛选字段（canteen_ids/company_ids）无需上传无需上传
+     * @apiParam (请求参数说明) {String} canteen_ids 饭堂ids，选择全部时传入所有id并逗号分隔，选择此选择项其他筛选字段（dinner_ids/company_ids）无需上传无需上传
+     * @apiParam (请求参数说明) {String} company_ids 公司ids，选择全部时传入所有id并逗号分隔，选择此选择项其他筛选字段（dinner_ids/canteen_ids）无需上传无需上传
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"url":"http:\/\/canteen.tonglingok.com\/static\/excel\/download\/材料价格明细_20190817005931.xls"}}     * @apiSuccess (返回参数说明) {int} total 数据总数
+     * @apiSuccess (返回参数说明) {int} error_code 错误代码 0 表示没有错误
+     * @apiSuccess (返回参数说明) {string} msg 操作结果描述
+     * @apiSuccess (返回参数说明) {string} url 下载地址
+     */
+    public function exportFoodMaterials()
     {
+        $params = Request::param();
+        $url = (new FoodService())->exportFoodMaterials($params);
+        return json(new SuccessMessageWithData(['data' => $url]));
+    }
 
+    public function exportMaterialReports()
+    {
+        $time_begin = Request::param('time_begin');
+        $time_end = Request::param('time_end');
+        $canteen_id = Request::param('canteen_id');
+        $url = (new OrderStatisticService())
+            ->exportMaterialReports($time_begin, $time_end, $canteen_id);
+        return json(new SuccessMessageWithData(['data' => $url]));
     }
 }

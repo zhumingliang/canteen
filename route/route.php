@@ -121,6 +121,8 @@ Route::post('api/:version/material/upload', 'api/:version.Material/uploadMateria
 Route::get('api/:version/material/export', 'api/:version.Material/export');
 Route::get('api/:version/materials', 'api/:version.Material/materials');
 Route::get('api/:version/materials/food', 'api/:version.Material/foodMaterials');
+Route::get('api/:version/material/exportFoodMaterials', 'api/:version.Material/exportFoodMaterials');
+Route::get('api/:version/material/exportMaterialReports', 'api/:version.Material/exportMaterialReports');
 
 Route::rule('api/:version/weixin/server', 'api/:version.WeiXin/server');
 Route::rule('api/:version/weixin/menu/save', 'api/:version.WeiXin/createMenu');

@@ -423,5 +423,32 @@ class OrderStatisticService
 
     }
 
+    public function exportMaterialReports($time_begin, $time_end, $canteen_id)
+    {
+        $reports = MaterialReportT::exportReports($time_begin, $time_end, $canteen_id);
+        $reports = $this->prefixExportMaterialReports($reports);
+    }
+
+    private function prefixExportMaterialReports($data)
+    {
+        $dataList = [];
+        if (empty($data)) {
+            return $dataList;
+        }
+
+        foreach ($data as $k => $v) {
+            $detail = $this->materialReport($v['id'], 1, 1000);
+            $info = $detail['list']['data'];
+            $money = $detail['money'];
+            array_push($dataList, [
+                'title' => $v['title'],
+                'canteen'=>$v['canteen']['name'],
+                'create_time'=>$v['create_time'],
+                ''
+            ]);
+
+        }
+    }
+
 
 }

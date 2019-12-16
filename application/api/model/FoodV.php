@@ -75,4 +75,28 @@ class FoodV extends BaseModel
         return $list;
     }
 
+    public static function exportFoodMaterials($selectField, $selectValue)
+    {
+
+        $list = self::where('f_type', 2)
+            ->where(function ($query) use ($selectField, $selectValue) {
+                if (strpos($selectValue, ',') !== false) {
+                    $query->whereIn($selectField, $selectValue);
+                } else {
+                    $query->where($selectField, $selectValue);
+                }
+            })
+            ->with([
+                'material' => function ($query) {
+                    $query->where('state', CommonEnum::STATE_IS_OK)
+                        ->field('id,f_id,name,count,unit');
+                }
+            ])
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->order('create_time desc')
+            ->field('id,company,canteen,dinner,name')
+           ->select()->toArray();
+        return $list;
+    }
+
 }

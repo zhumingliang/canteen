@@ -130,6 +130,67 @@ class FoodService extends BaseService
         return $foods;
     }
 
+    public function exportFoodMaterials($params)
+    {
+        $selectField = $this->prefixSelectFiled($params);
+        $foods = FoodV::exportFoodMaterials($selectField['field'], $selectField['value']);
+        $foods = $this->prefixFoodMaterials($foods);
+        $header = ['企业', '饭堂', '餐次', '菜品', '材料名称', '数量', '单位'];
+        $file_name = "菜品材料明细导出报表";
+        $url = (new ExcelService())->makeExcelMerge($header, $foods, $file_name, 4);
+        return [
+            'url' => config('setting.domain') . $url
+        ];
+    }
+
+    private function prefixFoodMaterials($foods)
+    {
+        $dataList = [];
+        if (!count($foods)) {
+            return $foods;
+        }
+        $i = 2;
+        foreach ($foods as $k => $v) {
+            $material = $v['material'];
+            if (empty($material)) {
+                array_push($dataList, [
+                    'company' => $v['company'],
+                    'canteen' => $v['canteen'],
+                    'dinner' => $v['dinner'],
+                    'food' => $v['name'],
+                    'name' => '',
+                    'count' => '',
+                    'unit' => '',
+                    'merge' => CommonEnum::STATE_IS_FAIL,
+                    'start' => 0,
+                    'end' => 0,
+                ]);
+                $i++;
+                continue;
+            }
+
+            foreach ($material as $k2 => $v2) {
+                array_push($dataList, [
+                    'company' => $v['company'],
+                    'canteen' => $v['canteen'],
+                    'dinner' => $v['dinner'],
+                    'food' => $v['name'],
+                    'name' => $v2['name'],
+                    'count' => $v2['count'],
+                    'unit' => $v2['unit'],
+                    'merge' => CommonEnum::STATE_IS_OK,
+                    'start' => $k2 == 0 ? $i : $i - 1,
+                    'end' => $i
+                ]);
+                $i++;
+            }
+
+        }
+
+        return $dataList;
+
+    }
+
     public function updateMaterial($params)
     {
         $id = $params['id'];

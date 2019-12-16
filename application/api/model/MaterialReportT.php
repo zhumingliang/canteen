@@ -20,7 +20,7 @@ class MaterialReportT extends Model
             ->whereBetweenTime('create_time', $time_begin, $time_end)
             ->where('state', CommonEnum::STATE_IS_OK)
             ->with([
-                'canteen'=>function($query){
+                'canteen' => function ($query) {
                     $query->field('id,name');
                 }
             ])
@@ -29,5 +29,22 @@ class MaterialReportT extends Model
             ->paginate($size, false, ['page' => $page]);
         return $list;
     }
+
+    public static function exportReports($time_begin, $time_end, $canteen_id)
+    {
+        $list = self::where('canteen_id', $canteen_id)
+            ->whereBetweenTime('create_time', $time_begin, $time_end)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->with([
+                'canteen' => function ($query) {
+                    $query->field('id,name');
+                }
+            ])
+            ->order('create_time desc')
+            ->field('id,canteen_id,CONCAT(time_begin,"~",time_end,title) as title,create_time')
+            ->select()->toArray();
+        return $list;
+    }
+
 
 }
