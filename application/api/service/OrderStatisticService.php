@@ -256,7 +256,7 @@ class OrderStatisticService
         if ($report->state == CommonEnum::STATE_IS_FAIL) {
             throw new ParameterException(['msg' => '报表已废除']);
         }
-        $records = MaterialReportDetailV::orderRecords($page, $size, $report_id);
+        $records = MaterialReportDetailT::orderRecords($page, $size, $report_id);
         return [
             'list' => $records,
             'money' => $report->money
