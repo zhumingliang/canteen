@@ -769,7 +769,6 @@ class Order extends BaseController
      * @apiSuccess (返回参数说明) {string} dinner 餐次
      * @apiSuccess (返回参数说明) {string} material 材料名称
      * @apiSuccess (返回参数说明) {float} order_count 材料数量
-     * @apiSuccess (返回参数说明) {float} order_count 材料数量
      * @apiSuccess (返回参数说明) {float} material_count 订货数量
      * @apiSuccess (返回参数说明) {float} material_price 订货单价
      * @apiSuccess (返回参数说明) {float} money 报表总价
@@ -863,7 +862,7 @@ class Order extends BaseController
      * @apiVersion 3.0.0
      * @apiDescription CMS管理端-材料管理-入库材料报表-报表详情
      * @apiExample {get}  请求样例:
-     * http://canteen.tonglingok.com/api/v1/order/material/report?canteen_id=6&time_begin=2019-09-07&time_end=2019-12-07&page=1&size=20
+     * http://canteen.tonglingok.com/api/v1/order/material/report?id=7&page=1&size=20
      * @apiParam (请求参数说明) {int} page 当前页码
      * @apiParam (请求参数说明) {int} size 每页多少条数据
      * @apiParam (请求参数说明) {string} id 报表id
@@ -980,7 +979,7 @@ class Order extends BaseController
      *    {
      *       "order_id": 1,
      *       "address_id":3,
-         }
+     * }
      * @apiParam (请求参数说明) {string} order_id  订单id
      * @apiParam (请求参数说明) {string} address_id  地址id
      * @apiSuccessExample {json} 返回样例:

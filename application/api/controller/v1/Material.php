@@ -52,7 +52,7 @@ class Material extends BaseController
     /**
      * @api {POST} /api/v1/material/update CMS管理端-材料价格明细-更新价格明细
      * @apiGroup   CMS
-     * @apiVersion 3.0.0x
+     * @apiVersion 3.0.0
      * @apiDescription    CMS管理端-材料价格明细-更新价格明细
      * @apiExample {post}  请求样例:
      *    {

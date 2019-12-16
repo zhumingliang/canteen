@@ -149,8 +149,9 @@ class OrderStatisticService
         try {
             Db::startTrans();
             $this->checkMaterialCanUpdate($params['canteen_id'], $params['time_begin'], $params['time_end']);
+            $company_id = Token::getCurrentTokenVar('company_id');
             $report = MaterialReportT::create([
-                'company_id' => Token::getCurrentTokenVar('company_id'),
+                'company_id' => $company_id,
                 'canteen_id' => $params['canteen_id'],
                 'title' => $params['title'],
                 'time_begin' => $params['time_begin'],
@@ -162,21 +163,44 @@ class OrderStatisticService
             }
             $materials = $params['materials'];
             $materials = json_decode($materials, true);
-            if (empty($materials)) {
-                throw new ParameterException(['msg' => '参数格式错误']);
-            }
+
+            //获取报表所有需要数据
+            $detail = $this->orderMaterials($params['time_begin'], $params['time_end'], $params['canteen_id'], $company_id);
+            $money = 0;
             $dataList = [];
-            foreach ($materials as $k => $v) {
+            foreach ($detail as $k => $v) {
+                $order_count = $v['order_count'];
+                $order_price = $v['order_price'];
+                $update_count = $v['order_count'];
+                $update_price = $v['order_price'];
+                if (count($materials)) {
+                    foreach ($materials as $k2 => $v2) {
+                        if ($v['dinner_id'] == $v2['dinner_id'] && $v['material'] == $v2['material']
+                            && $v['ordering_date'] == $v2['ordering_date']) {
+                            if (!empty($v2['count'])) {
+                                $update_count = $v2['count'];
+                            }
+                            if (!empty($v2['price'])) {
+                                $update_price = $v2['price'];
+                            }
+                            unset($materials[$k2]);
+                            break;
+                        }
+                    }
+                }
                 array_push($dataList, [
                     'report_id' => $report->id,
                     'material' => $v['material'],
-                    'count' => $v['count'],
-                    'price' => $v['price'],
+                    'order_count' => $order_count,
+                    'order_price' => $order_price,
+                    'update_count' => $update_count,
+                    'update_price' => $update_price,
                     'dinner_id' => $v['dinner_id'],
+                    'dinner' => $v['dinner'],
                     'ordering_date' => $v['ordering_date'],
                     'state' => CommonEnum::STATE_IS_OK
                 ]);
-
+                $money += $update_count * $update_price;
             }
             $detail = (new MaterialReportDetailT())->saveAll($dataList);
             if (!$detail) {
@@ -188,6 +212,16 @@ class OrderStatisticService
             throw  $e;
         }
     }
+
+    public function orderMaterials($time_begin, $time_end, $canteen_id, $company_id)
+    {
+        $statistic = OrderMaterialV::orderMaterials($time_begin, $time_end, $canteen_id, $company_id);
+        //获取该企业/饭堂下所有材料价格
+        $materials = MaterialPriceV::materialsForOrder($canteen_id, $company_id);
+        $statistic = $this->prefixMaterials($statistic, $materials);
+        return $statistic;
+    }
+
 
     private function checkMaterialCanUpdate($canteen_id, $time_begin, $time_end)
     {
@@ -222,21 +256,12 @@ class OrderStatisticService
         if ($report->state == CommonEnum::STATE_IS_FAIL) {
             throw new ParameterException(['msg' => '报表已废除']);
         }
-
-        $time_begin = $report->time_begin;
-        $time_end = $report->time_end;
-        $canteen_id = $report->canteen_id;
-        $company_id = $report->company_id;
-        $statistic = OrderMaterialV::orderMaterialsStatistic($page, $size, $time_begin, $time_end, $canteen_id, $company_id);
-        //获取该企业/饭堂下所有材料价格
-        $materials = MaterialPriceV::materialsForOrder($canteen_id, $company_id);
-        //获取指定修改记录
-        $updateRecords = MaterialReportDetailV::orderRecords($report_id);
-        $statistic['data'] = $this->prefixMaterials($statistic['data'], $materials, $updateRecords);
+        $records = MaterialReportDetailV::orderRecords($page, $size, $report_id);
         return [
-            'list' => $statistic,
-            'money' => $this->getMaterialMoney($time_begin, $time_end, $canteen_id, $report_id, $materials)
+            'list' => $records,
+            'money' => $report->money
         ];
+
 
     }
 
@@ -442,8 +467,8 @@ class OrderStatisticService
             $money = $detail['money'];
             array_push($dataList, [
                 'title' => $v['title'],
-                'canteen'=>$v['canteen']['name'],
-                'create_time'=>$v['create_time'],
+                'canteen' => $v['canteen']['name'],
+                'create_time' => $v['create_time'],
                 ''
             ]);
 
