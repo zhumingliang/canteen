@@ -178,7 +178,7 @@ class OrderStatisticService
                         if ($v['dinner_id'] == $v2['dinner_id'] && $v['material'] == $v2['material']
                             && $v['ordering_date'] == $v2['ordering_date']) {
                             if (!empty($v2['material_count'])) {
-                                $update_count = $v2['material_count '];
+                                $update_count = $v2['material_count'];
                             }
                             if (!empty($v2['material_price'])) {
                                 $update_price = $v2['material_price'];
