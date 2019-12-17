@@ -206,6 +206,8 @@ class OrderStatisticService
             if (!$detail) {
                 throw new SaveException(['msg' => '保存报表详情失败']);
             }
+            $report->money = $money;
+            $report->save();
             Db::commit();
         } catch (Exception $e) {
             Db::rollback();
