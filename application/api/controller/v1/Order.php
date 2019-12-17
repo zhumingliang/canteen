@@ -931,8 +931,8 @@ class Order extends BaseController
      * @apiParam (请求参数说明) {int} department_id  部门id：全部传入0
      * @apiParam (请求参数说明) {string} username  用户名
      * @apiParam (请求参数说明) {int} staff_type_id  人员类型id：全部传入0
-     * @apiParam (请求参数说明) {int} canteen_id  消费地点，饭堂id：全部传入0
-     * @apiParam (请求参数说明) {int} company_id  企业id：全部，将所有ID用逗号分隔
+     * @apiParam (请求参数说明) {int} canteen_ids  消费地点，饭堂id：全部传入0
+     * @apiParam (请求参数说明) {int} company_ids  企业id：全部，将所有ID用逗号分隔
      * @apiParam (请求参数说明) {int} status  消费类型：全部传入0；1：订餐就餐；2：未订餐就餐；3：未订餐就餐；4：补录操作
      * @apiParam (请求参数说明) {int} type  汇总类型：1：按部门进行汇总；2：按姓名进行汇总；3：按人员类型进行汇总；4：按消费地点进行汇总；5：按消费类型进行汇总
      * @apiParam (请求参数说明) {string} time_begin  查询开始时间
@@ -958,14 +958,14 @@ class Order extends BaseController
      * @apiSuccess (返回参数说明) {int} allMoney 合计-总数量
      * @apiSuccess (返回参数说明) {int} allCount 合计-总金额
      */
-    public function consumptionStatistic($canteen_id = 0, $status = 0, $type = 1,
+    public function consumptionStatistic($canteen_ids = 0, $status = 0, $type = 1,
                                          $department_id = 0, $username = '', $staff_type_id = 0, $page = 1, $size = 10)
     {
         $time_begin = Request::param('time_begin');
         $time_end = Request::param('time_end');
-        $company_id = Request::param('company_id');
-        $statistic = (new OrderStatisticService())->consumptionStatistic($canteen_id, $status, $type,
-            $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id, $page, $size);
+        $company_ids = Request::param('company_ids');
+        $statistic = (new OrderStatisticService())->consumptionStatistic($canteen_ids, $status, $type,
+            $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_ids, $page, $size);
         return json(new SuccessMessageWithData(['data' => $statistic]));
 
     }

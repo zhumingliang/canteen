@@ -84,7 +84,7 @@ class StaffCanteenV extends Model
             ])
             ->field('staff_id,username as statistic,username,department')
             ->where('state', CommonEnum::STATE_IS_OK)
-            ->paginate($size, false, ['page' => $page])->toArray();
+              ->paginate($size, false, ['page' => $page])->toArray();
 
     }
 

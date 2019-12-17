@@ -397,6 +397,7 @@ class OrderStatisticService
         $users = StaffCanteenV::getStaffsForStatistic($company_id, $canteen_id, $page, $size, $status, $department_id,
             $username, $staff_type_id, $time_begin,
             $time_end);
+        return $users;
         $data = $users['data'];
         foreach ($data as $k => $v) {
             $data[$k]['time_begin'] = $time_begin;
