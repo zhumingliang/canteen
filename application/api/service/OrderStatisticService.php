@@ -170,18 +170,18 @@ class OrderStatisticService
             $dataList = [];
             foreach ($detail as $k => $v) {
                 $order_count = $v['order_count'];
-                $order_price = $v['order_price'];
+                $order_price = $v['material_price'];
                 $update_count = $v['order_count'];
-                $update_price = $v['order_price'];
+                $update_price = $v['material_price'];
                 if (count($materials)) {
                     foreach ($materials as $k2 => $v2) {
                         if ($v['dinner_id'] == $v2['dinner_id'] && $v['material'] == $v2['material']
                             && $v['ordering_date'] == $v2['ordering_date']) {
-                            if (!empty($v2['count'])) {
-                                $update_count = $v2['count'];
+                            if (!empty($v2['material_count'])) {
+                                $update_count = $v2['material_count '];
                             }
-                            if (!empty($v2['price'])) {
-                                $update_price = $v2['price'];
+                            if (!empty($v2['material_price'])) {
+                                $update_price = $v2['material_price'];
                             }
                             unset($materials[$k2]);
                             break;
