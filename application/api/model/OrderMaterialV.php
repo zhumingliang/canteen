@@ -21,6 +21,7 @@ class OrderMaterialV extends Model
 
             }
         })
+            ->where('material_id', '>', 0)
             ->whereBetweenTime('ordering_date', $time_begin, $time_end)
             ->field('order_id,ordering_date,material,dinner_id,dinner,sum(order_count) * sum(material_count) as order_count')
             ->group('ordering_date,dinner_id,material')
@@ -39,7 +40,7 @@ class OrderMaterialV extends Model
                 $query->where('canteen_id', $canteen_id);
 
             }
-        })
+        })->where('material_id', '>', 0)
             ->whereBetweenTime('ordering_date', $time_begin, $time_end)
             ->field('ordering_date,material,dinner_id,dinner,sum(order_count) * sum(material_count) as order_count')
             ->group('ordering_date,dinner_id,material')
@@ -53,6 +54,7 @@ class OrderMaterialV extends Model
         $time_end = addDay(1, $time_end);
         $statistic = self::where('canteen_id', $canteen_id)
             ->whereBetweenTime('ordering_date', $time_begin, $time_end)
+            ->where('material_id', '>', 0)
             ->field('dinner_id,ordering_date,material,sum(order_count) * sum(material_count) as order_count')
             ->group('ordering_date,dinner_id,material')
             ->select();
