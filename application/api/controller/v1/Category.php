@@ -119,9 +119,8 @@ class Category extends BaseController
      * @apiVersion 3.0.0
      * @apiDescription CMS管理端-小卖部管理-商品管理-获取企业所有商品类型
      * @apiExample {get}  请求样例:
-     * http://canteen.tonglingok.com/api/v1/company/categories?&page=1&size=10
-     * @apiParam (请求参数说明) {int} page 当前页码
-     * @apiParam (请求参数说明) {int} size 每页多少条数据
+     * http://canteen.tonglingok.com/api/v1/company/categories?&company_id=1
+     * @apiParam (请求参数说明) {int} company_id 企业id
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200,"data":[{"id":2,"name":"生鲜"}]}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
@@ -131,7 +130,8 @@ class Category extends BaseController
      */
     public function companyCategories()
     {
-        $categories = (new CategoryService())->companyCategoriesToSelect();
+        $company_id = Request::param('company_id');
+        $categories = (new CategoryService())->companyCategoriesToSelect($company_id);
         return json(new SuccessMessageWithData(['data' => $categories]));
     }
 

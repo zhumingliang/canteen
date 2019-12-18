@@ -6,6 +6,7 @@ namespace app\api\service;
 
 use app\api\model\ShopProductCategoryT;
 use app\api\model\ShopProductCategoryV;
+use app\lib\enum\AdminEnum;
 use app\lib\enum\CommonEnum;
 use app\lib\exception\AuthException;
 use app\lib\exception\DeleteException;
@@ -54,9 +55,11 @@ class CategoryService
 
     }
 
-    public function companyCategoriesToSelect()
+    public function companyCategoriesToSelect($company_id)
     {
-        $company_id = Token::getCurrentTokenVar('company_id');
+        if (Token::getCurrentTokenVar('grade') == AdminEnum::COMPANY_OTHER) {
+            $company_id = Token::getCurrentTokenVar('company_id');
+        }
         if (empty($company_id)) {
             throw new AuthException(['msg' => '该用户没有归属企业']);
         }
