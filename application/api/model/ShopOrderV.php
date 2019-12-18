@@ -14,6 +14,22 @@ class ShopOrderV extends Model
         return $this->belongsTo('UserAddressT', 'address_id', 'id');
     }
 
+    public function getStatusAttr($value, $data)
+    {
+        if ($data['used'] == CommonEnum::STATE_IS_OK) {
+            return 1;
+        } else if ($data['state'] == CommonEnum::STATE_IS_FAIL) {
+            return 2;
+        } elseif ($data['state'] == CommonEnum::STATE_IS_OK && $data['distribution'] == 1 &
+            $data['used'] == CommonEnum::STATE_IS_FAIL) {
+            return 3;
+        } elseif ($data['state'] == CommonEnum::STATE_IS_OK && $data['distribution'] == 2 &
+            $data['used'] == CommonEnum::STATE_IS_FAIL) {
+            return 4;
+        }
+
+    }
+
     public static function orderStatisticToManager($page, $size, $department_id, $name, $phone, $status, $time_begin, $time_end, $company_id)
     {
         $time_end = addDay(1, $time_end);
@@ -54,7 +70,7 @@ class ShopOrderV extends Model
                     $query->field('id,address');
                 }
             ])
-            ->field('order_id,create_time,used_time,username,phone,count as order_count,money,address_id')
+            ->field('order_id,create_time,used_time,username,phone,count as order_count,money,address_id,2 as status,used,state,distribution')
             ->paginate($size, false, ['page' => $page])
             ->toArray();
         return $orderings;
@@ -100,7 +116,7 @@ class ShopOrderV extends Model
                     $query->field('id,address');
                 }
             ])
-            ->field('1 as number,create_time,used_time,username,phone,count as order_count,money,address_id')
+            ->field('1 as number,create_time,used_time,username,phone,count as order_count,money,address_id,2 as status,used,state,distribution')
             ->select()
             ->toArray();
         return $orderings;
