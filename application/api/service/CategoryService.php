@@ -57,7 +57,7 @@ class CategoryService
 
     public function companyCategoriesToSelect($company_id)
     {
-        if (Token::getCurrentTokenVar('grade') == AdminEnum::COMPANY_OTHER) {
+        if (Token::getCurrentTokenVar('grade') == AdminEnum::COMPANY_OTHER || Token::getCurrentTokenVar('type') == "supplier") {
             $company_id = Token::getCurrentTokenVar('company_id');
         }
         if (empty($company_id)) {
