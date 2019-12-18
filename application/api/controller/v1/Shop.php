@@ -575,9 +575,19 @@ class Shop extends BaseController
         $time_end = Request::param('time_end');
         $company_id = Request::param('company_id');
         $statistic = (new ShopService())->orderStatisticToManager($page, $size,
-            $department_id, $name, $phone, $status, $time_begin, $time_end,$company_id);
+            $department_id, $name, $phone, $status, $time_begin, $time_end, $company_id);
         return json(new SuccessMessageWithData(['data' => $statistic]));
     }
+
+    public function exportOrderStatisticToManager($department_id = 0, $name = '', $phone = '', $status = 0)
+    {
+        $time_begin = Request::param('time_begin');
+        $time_end = Request::param('time_end');
+        $company_id = Request::param('company_id');
+        $url = (new ShopService())->exportOrderStatisticToManager($department_id, $name, $phone, $status, $time_begin, $time_end, $company_id);
+        return json(new SuccessMessageWithData(['data' => $url]));
+    }
+
 
     /**
      * @api {GET} /api/v1/shop/salesReport/supplier CMS管理端-小卖部管理-进销报表-供应商
@@ -657,11 +667,12 @@ class Shop extends BaseController
      * @apiVersion 3.0.0
      * @apiDescription CMS管理端-小卖部管理-消费订单汇总查询-供应商/管理员
      * @apiExample {get}  请求样例:
-     * http://canteen.tonglingok.com/api/v1/shop/orderConsumption?time_begin=2019-09-07&time_end=2019-12-07&page=1&size=20&category_id=0&product_id=0&status=0&status=1&department_id=0&username=
+     * http://canteen.tonglingok.com/api/v1/shop/orderConsumption?time_begin=2019-09-07&time_end=2019-12-07&page=1&size=20&category_id=0&product_id=0&status=0&status=1&department_id=0&username=&company_id=3
      * @apiParam (请求参数说明) {int} page 当前页码
      * @apiParam (请求参数说明) {int} size 每页多少条数据
      * @apiParam (请求参数说明) {int} department_id  部门id：全部传入0
      * @apiParam (请求参数说明) {int} username  用户名
+     * @apiParam (请求参数说明) {int} company_id  企业id
      * @apiParam (请求参数说明) {int} category_id  类型id：全部传入0
      * @apiParam (请求参数说明) {int} category_id  类型id：全部传入0
      * @apiParam (请求参数说明) {int} product_id  商品id：全部传入0
@@ -697,8 +708,9 @@ class Shop extends BaseController
     {
         $time_begin = Request::param('time_begin');
         $time_end = Request::param('time_end');
+        $company_id = Request::param('company_id');
         $statistic = (new ShopService())->consumptionStatistic($page, $size, $category_id, $product_id,
-            $status, $time_begin, $time_end, $type, $department_id, $username);
+            $status, $time_begin, $time_end, $type, $department_id, $username,$company_id);
         return json(new SuccessMessageWithData(['data' => $statistic]));
     }
 

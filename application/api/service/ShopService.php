@@ -271,7 +271,7 @@ class ShopService
     private function prefixOrderQrcode($o_id)
     {
         $code = getRandChar(12);
-        $url = sprintf(config("setting.qrcode_url"), 'shop', $code,'');
+        $url = sprintf(config("setting.qrcode_url"), 'shop', $code, '');
         $qrcode_url = (new QrcodeService())->qr_code($url);
         $time_begin = date('Y-m-d H:i:s');
         $time_end = date('Y-m-d H:i:s', strtotime("+" . config("setting.shop_qrcode_expire_in") . "minute", time()));
@@ -295,7 +295,7 @@ class ShopService
     private function updateOrderQrcode($id)
     {
         $code = getRandChar(12);
-        $url = sprintf(config("setting.qrcode_url"), 'shop', $code,'');
+        $url = sprintf(config("setting.qrcode_url"), 'shop', $code, '');
         $qrcode_url = (new QrcodeService())->qr_code($url);
         $data = [
             'id' => $id,
@@ -483,7 +483,13 @@ class ShopService
         return $statistic;
     }
 
-    public function orderStatisticToManager($page, $size, $department_id, $name, $phone, $status, $time_begin, $time_end,$company_id)
+    public function orderStatisticToManager($page, $size, $department_id, $name, $phone, $status, $time_begin, $time_end, $company_id)
+    {
+        $statistic = ShopOrderV::orderStatisticToManager($page, $size, $department_id, $name, $phone, $status, $time_begin, $time_end, $company_id);
+        return $statistic;
+    }
+
+    public function exportOrderStatisticToManager($department_id, $name, $phone, $status, $time_begin, $time_end, $company_id)
     {
         $statistic = ShopOrderV::orderStatisticToManager($page, $size, $department_id, $name, $phone, $status, $time_begin, $time_end, $company_id);
         return $statistic;
@@ -510,14 +516,14 @@ class ShopService
     }
 
     public function consumptionStatistic($page, $size, $category_id, $product_id,
-                                         $status, $time_begin, $time_end, $type, $department_id, $username)
+                                         $status, $time_begin, $time_end, $type, $department_id, $username, $company_id)
     {
         $field = '';
         $supplier_id = 0;
         if (Token::getCurrentTokenVar('type') == 'supplier') {
             $supplier_id = (new AuthorService())->checkAuthorSupplier();
+            $company_id = Token::getCurrentTokenVar('company_id');
         }
-        $company_id = Token::getCurrentTokenVar('company_id');
         if ($type == ShopEnum::STATISTIC_BY_CATEGORY) {
             $statistic = ShopOrderStatisticV::consumptionStatisticGroupByCategoryID($page, $size, $category_id, $product_id,
                 $status, $time_begin, $time_end, $supplier_id, $department_id, $username, $company_id);
