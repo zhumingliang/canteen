@@ -541,12 +541,15 @@ class Shop extends BaseController
      * @apiVersion 3.0.0
      * @apiDescription CMS管理端-小卖部管理-订单明细查询-管理员
      * @apiExample {get}  请求样例:
-     * http://canteen.tonglingok.com/api/v1/shop/order/statistic/manager?department_id=0&status=0&name=''&phone=''&time_begin=2019-09-07&time_end=2019-12-07&page=1&size=20
+     * http://canteen.tonglingok.com/api/v1/shop/order/statistic/manager?department_id=0&status=0&name=''&phone=''&time_begin=2019-09-07&time_end=2019-12-07&page=1&size=20&company_id=3
      * @apiParam (请求参数说明) {int} page 当前页码
      * @apiParam (请求参数说明) {int} size 每页多少条数据
+     * @apiParam (请求参数说明) {int} company_id  企业id
      * @apiParam (请求参数说明) {int} department_id  部门id：0表示全部
      * @apiParam (请求参数说明) {int} status 状态：0表示全部；1：已完成；2：已取消；3：待取货；4：待送货
      * @apiParam (请求参数说明) {string} time_begin  查询开始时间
+     * @apiParam (请求参数说明) {string} name  姓名
+     * @apiParam (请求参数说明) {string} phone  手机号
      * @apiParam (请求参数说明) {string} time_end  查询结束时间
      * @apiSuccessExample {json}返回样例:
      * {"msg":"ok","errorCode":0,"code":200,"data":{"total":11,"per_page":1,"current_page":1,"last_page":11,"data":[{"order_id":6,"create_time":"2019-09-28 08:14:10","used_time":null,"username":"LANGBIN","phone":"15521323081","order_count":2,"money":10,"address_id":1,"address":{"id":1,"address":"江门市白石大道东4号路3栋"}}]}}
@@ -570,8 +573,9 @@ class Shop extends BaseController
     {
         $time_begin = Request::param('time_begin');
         $time_end = Request::param('time_end');
+        $company_id = Request::param('company_id');
         $statistic = (new ShopService())->orderStatisticToManager($page, $size,
-            $department_id, $name, $phone, $status, $time_begin, $time_end);
+            $department_id, $name, $phone, $status, $time_begin, $time_end,$company_id);
         return json(new SuccessMessageWithData(['data' => $statistic]));
     }
 

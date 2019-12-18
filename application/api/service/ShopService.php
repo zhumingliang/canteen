@@ -483,9 +483,8 @@ class ShopService
         return $statistic;
     }
 
-    public function orderStatisticToManager($page, $size, $department_id, $name, $phone, $status, $time_begin, $time_end)
+    public function orderStatisticToManager($page, $size, $department_id, $name, $phone, $status, $time_begin, $time_end,$company_id)
     {
-        $company_id = Token::getCurrentTokenVar('company_id');
         $statistic = ShopOrderV::orderStatisticToManager($page, $size, $department_id, $name, $phone, $status, $time_begin, $time_end, $company_id);
         return $statistic;
     }
