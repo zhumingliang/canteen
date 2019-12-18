@@ -80,10 +80,6 @@ class ExcelService
             return '列名或者内容不能为空';
         }
 
-        if (count($list[0]) != count($columName)) {
-            return '列名跟数据的列不一致';
-        }
-
         //实例化PHPExcel类
         $PHPExcel = new \PHPExcel();
         //设置保存版本格式
@@ -122,6 +118,7 @@ class ExcelService
         $PHPWriter->save($savePath);
         return '/static/excel/download/' . $fileName;
     }
+
 
     public function makeExcelMerge($columName, $list, $fileName, $merge, $excel2007 = false)
     {

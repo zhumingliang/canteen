@@ -14,6 +14,11 @@ class MaterialReportT extends Model
         return $this->belongsTo('CanteenT', 'canteen_id', 'id');
     }
 
+    public function detail()
+    {
+        return $this->hasMany('MaterialReportDetailT', 'report_id', 'id');
+    }
+
     public static function reports($page, $size, $time_begin, $time_end, $canteen_id)
     {
         $list = self::where('canteen_id', $canteen_id)
@@ -30,20 +35,19 @@ class MaterialReportT extends Model
         return $list;
     }
 
-    public static function exportReports($time_begin, $time_end, $canteen_id)
+    public static function exportReports($report_id)
     {
-        $list = self::where('canteen_id', $canteen_id)
-            ->whereBetweenTime('create_time', $time_begin, $time_end)
-            ->where('state', CommonEnum::STATE_IS_OK)
+        $report = self::where('id', $report_id)
             ->with([
                 'canteen' => function ($query) {
                     $query->field('id,name');
-                }
+                },
+                'detail'
             ])
             ->order('create_time desc')
-            ->field('id,canteen_id,CONCAT(time_begin,"~",time_end,title) as title,create_time')
-            ->select()->toArray();
-        return $list;
+            ->field('id,canteen_id,CONCAT(time_begin,"~",time_end,title) as title,create_time,money')
+            ->find()->toArray();
+        return $report;
     }
 
 

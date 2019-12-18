@@ -255,13 +255,55 @@ class Material extends BaseController
         return json(new SuccessMessageWithData(['data' => $url]));
     }
 
-    public function exportMaterialReports()
+    /**
+     * @api {GET} /api/v1/material/exportMaterialReports CMS管理端-材料管理-入库材料管理-导出
+     * @apiGroup  CMS
+     * @apiVersion 3.0.0
+     * @apiDescription  CMS管理端-材料管理-入库材料管理-导出
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/material/exportMaterialReports?report_id=9
+     * @apiParam (请求参数说明) {int} size 每页多少条数据
+     * @apiParam (请求参数说明) {String} report_id 报表id
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"url":"http:\/\/canteen.tonglingok.com\/static\/excel\/download\/材料价格明细_20190817005931.xls"}}     * @apiSuccess (返回参数说明) {int} total 数据总数
+     * @apiSuccess (返回参数说明) {int} error_code 错误代码 0 表示没有错误
+     * @apiSuccess (返回参数说明) {string} msg 操作结果描述
+     * @apiSuccess (返回参数说明) {string} url 下载地址
+     */
+    public function exportMaterialReports($report_id)
+    {
+
+        $url = (new OrderStatisticService())
+            ->exportMaterialReports($report_id);
+        return json(new SuccessMessageWithData(['data' => $url]));
+    }
+
+
+    /**
+     * @api {GET} /api/v1/material/exportOrderMaterials CMS管理端-材料管理-材料明细下单表-导出
+     * @apiGroup  CMS
+     * @apiVersion 3.0.0
+     * @apiDescription  CMS管理端-材料管理-材料明细下单表-导出
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/order/material/exportOrderMaterials?canteen_id=6&time_begin=2019-09-07&time_end=2019-12-07
+     * @apiParam (请求参数说明) {int} page 当前页码
+     * @apiParam (请求参数说明) {int} size 每页多少条数据
+     * @apiParam (请求参数说明) {string} canteen_id  饭堂id
+     * @apiParam (请求参数说明) {string} time_begin  查询开始时间
+     * @apiParam (请求参数说明) {string} time_end  查询结束时间
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"url":"http:\/\/canteen.tonglingok.com\/static\/excel\/download\/材料价格明细_20190817005931.xls"}}     * @apiSuccess (返回参数说明) {int} total 数据总数
+     * @apiSuccess (返回参数说明) {int} error_code 错误代码 0 表示没有错误
+     * @apiSuccess (返回参数说明) {string} msg 操作结果描述
+     * @apiSuccess (返回参数说明) {string} url 下载地址
+     */
+    public function exportOrderMaterials()
     {
         $time_begin = Request::param('time_begin');
         $time_end = Request::param('time_end');
         $canteen_id = Request::param('canteen_id');
-        $url = (new OrderStatisticService())
-            ->exportMaterialReports($time_begin, $time_end, $canteen_id);
+       $url = (new OrderStatisticService())
+            ->exportOrderMaterials( $time_begin, $time_end, $canteen_id);
         return json(new SuccessMessageWithData(['data' => $url]));
     }
 }

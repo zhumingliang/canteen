@@ -110,36 +110,39 @@ class OrderStatisticService
         ];
     }
 
-    private function prefixMaterials($data, $materials, $updateRecords = array())
+    private function prefixMaterials($data, $materials, $statisticMoney = false)
     {
+        $money = 0;
         if (count($data)) {
             foreach ($data as $k => $v) {
-                $data[$k]['material_price'] = 0;
+                $data[$k]['number'] = $k + 1;
                 $data[$k]['material_count'] = $v['order_count'];
+                $data[$k]['material_price'] = 0;
                 if (count($materials)) {
                     foreach ($materials as $k2 => $v2) {
                         if ($v['material'] == $v2['name']) {
                             $data[$k]['material_price'] = $v2['price'];
                         }
-
                     }
                 }
-                if (count($updateRecords)) {
-                    foreach ($updateRecords as $k3 => $v3) {
-                        if (strtotime($v['ordering_date']) == strtotime($v3['ordering_date'])
-                            && $v['dinner_id'] == $v3['dinner_id']
-                            && $v['material'] == $v3['material']) {
-                            $data[$k]['material_price'] = $v3['price'];
-                            $data[$k]['material_count'] = $v3['count'];
-                            unset($updateRecords[$k3]);
-                            break;
-                        }
-
-                    }
-
-                }
-
+                $material_money = $data[$k]['material_price'] * $data[$k]['material_count'];
+                $data[$k]['money'] = $material_money;
+                $money += $material_money;
             }
+        }
+
+
+        if ($statisticMoney) {
+            array_push($data, [
+                'number' => '合计',
+                'ordering_date' => '',
+                'dinner' => '',
+                'material' => '',
+                'order_count' => '',
+                'material_count' => '',
+                'material_price' => '',
+                'money' => $money
+            ]);
         }
         return $data;
     }
@@ -451,32 +454,69 @@ class OrderStatisticService
 
     }
 
-    public function exportMaterialReports($time_begin, $time_end, $canteen_id)
+    public function exportMaterialReports($report_id)
     {
-        $reports = MaterialReportT::exportReports($time_begin, $time_end, $canteen_id);
-        $reports = $this->prefixExportMaterialReports($reports);
+        $header = ['序号', '日期', '饭堂', '餐次', '材料名称','单位', '材料数量', '订货数量', '单价', '总价'];
+
+        $report = MaterialReportT::exportReports($report_id);
+        $file_name = $report['title'];
+        $report = $this->prefixMaterialReports($report);
+        $url = (new ExcelService())->makeExcel($header, $report, $file_name);
+        return [
+            'url' => config('setting.domain') . $url
+        ];
     }
 
-    private function prefixExportMaterialReports($data)
+    private function prefixMaterialReports($report)
     {
         $dataList = [];
-        if (empty($data)) {
-            return $dataList;
+        if (!empty($report['detail'])) {
+            $detail = $report['detail'];
+            foreach ($detail as $k => $v) {
+                array_push($dataList, [
+                    'number' => $k + 1,
+                    'order_date' => $v['ordering_date'],
+                    'canteen' => $report['canteen']['name'],
+                    'dinner' => $v['dinner'],
+                    'material' => $v['material'],
+                    'unit' => 'kg',
+                    'order_count' => $v['order_count'],
+                    'update_count' => $v['update_count'],
+                    'update_price' => $v['update_price'],
+                    'money' => $v['update_price'] * $v['update_count'],
+                ]);
+            }
         }
 
-        foreach ($data as $k => $v) {
-            $detail = $this->materialReport($v['id'], 1, 1000);
-            $info = $detail['list']['data'];
-            $money = $detail['money'];
-            array_push($dataList, [
-                'title' => $v['title'],
-                'canteen' => $v['canteen']['name'],
-                'create_time' => $v['create_time'],
-                ''
-            ]);
+        array_push($dataList, [
+            'number' => '合计',
+            'ordering_date' => '',
+            'canteen' => '',
+            'dinner' => '',
+            'material' => '',
+            'unit' => 'kg',
+            'order_count' => '',
+            'material_count' => '',
+            'material_price' => '',
+            'money' => empty($report['money']) ? 0 : $report['money']
+        ]);
+        return $dataList;
 
-        }
     }
 
+    public function exportOrderMaterials($time_begin, $time_end, $canteen_id)
+    {
+        $company_id = Token::getCurrentTokenVar('company_id');
+        $statistic = OrderMaterialV::exportOrderMaterials($time_begin, $time_end, $canteen_id, $company_id);
+        //获取该企业/饭堂下所有材料价格
+        $materials = MaterialPriceV::materialsForOrder($canteen_id, $company_id);
+        $statistic = $this->prefixMaterials($statistic, $materials, true);
+        $header = ['序号', '日期', '餐次', '材料名称', '材料数量', '订货数量', '单价', '总价'];
+        $file_name = "材料明细下单表(" . $time_begin . "-" . $time_end . ")";
+        $url = (new ExcelService())->makeExcel($header, $statistic, $file_name);
+        return [
+            'url' => config('setting.domain') . $url
+        ];
+    }
 
 }
