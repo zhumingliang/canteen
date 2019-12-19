@@ -28,7 +28,7 @@ use think\Controller;
 use think\facade\Cache;
 use think\facade\Request;
 
-class Token extends Controller
+class  Token extends Controller
 {
     /**
      * @api {POST} /api/v1/token/admin  CMS管理端-获取登录token

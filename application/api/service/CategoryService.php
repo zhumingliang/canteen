@@ -57,9 +57,9 @@ class CategoryService
 
     public function companyCategoriesToSelect($company_id)
     {
-        if (Token::getCurrentTokenVar('grade') == AdminEnum::COMPANY_OTHER || Token::getCurrentTokenVar('type') == "supplier") {
-            $company_id = Token::getCurrentTokenVar('company_id');
-        }
+        if (Token::getCurrentTokenVar('type') == "supplier"||Token::getCurrentTokenVar('grade') == AdminEnum::COMPANY_OTHER ) {
+        $company_id = Token::getCurrentTokenVar('company_id');
+    }
         if (empty($company_id)) {
             throw new AuthException(['msg' => '该用户没有归属企业']);
         }
