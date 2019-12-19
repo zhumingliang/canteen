@@ -322,13 +322,13 @@ class OrderStatisticService
                 return $this->consumptionStatisticByUsername($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id, $page, $size);
                 break;
             case OrderEnum::STATISTIC_BY_STAFF_TYPE:
-                return $this->consumptionStatisticByStatus($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id);
+                return $this->consumptionStatisticByStaff($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id);
                 break;
             case OrderEnum::STATISTIC_BY_CANTEEN:
                 return $this->consumptionStatisticByCanteen($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id);
                 break;
             case OrderEnum::STATISTIC_BY_STATUS:
-                return $this->consumptionStatisticByStaff($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id);
+                return $this->consumptionStatisticByStatus($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id);
                 break;
             default:
                 throw new ParameterException();
