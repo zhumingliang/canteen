@@ -483,6 +483,19 @@ class ShopService
         return $statistic;
     }
 
+    public function exportOrderDetailStatisticToSupplier($category_id, $product_id, $time_begin, $time_end)
+    {
+        (new AuthorService())->checkAuthorSupplier();
+        $supplier_id = Token::getCurrentUid();
+        $statistic = ShopOrderSupplierV::exportOrderDetailStatisticToSupplier($category_id, $product_id, $time_begin, $time_end, $supplier_id);
+        $header = ['下单时间', '类型', '商品名称', '商品数量', '商品金额（元）'];
+        $file_name = "订单明细查询";
+        $url = (new ExcelService())->makeExcel($header, $statistic, $file_name);
+        return [
+            'url' => config('setting.domain') . $url
+        ];
+    }
+
     public function orderStatisticToManager($page, $size, $department_id, $name, $phone, $status, $time_begin, $time_end, $company_id)
     {
         $statistic = ShopOrderV::orderStatisticToManager($page, $size, $department_id, $name, $phone, $status, $time_begin, $time_end, $company_id);
@@ -491,8 +504,77 @@ class ShopService
 
     public function exportOrderStatisticToManager($department_id, $name, $phone, $status, $time_begin, $time_end, $company_id)
     {
-        $statistic = ShopOrderV::orderStatisticToManager( $department_id, $name, $phone, $status, $time_begin, $time_end, $company_id);
-        return $statistic;
+        $statistic = ShopOrderV::exportOrderStatisticToManager($department_id, $name, $phone, $status, $time_begin, $time_end, $company_id);
+        $statistic = $this->prefixOrderStatisticToExport($statistic);
+        $header = ['序号', '下单时间', '结束时间', '姓名', '手机号', '商品数量', '商品金额（元）', '地址', '状态', '类型', '名称', '单位', '数量', '金额'];
+        $file_name = "订单明细查询";
+        $url = (new ExcelService())->makeExcelMerge($header, $statistic, $file_name, 9);
+        return [
+            'url' => config('setting.domain') . $url
+        ];
+    }
+
+    private function prefixOrderStatisticToExport($list)
+    {
+        $dataList = [];
+        if (!count($list)) {
+            return $dataList;
+        }
+        $i = 2;
+        foreach ($list as $k => $v) {
+            $address = $v['address'];
+            $products = $v['products'];
+            if (empty($products)) {
+                array_push($dataList, [
+                    'number' => $k + 1,
+                    'create_time' => $v['create_time'],
+                    'used_time' => $v['used_time'],
+                    'username' => $v['username'],
+                    'phone' => $v['phone'],
+                    'order_count' => $v['order_count'],
+                    'money' => $v['money'],
+                    'address' => empty($address['address']) ? '' : $address['address'],
+                    'status_text' => $v['status_text'],
+                    'category' => '',
+                    'name' => '',
+                    'unit' => '',
+                    'count' => '',
+                    'price' => '',
+                    'merge' => CommonEnum::STATE_IS_FAIL,
+                    'start' => 0,
+                    'end' => 0,
+                ]);
+                $i++;
+                continue;
+            }
+
+            foreach ($products as $k2 => $v2) {
+                array_push($dataList, [
+                    'number' => $k + 1,
+                    'create_time' => $v['create_time'],
+                    'used_time' => $v['used_time'],
+                    'username' => $v['username'],
+                    'phone' => $v['phone'],
+                    'order_count' => $v['order_count'],
+                    'money' => $v['money'],
+                    'address' => empty($address['address']) ? '' : $address['address'],
+                    'status_text' => $v['status_text'],
+                    'category' => $v2['category'],
+                    'name' => $v2['name'],
+                    'unit' => $v2['unit'],
+                    'count' => $v2['count'],
+                    'price' => $v2['price'],
+                    'merge' => CommonEnum::STATE_IS_OK,
+                    'start' => $k2 == 0 ? $i : $i - 1,
+                    'end' => $i
+                ]);
+                $i++;
+            }
+
+        }
+
+        return $dataList;
+
     }
 
     public function salesReportToSupplier($page, $size, $time_begin, $time_end)

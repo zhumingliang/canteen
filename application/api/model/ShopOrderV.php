@@ -30,6 +30,28 @@ class ShopOrderV extends Model
 
     }
 
+    public function getStatusTextAttr($value, $data)
+    {
+        $status = [1 => '已完成', '2' => '已取消', 3 => '待取货', 4 => '待送货'];
+        if ($data['used'] == CommonEnum::STATE_IS_OK) {
+            return $status[1];
+        } else if ($data['state'] == CommonEnum::STATE_IS_FAIL) {
+            return $status[2];
+        } elseif ($data['state'] == CommonEnum::STATE_IS_OK && $data['distribution'] == 1 &
+            $data['used'] == CommonEnum::STATE_IS_FAIL) {
+            return $status[3];
+        } elseif ($data['state'] == CommonEnum::STATE_IS_OK && $data['distribution'] == 2 &
+            $data['used'] == CommonEnum::STATE_IS_FAIL) {
+            return $status[4];
+        }
+
+    }
+
+    public function products()
+    {
+        return $this->hasMany('ShopOrderDetailV', 'order_id', 'id');
+    }
+
     public static function orderStatisticToManager($page, $size, $department_id, $name, $phone, $status, $time_begin, $time_end, $company_id)
     {
         $time_end = addDay(1, $time_end);
@@ -114,9 +136,10 @@ class ShopOrderV extends Model
             ->with([
                 'address' => function ($query) {
                     $query->field('id,address');
-                }
+                },
+                'products'
             ])
-            ->field('1 as number,create_time,used_time,username,phone,count as order_count,money,address_id,2 as status,used,state,distribution')
+            ->field('order_id as id,1 as number,create_time,used_time,username,phone,count as order_count,money,address_id,2 as status,2  as status_text,used,state,distribution')
             ->select()
             ->toArray();
         return $orderings;

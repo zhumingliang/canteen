@@ -215,6 +215,8 @@ Route::get('api/:version/shop/orderConsumption', 'api/:version.Shop/consumptionS
 Route::get('api/:version/shop/companyProducts/search', 'api/:version.Shop/companyProductsToSearch');
 Route::get('api/:version/shop/supplierProducts/search', 'api/:version.Shop/supplierProductsToSearch');
 Route::get('api/:version/shop/order/products', 'api/:version.Shop/shopOrderProducts');
+Route::get('api/:version/shop/order/exportOrderStatistic/manager', 'api/:version.Shop/exportOrderStatisticToManager');
+Route::get('api/:version/shop/order/exportOrderStatistic/supplier', 'api/:version.Shop/exportOrderStatisticToSupplier');
 
 Route::get('api/:version/order/takeoutStatistic', 'api/:version.Takeout/statistic');
 Route::get('api/:version/order/info/print', 'api/:version.Takeout/infoToPrint');
