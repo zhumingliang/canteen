@@ -645,6 +645,99 @@ class ShopService
         return $statistic;
     }
 
+
+    public function exportConsumptionStatistic($category_id, $product_id,
+                                               $status, $time_begin, $time_end, $type, $department_id, $username, $company_id)
+    {
+        $field = '';
+        $supplier_id = 0;
+        if (Token::getCurrentTokenVar('type') == 'supplier') {
+            $supplier_id = (new AuthorService())->checkAuthorSupplier();
+            $company_id = Token::getCurrentTokenVar('company_id');
+        }
+        if ($type == ShopEnum::STATISTIC_BY_CATEGORY) {
+            $statistic = ShopOrderStatisticV::consumptionStatisticGroupByCategoryID(1, 1000, $category_id, $product_id,
+                $status, $time_begin, $time_end, $supplier_id, $department_id, $username, $company_id);
+            $field = 'category_id';
+        } else if ($type == ShopEnum::STATISTIC_BY_PRODUCT) {
+            $statistic = ShopOrderStatisticV::consumptionStatisticGroupByProductID(1, 1000, $category_id, $product_id,
+                $status, $time_begin, $time_end, $supplier_id, $department_id, $username, $company_id);
+            $field = 'product_id';
+        } else if ($type == ShopEnum::STATISTIC_BY_STATUS) {
+            $statistic = ShopOrderStatisticV::consumptionStatisticGroupByStatus(1, 1000, $category_id, $product_id,
+                $status, $time_begin, $time_end, $supplier_id, $department_id, $username, $company_id);
+        } else if ($type == ShopEnum::STATISTIC_BY_DEPARTMENT) {
+            $statistic = ShopOrderStatisticV::consumptionStatisticGroupByDepartmentID(1, 1000, $category_id, $product_id,
+                $status, $time_begin, $time_end, $supplier_id, $department_id, $username, $company_id);
+            $field = 'department_id';
+        } else if ($type == ShopEnum::STATISTIC_BY_USERNAME) {
+            $statistic = ShopOrderStatisticV::consumptionStatisticGroupByUsername(1, 1000, $category_id, $product_id,
+                $status, $time_begin, $time_end, $supplier_id, $department_id, $username, $company_id);
+            $field = 'staff_id';
+        } else {
+            throw new ParameterException();
+        }
+
+        if (empty($field)) {
+            $statisticCount = 0;
+        } else {
+            $statisticCount = ShopOrderStatisticV::statisticCount($category_id, $product_id,
+                $status, $time_begin, $time_end, $supplier_id, $field, $department_id, $username, $company_id);
+        }
+
+        $money = ShopOrderStatisticV::statisticMoney($category_id, $product_id,
+            $status, $time_begin, $time_end, $supplier_id, $department_id,
+            $username, $company_id);
+
+        $statistics = $this->prefixConsumptionStatistic($statistic['data'], $statisticCount, $money);
+        $header = ['序号', '统计变量', '下单时间', '结束时间', '姓名', '部门', '类型', '商品名称', '单位', '数量', '商品总金额（元）'];
+        $file_name = "消费订单汇总查询";
+        $url = (new ExcelService())->makeExcel($header, $statistics, $file_name);
+        return [
+            'url' => config('setting.domain') . $url
+        ];
+
+
+    }
+
+    private function prefixConsumptionStatistic($statistic, $count, $money)
+    {
+        $dataList = [];
+        if (!empty($statistic)) {
+            foreach ($statistic as $k => $v) {
+                array_push($dataList, [
+                    'number' => $k + 1,
+                    'statistic' => $v['statistic'],
+                    'create_time' => $v['create_time'],
+                    'used_time' => $v['used_time'],
+                    'username' => $v['username'],
+                    'department' => $v['department'],
+                    'category' => $v['category'],
+                    'product' => $v['product'],
+                    'unit' => $v['unit'],
+                    'order_count' => $v['order_count'],
+                    'order_money' => $v['order_money'],
+                ]);
+            }
+        }
+
+        array_push($dataList, [
+            'number' => '合计',
+            'statistic' => $count,
+            'create_time' => '',
+            'used_time' => '',
+            'username' => '',
+            'department' => '',
+            'category' => '',
+            'product' => '',
+            'unit' => '',
+            'order_count' => $count,
+            'order_money' => $money,
+        ]);
+        return $dataList;
+
+    }
+
     public function companyProductsToSearch($company_id, $product)
     {
         if (empty($company_id)) {

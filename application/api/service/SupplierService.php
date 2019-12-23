@@ -6,6 +6,7 @@ namespace app\api\service;
 
 use app\api\model\SupplierT;
 use app\api\model\SupplierV;
+use app\lib\enum\AdminEnum;
 use app\lib\enum\CommonEnum;
 use app\lib\exception\AuthException;
 use app\lib\exception\DeleteException;
@@ -56,7 +57,8 @@ class SupplierService
     public function companySuppliers()
     {
         $company_id = Token::getCurrentTokenVar('company_id');
-        if (empty($company_id)) {
+        $grade = Token::getCurrentTokenVar('grade');
+        if ($grade != AdminEnum::SYSTEM_SUPER && empty($company_id)) {
             throw new AuthException(['msg' => '该用户没有归属企业']);
         }
         $suppliers = SupplierT::companySuppliers($company_id);

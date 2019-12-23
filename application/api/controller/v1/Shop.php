@@ -562,7 +562,6 @@ class Shop extends BaseController
     }
 
 
-
     /**
      * @api {GET} /api/v1/shop/order/statistic/manager CMS管理端-小卖部管理-订单明细查询-管理员
      * @apiGroup  CMS管理端
@@ -709,6 +708,15 @@ class Shop extends BaseController
         return json(new SuccessMessageWithData(['data' => $statistic]));
     }
 
+    public function exportSalesReportToManager($page = 1, $size = 20)
+    {
+        $time_begin = Request::param('time_begin');
+        $time_end = Request::param('time_end');
+        $supplier_id = Request::param('supplier_id');
+        $statistic = (new ShopService())->salesReportToManager($page, $size, $time_begin, $time_end, $supplier_id);
+        return json(new SuccessMessageWithData(['data' => $statistic]));
+    }
+
     /**
      * @api {GET} /api/v1/shop/orderConsumption CMS管理端-小卖部管理-消费订单汇总查询-供应商/管理员
      * @apiGroup  CMS管理端
@@ -758,6 +766,41 @@ class Shop extends BaseController
         $time_end = Request::param('time_end');
         $company_id = Request::param('company_id');
         $statistic = (new ShopService())->consumptionStatistic($page, $size, $category_id, $product_id,
+            $status, $time_begin, $time_end, $type, $department_id, $username, $company_id);
+        return json(new SuccessMessageWithData(['data' => $statistic]));
+    }
+
+    /**
+     * @api {GET} /api/v1/shop/order/exportConsumptionStatistic CMS管理端-小卖部管理-消费订单汇总查询-供应商/管理员-导出
+     * @apiGroup  CMS
+     * @apiVersion 3.0.0
+     * @apiDescription  CMS管理端-小卖部管理-消费订单汇总查询-供应商/管理员-导出
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/shop/order/exportConsumptionStatistic?time_begin=2019-09-07&time_end=2019-12-07&page=1&size=20&category_id=0&product_id=0&status=0&status=1&department_id=0&username=&company_id=3
+     * @apiParam (请求参数说明) {int} department_id  部门id：全部传入0
+     * @apiParam (请求参数说明) {int} username  用户名
+     * @apiParam (请求参数说明) {int} company_id  企业id
+     * @apiParam (请求参数说明) {int} category_id  类型id：全部传入0
+     * @apiParam (请求参数说明) {int} category_id  类型id：全部传入0
+     * @apiParam (请求参数说明) {int} product_id  商品id：全部传入0
+     * @apiParam (请求参数说明) {int} status  状态：全部传入0；1：已完成；2：已取消；3：待取货；4：待送货
+     * @apiParam (请求参数说明) {int} type  汇总类型：1：按类型进行汇总；2：按商品进行汇总；3：按状态进行汇总；4：按姓名进行汇总；5：按部门进行汇总
+     * @apiParam (请求参数说明) {string} time_begin  查询开始时间
+     * @apiParam (请求参数说明) {string} time_end  查询结束时间
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"url":"http:\/\/canteen.tonglingok.com\/static\/excel\/download\/材料价格明细_20190817005931.xls"}}     * @apiSuccess (返回参数说明) {int} total 数据总数
+     * @apiSuccess (返回参数说明) {int} error_code 错误代码 0 表示没有错误
+     * @apiSuccess (返回参数说明) {string} msg 操作结果描述
+     * @apiSuccess (返回参数说明) {string} url 下载地址
+     */
+    public function exportConsumptionStatistic($category_id = 0,
+                                         $product_id = 0, $status = 0, $type = 1,
+                                         $department_id = 0, $username = '')
+    {
+        $time_begin = Request::param('time_begin');
+        $time_end = Request::param('time_end');
+        $company_id = Request::param('company_id');
+        $statistic = (new ShopService())->exportConsumptionStatistic( $category_id, $product_id,
             $status, $time_begin, $time_end, $type, $department_id, $username, $company_id);
         return json(new SuccessMessageWithData(['data' => $statistic]));
     }

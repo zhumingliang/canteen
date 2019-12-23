@@ -39,7 +39,7 @@ class ShopOrderStatisticV extends Model
                     $query->where('status', $status);
                 }
             })
-            ->field('category as statistic,create_time,used_time,"/" as username,"/" as department,category,unit,"/" as product,sum(order_count) as order_count,sum(order_money) as order_money')
+            ->field('1 as number,category as statistic,create_time,used_time,"/" as username,"/" as department,category,unit,"/" as product,sum(order_count) as order_count,sum(order_money) as order_money')
             ->group('category_id')
             ->paginate($size, false, ['page' => $page])->toArray();
 
@@ -74,7 +74,7 @@ class ShopOrderStatisticV extends Model
                     $query->where('status', $status);
                 }
             })
-            ->field('product as statistic,create_time,used_time,"/" as username,"/" as department,category, product,unit,sum(order_count) as order_count,sum(order_money) as order_money')
+            ->field('1 as number,product as statistic,create_time,used_time,"/" as username,"/" as department,category, product,unit,sum(order_count) as order_count,sum(order_money) as order_money')
             ->group('product_id')
             ->paginate($size, false, ['page' => $page])->toArray();
 
@@ -109,7 +109,7 @@ class ShopOrderStatisticV extends Model
                     $query->where('status', $status);
                 }
             })
-            ->field('status as statistic,create_time,used_time,"/" as username,"/" as department,category, product,unit,sum(order_count) as order_count,sum(order_money) as order_money')
+            ->field('1 as number,status as statistic,create_time,used_time,"/" as username,"/" as department,category, product,unit,sum(order_count) as order_count,sum(order_money) as order_money')
             ->group('status')
             ->paginate($size, false, ['page' => $page])->toArray();
 
@@ -213,7 +213,7 @@ class ShopOrderStatisticV extends Model
                     $query->where('status', $status);
                 }
             })
-            ->field('department as statistic,create_time,used_time,"/" as username,"/" as department,"/" as category, "/" as product,"/" as unit,sum(order_count) as order_count,sum(order_money) as order_money')
+            ->field('1 as number,department as statistic,create_time,used_time,"/" as username,"/" as department,"/" as category, "/" as product,"/" as unit,sum(order_count) as order_count,sum(order_money) as order_money')
             ->group('department_id')
             ->paginate($size, false, ['page' => $page])->toArray();
 
@@ -250,7 +250,7 @@ class ShopOrderStatisticV extends Model
                     $query->where('status', $status);
                 }
             })
-            ->field('username as statistic,create_time,used_time, username,department,"/" as category, "/" as product,"/" as unit,sum(order_count) as order_count,sum(order_money) as order_money')
+            ->field('1 as number,username as statistic,create_time,used_time, username,department,"/" as category, "/" as product,"/" as unit,sum(order_count) as order_count,sum(order_money) as order_money')
             ->group('staff_id')
             ->paginate($size, false, ['page' => $page])->toArray();
 
