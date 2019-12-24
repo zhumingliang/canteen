@@ -35,6 +35,18 @@ class OrderStatisticService
 
     }
 
+    public function exportStatistic($time_begin, $time_end, $company_ids, $canteen_id)
+    {
+        $list = OrderStatisticV::exportStatistic($time_begin, $time_end, $company_ids, $canteen_id);
+        $header = ['日期', '公司', '消费地点', '餐次', '消费人数'];
+        $file_name = "订餐统计报表(" . $time_begin . "-" . $time_end . ")";
+        $url = (new ExcelService())->makeExcel($header, $list, $file_name);
+        return [
+            'url' => config('setting.domain') . $url
+        ];
+
+    }
+
     public function orderStatisticDetail($company_ids, $time_begin,
                                          $time_end, $page, $size, $name,
                                          $phone, $canteen_id, $department_id,
@@ -45,6 +57,24 @@ class OrderStatisticService
             $phone, $canteen_id, $department_id,
             $dinner_id);
         return $list;
+    }
+
+    public function exportOrderStatisticDetail($company_ids, $time_begin,
+                                               $time_end, $name,
+                                               $phone, $canteen_id, $department_id,
+                                               $dinner_id)
+    {
+        $list = OrderStatisticV::exportDetail($company_ids, $time_begin,
+            $time_end, $name,
+            $phone, $canteen_id, $department_id,
+            $dinner_id);
+        $header = ['订餐日期', '消费地点', '部门', '姓名', '餐次'];
+        $file_name = "订餐明细报表(" . $time_begin . "-" . $time_end . ")";
+        $url = (new ExcelService())->makeExcel($header, $list, $file_name);
+        return [
+            'url' => config('setting.domain') . $url
+        ];
+
     }
 
     public function orderSettlement($page, $size,
@@ -90,12 +120,13 @@ class OrderStatisticService
                                            $canteen_id, $dinner_id, $used)
     {
         $records = OrderTakeoutStatisticV::exportStatistic($ordering_date, $company_ids, $canteen_id, $dinner_id, $used);
-        $header = ['订餐号','日期', '消费地点', '姓名', '手机号', '餐次', '金额（元）','送货地点','状态'];
-        $file_name = $ordering_date."-外卖管理报表";
+        $header = ['订餐号', '日期', '消费地点', '姓名', '手机号', '餐次', '金额（元）', '送货地点', '状态'];
+        $file_name = $ordering_date . "-外卖管理报表";
         $url = (new ExcelService())->makeExcel($header, $records, $file_name);
         return [
             'url' => config('setting.domain') . $url
-        ];    }
+        ];
+    }
 
     public function infoToPrint($id)
     {

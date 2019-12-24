@@ -157,7 +157,9 @@ Route::get('api/:version/order/managerDinnerStatistic', 'api/:version.Order/mana
 Route::get('api/:version/order/usersStatistic', 'api/:version.Order/orderUsersStatistic');
 Route::get('api/:version/order/foodUsersStatistic', 'api/:version.Order/foodUsersStatistic');
 Route::get('api/:version/order/orderStatistic', 'api/:version.Order/orderStatistic');
+Route::get('api/:version/order/orderStatistic/export', 'api/:version.Order/exportOrderStatistic');
 Route::get('api/:version/order/orderStatistic/detail', 'api/:version.Order/orderStatisticDetail');
+Route::get('api/:version/order/orderStatistic/detail/export', 'api/:version.Order/exportOrderStatisticDetail');
 Route::get('api/:version/order/orderSettlement', 'api/:version.Order/orderSettlement');
 Route::get('api/:version/order/materialsStatistic', 'api/:version.Order/orderMaterialsStatistic');
 Route::post('api/:version/order/material/update', 'api/:version.Order/updateOrderMaterial');

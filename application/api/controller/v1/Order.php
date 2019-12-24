@@ -609,7 +609,7 @@ class Order extends BaseController
      * @apiSuccess (返回参数说明) {string} dinner 餐次
      * @apiSuccess (返回参数说明) {string} count 订餐人数
      */
-    public function orderStatistic($page = 1, $size = 20, $canteen_id = 0)
+    public function orderStatistic($canteen_id = 0)
     {
         $time_begin = Request::param('time_begin');
         $time_end = Request::param('time_end');
@@ -617,6 +617,33 @@ class Order extends BaseController
         $list = (new OrderStatisticService())->statistic($time_begin, $time_end, $company_ids, $canteen_id, $page, $size);
         return json(new SuccessMessageWithData(['data' => $list]));
     }
+
+    /**
+     * @api {GET} /api/v1/order/orderStatistic/export CMS管理端-订餐管理-订餐统计-导出报表
+     * @apiGroup  CMS管理端
+     * @apiVersion 3.0.0
+     * @apiDescription CMS管理端-订餐管理-订餐统计-导出报表
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/order/orderStatistic/export?company_ids=6&canteen_id=1&time_begin=2019-09-07&time_end=2019-09-07
+     * @apiParam (请求参数说明) {string} company_ids  企业id：选择全部时，将企业id用逗号分隔，例如：1,2，此时饭堂id传入0;选择某一个企业时传入企业id
+     * @apiParam (请求参数说明) {string} canteen_id  饭堂id：选择某一个饭堂时传入饭堂id，此时企业id为0，选择全部时，饭堂id传入0
+     * @apiParam (请求参数说明) {string} time_begin  查询开始时间
+     * @apiParam (请求参数说明) {string} time_end  查询结束时间
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"url":"http:\/\/canteen.tonglingok.com\/static\/excel\/download\/材料价格明细_20190817005931.xls"}}
+     * @apiSuccess (返回参数说明) {int} error_code 错误代码 0 表示没有错误
+     * @apiSuccess (返回参数说明) {string} msg 操作结果描述
+     * @apiSuccess (返回参数说明) {string} url 下载地址
+     */
+    public function exportOrderStatistic($canteen_id = 0)
+    {
+        $time_begin = Request::param('time_begin');
+        $time_end = Request::param('time_end');
+        $company_ids = Request::param('company_ids');
+        $list = (new OrderStatisticService())->exportStatistic($time_begin, $time_end, $company_ids, $canteen_id);
+        return json(new SuccessMessageWithData(['data' => $list]));
+    }
+
 
     /**
      * @api {GET} /api/v1/order/orderStatistic/detail CMS管理端-订餐管理-订餐明细
@@ -657,6 +684,42 @@ class Order extends BaseController
         $company_ids = Request::param('company_ids');
         $list = (new OrderStatisticService())->orderStatisticDetail($company_ids, $time_begin,
             $time_end, $page, $size, $name,
+            $phone, $canteen_id, $department_id,
+            $dinner_id);
+        return json(new SuccessMessageWithData(['data' => $list]));
+
+    }
+
+    /**
+     * @api {GET} /api/v1/order/orderStatistic/detail/export CMS管理端-订餐管理-订餐明细-导出报表
+     * @apiGroup  CMS管理端
+     * @apiVersion 3.0.0
+     * @apiDescription CMS管理端-订餐管理-订餐明细-订餐明细-导出报表
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/order/orderStatistic/detail/export?company_ids=&canteen_id=0&time_begin=2019-09-07&time_end=2019-12-07&department_id=2&dinner_id=0&name=&phone
+     * @apiParam (请求参数说明) {int} page 当前页码
+     * @apiParam (请求参数说明) {int} size 每页多少条数据
+     * @apiParam (请求参数说明) {string} company_ids  企业id：选择全部时，将企业id用逗号分隔，例如：1,2，此时饭堂id传入0;选择某一个企业时传入企业id
+     * @apiParam (请求参数说明) {string} canteen_id  饭堂id：选择某一个饭堂时传入饭堂id，此时企业id为0或者不传，选择全部时，饭堂id传入0
+     * @apiParam (请求参数说明) {string} department_id  部门id：选择企业时才可以选择具体的部门信息，否则传0或者不传
+     * @apiParam (请求参数说明) {string} dinner_id  餐次id：选择饭堂时才可以选择具体的餐次信息，否则传0或者不传
+     * @apiParam (请求参数说明) {string} time_begin  查询开始时间
+     * @apiParam (请求参数说明) {string} time_end  查询结束时间
+     * @apiParam (请求参数说明) {string} phone  手机号查询
+     * @apiParam (请求参数说明) {string} name  姓名查询
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"url":"http:\/\/canteen.tonglingok.com\/static\/excel\/download\/材料价格明细_20190817005931.xls"}}
+     * @apiSuccess (返回参数说明) {int} error_code 错误代码 0 表示没有错误
+     * @apiSuccess (返回参数说明) {string} msg 操作结果描述
+     * @apiSuccess (返回参数说明) {string} url 下载地址
+     */
+    public function exportOrderStatisticDetail($page = 1, $size = 20, $name = '', $phone = '', $canteen_id = 0, $department_id = 0, $dinner_id = 0)
+    {
+        $time_begin = Request::param('time_begin');
+        $time_end = Request::param('time_end');
+        $company_ids = Request::param('company_ids');
+        $list = (new OrderStatisticService())->exportOrderStatisticDetail($company_ids, $time_begin,
+            $time_end, $name,
             $phone, $canteen_id, $department_id,
             $dinner_id);
         return json(new SuccessMessageWithData(['data' => $list]));
