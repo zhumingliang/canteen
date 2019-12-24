@@ -13,7 +13,7 @@ use think\facade\Request;
 
 class Takeout extends BaseController
 {
-    /**
+       /**
      * @api {GET} /api/v1/order/takeoutStatistic CMS管理端-外卖管理-订单列表
      * @apiGroup  CMS管理端
      * @apiVersion 3.0.0
@@ -57,6 +57,39 @@ class Takeout extends BaseController
 
 
     }
+
+
+    /**
+     * @api {GET} /api/v1/order/takeoutStatistic/export CMS管理端-外卖管理-订单列表-导出报表
+     * @apiGroup  CMS管理端
+     * @apiVersion 3.0.0
+     * @apiDescription CMS管理端-外卖管理-订单列表-导出报表
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/order/orderStatistic/export?company_ids=2&canteen_id=0&ordering_date=2019-09-07&dinner_id=0&used=1
+     * @apiParam (请求参数说明) {string} company_ids  企业id：选择全部时，将企业id用逗号分隔，例如：1,2，此时饭堂id传入0;选择某一个企业时传入企业id
+     * @apiParam (请求参数说明) {string} canteen_id  饭堂id：选择某一个饭堂时传入饭堂id，此时企业id为0，选择全部时，饭堂id传入0
+     * @apiParam (请求参数说明) {string} dinner_id  餐次id：选择饭堂时才可以选择具体的餐次信息，否则传0
+     * @apiParam (请求参数说明) {string} ordering_date  订餐日期
+     * @apiParam (请求参数说明) {int} used  打印状态：1｜已打印；2｜未打印；3｜全部
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"url":"http:\/\/canteen.tonglingok.com\/static\/excel\/download\/材料价格明细_20190817005931.xls"}}
+     * @apiSuccess (返回参数说明) {int} error_code 错误代码 0 表示没有错误
+     * @apiSuccess (返回参数说明) {string} msg 操作结果描述
+     * @apiSuccess (返回参数说明) {string} url 下载地址
+     */
+    public function exportStatistic()
+    {
+        $ordering_date = Request::param('ordering_date');
+        $company_ids = Request::param('company_ids');
+        $canteen_id = Request::param('canteen_id');
+        $dinner_id = Request::param('company_id');
+        $used = Request::param('used');
+        $statistic = (new OrderStatisticService())->exportTakeoutStatistic($ordering_date, $company_ids, $canteen_id, $dinner_id, $used);
+        return json(new SuccessMessageWithData(['data' => $statistic]));
+
+
+    }
+
 
     /**
      * @api {POST} /api/v1/order/used CMS管理端-外卖管理-打印小票触发外卖完成状态

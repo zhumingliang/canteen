@@ -95,7 +95,7 @@ class Wallet extends BaseController
      * @api {GET} /api/v1/recharges CMS管理端-充值管理-充值记录列表
      * @apiGroup  CMS
      * @apiVersion 3.0.0
-     * @apiDescription CMS管理端-企业明细-企业列表
+     * @apiDescription CMS管理端-充值管理-充值记录列表
      * @apiExample {get}  请求样例:
      * http://canteen.tonglingok.com/api/v1/wallet/recharges?time_begin=2019-09-01&time_end=2019-11-01&admin_id=0&username&type=all&page=1&size=10
      * @apiParam (请求参数说明) {int} page 当前页码
@@ -128,6 +128,34 @@ class Wallet extends BaseController
     }
 
     /**
+     * @api {GET} /api/v1/recharges/export CMS管理端-充值管理-充值记录列表-导出报表
+     * @apiGroup  CMS
+     * @apiVersion 3.0.0
+     * @apiDescription CMS管理端-充值管理-充值记录列表-导出报表
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/wallet/recharges/export?time_begin=2019-09-01&time_end=2019-11-01&admin_id=0&username&type=all
+     * @apiParam (请求参数说明) {string} time_begin 查询开始时间
+     * @apiParam (请求参数说明) {string} time_end 查询截止时间
+     * @apiParam (请求参数说明) {String} username 被充值用户
+     * @apiParam (请求参数说明) {int} admin_id 充值人员id，全部传入0
+     * @apiParam (请求参数说明) {String} type 充值途径:目前有：cash：现金；weixin:微信；nonghang:农行；all：全部
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"url":"http:\/\/canteen.tonglingok.com\/static\/excel\/download\/材料价格明细_20190817005931.xls"}}
+     * @apiSuccess (返回参数说明) {int} error_code 错误代码 0 表示没有错误
+     * @apiSuccess (返回参数说明) {string} msg 操作结果描述
+     * @apiSuccess (返回参数说明) {string} url 下载地址
+     */
+    public function exportRechargeRecords($type = 'all', $admin_id = 0, $username = '')
+    {
+        $time_begin = Request::param('time_begin');
+        $time_end = Request::param('time_end');
+        $records = (new WalletService())->exportRechargeRecords($time_begin, $time_end, $type, $admin_id, $username);
+        return json(new SuccessMessageWithData(['data' => $records]));
+
+    }
+
+
+    /**
      * @api {GET} /api/v1/wallet/users/balance CMS管理端-充值管理-饭卡余额查询
      * @apiGroup  CMS
      * @apiVersion 3.0.0
@@ -158,6 +186,30 @@ class Wallet extends BaseController
         return json(new SuccessMessageWithData(['data' => $users]));
 
     }
+
+    /**
+     * @api {GET} /api/v1/wallet/users/balance/export CMS管理端-充值管理-饭卡余额查询-导出报表
+     * @apiGroup  CMS
+     * @apiVersion 3.0.0
+     * @apiDescription CMS管理端-充值管理-饭卡余额查询-导出报表
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/wallet/users/balance/export?&department_id=0&user&phone=
+     * @apiParam (请求参数说明) {String} user 人员信息
+     * @apiParam (请求参数说明) {String} phone 手机号
+     * @apiParam (请求参数说明) {int} department_id 部门id，全部传0
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"url":"http:\/\/canteen.tonglingok.com\/static\/excel\/download\/材料价格明细_20190817005931.xls"}}
+     * @apiSuccess (返回参数说明) {int} error_code 错误代码 0 表示没有错误
+     * @apiSuccess (返回参数说明) {string} msg 操作结果描述
+     * @apiSuccess (返回参数说明) {string} url 下载地址
+     */
+    public function exportUsersBalance($department_id = 0, $user = '', $phone = '')
+    {
+        $users = (new WalletService())->exportUsersBalance($department_id, $user, $phone);
+        return json(new SuccessMessageWithData(['data' => $users]));
+
+    }
+
 
     /**
      * @api {POST} /api/v1/wallet/clearBalance CMS管理端--充值管理--饭卡余额查询-一键清零
@@ -285,7 +337,7 @@ class Wallet extends BaseController
             $order_num = $message['out_trade_no'];
             $order = PayT::where('order_num', $order_num)->find();
 
-            if (!$order || $order->status=='paid') {
+            if (!$order || $order->status == 'paid') {
                 return true;
             }
             if ($message['return_code'] === 'SUCCESS') { // return_code 表示通信状态，不代表支付状态

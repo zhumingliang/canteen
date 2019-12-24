@@ -222,6 +222,7 @@ Route::get('api/:version/shop/order/exportSalesReport/supplier', 'api/:version.S
 Route::get('api/:version/shop/order/exportConsumptionStatistic', 'api/:version.Shop/exportConsumptionStatistic');
 
 Route::get('api/:version/order/takeoutStatistic', 'api/:version.Takeout/statistic');
+Route::get('api/:version/order/takeoutStatistic/export', 'api/:version.Takeout/exportStatistic');
 Route::get('api/:version/order/info/print', 'api/:version.Takeout/infoToPrint');
 Route::post('api/:version/order/used', 'api/:version.Takeout/used');
 
@@ -230,7 +231,9 @@ Route::post('api/:version/wallet/recharge/upload', 'api/:version.Wallet/recharge
 Route::post('api/:version/wallet/clearBalance', 'api/:version.Wallet/clearBalance');
 Route::get('api/:version/wallet/recharge/admins', 'api/:version.Wallet/rechargeAdmins');
 Route::get('api/:version/wallet/recharges', 'api/:version.Wallet/rechargeRecords');
+Route::get('api/:version/wallet/recharges/export', 'api/:version.Wallet/exportRechargeRecords');
 Route::get('api/:version/wallet/users/balance', 'api/:version.Wallet/usersBalance');
+Route::get('api/:version/wallet/users/balance/export', 'api/:version.Wallet/exportUsersBalance');
 Route::post('api/:version/wallet/supplement', 'api/:version.Wallet/rechargeSupplement');
 Route::post('api/:version/wallet/supplement/upload', 'api/:version.Wallet/rechargeSupplementUpload');
 Route::post('api/:version/wallet/pay', 'api/:version.Wallet/saveOrder');

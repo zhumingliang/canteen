@@ -86,6 +86,17 @@ class OrderStatisticService
         return $records;
     }
 
+    public function exportTakeoutStatistic($ordering_date, $company_ids,
+                                           $canteen_id, $dinner_id, $used)
+    {
+        $records = OrderTakeoutStatisticV::exportStatistic($ordering_date, $company_ids, $canteen_id, $dinner_id, $used);
+        $header = ['订餐号','日期', '消费地点', '姓名', '手机号', '餐次', '金额（元）','送货地点','状态'];
+        $file_name = $ordering_date."-外卖管理报表";
+        $url = (new ExcelService())->makeExcel($header, $records, $file_name);
+        return [
+            'url' => config('setting.domain') . $url
+        ];    }
+
     public function infoToPrint($id)
     {
         $info = OrderT::infoToPrint($id);
@@ -456,7 +467,7 @@ class OrderStatisticService
 
     public function exportMaterialReports($report_id)
     {
-        $header = ['序号', '日期', '饭堂', '餐次', '材料名称','单位', '材料数量', '订货数量', '单价', '总价'];
+        $header = ['序号', '日期', '饭堂', '餐次', '材料名称', '单位', '材料数量', '订货数量', '单价', '总价'];
 
         $report = MaterialReportT::exportReports($report_id);
         $file_name = $report['title'];

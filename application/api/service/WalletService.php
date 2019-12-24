@@ -95,10 +95,36 @@ class WalletService
 
     }
 
+    public function exportRechargeRecords($time_begin, $time_end, $type, $admin_id, $username)
+    {
+        $company_id = Token::getCurrentTokenVar('company_id');
+        $records = RechargeV::exportRechargeRecords($time_begin, $time_end, $type, $admin_id, $username, $company_id);
+        $header = ['创建时间', '姓名', '充值金额', '充值途径', '充值人员', '备注'];
+        $file_name = $time_begin . "-" . $time_end . "-充值记录明细";
+        $url = (new ExcelService())->makeExcel($header, $records, $file_name);
+        return [
+            'url' => config('setting.domain') . $url
+        ];
+
+    }
+
     public function usersBalance($page, $size, $department_id, $user, $phone)
     {
         $company_id = Token::getCurrentTokenVar('company_id');
         $users = UserBalanceV::usersBalance($page, $size, $department_id, $user, $phone, $company_id);
+        return $users;
+    }
+
+    public function exportUsersBalance($department_id, $user, $phone)
+    {
+        $company_id = Token::getCurrentTokenVar('company_id');
+        $users = UserBalanceV::exportUsersBalance($department_id, $user, $phone, $company_id);
+        $header = ['姓名', '员工编号', '卡号', '手机号码', '部门', '余额（元）'];
+        $file_name = "饭卡余额报表";
+        $url = (new ExcelService())->makeExcel($header, $users, $file_name);
+        return [
+            'url' => config('setting.domain') . $url
+        ];
         return $users;
     }
 
@@ -256,8 +282,8 @@ class WalletService
 
     public function getPreOrder($order_id)
     {
-       // $openid = "oSi030oELLvP4suMSvOxTAF8HrLE";//Token::getCurrentOpenid();
-        $openid =Token::getCurrentOpenid();
+        // $openid = "oSi030oELLvP4suMSvOxTAF8HrLE";//Token::getCurrentOpenid();
+        $openid = Token::getCurrentOpenid();
         $status = $this->checkOrderValid($order_id, $openid);
         $method_id = $status['method_id'];
         $company_id = $status['companyID'];
