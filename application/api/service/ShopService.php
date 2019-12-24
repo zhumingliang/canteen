@@ -589,12 +589,74 @@ class ShopService
 
     }
 
+    public function exportSalesReportToSupplier($time_begin, $time_end)
+    {
+
+        $supplier_id = (new AuthorService())->checkAuthorSupplier();
+        //获取供应商所有商品
+        $products = ShopProductT::supplierProducts(1, 10000, $time_begin, $time_end, $supplier_id);
+        $header = ['序号','名称', '单价（元）', '单位', '总进货量', '总销售量', '总销售额（元）'];
+        $file_name = $time_begin . "-" . $time_end . "-进销报表";
+        $url = (new ExcelService())->makeExcel($header, $products, $file_name);
+        return [
+            'url' => config('setting.domain') . $url
+        ];
+
+    }
+
     public function salesReportToManager($page, $size, $time_begin, $time_end, $supplier_id)
     {
         $products = ShopProductT::supplierProducts($page, $size, $time_begin, $time_end, $supplier_id);
         $sale_money = ShopProductStatisticV::saleMoney($supplier_id, $time_begin, $time_end);
         $products['money'] = $sale_money;
         return $products;
+    }
+
+
+    public function exportSalesReportToManager($time_begin, $time_end, $supplier_id)
+    {
+        $products = ShopProductT::supplierProducts(1, 10000, $time_begin, $time_end, $supplier_id);
+        $products = $this->prefixExportSalesReport($products['data']);
+        $header = ['序号','名称', '单价（元）', '单位', '总进货量', '总销售量', '总销售额（元）'];
+        $file_name = $time_begin . "-" . $time_end . "-进销报表";
+        $url = (new ExcelService())->makeExcel($header, $products, $file_name);
+        return [
+            'url' => config('setting.domain') . $url
+        ];
+    }
+
+    private function prefixExportSalesReport($statistic)
+    {
+        $dataList = [];
+        $all_money = 0;
+        if (!empty($statistic)) {
+            foreach ($statistic as $k => $v) {
+                $sale_sum = empty($v['sale_sum']) ? 0 : $v['sale_sum'];
+                $money = $v['price'] * $sale_sum;
+                array_push($dataList, [
+                    'number' => $k + 1,
+                    'name' => $v['name'],
+                    'price' => $v['price'],
+                    'unit' => $v['unit'],
+                    'purchase_sum' => $v['purchase_sum'],
+                    'sale_sum' => $sale_sum,
+                    'money' => $v['price'] * $sale_sum
+                ]);
+                $all_money += $money;
+            }
+        }
+
+        array_push($dataList, [
+            'number' => '合计',
+            'name' => '',
+            'price' => '',
+            'unit' => '',
+            'purchase_sum' => 0,
+            'sale_sum' => 0,
+            'money' => $all_money
+        ]);
+        return $dataList;
+
     }
 
     public function consumptionStatistic($page, $size, $category_id, $product_id,

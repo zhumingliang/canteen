@@ -55,7 +55,6 @@ class ShopProductT extends BaseModel
             ->paginate($size, false, ['page' => $page])->toArray();
         return $products;
     }
-
     public static function companyProductsToSearch($company_id, $product)
     {
         $products = self::where('company_id', $company_id)

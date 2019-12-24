@@ -672,10 +672,34 @@ class Shop extends BaseController
     }
 
     /**
+     * @api {GET} /api/v1/shop/order/exportSalesReport/supplier CMS管理端-小卖部管理-进销报表-供应商-导出报表
+     * @apiGroup  CMS管理端
+     * @apiVersion 3.0.0
+     * @apiDescription CMS管理端-小卖部管理-进销报表-供应商-导出报表
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/shop/order/exportSalesReport/supplier?time_begin=2019-10-01&time_end=2019-12-31
+     * @apiParam (请求参数说明) {string} time_begin  查询开始时间
+     * @apiParam (请求参数说明) {string} time_end  查询结束时间
+     * @apiSuccessExample {json}返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"url":"http:\/\/canteen.tonglingok.com\/static\/excel\/download\/材料价格明细_20190817005931.xls"}}     * @apiSuccess (返回参数说明) {int} total 数据总数
+     * @apiSuccess (返回参数说明) {int} error_code 错误代码 0 表示没有错误
+     * @apiSuccess (返回参数说明) {string} msg 操作结果描述
+     * @apiSuccess (返回参数说明) {string} url 下载地址
+     */
+    public function exportSalesReportToSupplier()
+    {
+        $time_begin = Request::param('time_begin');
+        $time_end = Request::param('time_end');
+        $statistic = (new ShopService())->exportSalesReportToSupplier($time_begin, $time_end);
+        return json(new SuccessMessageWithData(['data' => $statistic]));
+    }
+
+
+    /**
      * @api {GET} /api/v1/shop/salesReport/manager CMS管理端-小卖部管理-进销报表-管理员
      * @apiGroup  CMS管理端
      * @apiVersion 3.0.0
-     * @apiDescription CMS管理端-小卖部管理-进销报表-供应商
+     * @apiDescription CMS管理端-小卖部管理-进销报表-管理员
      * @apiExample {get}  请求样例:
      * http://canteen.tonglingok.com/api/v1/shop/salesReport/manager?supplier_id=1&time_begin=2019-09-07&time_end=2019-12-07&page=1&size=20
      * @apiParam (请求参数说明) {int} page 当前页码
@@ -708,12 +732,28 @@ class Shop extends BaseController
         return json(new SuccessMessageWithData(['data' => $statistic]));
     }
 
-    public function exportSalesReportToManager($page = 1, $size = 20)
+    /**
+     * @api {GET} /api/v1/shop/order/exportSalesReport/manager CMS管理端-小卖部管理-进销报表-管理员-导出报表
+     * @apiGroup  CMS管理端
+     * @apiVersion 3.0.0
+     * @apiDescription CMS管理端-小卖部管理-进销报表-管理员-导出报表
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/shop/order/exportSalesReport/manager?supplier_id=10&time_begin=2019-10-01&time_end=2019-12-31
+     * @apiParam (请求参数说明) {int} supplier_id  供应商id
+     * @apiParam (请求参数说明) {string} time_begin  查询开始时间
+     * @apiParam (请求参数说明) {string} time_end  查询结束时间
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"url":"http:\/\/canteen.tonglingok.com\/static\/excel\/download\/材料价格明细_20190817005931.xls"}}     * @apiSuccess (返回参数说明) {int} total 数据总数
+     * @apiSuccess (返回参数说明) {int} error_code 错误代码 0 表示没有错误
+     * @apiSuccess (返回参数说明) {string} msg 操作结果描述
+     * @apiSuccess (返回参数说明) {string} url 下载地址
+     */
+    public function exportSalesReportToManager()
     {
         $time_begin = Request::param('time_begin');
         $time_end = Request::param('time_end');
         $supplier_id = Request::param('supplier_id');
-        $statistic = (new ShopService())->salesReportToManager($page, $size, $time_begin, $time_end, $supplier_id);
+        $statistic = (new ShopService())->exportSalesReportToManager($time_begin, $time_end, $supplier_id);
         return json(new SuccessMessageWithData(['data' => $statistic]));
     }
 
@@ -794,13 +834,13 @@ class Shop extends BaseController
      * @apiSuccess (返回参数说明) {string} url 下载地址
      */
     public function exportConsumptionStatistic($category_id = 0,
-                                         $product_id = 0, $status = 0, $type = 1,
-                                         $department_id = 0, $username = '')
+                                               $product_id = 0, $status = 0, $type = 1,
+                                               $department_id = 0, $username = '')
     {
         $time_begin = Request::param('time_begin');
         $time_end = Request::param('time_end');
         $company_id = Request::param('company_id');
-        $statistic = (new ShopService())->exportConsumptionStatistic( $category_id, $product_id,
+        $statistic = (new ShopService())->exportConsumptionStatistic($category_id, $product_id,
             $status, $time_begin, $time_end, $type, $department_id, $username, $company_id);
         return json(new SuccessMessageWithData(['data' => $statistic]));
     }
