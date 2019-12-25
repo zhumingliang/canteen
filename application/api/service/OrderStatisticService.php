@@ -90,6 +90,53 @@ class OrderStatisticService
         return $records;
     }
 
+    public function exportOrderSettlement(
+        $name, $phone, $canteen_id, $department_id, $dinner_id,
+        $consumption_type, $time_begin, $time_end, $company_ids)
+    {
+        $records = OrderSettlementV::exportOrderSettlement(
+            $name, $phone, $canteen_id, $department_id, $dinner_id,
+            $consumption_type, $time_begin, $time_end, $company_ids);
+        $records = $this->prefixExportOrderSettlement($records);
+        $header = ['序号', '消费时间', '部门', '姓名', '手机号', '消费地点', '消费类型', '餐次'];
+        $file_name = "消费明细报表（" . $time_begin . "-" . $time_end . "）";
+        $url = (new ExcelService())->makeExcel($header, $records, $file_name);
+        return [
+            'url' => config('setting.domain') . $url
+        ];
+    }
+
+    private function prefixExportOrderSettlement($data)
+    {
+        $dataList = [];
+        if (count($data)) {
+            foreach ($data as $k => $v) {
+
+                if ($v['type'] == 'recharge') {
+                    $consumption_type = "补录";
+                } else {
+                    if ($v['booking'] == CommonEnum::STATE_IS_OK) {
+                        $consumption_type = $v['used'] == CommonEnum::STATE_IS_OK ? "订餐就餐" : "订餐未就餐";
+                    } else {
+                        $consumption_type = "未订餐就餐";
+                    }
+                }
+
+                array_push($dataList, [
+                    'number' => $k + 1,
+                    'used_time' => $v['used_time'],
+                    'department' => $v['department'],
+                    'username' => $v['username'],
+                    'phone' => $v['phone'],
+                    'canteen' => $v['canteen'],
+                    'consumption_type' => $consumption_type,
+                    'dinner' => $v['dinner'],
+                ]);
+            }
+        }
+        return $dataList;
+    }
+
     private function prefixSettlementConsumptionType($data)
     {
         if (count($data)) {
@@ -101,7 +148,7 @@ class OrderStatisticService
                 if ($v['booking'] == CommonEnum::STATE_IS_OK) {
                     $data[$k]['consumption_type'] = $v['used'] == CommonEnum::STATE_IS_OK ? "订餐就餐" : "订餐未就餐";
                 } else {
-                    $data[$k]['consumption_type'] ="未订餐就餐";
+                    $data[$k]['consumption_type'] = "未订餐就餐";
                 }
             }
 

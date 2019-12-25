@@ -161,6 +161,7 @@ Route::get('api/:version/order/orderStatistic/export', 'api/:version.Order/expor
 Route::get('api/:version/order/orderStatistic/detail', 'api/:version.Order/orderStatisticDetail');
 Route::get('api/:version/order/orderStatistic/detail/export', 'api/:version.Order/exportOrderStatisticDetail');
 Route::get('api/:version/order/orderSettlement', 'api/:version.Order/orderSettlement');
+Route::get('api/:version/order/orderSettlement/export', 'api/:version.Order/exportOrderSettlement');
 Route::get('api/:version/order/materialsStatistic', 'api/:version.Order/orderMaterialsStatistic');
 Route::post('api/:version/order/material/update', 'api/:version.Order/updateOrderMaterial');
 Route::get('api/:version/order/material/reports', 'api/:version.Order/materialReports');

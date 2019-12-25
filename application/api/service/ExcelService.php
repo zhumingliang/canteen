@@ -4,6 +4,8 @@
 namespace app\api\service;
 
 
+use app\lib\exception\ParameterException;
+
 class ExcelService
 {
     /**
@@ -77,7 +79,7 @@ class ExcelService
         if (empty($fileName)) $fileName = time();
 
         if (empty($columName) || empty($list)) {
-            return '列名或者内容不能为空';
+            throw new ParameterException(['msg' => '导出数据为空']);
         }
 
         //实例化PHPExcel类
@@ -123,9 +125,8 @@ class ExcelService
     public function makeExcelMerge($columName, $list, $fileName, $merge, $excel2007 = false)
     {
         if (empty($fileName)) $fileName = time();
-
         if (empty($columName) || empty($list)) {
-            return '列名或者内容不能为空';
+            throw new ParameterException(['msg' => '导出数据为空']);
         }
         //实例化PHPExcel类
         $PHPExcel = new \PHPExcel();
