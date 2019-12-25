@@ -609,7 +609,7 @@ class Order extends BaseController
      * @apiSuccess (返回参数说明) {string} dinner 餐次
      * @apiSuccess (返回参数说明) {string} count 订餐人数
      */
-    public function orderStatistic($canteen_id = 0)
+    public function orderStatistic($page = 1, $size = 20, $canteen_id = 0)
     {
         $time_begin = Request::param('time_begin');
         $time_end = Request::param('time_end');
