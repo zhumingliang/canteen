@@ -79,11 +79,12 @@ class StaffCanteenV extends Model
 
                         })
                         ->field('staff_id,dinner_id,dinner,sum(order_count) as order_count,sum(order_money) as order_money')
-                        ->group('status,dinner');
+                        ->group('dinner');
                 }
             ])
             ->field('staff_id,username as statistic,username,department')
             ->where('state', CommonEnum::STATE_IS_OK)
+            ->group('staff_id')
             ->paginate($size, false, ['page' => $page])->toArray();
 
     }

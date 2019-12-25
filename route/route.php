@@ -168,6 +168,7 @@ Route::get('api/:version/order/material/reports', 'api/:version.Order/materialRe
 Route::get('api/:version/order/material/report', 'api/:version.Order/materialReport');
 Route::post('api/:version/order/material/report/delete', 'api/:version.Order/materialReportHandel');
 Route::get('api/:version/order/consumptionStatistic', 'api/:version.Order/consumptionStatistic');
+Route::get('api/:version/order/consumptionStatistic/export', 'api/:version.Order/exportConsumptionStatistic');
 
 Route::post('api/:version/address/save', 'api/:version.Address/save');
 Route::post('api/:version/address/update', 'api/:version.Address/update');

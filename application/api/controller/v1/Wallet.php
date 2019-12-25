@@ -128,7 +128,7 @@ class Wallet extends BaseController
     }
 
     /**
-     * @api {GET} /api/v1/recharges/export CMS管理端-充值管理-充值记录列表-导出报表
+     * @api {GET} /api/v1/wallet/recharges/export CMS管理端-充值管理-充值记录列表-导出报表
      * @apiGroup  CMS
      * @apiVersion 3.0.0
      * @apiDescription CMS管理端-充值管理-充值记录列表-导出报表

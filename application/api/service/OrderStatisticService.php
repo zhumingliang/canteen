@@ -25,6 +25,7 @@ use think\Db;
 use think\Exception;
 use think\Model;
 use think\Request;
+use function Composer\Autoload\includeFile;
 
 class OrderStatisticService
 {
@@ -426,6 +427,108 @@ class OrderStatisticService
         }
     }
 
+    public function exportConsumptionStatistic($canteen_id, $status, $type,
+                                               $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id)
+    {
+        switch ($type) {
+            case OrderEnum::STATISTIC_BY_DEPARTMENT:
+                $info = $this->consumptionStatisticByDepartment($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id);
+                break;
+            case OrderEnum::STATISTIC_BY_USERNAME:
+                $info = $this->consumptionStatisticByUsername($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id, 1, 10000);
+                break;
+            case OrderEnum::STATISTIC_BY_STAFF_TYPE:
+                $info = $this->consumptionStatisticByStaff($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id);
+                break;
+            case OrderEnum::STATISTIC_BY_CANTEEN:
+                $info = $this->consumptionStatisticByCanteen($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id);
+                break;
+            case OrderEnum::STATISTIC_BY_STATUS:
+                $info = $this->consumptionStatisticByStatus($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id);
+                break;
+            default:
+                throw new ParameterException();
+        }
+
+        if ($type == OrderEnum::STATISTIC_BY_USERNAME) {
+            $statistic = $info['statistic']['data'];
+        } else {
+            $statistic = $info['statistic'];
+        }
+        $allMoney = empty($info['allMoney']) ? 0 : $info['allMoney'];
+        $allCount = empty($info['allCount']) ? 0 : $info['allCount'];
+        $reports = $this->prefixConsumptionStatistic($statistic, $allMoney, $allCount);
+        $header = ['序号', '统计变量', '开始时间', '结束时间', '姓名', '部门', '餐次', '数量', '金额（元）'];
+        $file_name = "消费总报表(" . $time_begin . "-" . $time_end . ")";
+        $url = (new ExcelService())->makeExcelMerge($header, $reports, $file_name, 6);
+        return [
+            'url' => config('setting.domain') . $url
+        ];
+
+    }
+
+    private function prefixConsumptionStatistic($statistic, $allMoney, $allCount)
+    {
+        $dataList = [];
+        if (!empty($statistic)) {
+            $i = 2;
+            foreach ($statistic as $k => $v) {
+                $dinner_statistic = $v['dinner_statistic'];
+                if (empty($dinner_statistic)) {
+                    array_push($dataList, [
+                        'number' => $k + 1,
+                        'statistic' => $v['statistic'],
+                        'time_begin' => '/',
+                        'time_end' => '/',
+                        'username' => empty($v['username']) ? '' : $v['username'],
+                        'department' => empty($v['department']) ? '' : $v['department'],
+                        'dinner' => '',
+                        'order_count' => 0,
+                        'order_money' => 0,
+                        'merge' => CommonEnum::STATE_IS_FAIL,
+                        'start' => 0,
+                        'end' => 0
+                    ]);
+                    $i++;
+                    continue;
+                }
+                foreach ($dinner_statistic as $k2 => $v2) {
+                    array_push($dataList, [
+                        'number' => $k + 1,
+                        'statistic' => $v['statistic'],
+                        'time_begin' => '/',
+                        'time_end' => '/',
+                        'username' => empty($v['username']) ? '' : $v['username'],
+                        'department' => empty($v['department']) ? '' : $v['department'],
+                        'dinner' => $v2['dinner'],
+                        'order_count' => $v2['order_count'],
+                        'order_money' => $v2['order_money'],
+                        'merge' => CommonEnum::STATE_IS_OK,
+                        'start' => $k2 == 0 ? $i : $i - 1,
+                        'end' => $i
+                    ]);
+                    $i++;
+                }
+            }
+        }
+
+        array_push($dataList, [
+            'number' => '合计',
+            'statistic' => '',
+            'time_begin' => '',
+            'time_end' => '',
+            'username' => '',
+            'department' => '',
+            'dinner' => '',
+            'order_count' => $allCount,
+            'order_money' => $allMoney,
+            'merge' => CommonEnum::STATE_IS_FAIL,
+            'start' => 0,
+            'end' => 0,
+        ]);
+        return $dataList;
+    }
+
     private function consumptionStatisticByDepartment($canteen_id, $status, $department_id,
                                                       $username, $staff_type_id, $time_begin,
                                                       $time_end, $company_id)
@@ -491,7 +594,6 @@ class OrderStatisticService
         $users = StaffCanteenV::getStaffsForStatistic($company_id, $canteen_id, $page, $size, $status, $department_id,
             $username, $staff_type_id, $time_begin,
             $time_end);
-        return $users;
         $data = $users['data'];
         foreach ($data as $k => $v) {
             $data[$k]['time_begin'] = $time_begin;
