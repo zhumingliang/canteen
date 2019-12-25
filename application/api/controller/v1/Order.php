@@ -764,7 +764,7 @@ class Order extends BaseController
                                     $phone = '',
                                     $canteen_id = 0,
                                     $department_id = 0,
-                                    $dinner_id = 0, $consumption_type = 4)
+                                    $dinner_id = 0, $consumption_type = 5)
     {
         $time_begin = Request::param('time_begin');
         $time_end = Request::param('time_end');

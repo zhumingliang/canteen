@@ -28,6 +28,8 @@ use think\Request;
 
 class OrderStatisticService
 {
+
+
     public function statistic($time_begin, $time_end, $company_ids, $canteen_id, $page, $size)
     {
         $list = OrderStatisticV::statistic($time_begin, $time_end, $company_ids, $canteen_id, $page, $size);
@@ -93,13 +95,13 @@ class OrderStatisticService
         if (count($data)) {
             foreach ($data as $k => $v) {
                 if ($v['type'] == 'recharge') {
-                    $data[$k]['consumption_type'] = 4;
+                    $data[$k]['consumption_type'] = "补录";
                     continue;
                 }
                 if ($v['booking'] == CommonEnum::STATE_IS_OK) {
-                    $data[$k]['consumption_type'] = $v['used'] == CommonEnum::STATE_IS_OK ? 1 : 2;
+                    $data[$k]['consumption_type'] = $v['used'] == CommonEnum::STATE_IS_OK ? "订餐就餐" : "订餐未就餐";
                 } else {
-                    $data[$k]['consumption_type'] = 3;
+                    $data[$k]['consumption_type'] ="未订餐就餐";
                 }
             }
 
