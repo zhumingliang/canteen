@@ -49,21 +49,21 @@ class ConsumptionService
         $shopCode = ShopOrderQrcodeT::where('code', $code)
             ->find();
         if (!$shopCode) {
-            throw new ParameterException(['msg' => '提货码不存在']);
+            throw new ParameterException(['errorCode' => 12001,'msg' => '提货码不存在']);
         }
         if (time() > strtotime($shopCode->end_time)) {
-            throw new ParameterException(['msg' => '二维码已过期']);
+            throw new ParameterException(['errorCode' => 12002,'msg' => '提货码已过期']);
         }
         if ($shopCode->state == CommonEnum::STATE_IS_OK) {
-            throw new ParameterException(['msg' => '二维码已经使用，不能重复使用']);
+            throw new ParameterException(['errorCode' => 12003,'msg' => '提货码已经使用，不能重复使用']);
         }
         $order_id = $shopCode->o_id;
         $order = ShopOrderT::orderInfoForMachine($order_id);
         if ($order->state != CommonEnum::STATE_IS_OK) {
-            throw new ParameterException(['msg' => '订单状态异常']);
+            throw new ParameterException(['errorCode' => 12004,'msg' => '订单状态异常']);
         }
         if ($order->used == CommonEnum::STATE_IS_OK) {
-            throw new ParameterException(['msg' => '订单已提货，不能重复提货']);
+            throw new ParameterException(['errorCode' => 12005,'msg' => '订单已提货，不能重复提货']);
         }
         $order->used = CommonEnum::STATE_IS_OK;
         $shopCode->state = CommonEnum::STATE_IS_OK;
@@ -146,10 +146,10 @@ class ConsumptionService
             ->where('code', $code)
             ->find();
         if (empty($QRCode)) {
-            throw new ParameterException(['msg' => '二维码不存在']);
+            throw new ParameterException(['errorCode' => 11008, 'msg' => '电子饭卡不存在']);
         }
         if (strtotime($QRCode->expiry_date) < time()) {
-            throw new ParameterException(['msg' => '二维码过期']);
+            throw new ParameterException(['errorCode' => 11009,'msg' => '电子饭卡已过期']);
         }
     }
 
@@ -187,7 +187,7 @@ class ConsumptionService
         $money = $this->checkConsumptionStrategy($strategies, 1, $consumptionCount);
         $pay_way = $this->checkBalance($company_id, $canteen_id, $phone, $money['money'] + $money['sub_money']);
         if (!$pay_way) {
-            throw new SaveException(['errorCode' => 49000, 'msg' => '余额不足']);
+            throw new SaveException(['errorCode' => 11010, 'msg' => '余额不足']);
         }
         $data['u_id'] = $u_id;
         $data['c_id'] = $canteen_id;
@@ -242,17 +242,17 @@ class ConsumptionService
     function checkConsumptionStrategy($strategies, $orderCount, $consumptionCount)
     {
         if (!$strategies) {
-            throw new SaveException(['msg' => '饭堂消费策略没有设置']);
+            throw new SaveException(['errorCode' => 11004,'msg' => '饭堂消费策略没有设置']);
         }
         if ($orderCount > $strategies->ordered_count) {
-            throw new SaveException(['msg' => '订餐数量超过最大订餐数量，最大订餐数量为：' . $strategies->ordered_count]);
+            throw new SaveException(['errorCode' => 11005,'msg' => '订餐数量超过最大订餐数量，最大订餐数量为：' . $strategies->ordered_count]);
         }
         if ($consumptionCount >= $strategies->consumption_count) {
-            throw new SaveException(['msg' => '消费次数已达到上限，最大消费次数为：' . $strategies->consumption_count]);
+            throw new SaveException(['errorCode' => 11006,'msg' => '消费次数已达到上限，最大消费次数为：' . $strategies->consumption_count]);
         }
         $detail = $strategies->detail;
         if (empty($detail)) {
-            throw new ParameterException(['msg' => "消费策略设置异常"]);
+            throw new ParameterException(['errorCode' => 11007,'msg' => "消费策略设置异常"]);
         }
         //获取消费策略中：未订餐就餐的标准金额和附加金额
         $returnMoney = [];
@@ -270,7 +270,7 @@ class ConsumptionService
             }
         }
         if (empty($returnMoney)) {
-            throw new ParameterException(['msg' => '未订餐就餐失败，消费策略未设置']);
+            throw new ParameterException(['errorCode' => 11003,'msg' => '未订餐就餐失败，消费策略未设置']);
         }
         return $returnMoney;
     }
@@ -281,7 +281,7 @@ class ConsumptionService
     {
         $dinners = DinnerT::dinners($canteen_id);
         if ($dinners->isEmpty()) {
-            throw new ParameterException(['msg' => '饭堂未设置餐次信息']);
+            throw new ParameterException(['errorCode' => 11001, 'msg' => '饭堂未设置餐次信息']);
         }
         $dinner = array();
         foreach ($dinners as $k => $v) {
@@ -294,7 +294,7 @@ class ConsumptionService
             }
         }
         if (empty($dinner)) {
-            throw new ParameterException(['msg' => '当前时间不在就餐时间内']);
+            throw new ParameterException(['errorCode' => 11002,'msg' => '当前时间不在就餐时间内']);
         }
         return $dinner;
     }
