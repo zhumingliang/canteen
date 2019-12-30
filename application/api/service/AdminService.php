@@ -32,6 +32,7 @@ class AdminService
             }
             //新增账户信息
             $params['parent_id'] = Token::getCurrentUid();
+            $params['passwd'] = sha1( $params['passwd']);
             $admin = AdminT::create($params);
             $admin_id = $admin->id;
             //新增账户可见模块信息

@@ -41,13 +41,27 @@ class CanteenService
         try {
             Db::startTrans();
             $c_id = $params['c_id'];
-            $canteens = $params['canteens'];   //新增饭堂默认功能模块
+            $canteens = $params['canteens'];
+            $this->checkCanteenExit($c_id, $canteens);
+            //新增饭堂默认功能模块
             $id = $this->saveDefault($c_id, $canteens);
             Db::commit();
             return $id;
         } catch (Exception$e) {
             Db::rollback();
             throw  $e;
+        }
+
+    }
+
+    public function checkCanteenExit($company_id, $name)
+    {
+        $canteen = CanteenT::where('c_id', $company_id)
+            ->where('name', $name)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->count('id');
+        if ($canteen) {
+            throw new SaveException(['msg' => '企业已经存在饭堂：' . $name]);
         }
 
     }
