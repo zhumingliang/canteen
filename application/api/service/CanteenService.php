@@ -565,7 +565,7 @@ class CanteenService
             }
             if (!empty($params['detail'])) {
                 $strategy = ConsumptionStrategyT::get($params['id']);
-                $detail = json_encode($params['detail'], true);
+                $detail = json_decode($params['detail'], true);
                 $this->prefixStrategyDetail($strategy->id, $strategy->c_id, $strategy->d_id, $strategy->t_id, $detail);
             }
             Db::commit();
