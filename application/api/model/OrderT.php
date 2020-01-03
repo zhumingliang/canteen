@@ -124,6 +124,7 @@ class OrderT extends Model
             ->where('staff_id', $staff_id)
             ->where('d_id', $dinner_id)
             ->whereTime('ordering_date', 'd')
+            ->where('used', CommonEnum::STATE_IS_FAIL)
             ->with([
                 'foods' => function ($query) {
                     $query->where('state', CommonEnum::STATE_IS_OK)

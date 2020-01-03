@@ -19,6 +19,7 @@ use app\api\model\MachineT;
 use app\api\model\MenuT;
 use app\api\model\StaffCanteenV;
 use app\api\model\StaffV;
+use app\api\model\StrategyDetailT;
 use app\api\model\SystemCanteenModuleT;
 use app\lib\enum\AdminEnum;
 use app\lib\enum\CommonEnum;
@@ -305,7 +306,7 @@ class CanteenService
         if ($info->isEmpty()) {
             throw new ParameterException(['msg' => '餐次未设置消费策略']);
         }
-        $dataList = [];
+        $data = [];
         foreach ($info as $k => $v) {
             $data['t_id'] = $v['t_id'];
             $detail = json_decode($v['detail'], true);
@@ -552,6 +553,63 @@ class CanteenService
             throw  new ParameterException(['msg' => '饭堂不存在']);
         }
         return $canteen->c_id;
+    }
+
+    public function updateConsumptionStrategy($params)
+    {
+        try {
+            Db::startTrans();
+            $strategy = ConsumptionStrategyT::update($params);
+            if (!$strategy) {
+                throw new UpdateException();
+            }
+            if (!empty($params['detail'])) {
+                $strategy = ConsumptionStrategyT::get($params['id']);
+                $detail = json_encode($params['detail'], true);
+                $this->prefixStrategyDetail($strategy->id, $strategy->c_id, $strategy->d_id, $strategy->t_id, $detail);
+            }
+            Db::commit();
+        } catch (Exception $e) {
+            Db::rollback();
+            throw $e;
+        }
+    }
+
+    public function prefixStrategyDetail($strategy_id, $canteen_id, $dinner_id, $staff_type_id, $detail)
+    {
+        //删除消费策略下明细列表
+        StrategyDetailT::destroy(function ($query) use ($strategy_id) {
+            $query->where('strategy_id', '=', $strategy_id);
+        });
+        //处理消费策略明细
+        $dataList = [];
+        foreach ($detail as $k => $v) {
+            if (empty($v['strategy'])) {
+                throw new  ParameterException(['msg' => '消费策略数据不合法']);
+                break;
+            }
+            $strategy = $v['strategy'];
+            foreach ($strategy as $k2 => $v2) {
+                if (empty( $v2['sub_money'])){
+                    continue;
+                }
+                array_push($dataList, [
+                    'strategy_id' => $strategy_id,
+                    'canteen_id' => $canteen_id,
+                    'dinner_id' => $dinner_id,
+                    'staff_type_id' => $staff_type_id,
+                    'number' => $v['number'],
+                    'status' => $v2['status'],
+                    'money' => $v2['money'],
+                    'sub_money' => $v2['sub_money'],
+                    'state' => CommonEnum::STATE_IS_OK
+                ]);
+            }
+        }
+        $res = (new StrategyDetailT())->saveAll($dataList);
+        if (!$res) {
+            throw new SaveException(['msg' => '保存消费策略明细失败']);
+        }
     }
 
 }

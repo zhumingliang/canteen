@@ -230,10 +230,8 @@ class Canteen extends BaseController
     public function updateConsumptionStrategy()
     {
         $params = Request::param();
-        $strategy = ConsumptionStrategyT::update($params);
-        if (!$strategy) {
-            throw new UpdateException();
-        }
+        (new CanteenService())->updateConsumptionStrategy($params);
+
         return json(new SuccessMessage());
     }
 
