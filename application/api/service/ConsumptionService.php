@@ -28,11 +28,27 @@ class ConsumptionService
     {
         try {
             Db::startTrans();
-            $company_id = Token::getCurrentTokenVar('company_id');
-            $belong_id = Token::getCurrentTokenVar('belong_id');
+            $company_id = 1;//Token::getCurrentTokenVar('company_id');
+            $belong_id = 1;//Token::getCurrentTokenVar('belong_id');
             $res = array();
             if ($type == 'canteen') {
-                $res = $this->handelCanteen($code, $company_id, $staff_id, $belong_id);
+                $currentOrderID = '';
+                $currentConsumptionType = '';
+                $resCode = '';
+                $out_resMessage = '';
+                $resultSet = Db::query('call procedure_name(:in_companyID,:in_staffID,:in_canteenID,:in_Qrcode,
+                :out_currentOrderID,:out_currentConsumptionType,:out_resCode,:out_resMessage)', [
+                    'in_companyID' => 44,
+                    'in_staffID' => 438,
+                    'in_canteenID' => 83,
+                    'in_Qrcode' => 'xwyWI2VY0rLf',
+                    'out_currentOrderID' => [$currentOrderID,\PDO::PARAM_STR | \PDO::PARAM_INPUT_OUTPUT, 4000],
+                    'out_currentConsumptionType' => [$currentConsumptionType, \PDO::PARAM_STR | PDO::PARAM_INPUT_OUTPUT, 4000],
+                    'out_resCode' => [$resCode, \PDO::PARAM_STR | \PDO::PARAM_INPUT_OUTPUT, 4000],
+                    'out_resMessage' => [$out_resMessage, \PDO::PARAM_STR | \PDO::PARAM_INPUT_OUTPUT, 4000],
+                ]);
+                var_dump($resultSet);
+                // $res = $this->handelCanteen($code, $company_id, $staff_id, $belong_id);
             } else if ($type == 'shop') {
                 $res = $this->handelShop($code);
             }
@@ -49,21 +65,21 @@ class ConsumptionService
         $shopCode = ShopOrderQrcodeT::where('code', $code)
             ->find();
         if (!$shopCode) {
-            throw new ParameterException(['errorCode' => 12001,'msg' => '提货码不存在']);
+            throw new ParameterException(['errorCode' => 12001, 'msg' => '提货码不存在']);
         }
         if (time() > strtotime($shopCode->end_time)) {
-            throw new ParameterException(['errorCode' => 12002,'msg' => '提货码已过期']);
+            throw new ParameterException(['errorCode' => 12002, 'msg' => '提货码已过期']);
         }
         if ($shopCode->state == CommonEnum::STATE_IS_OK) {
-            throw new ParameterException(['errorCode' => 12003,'msg' => '提货码已经使用，不能重复使用']);
+            throw new ParameterException(['errorCode' => 12003, 'msg' => '提货码已经使用，不能重复使用']);
         }
         $order_id = $shopCode->o_id;
         $order = ShopOrderT::orderInfoForMachine($order_id);
         if ($order->state != CommonEnum::STATE_IS_OK) {
-            throw new ParameterException(['errorCode' => 12004,'msg' => '订单状态异常']);
+            throw new ParameterException(['errorCode' => 12004, 'msg' => '订单状态异常']);
         }
         if ($order->used == CommonEnum::STATE_IS_OK) {
-            throw new ParameterException(['errorCode' => 12005,'msg' => '订单已提货，不能重复提货']);
+            throw new ParameterException(['errorCode' => 12005, 'msg' => '订单已提货，不能重复提货']);
         }
         $order->used = CommonEnum::STATE_IS_OK;
         $shopCode->state = CommonEnum::STATE_IS_OK;
@@ -149,7 +165,7 @@ class ConsumptionService
             throw new ParameterException(['errorCode' => 11008, 'msg' => '电子饭卡不存在']);
         }
         if (strtotime($QRCode->expiry_date) < time()) {
-            throw new ParameterException(['errorCode' => 11009,'msg' => '电子饭卡已过期']);
+            throw new ParameterException(['errorCode' => 11009, 'msg' => '电子饭卡已过期']);
         }
     }
 
@@ -241,18 +257,21 @@ class ConsumptionService
     private
     function checkConsumptionStrategy($strategies, $orderCount, $consumptionCount)
     {
+        if ($strategies->unordered_meals == CommonEnum::STATE_IS_OK) {
+            throw new SaveException(['errorCode' => 11011, 'msg' => '消费受限制-未订餐']);
+        }
         if (!$strategies) {
-            throw new SaveException(['errorCode' => 11004,'msg' => '饭堂消费策略没有设置']);
+            throw new SaveException(['errorCode' => 11004, 'msg' => '饭堂消费策略没有设置']);
         }
         if ($orderCount > $strategies->ordered_count) {
-            throw new SaveException(['errorCode' => 11005,'msg' => '订餐数量超过最大订餐数量，最大订餐数量为：' . $strategies->ordered_count]);
+            throw new SaveException(['errorCode' => 11005, 'msg' => '订餐数量超过最大订餐数量，最大订餐数量为：' . $strategies->ordered_count]);
         }
         if ($consumptionCount >= $strategies->consumption_count) {
-            throw new SaveException(['errorCode' => 11006,'msg' => '消费次数已达到上限，最大消费次数为：' . $strategies->consumption_count]);
+            throw new SaveException(['errorCode' => 11006, 'msg' => '消费次数已达到上限，最大消费次数为：' . $strategies->consumption_count]);
         }
         $detail = $strategies->detail;
         if (empty($detail)) {
-            throw new ParameterException(['errorCode' => 11007,'msg' => "消费策略设置异常"]);
+            throw new ParameterException(['errorCode' => 11007, 'msg' => "消费策略设置异常"]);
         }
         //获取消费策略中：未订餐就餐的标准金额和附加金额
         $returnMoney = [];
@@ -270,7 +289,7 @@ class ConsumptionService
             }
         }
         if (empty($returnMoney)) {
-            throw new ParameterException(['errorCode' => 11003,'msg' => '未订餐就餐失败，消费策略未设置']);
+            throw new ParameterException(['errorCode' => 11003, 'msg' => '未订餐就餐失败，消费策略未设置']);
         }
         return $returnMoney;
     }
@@ -294,7 +313,7 @@ class ConsumptionService
             }
         }
         if (empty($dinner)) {
-            throw new ParameterException(['errorCode' => 11002,'msg' => '当前时间不在就餐时间内']);
+            throw new ParameterException(['errorCode' => 11002, 'msg' => '当前时间不在就餐时间内']);
         }
         return $dinner;
     }
