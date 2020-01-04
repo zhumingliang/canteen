@@ -32,20 +32,27 @@ class ConsumptionService
             $belong_id = 1;//Token::getCurrentTokenVar('belong_id');
             $res = array();
             if ($type == 'canteen') {
-                $currentOrderID = '';
-                $currentConsumptionType = '';
+                $currentOrderID = 0;
+                $currentConsumptionType = 2;
                 $resCode = '';
                 $out_resMessage = '';
-                $resultSet = Db::query('call procedure_name(:in_companyID,:in_staffID,:in_canteenID,:in_Qrcode,
+          /*      $resultSet = Db::query('call canteenConsumption(:in_companyID,:in_staffID,:in_canteenID,:in_Qrcode)', [
+                    'in_companyID' => 44,
+                    'in_staffID' => 438,
+                    'in_canteenID' => 83,
+                    'in_Qrcode' =>'xwyWI2VY0rLf',
+                ]);*/
+
+                $resultSet = Db::query('call canteenConsumption(:in_companyID,:in_staffID,:in_canteenID,:in_Qrcode,
                 :out_currentOrderID,:out_currentConsumptionType,:out_resCode,:out_resMessage)', [
                     'in_companyID' => 44,
                     'in_staffID' => 438,
                     'in_canteenID' => 83,
-                    'in_Qrcode' => 'xwyWI2VY0rLf',
-                    'out_currentOrderID' => [$currentOrderID,\PDO::PARAM_STR | \PDO::PARAM_INPUT_OUTPUT, 4000],
-                    'out_currentConsumptionType' => [$currentConsumptionType, \PDO::PARAM_STR | PDO::PARAM_INPUT_OUTPUT, 4000],
-                    'out_resCode' => [$resCode, \PDO::PARAM_STR | \PDO::PARAM_INPUT_OUTPUT, 4000],
-                    'out_resMessage' => [$out_resMessage, \PDO::PARAM_STR | \PDO::PARAM_INPUT_OUTPUT, 4000],
+                    'in_Qrcode' =>'xwyWI2VY0rLf',
+                    'out_currentOrderID' => [&$currentOrderID, \PDO::PARAM_STR | \PDO::PARAM_INPUT_OUTPUT, 4000],
+                    'out_currentConsumptionType' => [&$currentConsumptionType, \PDO::PARAM_STR | \PDO::PARAM_INPUT_OUTPUT, 4000],
+                    'out_resCode' => [&$resCode, \PDO::PARAM_STR | \PDO::PARAM_INPUT_OUTPUT, 4000],
+                    'out_resMessage' => [&$out_resMessage, \PDO::PARAM_STR | \PDO::PARAM_INPUT_OUTPUT, 4000],
                 ]);
                 var_dump($resultSet);
                 // $res = $this->handelCanteen($code, $company_id, $staff_id, $belong_id);

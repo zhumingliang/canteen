@@ -1534,6 +1534,7 @@ abstract class Connection
             if (is_array($val)) {
                 array_unshift($val, $param);
                 $result = call_user_func_array([$this->PDOStatement, 'bindParam'], $val);
+                //$result = call_user_func_array([$this->PDOStatement, 'bindValue'], $val);
             } else {
                 $result = $this->PDOStatement->bindValue($param, $val);
             }
