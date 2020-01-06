@@ -28,34 +28,12 @@ class ConsumptionService
     {
         try {
             Db::startTrans();
-            $company_id = 1;//Token::getCurrentTokenVar('company_id');
-            $belong_id = 1;//Token::getCurrentTokenVar('belong_id');
+            $company_id = Token::getCurrentTokenVar('company_id');
+            $belong_id = Token::getCurrentTokenVar('belong_id');
             $res = array();
             if ($type == 'canteen') {
-                $currentOrderID = 0;
-                $currentConsumptionType = 2;
-                $resCode = '';
-                $out_resMessage = '';
-          /*      $resultSet = Db::query('call canteenConsumption(:in_companyID,:in_staffID,:in_canteenID,:in_Qrcode)', [
-                    'in_companyID' => 44,
-                    'in_staffID' => 438,
-                    'in_canteenID' => 83,
-                    'in_Qrcode' =>'xwyWI2VY0rLf',
-                ]);*/
-
-                $resultSet = Db::query('call canteenConsumption(:in_companyID,:in_staffID,:in_canteenID,:in_Qrcode,
-                :out_currentOrderID,:out_currentConsumptionType,:out_resCode,:out_resMessage)', [
-                    'in_companyID' => 44,
-                    'in_staffID' => 438,
-                    'in_canteenID' => 83,
-                    'in_Qrcode' =>'xwyWI2VY0rLf',
-                    'out_currentOrderID' => [&$currentOrderID, \PDO::PARAM_STR | \PDO::PARAM_INPUT_OUTPUT, 4000],
-                    'out_currentConsumptionType' => [&$currentConsumptionType, \PDO::PARAM_STR | \PDO::PARAM_INPUT_OUTPUT, 4000],
-                    'out_resCode' => [&$resCode, \PDO::PARAM_STR | \PDO::PARAM_INPUT_OUTPUT, 4000],
-                    'out_resMessage' => [&$out_resMessage, \PDO::PARAM_STR | \PDO::PARAM_INPUT_OUTPUT, 4000],
-                ]);
-                var_dump($resultSet);
-                // $res = $this->handelCanteen($code, $company_id, $staff_id, $belong_id);
+               // $res = $this->handelCanteen($code, $company_id, $staff_id, $belong_id);
+                $res = $this->handelCanteenByProcedure($code, $company_id, $staff_id, $belong_id);
             } else if ($type == 'shop') {
                 $res = $this->handelShop($code);
             }
@@ -124,6 +102,47 @@ class ConsumptionService
             'u_id' => $user->id,
             'phone' => $staff->phone,
             'username' => $staff->username
+        ];
+    }
+
+
+    private function handelCanteenByProcedure($code, $company_id, $staff_id, $canteen_id)
+    {
+        Db::query('call canteenConsumption(:in_companyID,:in_staffID,:in_canteenID,:in_Qrcode,
+                @currentOrderID,@currentConsumptionType,@resCode,@resMessage,@returnBalance,@returnDinner,@returnDepartment,@returnUsername)',
+            [
+                'in_companyID' => $company_id,
+                'in_staffID' => $staff_id,
+                'in_canteenID' => $canteen_id,
+                'in_Qrcode' => $code
+            ]);
+        $resultSet = Db::query('select @currentOrderID,@currentConsumptionType,@resCode,@resMessage,@returnBalance,@returnDinner,@returnDepartment,@returnUsername');
+        $errorCode = $resultSet[0]['@resCode'];
+        $resMessage = $resultSet[0]['@resMessage'];
+        $consumptionType = $resultSet[0]['@currentConsumptionType'];
+        $orderID = $resultSet[0]['@currentOrderID'];
+        $balance = $resultSet[0]['@returnBalance'];
+        $dinner = $resultSet[0]['@returnDinner'];
+        $department = $resultSet[0]['@returnDepartment'];
+        $username = $resultSet[0]['@returnUsername'];
+        if ($errorCode != 0) {
+            throw  new SaveException(['errorCode' => $errorCode, 'msg' => $resMessage]);
+        }
+
+        $order = OrderT::infoToCanteenMachine($orderID);
+        $order['remark'] = $consumptionType == 1 ? "订餐消费" : "未订餐消费";
+        //获取订单信息返回
+
+        return [
+            'dinner' => $dinner,
+            'price' => $order['money'],
+            'money' => $order['money'] + $order['sub_money'],
+            'department' => $department,
+            'username' => $username,
+            'type' => $consumptionType,
+            'balance' => $balance,
+            'remark' => $consumptionType == 1 ? "订餐消费" : "未订餐消费",
+            'products' => $order['foods']
         ];
     }
 
@@ -264,7 +283,7 @@ class ConsumptionService
     private
     function checkConsumptionStrategy($strategies, $orderCount, $consumptionCount)
     {
-        if ($strategies->unordered_meals == CommonEnum::STATE_IS_OK) {
+        if ($strategies->unordered_meals == CommonEnum::STATE_IS_FAIL) {
             throw new SaveException(['errorCode' => 11011, 'msg' => '消费受限制-未订餐']);
         }
         if (!$strategies) {

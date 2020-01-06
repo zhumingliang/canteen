@@ -137,5 +137,19 @@ class OrderT extends Model
         return $info;
     }
 
+    public static function infoToCanteenMachine($order_id)
+    {
+        $info = self::where('id', $order_id)
+            ->with([
+                'foods' => function ($query) {
+                    $query->where('state', CommonEnum::STATE_IS_OK)
+                        ->field('id as detail_id ,o_id,f_id as food_id,count,name,price');
+                }
+            ])
+            ->field('id,d_id,type,pay_way,money,sub_money,(money+sub_money) as all_money ,consumption_type,meal_sub_money,meal_money')
+            ->find()->toArray();
+
+        return $info;
+    }
 
 }
