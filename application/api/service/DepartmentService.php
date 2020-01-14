@@ -49,6 +49,7 @@ class DepartmentService
     private function checkDepartmentCanDelete($id)
     {
         $staff = CompanyStaffT::where('d_id', $id)
+            ->where('state', CommonEnum::STATE_IS_OK)
             ->count('id');
         if ($staff) {
             return true;

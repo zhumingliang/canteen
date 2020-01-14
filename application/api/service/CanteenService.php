@@ -42,7 +42,7 @@ class CanteenService
         try {
             Db::startTrans();
             $c_id = $params['c_id'];
-            $canteens =  preg_replace('# #', '', $params['canteens']);
+            $canteens = preg_replace('# #', '', $params['canteens']);
             $this->checkCanteenExit($c_id, $canteens);
             //新增饭堂默认功能模块
             $id = $this->saveDefault($c_id, $canteens);
@@ -264,6 +264,8 @@ class CanteenService
     public function saveConsumptionStrategy($params)
     {
         $c_id = $params['c_id'];
+        $t_id = $params['t_id'];
+        $this->checkStrategyExit($c_id, $t_id);
         //获取饭堂餐次
         $dinners = $this->getDinners($c_id);
         if (!count($dinners)) {
@@ -273,7 +275,7 @@ class CanteenService
         foreach ($dinners as $k => $v) {
             $data[] = [
                 'c_id' => $c_id,
-                't_id' => $params['t_id'],
+                't_id' => $t_id,
                 'd_id' => $v['id'],
                 'unordered_meals' => $params['unordered_meals'],
                 'consumption_count' => 1,
@@ -286,6 +288,17 @@ class CanteenService
             throw  new SaveException();
         }
         return $this->consumptionStrategy($c_id);
+    }
+
+    public function checkStrategyExit($canteen_id, $staff_type_id)
+    {
+        $exit = ConsumptionStrategyT::where('c_id', $canteen_id)
+            ->where('t_id', $staff_type_id)
+            ->count('id');
+        if ($exit) {
+            throw  new SaveException(['msg' => '指定人员类型已存在消费策略，不能重复添加']);
+        }
+
     }
 
     public function consumptionStrategy($c_id)
