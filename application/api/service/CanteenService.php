@@ -42,7 +42,7 @@ class CanteenService
         try {
             Db::startTrans();
             $c_id = $params['c_id'];
-            $canteens = $params['canteens'];
+            $canteens =  preg_replace('# #', '', $params['canteens']);
             $this->checkCanteenExit($c_id, $canteens);
             //新增饭堂默认功能模块
             $id = $this->saveDefault($c_id, $canteens);
@@ -590,7 +590,7 @@ class CanteenService
             }
             $strategy = $v['strategy'];
             foreach ($strategy as $k2 => $v2) {
-                if (empty( $v2['sub_money'])){
+                if (empty($v2['sub_money'])) {
                     continue;
                 }
                 array_push($dataList, [

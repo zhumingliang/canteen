@@ -28,8 +28,8 @@ class ConsumptionService
     {
         try {
             Db::startTrans();
-            $company_id = Token::getCurrentTokenVar('company_id');
-            $belong_id = Token::getCurrentTokenVar('belong_id');
+            $company_id = 1;//Token::getCurrentTokenVar('company_id');
+            $belong_id = 1;//Token::getCurrentTokenVar('belong_id');
             $res = array();
             if ($type == 'canteen') {
                 // $res = $this->handelCanteen($code, $company_id, $staff_id, $belong_id);
@@ -108,10 +108,6 @@ class ConsumptionService
 
     private function handelCanteenByProcedure($code, $company_id, $staff_id, $canteen_id)
     {
-        LogService::save('in_companyID:' . $company_id);
-        LogService::save('in_staffID:' . $staff_id);
-        LogService::save('in_canteenID:' . $canteen_id);
-        LogService::save('in_Qrcode:' . $code);
         Db::query('call canteenConsumption(:in_companyID,:in_staffID,:in_canteenID,:in_Qrcode,
                 @currentOrderID,@currentConsumptionType,@resCode,@resMessage,@returnBalance,@returnDinner,@returnDepartment,@returnUsername)',
             [
