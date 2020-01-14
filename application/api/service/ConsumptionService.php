@@ -28,8 +28,8 @@ class ConsumptionService
     {
         try {
             Db::startTrans();
-            $company_id = 1;//Token::getCurrentTokenVar('company_id');
-            $belong_id = 1;//Token::getCurrentTokenVar('belong_id');
+            $company_id = Token::getCurrentTokenVar('company_id');
+            $belong_id = Token::getCurrentTokenVar('belong_id');
             $res = array();
             if ($type == 'canteen') {
                 // $res = $this->handelCanteen($code, $company_id, $staff_id, $belong_id);
