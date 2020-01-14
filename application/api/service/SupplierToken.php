@@ -16,6 +16,7 @@ use app\lib\enum\CommonEnum;
 use app\lib\exception\TokenException;
 use think\Exception;
 use think\facade\Cache;
+use zml\tp_tools\Redis;
 
 class SupplierToken extends Token
 {
@@ -74,9 +75,8 @@ class SupplierToken extends Token
         $key = empty($key) ? self::generateToken() : $key;
         $value = json_encode($cachedValue);
         $expire_in = config('setting.token_cms_expire_in');
-        $request = Cache::remember($key, $value, $expire_in);
-
-
+       //$request = Cache::remember($key, $value, $expire_in);
+        $request = Redis::instance()->set($key, $value, $expire_in);
         if (!$request) {
             throw new TokenException([
                 'msg' => '服务器缓存异常',

@@ -27,6 +27,7 @@ use app\lib\exception\TokenException;
 use think\Controller;
 use think\facade\Cache;
 use think\facade\Request;
+use zml\tp_tools\Redis;
 
 class  Token extends Controller
 {
@@ -97,7 +98,8 @@ class  Token extends Controller
     public function loginOut()
     {
         $token = Request::header('token');
-        Cache::rm($token);
+        // Cache::rm($token);
+        Redis::instance()->delete($token);
         return json(new SuccessMessage());
     }
 

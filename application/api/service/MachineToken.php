@@ -12,6 +12,7 @@ use app\lib\exception\TokenException;
 use GatewayClient\Gateway;
 use think\Exception;
 use think\facade\Cache;
+use zml\tp_tools\Redis;
 
 class MachineToken extends Token
 {
@@ -65,9 +66,8 @@ class MachineToken extends Token
         $key = empty($key) ? self::generateToken() : $key;
         $value = json_encode($cachedValue);
         $expire_in = config('setting.token_machine_expire_in');
-        $request = Cache::remember($key, $value, $expire_in);
-
-
+        //$request = Cache::remember($key, $value, $expire_in);
+        $request = Redis::instance()->set($key, $value, $expire_in);
         if (!$request) {
             throw new TokenException([
                 'msg' => '服务器缓存异常',
