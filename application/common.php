@@ -56,6 +56,13 @@ function guid()
     return $uuid;
 }
 
+function QRcodeNUmber()
+{
+    $yCode = array('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J');
+    $orderSn = $yCode[intval(date('Y')) - 2011] . strtoupper(dechex(date('m'))) . date('d') . substr(time(), -5) . substr(microtime(), 2, 5) . sprintf('%02d', rand(0, 99));
+    return $orderSn;
+}
+
 
 /**
  * base64转图片
@@ -130,16 +137,17 @@ function makeOrderNo()
     return $orderSn;
 }
 
-function curl_file_get_contents($durl,$headers){
+function curl_file_get_contents($durl, $headers)
+{
 
     // 初始化
     $curl = curl_init();
     // 设置url路径
     curl_setopt($curl, CURLOPT_URL, $durl);
     // 将 curl_exec()获取的信息以文件流的形式返回，而不是直接输出。
-    curl_setopt($curl, CURLOPT_RETURNTRANSFER, true) ;
+    curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
     // 在启用 CURLOPT_RETURNTRANSFER 时候将获取数据返回
-    curl_setopt($curl, CURLOPT_BINARYTRANSFER, true) ;
+    curl_setopt($curl, CURLOPT_BINARYTRANSFER, true);
     // 添加头信息
     curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
     // CURLINFO_HEADER_OUT选项可以拿到请求头信息
@@ -156,7 +164,8 @@ function curl_file_get_contents($durl,$headers){
     // 返回数据
     return $data;
 }
- function getTree($list, $pid = 0)
+
+function getTree($list, $pid = 0)
 {
     $tree = [];
     if (!empty($list)) {        //先修改为以id为下标的列表

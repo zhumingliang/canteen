@@ -24,7 +24,7 @@ use think\Exception;
 
 class ConsumptionService
 {
-    public function staff($type, $code, $staff_id)
+    public function staff($type, $code)
     {
         try {
             Db::startTrans();
@@ -33,7 +33,7 @@ class ConsumptionService
             $res = array();
             if ($type == 'canteen') {
                 // $res = $this->handelCanteen($code, $company_id, $staff_id, $belong_id);
-                $res = $this->handelCanteenByProcedure($code, $company_id, $staff_id, $belong_id);
+                $res = $this->handelCanteenByProcedure($code, $company_id, $belong_id);
             } else if ($type == 'shop') {
                 $res = $this->handelShop($code);
             }
@@ -106,17 +106,16 @@ class ConsumptionService
     }
 
 
-    private function handelCanteenByProcedure($code, $company_id, $staff_id, $canteen_id)
+    private function handelCanteenByProcedure($code, $company_id, $canteen_id)
     {
-        Db::query('call canteenConsumption(:in_companyID,:in_staffID,:in_canteenID,:in_Qrcode,
-                @currentOrderID,@currentConsumptionType,@resCode,@resMessage,@returnBalance,@returnDinner,@returnDepartment,@returnUsername)',
+        Db::query('call canteenConsumption(:in_companyID,:in_canteenID,:in_Qrcode,
+                @currentOrderID,@currentConsumptionType,@resCode,@resMessage,@returnBalance,@returnDinner,@returnDepartment,@returnUsername,@returnPrice,@returnMoney)',
             [
                 'in_companyID' => $company_id,
-                'in_staffID' => $staff_id,
                 'in_canteenID' => $canteen_id,
                 'in_Qrcode' => $code
             ]);
-        $resultSet = Db::query('select @currentOrderID,@currentConsumptionType,@resCode,@resMessage,@returnBalance,@returnDinner,@returnDepartment,@returnUsername');
+        $resultSet = Db::query('select @currentOrderID,@currentConsumptionType,@resCode,@resMessage,@returnBalance,@returnDinner,@returnDepartment,@returnUsername,@returnPrice,@returnMoney');
         $errorCode = $resultSet[0]['@resCode'];
         $resMessage = $resultSet[0]['@resMessage'];
         $consumptionType = $resultSet[0]['@currentConsumptionType'];
@@ -125,18 +124,18 @@ class ConsumptionService
         $dinner = $resultSet[0]['@returnDinner'];
         $department = $resultSet[0]['@returnDepartment'];
         $username = $resultSet[0]['@returnUsername'];
+        $price = $resultSet[0]['@returnPrice'];
+        $money = $resultSet[0]['@returnMoney'];
         if ($errorCode != 0) {
             throw  new SaveException(['errorCode' => $errorCode, 'msg' => $resMessage]);
         }
-
         $order = OrderT::infoToCanteenMachine($orderID);
         $order['remark'] = $consumptionType == 1 ? "订餐消费" : "未订餐消费";
         //获取订单信息返回
-
         return [
             'dinner' => $dinner,
-            'price' => $order['money'],
-            'money' => $order['money'] + $order['sub_money'],
+            'price' => $price,
+            'money' => $money,
             'department' => $department,
             'username' => $username,
             'type' => $consumptionType,

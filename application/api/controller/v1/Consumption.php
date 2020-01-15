@@ -18,10 +18,9 @@ class Consumption extends BaseController
      * @apiVersion 3.0.0
      * @apiDescription 消费机-饭堂订单/小卖部订单--消费操作Machine
      * @apiExample {get}  请求样例:
-     * http://canteen.tonglingok.com/api/v1/consumption/staff?code=123&type=shop&staff_id=1
+     * http://canteen.tonglingok.com/api/v1/consumption/staff?code=123&type=shop
      * @apiParam (请求参数说明) {String} code 唯一识别码
      * @apiParam (请求参数说明) {String} type shop:小卖部提货码；canteen:饭堂消费码
-     * @apiParam (请求参数说明) {String} staff_id 用户id
      * @apiSuccessExample {json} 小卖部消费返回样例:
      * {"msg":"ok","errorCode":0,"code":200,"data":{"money":164,"department":"股东","username":"langbin","products":[{"o_id":22,"name":"鸡蛋xxx","unit":"元\/500g","price":"8.00","count":1},{"o_id":22,"name":"捞面","unit":"份","price":"8.00","count":1},{"o_id":22,"name":"langbing2","unit":"g","price":"10.00","count":1},{"o_id":22,"name":"langbin3","unit":"kg","price":"15.00","count":1}]}}
      * @apiSuccessExample {json} 饭堂消费返回样例:
@@ -44,8 +43,7 @@ class Consumption extends BaseController
     {
         $code = Request::param('code');
         $type = Request::param('type');
-        $staff_id = Request::param('staff_id');
-        $data = (new ConsumptionService())->staff($type, $code, $staff_id);
+        $data = (new ConsumptionService())->staff($type, $code);
         return json(new SuccessMessageWithData(['data' => $data]));
 
     }

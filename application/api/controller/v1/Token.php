@@ -153,7 +153,6 @@ class  Token extends Controller
         $client_id = Request::param('client_id');
         $token = (new MachineToken())->get($code, $passwd, $client_id);
         return json(new SuccessMessageWithData(['data' => $token]));
-
     }
 
 }

@@ -270,8 +270,8 @@ class ShopService
 
     private function prefixOrderQrcode($o_id)
     {
-        $code = getRandChar(12);
-        $url = sprintf(config("setting.qrcode_url"), 'shop', $code, '');
+        $code = QRcodeNUmber();
+        $url = sprintf(config("setting.qrcode_url"), 'shop', $code);
         $qrcode_url = (new QrcodeService())->qr_code($url);
         $time_begin = date('Y-m-d H:i:s');
         $time_end = date('Y-m-d H:i:s', strtotime("+" . config("setting.shop_qrcode_expire_in") . "minute", time()));
@@ -295,7 +295,7 @@ class ShopService
     private function updateOrderQrcode($id)
     {
         $code = getRandChar(12);
-        $url = sprintf(config("setting.qrcode_url"), 'shop', $code, '');
+        $url = sprintf(config("setting.qrcode_url"), 'shop', $code);
         $qrcode_url = (new QrcodeService())->qr_code($url);
         $data = [
             'id' => $id,
