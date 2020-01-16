@@ -5,6 +5,7 @@ namespace app\api\service;
 
 
 use app\api\model\AdminCanteenT;
+use app\api\model\AdminModuleT;
 use app\api\model\CanteenModuleT;
 use app\api\model\CanteenModuleV;
 use app\api\model\ShopModuleT;
@@ -270,7 +271,7 @@ class ModuleService
 
     private function getAdminMobileModules($admin_id)
     {
-        $adminModules = AdminCanteenT::where('admin_id', $admin_id)->find();
+        $adminModules = AdminModuleT::where('admin_id', $admin_id)->find();
         $rules = $adminModules->rules;
         $modules = CanteenModuleV::mobileModulesWithID($rules);
         return $modules;
