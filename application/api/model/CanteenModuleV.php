@@ -29,7 +29,6 @@ class CanteenModuleV extends Model
     {
         $modules = self::whereIn('c_m_id', $ids)
             ->where('type', ModuleEnum::MOBILE)
-            ->where('parent_id', '>', 0)
             ->field('category,name,url,icon')
             ->select()->toArray();
         return $modules;
