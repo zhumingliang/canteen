@@ -31,6 +31,7 @@ Route::get('api/:version/modules/shop/withSystem', 'api/:version.Module/shopModu
 Route::get('api/:version/modules/canteen/withoutSystem', 'api/:version.Module/canteenModulesWithoutSystem');
 Route::get('api/:version/modules/user', 'api/:version.Module/userMobileModules');
 Route::get('api/:version/modules/admin', 'api/:version.Module/adminModules');
+Route::get('api/:version/canteen/module/category', 'api/:version.Module/canteenModuleCategoryHandel');
 
 Route::post('api/:version/company/save', 'api/:version.Company/save');
 Route::post('api/:version/company/wxConfig/save', 'api/:version.Company/saveCompanyWxConfig');
