@@ -25,6 +25,7 @@ class Index extends BaseController
     public function index()
     {
 
+        print_r(\app\api\service\Token::getCurrentTokenVar());
 
         /* $strategy = ConsumptionStrategyT::where('state', CommonEnum::STATE_IS_OK)
           ->select()->toArray();
