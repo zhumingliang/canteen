@@ -21,12 +21,12 @@ class SendSMSService
         $params = ['code' => $code];
         $res = SendSms::instance()->send($phone, $params, $type);
         $token = Request::header('token');
+        $key = "code:" . $token;
         if (key_exists('Code', $res) && $res['Code'] == 'OK') {
-            $redis = new Redis();
-            $redis->set($token, $phone . '-' . $code, 120);
+            Redis::instance()->set($key, $phone . '-' . $code, 120);
             return true;
         }
-        $this->saveSend($phone, $params, $type, $token);
+        $this->saveSend($phone, $params, $type, $key);
     }
 
     public function saveSend($phone, $params, $type, $token = '')
@@ -44,7 +44,7 @@ class SendSMSService
     public function sendHandel()
     {
         try {
-            $redis =Redis::instance();
+            $redis = Redis::instance();
             for ($i = 0; $i < 10; $i++) {
                 $data = $redis->rPop('canteen_send_message');//从结尾处弹出一个值,超时时间为60s
                 $data_arr = json_decode($data, true);

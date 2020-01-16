@@ -20,7 +20,8 @@ class UserService
     public function bindPhone($phone, $code)
     {
         $token = Request::header('token');
-        $current_code = Redis::instance()->get($token);
+        $key = "code:" . $token;
+        $current_code = Redis::instance()->get($key);
         if (!$current_code) {
             throw new UpdateException(['errorCode' => '10007', 'msg' => '验证码过期，请重新获取']);
         }
