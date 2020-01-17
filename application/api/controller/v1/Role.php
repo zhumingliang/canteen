@@ -146,7 +146,7 @@ class Role extends BaseController
      *       "state":1
      *     }
      * @apiParam (请求参数说明) {int} id  角色ID
-     * @apiParam (请求参数说明) {int} state  状态：1|启用；2|停用
+     * @apiParam (请求参数说明) {int} state  状态：1|启用；2|停用;3|删除
      * @apiSuccessExample {json} 返回样例:
      *{"msg":"ok","errorCode":0}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误

@@ -53,6 +53,7 @@ class AdminT extends Model
                     $query->where('company', 'like', '%' . $c_name . '%');
                 }
             })
+            ->where('state', '<', 3)
             ->field('id,company,phone,role,account,remark,state,create_time')
             ->order('create_time desc')
             ->paginate($size, false, ['page' => $page]);

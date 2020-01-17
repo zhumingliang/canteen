@@ -13,7 +13,7 @@ class Role extends BaseValidate
         'passwd' => 'require|isNotEmpty',
         'role' => 'require|isNotEmpty',
         'c_id' => 'require|isPositiveInteger',
-        'state' => 'require|in:1,2',
+        'state' => 'require|in:1,2,3',
         'belong_ids' => 'require|isNotEmpty',
     ];
 
