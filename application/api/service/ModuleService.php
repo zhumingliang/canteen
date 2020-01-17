@@ -257,7 +257,7 @@ class ModuleService
 
     public function userMobileModules()
     {
-        $admin_id =85;// (new UserService())->checkUserAdminID();
+        $admin_id = (new UserService())->checkUserAdminID();
         //当前用户为管理员
         if ($admin_id) {
             $modules = $this->getAdminMobileModules($admin_id);
