@@ -54,7 +54,7 @@ class AdminT extends Model
                 }
             })
             ->where('state', '<', 3)
-            ->field('id,company,phone,role,account,remark,state,create_time')
+            ->field('id,c_id as company_id,company,phone,role,account,remark,state,create_time')
             ->order('create_time desc')
             ->paginate($size, false, ['page' => $page]);
         return $list;
