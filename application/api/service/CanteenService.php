@@ -139,6 +139,7 @@ class CanteenService
 
     private function prefixDinner($c_id, $dinners)
     {
+        //检测该饭堂有没有设置消费策略
         foreach ($dinners as $k => $v) {
             $sub = $dinners;
             unset($sub[$k]);
@@ -150,6 +151,29 @@ class CanteenService
         $res = (new DinnerT())->saveAll($dinners);
         if (!$res) {
             throw new SaveException();
+        }
+        $staffStrategies = ConsumptionStrategyT::staffStrategies($c_id);
+        if (!$staffStrategies->isEmpty()) {
+            $data = [];
+            foreach ($res as $k => $v) {
+                foreach ($staffStrategies as $k2 => $v2) {
+                    $data[] = [
+                        'c_id' => $c_id,
+                        't_id' => $v2->t_id,
+                        'd_id' => $v->id,
+                        'unordered_meals' => 1,
+                        'consumption_count' => 1,
+                        'ordered_count' => 1,
+                        'state' => CommonEnum::STATE_IS_OK
+                    ];
+                }
+
+            }
+            $saveRes = (new ConsumptionStrategyT())->saveAll($data);
+            if (!$saveRes) {
+                throw new SaveException(['msg'=>'更新消费策略失败']);
+            }
+
         }
     }
 

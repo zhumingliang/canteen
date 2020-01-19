@@ -92,4 +92,16 @@ class ConsumptionStrategyT extends Model
         return $info;
     }
 
+    public static function staffStrategies($canteen_id)
+    {
+        $strategies = self::where('c_id', $canteen_id)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->field('t_id')
+            ->group('t_id')
+            ->select();
+        return $strategies;
+
+
+    }
+
 }
