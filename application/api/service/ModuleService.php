@@ -280,7 +280,7 @@ class ModuleService
 
     public function getAdminModules($admin_id)
     {
-        $adminModules = AdminCanteenT::where('admin_id', $admin_id)->find();
+        $adminModules = AdminModuleT::where('admin_id', $admin_id)->find();
         $rules = $adminModules->rules;
         $modules = CanteenModuleV::adminModulesWithID($rules);
         return $modules;
