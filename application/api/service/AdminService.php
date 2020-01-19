@@ -26,13 +26,19 @@ class AdminService
     {
         try {
             Db::startTrans();
+            //检测角色账号是否重复
+            $check = AdminT::check($params['c_id'], $params['account']);
+            if ($check) {
+                throw new SaveException(['msg' => '账号：' . $params['account'] . '已经存在']);
+
+            }
             $canteens = [];
             if (!empty($params['canteens'])) {
                 $canteens = json_decode($params['canteens'], true);
             }
             //新增账户信息
             $params['parent_id'] = Token::getCurrentUid();
-            $params['passwd'] = sha1( $params['passwd']);
+            $params['passwd'] = sha1($params['passwd']);
             $admin = AdminT::create($params);
             $admin_id = $admin->id;
             //新增账户可见模块信息
@@ -176,7 +182,7 @@ class AdminService
             'state' => CommonEnum::STATE_IS_OK,
             'c_id' => $c_id,
             'remark' => $remark,
-            'company' =>$company
+            'company' => $company
         ];
 
         $admin = AdminT::create($data);

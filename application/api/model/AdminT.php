@@ -9,6 +9,7 @@
 namespace app\api\model;
 
 
+use app\lib\enum\CommonEnum;
 use think\Model;
 
 class AdminT extends Model
@@ -67,6 +68,16 @@ class AdminT extends Model
             ->field('id,role,remark,c_id')
             ->find();
         return $role;
+    }
+
+    public static function check($c_id, $account)
+    {
+        $count = self::where('c_id', $c_id)
+            ->where('account', $account)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->count('id');
+        return $count;
+
     }
 
 }
