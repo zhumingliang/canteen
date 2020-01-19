@@ -146,34 +146,10 @@ class CanteenService
             $this->checkDinnerMealTime($v['meal_time_begin'], $v['meal_time_end'], $sub);
             $dinners[$k]['c_id'] = $c_id;
             $dinners[$k]['state'] = CommonEnum::STATE_IS_OK;
-
         }
         $res = (new DinnerT())->saveAll($dinners);
         if (!$res) {
             throw new SaveException();
-        }
-        $staffStrategies = ConsumptionStrategyT::staffStrategies($c_id);
-        if (!$staffStrategies->isEmpty()) {
-            $data = [];
-            foreach ($res as $k => $v) {
-                foreach ($staffStrategies as $k2 => $v2) {
-                    $data[] = [
-                        'c_id' => $c_id,
-                        't_id' => $v2->t_id,
-                        'd_id' => $v->id,
-                        'unordered_meals' => 1,
-                        'consumption_count' => 1,
-                        'ordered_count' => 1,
-                        'state' => CommonEnum::STATE_IS_OK
-                    ];
-                }
-
-            }
-            $saveRes = (new ConsumptionStrategyT())->saveAll($data);
-            if (!$saveRes) {
-                throw new SaveException(['msg'=>'更新消费策略失败']);
-            }
-
         }
     }
 
@@ -238,6 +214,7 @@ class CanteenService
             if (!empty($params['dinners'])) {
                 $dinners = $params['dinners'];
                 $dinners = json_decode($dinners, true);
+                $dinnersId = [];
                 foreach ($dinners as $k => $v) {
                     $sub = $dinners;
                     unset($sub[$k]);
@@ -245,6 +222,8 @@ class CanteenService
                     if (!key_exists('id', $v)) {
                         $dinners[$k]['c_id'] = $c_id;
                         $dinners[$k]['state'] = CommonEnum::STATE_IS_OK;
+                    } else {
+                        array_push($dinnersId, $v['id']);
                     }
 
                 }
@@ -253,6 +232,32 @@ class CanteenService
                     if (!$res) {
                         throw new SaveException();
                     }
+                }
+
+                $staffStrategies = ConsumptionStrategyT::staffStrategies($c_id);
+                if (!$staffStrategies->isEmpty()) {
+                    $data = [];
+                    foreach ($res as $k => $v) {
+                        foreach ($staffStrategies as $k2 => $v2) {
+                            if (!in_array($v->id, $dinnersId)) {
+                                $data[] = [
+                                    'c_id' => $c_id,
+                                    't_id' => $v2->t_id,
+                                    'd_id' => $v->id,
+                                    'unordered_meals' => 1,
+                                    'consumption_count' => 1,
+                                    'ordered_count' => 1,
+                                    'state' => CommonEnum::STATE_IS_OK
+                                ];
+                            }
+                        }
+
+                    }
+                    $saveRes = (new ConsumptionStrategyT())->saveAll($data);
+                    if (!$saveRes) {
+                        throw new SaveException(['msg' => '更新消费策略失败']);
+                    }
+
                 }
 
             }
