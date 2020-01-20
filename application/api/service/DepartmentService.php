@@ -27,12 +27,24 @@ class DepartmentService
 {
     public function save($params)
     {
+        if ($this->checkExit($params['c_id'],$params['name'])){
+            throw new SaveException(['msg'=>'部门：'.$params['name'].'已存在']);
+        }
         $params['state'] = CommonEnum::STATE_IS_OK;
         $department = CompanyDepartmentT::create($params);
         if (!$department) {
             throw new SaveException();
         }
         return $department->id;
+    }
+
+    private function checkExit($company_id, $name)
+    {
+        $department = CompanyDepartmentT::where('c_id', $company_id)
+            ->where('name', $name)
+            ->count('id');
+        return $department;
+
     }
 
     public function deleteDepartment($id)
