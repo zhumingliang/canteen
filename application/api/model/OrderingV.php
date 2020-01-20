@@ -24,6 +24,16 @@ class OrderingV extends Model
         return $record;
     }
 
+    public static function getRecordForDayOrderingByPhone( $ordering_date, $dinner, $phone)
+    {
+        $record = self::where('phone', $phone)
+            ->where('ordering_date', $ordering_date)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->where('dinner', $dinner)
+            ->count();
+        return $record;
+    }
+
     public static function userOrdering($u_id, $consumption_time)
     {
         $orderings = self::where('u_id', $u_id)

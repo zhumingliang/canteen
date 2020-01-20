@@ -474,6 +474,32 @@ class DepartmentService
     }
 
     public
+    function updateQrcode3($params)
+    {
+        $code = QRcodeNUmber();
+        $url = sprintf(config("setting.qrcode_url"), 'canteen', $code, $params['s_id']);
+        $qrcode_url = (new QrcodeService())->qr_code($url);
+        $s_id = $params['staff_id'];
+        $params['code'] = $code;
+        $params['url'] = $qrcode_url;
+        $expiry_date = date('Y-m-d H:i:s', time());
+        $params['create_time'] = $expiry_date;
+        $params['expiry_date'] = $this->prefixQrcodeExpiryDate($expiry_date, $params);
+        $qrcode = StaffQrcodeT::update($params);
+        if (!$qrcode) {
+            throw new SaveException();
+        }
+        $staff = CompanyStaffT::get($s_id);
+        return [
+            'usernmae' => $staff->username,
+            'url' => $qrcode->url,
+            'create_time' => $qrcode->create_time,
+            'expiry_date' => $qrcode->expiry_date
+        ];
+    }
+
+
+    public
     function companyStaffs($page, $size, $c_id, $d_id)
     {
         $staffs = CompanyStaffV::companyStaffs($page, $size, $c_id, $d_id);

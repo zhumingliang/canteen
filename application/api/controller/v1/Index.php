@@ -22,11 +22,11 @@ use think\db\Where;
 
 class Index extends BaseController
 {
-    public function index()
+    public function index($name)
     {
+        $detail = '[{"d_id":122,"ordering":[{"ordering_date":"2020-01-21","count":1}]}]';
 
-        print_r(\app\api\service\Token::getCurrentTokenVar());
-
+        (new OrderService())->orderingOnlineTest($detail,$name);
         /* $strategy = ConsumptionStrategyT::where('state', CommonEnum::STATE_IS_OK)
           ->select()->toArray();
          foreach ($strategy as $k => $v) {

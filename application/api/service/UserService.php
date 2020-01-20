@@ -159,7 +159,8 @@ class UserService
             ];
         }
         $codeObj = $qrcode->toArray();
-        $newQrode = (new DepartmentService())->updateQrcode($codeObj);
+        $codeObj['staff_id'] = $staff->id;
+        $newQrode = (new DepartmentService())->updateQrcode3($codeObj);
 
         return $newQrode;
     }

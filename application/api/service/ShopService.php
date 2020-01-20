@@ -332,6 +332,7 @@ class ShopService
         $params['staff_type_id'] = $staff->t_id;
         $params['department_id'] = $staff->d_id;
         $params['company_id'] = $current_company_id;
+        $params['phone'] = $phone;
         return $params;
     }
 
