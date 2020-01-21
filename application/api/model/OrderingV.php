@@ -34,9 +34,9 @@ class OrderingV extends Model
         return $record;
     }
 
-    public static function userOrdering($u_id, $consumption_time)
+    public static function userOrdering($phone, $consumption_time)
     {
-        $orderings = self::where('u_id', $u_id)
+        $orderings = self::where('phone', $phone)
             ->where('ordering_month', $consumption_time)
             ->where('state', CommonEnum::STATE_IS_OK)
             ->select();

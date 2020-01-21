@@ -547,8 +547,8 @@ class OrderService extends BaseService
     public
     function userOrdering($consumption_time)
     {
-        $u_id = Token::getCurrentUid();
-        $orderings = OrderingV::userOrdering($u_id, $consumption_time);
+        $phone = Token::getCurrentPhone();
+        $orderings = OrderingV::userOrdering($phone, $consumption_time);
         return $orderings;
 
 
@@ -1213,7 +1213,7 @@ class OrderService extends BaseService
         $dinner = DinnerT::canteenDinnerMenus($canteen_id);
         $strategies = (new CanteenService())->staffStrategy($canteen_id, $t_id);
         foreach ($dinner as $k => $v) {
-            $dinner[$k]['ordering_count'] = OrderingV::getRecordForDayOrderingByPhone($day, $v["name"],$phone);
+            $dinner[$k]['ordering_count'] = OrderingV::getRecordForDayOrderingByPhone($day, $v["name"], $phone);
             foreach ($strategies as $k2 => $v2) {
                 if ($v['id'] == $v2['d_id']) {
                     $dinner[$k]['ordered_count'] = $v2['ordered_count'];
