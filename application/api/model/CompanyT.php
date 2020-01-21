@@ -49,6 +49,27 @@ class CompanyT extends Model
 
     }
 
+    public static function companiesWithIds($page, $size, $name, $create_time, $company_ids)
+    {
+
+        $list = self::where('state', CommonEnum::STATE_IS_OK)
+            ->whereIn('id', $company_ids)
+            ->where(function ($query) use ($name) {
+                if (strlen($name)) {
+                    $query->where('name', 'like', '%' . $name . '%');
+                }
+            })
+            ->where(function ($query) use ($create_time) {
+                if (strlen($create_time)) {
+                    $query->whereBetweenTime('create_time', $create_time);
+                }
+            })
+            ->field('id,create_time,name,grade,parent_id,parent_name')
+            ->paginate($size, false, ['page' => $page]);
+        return $list;
+
+    }
+
     public static function managerCompanies($ids)
     {
 
@@ -118,9 +139,9 @@ class CompanyT extends Model
     {
 
         $list = self::where('state', CommonEnum::STATE_IS_OK)
-           /* ->where(function ($query) use ($name) {
-                $query->where('name', 'like', '%' . $name . '%');
-            })*/
+            /* ->where(function ($query) use ($name) {
+                 $query->where('name', 'like', '%' . $name . '%');
+             })*/
             ->field('id,name,parent_id')
             ->select()->toArray();
         return $list;

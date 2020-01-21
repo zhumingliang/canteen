@@ -42,7 +42,7 @@ class CompanyService
             $admin_id = (new AdminService())->save($account, AdminEnum::DEFAULT_PASSWD,
                 '企业系统管理员',
                 AdminEnum::COMPANY_SUPER,
-                $c_id, '',$params['name']);
+                $c_id, '', $params['name']);
             Db::commit();
             return [
                 'company_id' => $c_id,
@@ -74,8 +74,29 @@ class CompanyService
 
     public function companies($page, $size, $name, $create_time)
     {
-        $companies = CompanyT::companies($page, $size, $name, $create_time);
+        $grade = Token::getCurrentTokenVar('grade');
+        if ($grade == AdminEnum::SYSTEM_SUPER) {
+            $companies = CompanyT::companies($page, $size, $name, $create_time);
+        } else {
+            $company_ids = $this->getUserCompaniesWithOutSystemManager();
+            $companies = CompanyT::companiesWithIds($page, $size, $name, $create_time,$company_ids);
+        }
         return $companies;
+    }
+
+    //获取企业系统管理员和企业内部角色归属及子企业id
+    private function getUserCompaniesWithOutSystemManager()
+    {
+        $ids = [];
+        $grade = Token::getCurrentTokenVar('grade');
+        if ($grade == AdminEnum::COMPANY_SUPER) {
+            $parent_id = Token::getCurrentUid();
+        } else {
+            $parent_id = Token::getCurrentTokenVar('parent_id');
+        }
+        $ids = $this->getSonID($ids, $parent_id);
+        $ids = implode(',', $ids);
+        return $ids;
     }
 
     public function managerCompanies($name)
@@ -106,7 +127,7 @@ class CompanyService
             return array();
         }
         $parent_id = $company->parent_id;
-        array_push($ids, $company->id);
+        array_push($ids, $parent_id);
         $ids = $this->getSonID($ids, $company->id);
         if (!count($ids)) {
             return array();
@@ -124,7 +145,7 @@ class CompanyService
             return array();
         }
         $parent_id = $company->parent_id;
-        array_push($ids, $company->id);
+        array_push($ids, $parent_id);
         $ids = $this->getSonID($ids, $company->id);
         if (!count($ids)) {
             return array();
