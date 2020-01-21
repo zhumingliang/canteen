@@ -910,9 +910,9 @@ class OrderService extends BaseService
         } else {
             $order = OrderT::orderDetail($id);
         }
-        if ($order->u_id != $u_id) {
+        /*if ($order->u_id != $u_id) {
             throw new AuthException();
-        }
+        }*/
 
         return $order;
     }
