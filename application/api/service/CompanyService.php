@@ -4,6 +4,7 @@
 namespace app\api\service;
 
 
+use app\api\model\AdminT;
 use app\api\model\CompanyT;
 use app\api\model\PayWxConfigT;
 use app\api\model\ShopT;
@@ -78,23 +79,24 @@ class CompanyService
         if ($grade == AdminEnum::SYSTEM_SUPER) {
             $companies = CompanyT::companies($page, $size, $name, $create_time);
         } else {
-            $company_ids = $this->getUserCompaniesWithOutSystemManager();
-            $companies = CompanyT::companiesWithIds($page, $size, $name, $create_time,$company_ids);
+            $company_ids = $this->getUserCompaniesWithOutSystemManager($grade);
+            $companies = CompanyT::companiesWithIds($page, $size, $name, $create_time, $company_ids);
         }
         return $companies;
     }
 
     //获取企业系统管理员和企业内部角色归属及子企业id
-    private function getUserCompaniesWithOutSystemManager()
+    private function getUserCompaniesWithOutSystemManager($grade)
     {
         $ids = [];
-        $grade = Token::getCurrentTokenVar('grade');
         if ($grade == AdminEnum::COMPANY_SUPER) {
-            $parent_id = Token::getCurrentUid();
+            $parent_company_id = Token::getCurrentTokenVar('company_id');
         } else {
-            $parent_id = Token::getCurrentTokenVar('parent_id');
+            $parent_admin_id = Token::getCurrentTokenVar('parent_id');
+            $parent = AdminT::where('id', $parent_admin_id)->find();
+            $parent_company_id = $parent->company_id;
         }
-        $ids = $this->getSonID($ids, $parent_id);
+        $ids = $this->getSonID($ids, $parent_company_id);
         $ids = implode(',', $ids);
         return $ids;
     }
