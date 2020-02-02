@@ -58,7 +58,6 @@ class OrderService extends BaseService
             $this->checkDinnerForPersonalChoice($dinner, $ordering_date);
             //检测用户是否可以订餐并返回订单金额
             $orderMoney = $this->checkUserCanOrder($u_id, $dinner, $ordering_date, $canteen_id, $count, $detail);
-            // return 1;
             $pay_way = $this->checkBalance($u_id, $canteen_id, $orderMoney['money'] * $count + $orderMoney['sub_money'] * $count);
             if (!$pay_way) {
                 throw new SaveException(['errorCode' => 49000, 'msg' => '余额不足']);
@@ -185,10 +184,11 @@ class OrderService extends BaseService
     function checkUserCanOrder($u_id, $dinner, $day, $canteen_id, $count, $detail, $ordering_type = "person_choice")
     {
         $phone = Token::getCurrentPhone();
+        $company_id = Token::getCurrentTokenVar('current_company_id');
         //获取用户指定日期订餐数量
         $consumptionCount = OrderingV::getRecordForDayOrderingByPhone($day, $dinner->name, $phone);
         //检测消费策略
-        $t_id = (new UserService())->getUserStaffTypeByPhone($phone);
+        $t_id = (new UserService())->getUserStaffTypeByPhone($phone,$company_id);
         //获取指定用户消费策略
         $strategies = (new CanteenService())->getStaffConsumptionStrategy($canteen_id, $dinner->id, $t_id);
         $orderMoneyFixed = $dinner->fixed;
@@ -554,8 +554,9 @@ class OrderService extends BaseService
     function infoForOnline()
     {
         $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
+        $company_id = Token::getCurrentTokenVar('current_company_id');
         $phone = Token::getCurrentPhone();
-        $t_id = (new UserService())->getUserStaffTypeByPhone($phone);
+        $t_id = (new UserService())->getUserStaffTypeByPhone($phone,$company_id);
         $dinner = (new CanteenService())->getDinners($canteen_id);
         $strategies = (new CanteenService())->staffStrategy($canteen_id, $t_id);
         foreach ($dinner as $k => $v) {
@@ -1198,9 +1199,10 @@ class OrderService extends BaseService
     function infoForPersonChoiceOnline($day)
     {
         $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
+        $company_id = Token::getCurrentTokenVar('current_company_id');
         $u_id = Token::getCurrentUid();
         $phone = Token::getCurrentPhone();
-        $t_id = (new UserService())->getUserStaffTypeByPhone($phone);
+        $t_id = (new UserService())->getUserStaffTypeByPhone($phone,$company_id);
         $dinner = DinnerT::canteenDinnerMenus($canteen_id);
         $strategies = (new CanteenService())->staffStrategy($canteen_id, $t_id);
         foreach ($dinner as $k => $v) {

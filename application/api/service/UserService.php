@@ -106,12 +106,16 @@ class UserService
 
     }
 
-    public function getUserStaffTypeByPhone($phone)
+    public function getUserStaffTypeByPhone($phone, $company_id = 0)
     {
         if (empty($phone)) {
             throw new AuthException(['msg' => '用户状态异常，未绑定手机号']);
         }
+        if (!$company_id) {
+            $company_id = Token::getCurrentTokenVar('current_company_id');
+        }
         $admin = CompanyStaffT::where('phone', $phone)
+            ->where('company_id', $company_id)
             ->where('state', CommonEnum::STATE_IS_OK)
             ->find();
         if (!$admin) {
