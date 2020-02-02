@@ -58,6 +58,7 @@ class OrderService extends BaseService
             $this->checkDinnerForPersonalChoice($dinner, $ordering_date);
             //检测用户是否可以订餐并返回订单金额
             $orderMoney = $this->checkUserCanOrder($u_id, $dinner, $ordering_date, $canteen_id, $count, $detail);
+            // return 1;
             $pay_way = $this->checkBalance($u_id, $canteen_id, $orderMoney['money'] * $count + $orderMoney['sub_money'] * $count);
             if (!$pay_way) {
                 throw new SaveException(['errorCode' => 49000, 'msg' => '余额不足']);
@@ -279,20 +280,10 @@ class OrderService extends BaseService
                 $returnMoney['no_meal_money'] = $no_meal_money;
                 $returnMoney['no_meal_sub_money'] = $no_meal_sub_money;
                 if (($no_meal_money + $no_meal_sub_money) > ($meal_money + $meal_sub_money)) {
-                    /* $returnMoney = [
-                         'consumption_type' => 'no_meals_ordered',
-                         'money' => $no_meal_money,
-                         'sub_money' => $no_meal_sub_money
-                     ];*/
                     $returnMoney['consumption_type'] = 'no_meals_ordered';
                     $returnMoney['money'] = $no_meal_money;
                     $returnMoney['sub_money'] = $no_meal_sub_money;
                 } else {
-                    /* $returnMoney = [
-                         'consumption_type' => 'ordering_meals',
-                         'money' => $meal_money,
-                         'sub_money' => $meal_sub_money
-                     ];*/
                     $returnMoney['consumption_type'] = 'ordering_meals';
                     $returnMoney['money'] = $meal_money;
                     $returnMoney['sub_money'] = $meal_sub_money;

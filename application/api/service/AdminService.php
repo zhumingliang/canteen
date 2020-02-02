@@ -87,7 +87,6 @@ class AdminService
                 $add[$k]['state'] = CommonEnum::STATE_IS_OK;
                 $add[$k]['admin_id'] = $admin_id;
             }
-
             if ($type == "canteen") {
                 $res = (new AdminCanteenT())->saveAll($add);
 
@@ -101,13 +100,20 @@ class AdminService
         }
 
         if (!empty($data['cancel'])) {
+            $ids = explode(',', $data['cancel']);
+            $list = [];
+            foreach ($ids as $k => $v) {
+                array_push($list, [
+                    'id' => $v,
+                    'state' => CommonEnum::STATE_IS_FAIL
+                ]);
+
+            }
             if ($type == "canteen") {
-                $res = AdminCanteenT::update(['state' => CommonEnum::STATE_IS_FAIL], ['id' => [
-                    'in', $data['cancel']]]);
+                $res = (new AdminCanteenT())->saveAll($list);
 
             } else {
-                $res = AdminShopT::update(['state' => CommonEnum::STATE_IS_FAIL], ['id' => [
-                    'in', $data['cancel']]]);
+                $res = (new AdminShopT())->saveAll($list);
             }
             if (!$res) {
                 throw new SaveException();
