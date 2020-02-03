@@ -62,6 +62,38 @@ class AdminT extends Model
 
     }
 
+    public static function rolesWithIds($page, $size, $state, $key, $c_name,$company_ids)
+    {
+        $list = self::with([
+            'canteen' => function ($query) {
+                $query->field('id,canteen_id,admin_id,canteen_name');
+            }
+        ])
+            ->whereIn('c_id',$company_ids)
+            ->where(function ($query) use ($key) {
+                if (strlen($key)) {
+                    $query->where('role', 'like', '%' . $key . '%');
+                }
+            })
+            ->where(function ($query) use ($state) {
+                if ($state != 3) {
+                    $query->where('state', $state);
+                }
+            })
+            ->where(function ($query) use ($c_name) {
+                if (strlen($c_name) && $c_name != "全部") {
+                    $query->where('company', 'like', '%' . $c_name . '%');
+                }
+            })
+            ->where('state', '<', 3)
+            ->field('id,c_id as company_id,company,phone,role,account,remark,state,create_time')
+            ->order('create_time desc')
+            ->paginate($size, false, ['page' => $page]);
+        return $list;
+
+    }
+
+
     public static function admin($id)
     {
         $role = self::where('id', $id)

@@ -86,7 +86,7 @@ class CompanyService
     }
 
     //获取企业系统管理员和企业内部角色归属及子企业id
-    private function getUserCompaniesWithOutSystemManager($grade)
+    public function getUserCompaniesWithOutSystemManager($grade)
     {
         $ids = [];
         if ($grade == AdminEnum::COMPANY_SUPER) {

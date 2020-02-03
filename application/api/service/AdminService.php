@@ -201,9 +201,16 @@ class AdminService
 
     public function roles($page, $size, $state, $key, $c_name)
     {
-        $roles = AdminT::roles($page, $size, $state, $key, $c_name);
+        $grade = Token::getCurrentTokenVar('grade');
+        if ($grade == AdminEnum::SYSTEM_SUPER) {
+            $roles = AdminT::roles($page, $size, $state, $key, $c_name);
+        } else {
+            $company_ids = (new  CompanyService())->getUserCompaniesWithOutSystemManager($grade);
+            $roles = AdminT::rolesWithIds($page, $size, $state, $key, $c_name, $company_ids);
+        }
         return $roles;
     }
+
 
     public function handel($params)
     {
