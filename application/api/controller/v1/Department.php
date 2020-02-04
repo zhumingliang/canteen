@@ -125,7 +125,6 @@ class Department extends BaseController
      * @apiExample {post}  请求样例:
      *    {
      *       "company_id": 1
-     *       "canteens": [{"canteen_id":1},{"canteen_id":2}]
      *       "d_id": 2,
      *       "t_id": 2,
      *       "code": "123456",
