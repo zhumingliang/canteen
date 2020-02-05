@@ -104,7 +104,7 @@ class Wallet extends BaseController
      * @apiParam (请求参数说明) {string} time_end 查询截止时间
      * @apiParam (请求参数说明) {String} username 被充值用户
      * @apiParam (请求参数说明) {int} admin_id 充值人员id，全部传入0
-     * @apiParam (请求参数说明) {String} type 充值途径:目前有：cash：现金；weixin:微信；nonghang:农行；all：全部
+     * @apiParam (请求参数说明) {String} type 充值途径:目前有：cash：现金；1:微信；2:农行；all：全部
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200,"data":{"total":2,"per_page":20,"current_page":1,"last_page":1,"data":[{"create_time":"2019-10-31 18:32:47","username":null,"money":"200.00","type":"cash","admin":"系统超级管理员","remark":""},{"create_time":"2019-10-31 18:32:48","username":null,"money":"200.00","type":"cash","admin":"系统超级管理员","remark":""}]}}
      * @apiSuccess (返回参数说明) {int} total 数据总数
@@ -138,7 +138,7 @@ class Wallet extends BaseController
      * @apiParam (请求参数说明) {string} time_end 查询截止时间
      * @apiParam (请求参数说明) {String} username 被充值用户
      * @apiParam (请求参数说明) {int} admin_id 充值人员id，全部传入0
-     * @apiParam (请求参数说明) {String} type 充值途径:目前有：cash：现金；weixin:微信；nonghang:农行；all：全部
+     * @apiParam (请求参数说明) {String} type 充值途径:目前有：cash：现金；1:微信；2:农行；all：全部
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200,"data":{"url":"http:\/\/canteen.tonglingok.com\/static\/excel\/download\/材料价格明细_20190817005931.xls"}}
      * @apiSuccess (返回参数说明) {int} error_code 错误代码 0 表示没有错误

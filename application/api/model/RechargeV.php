@@ -11,7 +11,7 @@ class RechargeV extends Model
 {
     public function getTypeAttr($value, $data)
     {
-        $types = ['cash' => '现金', 'weixin' => '微信', 'nonghang' => '农行'];
+        $types = ['cash' => '现金', '1' => '微信', '2' => '农行'];
         if (key_exists($data['type'], $types)) {
             return $types[$data['type']];
         }
