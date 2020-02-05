@@ -12,7 +12,7 @@ class OrderTakeoutStatisticV extends Model
     public static function statistic($page, $size,
                                      $ordering_date, $company_ids, $canteen_id, $dinner_id, $used)
     {
-        $list = self::whereBetweenTime('ordering_date', $ordering_date)
+        $list = self::where('ordering_date', $ordering_date)
             ->where(function ($query) use ($used) {
                 if ($used < 3) {
                     $query->where('used', $used);
@@ -35,13 +35,13 @@ class OrderTakeoutStatisticV extends Model
             })
             ->hidden(['create_time', 'canteen_id', 'company_id', 'dinner_id'])
             ->order('used DESC')
-            ->paginate($size, false, ['page' => $page]);
+           ->paginate($size, false, ['page' => $page]);
         return $list;
     }
 
     public static function exportStatistic($ordering_date, $company_ids, $canteen_id, $dinner_id, $used)
     {
-        $list = self::whereBetweenTime('ordering_date', $ordering_date)
+        $list = self::where('ordering_date', $ordering_date)
             ->where(function ($query) use ($used) {
                 if ($used < 3) {
                     $query->where('used', $used);
