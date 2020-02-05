@@ -38,7 +38,7 @@ class WeiXinService
                         "url" => "http://yuncanteen3.51canteen.com/canteen3/wxcms"
                     ], ["type" => "view",
                         "name" => "进入饭堂",
-                        "url" => "https://cloudcanteen3.51canteen.com/canteen3/wxcms/index.html"
+                        "url" => "https://cloudcanteen3.51canteen.com/canteen3/wxcms"
                     ]
                 ]
             ]
