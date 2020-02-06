@@ -4,6 +4,7 @@
 namespace app\api\model;
 
 
+use app\lib\enum\CommonEnum;
 use think\Model;
 
 class OrderStatisticV extends Model
@@ -14,6 +15,10 @@ class OrderStatisticV extends Model
         return $status[$value];
     }
 
+    public function foods()
+    {
+        return $this->hasMany('OrderDetailT', 'o_id', 'id');
+    }
     public static function statistic($time_begin, $time_end, $company_ids, $canteen_id, $page, $size)
     {
         $time_end = addDay(1, $time_end);
@@ -143,6 +148,12 @@ class OrderStatisticV extends Model
                     $query->where('type', $type);
                 }
             })
+            ->with([
+                'foods' => function ($query) {
+                    $query->where('state', CommonEnum::STATE_IS_OK)
+                        ->field('o_id,count,name');
+                }
+            ])
             ->field('ordering_date,canteen,department,username,dinner,type')
             ->order('order_id DESC')
             ->select()->toArray();

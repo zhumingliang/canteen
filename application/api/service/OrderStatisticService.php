@@ -53,30 +53,45 @@ class OrderStatisticService
     public function orderStatisticDetail($company_ids, $time_begin,
                                          $time_end, $page, $size, $name,
                                          $phone, $canteen_id, $department_id,
-                                         $dinner_id,$type)
+                                         $dinner_id, $type)
     {
         $list = OrderStatisticV::detail($company_ids, $time_begin,
             $time_end, $page, $size, $name,
             $phone, $canteen_id, $department_id,
-            $dinner_id,$type);
+            $dinner_id, $type);
         return $list;
     }
 
     public function exportOrderStatisticDetail($company_ids, $time_begin,
                                                $time_end, $name,
                                                $phone, $canteen_id, $department_id,
-                                               $dinner_id,$type)
+                                               $dinner_id, $type)
     {
         $list = OrderStatisticV::exportDetail($company_ids, $time_begin,
             $time_end, $name,
             $phone, $canteen_id, $department_id,
-            $dinner_id,$type);
-        $header = ['订餐日期', '消费地点', '部门', '姓名', '餐次','订餐类型'];
+            $dinner_id, $type);
+        $list = $this->prefixOrderStatisticDetail($list);
+        $header = ['订餐日期', '消费地点', '部门', '姓名', '餐次', '订餐类型', '明细'];
         $file_name = "订餐明细报表(" . $time_begin . "-" . $time_end . ")";
         $url = (new ExcelService())->makeExcel($header, $list, $file_name);
         return [
             'url' => config('setting.domain') . $url
         ];
+
+    }
+
+    private function prefixOrderStatisticDetail($list)
+    {
+        foreach ($list as $k => $v) {
+            $foods = $v['foods'];
+            unset($list[$k]['foods']);
+            $detail = [];
+            foreach ($foods as $k2 => $v2) {
+                array_push($detail, $v2['name'] . '*' . $v2['count']);
+            }
+            $list[$k]['foods'] = implode('  ', $detail);
+        }
 
     }
 
