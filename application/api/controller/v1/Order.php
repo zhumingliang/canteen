@@ -651,7 +651,7 @@ class Order extends BaseController
      * @apiVersion 3.0.0
      * @apiDescription CMS管理端-订餐管理-订餐明细
      * @apiExample {get}  请求样例:
-     * http://canteen.tonglingok.com/api/v1/order/orderStatistic/detail?company_ids=&canteen_id=0&time_begin=2019-09-07&time_end=2019-12-07&page=1&size=20&department_id=2&dinner_id=0&name=&phone
+     * http://canteen.tonglingok.com/api/v1/order/orderStatistic/detail?company_ids=&canteen_id=0&time_begin=2019-09-07&time_end=2019-12-07&page=1&size=20&department_id=2&dinner_id=0&name=&phone&type=3
      * @apiParam (请求参数说明) {int} page 当前页码
      * @apiParam (请求参数说明) {int} size 每页多少条数据
      * @apiParam (请求参数说明) {string} company_ids  企业id：选择全部时，将企业id用逗号分隔，例如：1,2，此时饭堂id传入0;选择某一个企业时传入企业id
@@ -662,6 +662,7 @@ class Order extends BaseController
      * @apiParam (请求参数说明) {string} time_end  查询结束时间
      * @apiParam (请求参数说明) {string} phone  手机号查询
      * @apiParam (请求参数说明) {string} name  姓名查询
+     * @apiParam (请求参数说明) {int} type  订餐类型：1｜饭堂就餐；2｜外卖；3｜全部
      * @apiSuccessExample {json}返回样例:
      * {"msg":"ok","errorCode":0,"code":200,"data":{"total":1,"per_page":20,"current_page":1,"last_page":1,"data":[{"ordering_date":"2019-09-07","company":"一级企业","canteen":"饭堂1","dinner":"中餐","count":1}]}}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
@@ -677,7 +678,7 @@ class Order extends BaseController
      * @apiSuccess (返回参数说明) {string} username 用户姓名
      * @apiSuccess (返回参数说明) {string} dinner 餐次
      */
-    public function orderStatisticDetail($page = 1, $size = 20, $name = '', $phone = '', $canteen_id = 0, $department_id = 0, $dinner_id = 0)
+    public function orderStatisticDetail($page = 1, $size = 20, $name = '', $phone = '', $canteen_id = 0, $department_id = 0, $dinner_id = 0, $type = 3)
     {
         $time_begin = Request::param('time_begin');
         $time_end = Request::param('time_end');
@@ -685,7 +686,7 @@ class Order extends BaseController
         $list = (new OrderStatisticService())->orderStatisticDetail($company_ids, $time_begin,
             $time_end, $page, $size, $name,
             $phone, $canteen_id, $department_id,
-            $dinner_id);
+            $dinner_id, $type);
         return json(new SuccessMessageWithData(['data' => $list]));
 
     }
@@ -696,7 +697,7 @@ class Order extends BaseController
      * @apiVersion 3.0.0
      * @apiDescription CMS管理端-订餐管理-订餐明细-订餐明细-导出报表
      * @apiExample {get}  请求样例:
-     * http://canteen.tonglingok.com/api/v1/order/orderStatistic/detail/export?company_ids=&canteen_id=0&time_begin=2019-09-07&time_end=2019-12-07&department_id=2&dinner_id=0&name=&phone
+     * http://canteen.tonglingok.com/api/v1/order/orderStatistic/detail/export?company_ids=&canteen_id=0&time_begin=2019-09-07&time_end=2019-12-07&department_id=2&dinner_id=0&name=&phone&type=3
      * @apiParam (请求参数说明) {int} page 当前页码
      * @apiParam (请求参数说明) {int} size 每页多少条数据
      * @apiParam (请求参数说明) {string} company_ids  企业id：选择全部时，将企业id用逗号分隔，例如：1,2，此时饭堂id传入0;选择某一个企业时传入企业id
@@ -707,13 +708,16 @@ class Order extends BaseController
      * @apiParam (请求参数说明) {string} time_end  查询结束时间
      * @apiParam (请求参数说明) {string} phone  手机号查询
      * @apiParam (请求参数说明) {string} name  姓名查询
+     * @apiParam (请求参数说明) {int} type  订餐类型：1｜饭堂就餐；2｜外卖；3｜全部
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200,"data":{"url":"http:\/\/canteen.tonglingok.com\/static\/excel\/download\/材料价格明细_20190817005931.xls"}}
      * @apiSuccess (返回参数说明) {int} error_code 错误代码 0 表示没有错误
      * @apiSuccess (返回参数说明) {string} msg 操作结果描述
      * @apiSuccess (返回参数说明) {string} url 下载地址
      */
-    public function exportOrderStatisticDetail($page = 1, $size = 20, $name = '', $phone = '', $canteen_id = 0, $department_id = 0, $dinner_id = 0)
+    public function exportOrderStatisticDetail($name = '', $phone = '',
+                                               $canteen_id = 0, $department_id = 0,
+                                               $dinner_id = 0, $type = 3)
     {
         $time_begin = Request::param('time_begin');
         $time_end = Request::param('time_end');
@@ -721,7 +725,7 @@ class Order extends BaseController
         $list = (new OrderStatisticService())->exportOrderStatisticDetail($company_ids, $time_begin,
             $time_end, $name,
             $phone, $canteen_id, $department_id,
-            $dinner_id);
+            $dinner_id, $type);
         return json(new SuccessMessageWithData(['data' => $list]));
 
     }
@@ -1093,7 +1097,7 @@ class Order extends BaseController
      * @apiSuccess (返回参数说明) {string} url 下载地址
      */
     public function exportConsumptionStatistic($canteen_ids = 0, $status = 0, $type = 1,
-                                         $department_id = 0, $username = '', $staff_type_id = 0)
+                                               $department_id = 0, $username = '', $staff_type_id = 0)
     {
         $time_begin = Request::param('time_begin');
         $time_end = Request::param('time_end');

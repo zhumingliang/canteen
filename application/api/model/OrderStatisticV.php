@@ -63,7 +63,7 @@ class OrderStatisticV extends Model
     public static function detail($company_ids, $time_begin,
                                   $time_end, $page, $size, $name,
                                   $phone, $canteen_id, $department_id,
-                                  $dinner_id)
+                                  $dinner_id, $type)
     {
         $time_end = addDay(1, $time_end);
         $list = self::whereBetweenTime('ordering_date', $time_begin, $time_end)
@@ -91,6 +91,11 @@ class OrderStatisticV extends Model
                             $query->where('company_id', $company_ids);
                         }
                     }
+                }
+            })
+            ->where(function ($query) use ($type) {
+                if ($type < 3) {
+                    $query->where('type', $type);
                 }
             })
             ->field('order_id,ordering_date,username,canteen,department,dinner,type')
@@ -103,7 +108,7 @@ class OrderStatisticV extends Model
     public static function exportDetail($company_ids, $time_begin,
                                         $time_end, $name,
                                         $phone, $canteen_id, $department_id,
-                                        $dinner_id)
+                                        $dinner_id,$type)
     {
         $time_end = addDay(1, $time_end);
         $list = self::whereBetweenTime('ordering_date', $time_begin, $time_end)
@@ -131,6 +136,11 @@ class OrderStatisticV extends Model
                             $query->where('company_id', $company_ids);
                         }
                     }
+                }
+            })
+            ->where(function ($query) use ($type) {
+                if ($type < 3) {
+                    $query->where('type', $type);
                 }
             })
             ->field('ordering_date,canteen,department,username,dinner,type')
