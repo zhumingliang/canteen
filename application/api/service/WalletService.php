@@ -164,6 +164,7 @@ class WalletService
                 'source' => 'save',
                 'admin_id' => $admin_id,
                 'company_id' => $company_id,
+                'canteen_id' => $params['canteen_id'],
                 'money' => $params['type'] == 1 ? $params['money'] : 0 - $params['money'],
                 'type' => $params['type'],
                 'staff_id' => $v,

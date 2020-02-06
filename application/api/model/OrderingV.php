@@ -56,20 +56,7 @@ class OrderingV extends Model
 
     public static function userOrderings($u_id, $type, $canteen_id, $page, $size)
     {
-        $orderings = self::where('u_id', $u_id)
-            ->whereTime('ordering_date', '>=', date('Y-m-d'))
-            ->where('type', $type)
-            ->where(function ($query) use ($canteen_id) {
-                if (!empty($canteen_id)) {
-                    $query->where('c_id', $canteen_id);
-                }
-            })
-            ->where('used', CommonEnum::STATE_IS_FAIL)
-            ->where('state', CommonEnum::STATE_IS_OK)
-            ->field('id,canteen as address,if(type=1,"食堂","外卖") as type,create_time,dinner,money')
-            ->fetchSql(true)
-            ->select();
-        LogService::save($orderings);
+
         $orderings = self::where('u_id', $u_id)
             ->whereTime('ordering_date', '>=', date('Y-m-d'))
             ->where('type', $type)
