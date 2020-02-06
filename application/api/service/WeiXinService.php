@@ -33,10 +33,7 @@ class WeiXinService
             [
                 "name" => "云饭堂3.0",
                 "sub_button" => [
-                    ["type" => "view",
-                        "name" => "进入饭堂测试",
-                        "url" => "http://yuncanteen3.51canteen.com/canteen3/wxcms"
-                    ], ["type" => "view",
+                     ["type" => "view",
                         "name" => "进入饭堂",
                         "url" => "https://cloudcanteen3.51canteen.com/canteen3/wxcms"
                     ]
