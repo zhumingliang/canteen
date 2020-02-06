@@ -71,7 +71,7 @@ class OrderStatisticService
             $time_end, $name,
             $phone, $canteen_id, $department_id,
             $dinner_id);
-        $header = ['订餐日期', '消费地点', '部门', '姓名', '餐次'];
+        $header = ['订餐日期', '消费地点', '部门', '姓名', '餐次','订餐类型'];
         $file_name = "订餐明细报表(" . $time_begin . "-" . $time_end . ")";
         $url = (new ExcelService())->makeExcel($header, $list, $file_name);
         return [

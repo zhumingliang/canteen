@@ -8,6 +8,12 @@ use think\Model;
 
 class OrderStatisticV extends Model
 {
+    public function getTypeAttr($value)
+    {
+        $status = [1 => '食堂', 2 => '外卖'];
+        return $status[$value];
+    }
+
     public static function statistic($time_begin, $time_end, $company_ids, $canteen_id, $page, $size)
     {
         $time_end = addDay(1, $time_end);
@@ -87,7 +93,7 @@ class OrderStatisticV extends Model
                     }
                 }
             })
-            ->field('order_id,ordering_date,username,canteen,department,dinner')
+            ->field('order_id,ordering_date,username,canteen,department,dinner,type')
             ->order('order_id DESC')
             ->paginate($size, false, ['page' => $page]);
         return $list;
@@ -127,7 +133,7 @@ class OrderStatisticV extends Model
                     }
                 }
             })
-            ->field('ordering_date,canteen,department,username,dinner')
+            ->field('ordering_date,canteen,department,username,dinner,type')
             ->order('order_id DESC')
             ->select()->toArray();
         return $list;
