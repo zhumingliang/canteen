@@ -72,7 +72,7 @@ class OrderStatisticService
             $phone, $canteen_id, $department_id,
             $dinner_id, $type);
         $list = $this->prefixOrderStatisticDetail($list);
-        $header = ['订餐日期', '消费地点', '部门', '姓名', '餐次', '订餐类型', '明细'];
+        $header = ['订单ID','订餐日期', '消费地点', '部门', '姓名', '餐次', '订餐类型', '明细'];
         $file_name = "订餐明细报表(" . $time_begin . "-" . $time_end . ")";
         $url = (new ExcelService())->makeExcel($header, $list, $file_name);
         return [
@@ -92,7 +92,7 @@ class OrderStatisticService
             }
             $list[$k]['foods'] = implode('  ', $detail);
         }
-
+        return $list;
     }
 
     public function orderSettlement($page, $size,

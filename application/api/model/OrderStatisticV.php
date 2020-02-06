@@ -17,7 +17,7 @@ class OrderStatisticV extends Model
 
     public function foods()
     {
-        return $this->hasMany('OrderDetailT', 'o_id', 'id');
+        return $this->hasMany('OrderDetailT', 'o_id', 'order_id');
     }
     public static function statistic($time_begin, $time_end, $company_ids, $canteen_id, $page, $size)
     {
@@ -154,7 +154,7 @@ class OrderStatisticV extends Model
                         ->field('o_id,count,name');
                 }
             ])
-            ->field('ordering_date,canteen,department,username,dinner,type')
+            ->field('order_id,ordering_date,canteen,department,username,dinner,type')
             ->order('order_id DESC')
             ->select()->toArray();
         return $list;
