@@ -27,16 +27,16 @@ class SendMsg
         $isJobDone = $this->doJob($data);
         if ($isJobDone) {
             // 如果任务执行成功，删除任务
-            print("<warn>邮件队列已执行完成并且已删除！" . "</warn>\n");
+            LogService::save("<warn>邮件队列已执行完成并且已删除！" . "</warn>\n");
             $job->delete();
         } else {
-            print("<warn>任务执行失败！" . "</warn>\n");
+            LogService::save("<warn>任务执行失败！" . "</warn>\n");
             if ($job->attempts() > 3) {
                 //通过这个方法可以检查这个任务已经重试了几次了
-                print("<warn>邮件队列已经重试超过3次，现在已经删除该任务" . "</warn>\n");
+                LogService::save("<warn>邮件队列已经重试超过3次，现在已经删除该任务" . "</warn>\n");
                 $job->delete();
             } else {
-                print ("<info>重新执行该任务!第" . $job->attempts() . "次</info>\n");
+                LogService::save("<info>重新执行该任务!第" . $job->attempts() . "次</info>\n");
                 $job->release(); //重发任务
             }
         }
