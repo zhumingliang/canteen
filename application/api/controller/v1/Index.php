@@ -59,10 +59,10 @@ class Index extends BaseController
         $isPushed = Queue::push($jobHandlerClassName, $jobData, $jobQueueName);//将该任务推送到消息队列
         if ($isPushed !== false) {
             return true;
-//            echo date('Y-m-d H:i:s') . '邮件队列任务发送成功';
+            echo date('Y-m-d H:i:s') . '邮件队列任务发送成功';
         } else {
             return false;
-//            echo date('Y-m-d H:i:s') . '邮件队列发送失败';
+            echo date('Y-m-d H:i:s') . '邮件队列发送失败';
         }
 
     }
