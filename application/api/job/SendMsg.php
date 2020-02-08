@@ -49,11 +49,8 @@ class SendMsg
     public function failed($data)
     {
         //可以发送邮件给相应的负责人员
-        $email = new Email;
-        $email->to('adamlyxxx@163.com')
-            ->subject(__('邮件发送任务失败'))
-            ->message('邮件发送任务失败,对方邮箱是：' . $data['email'])
-            ->send();
+        LogService::save("失败:".json_encode($data));
+
 //        print("Warning: Job failed after max retries. job data is :".var_export($data,true)."\n");
     }
 

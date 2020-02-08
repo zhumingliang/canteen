@@ -52,6 +52,7 @@ class Index extends BaseController
     //邮件队列
     private function mailTask($email = '')
     {
+        //php think queue:work --queue sendMsgQueue
         $jobHandlerClassName = 'app\api\job\SendMsg';//负责处理队列任务的类
         $jobQueueName = "sendMsgQueue";//队列名称
         $jobData = ['email' => $email];//当前任务的业务数据
