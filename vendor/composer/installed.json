@@ -2016,31 +2016,32 @@
     },
     {
         "name": "topthink/think-queue",
-        "version": "v2.0.3",
-        "version_normalized": "2.0.3.0",
+        "version": "2.0.x-dev",
+        "version_normalized": "2.0.9999999.9999999-dev",
         "source": {
             "type": "git",
             "url": "https://github.com/top-think/think-queue.git",
-            "reference": "465320c9cb7811df22d4ff8f29f58ead7d104348"
+            "reference": "69ae7a3f619e053fed9e01e4f0a2ccf602f770a5"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/top-think/think-queue/zipball/465320c9cb7811df22d4ff8f29f58ead7d104348",
-            "reference": "465320c9cb7811df22d4ff8f29f58ead7d104348",
+            "url": "https://api.github.com/repos/top-think/think-queue/zipball/69ae7a3f619e053fed9e01e4f0a2ccf602f770a5",
+            "reference": "69ae7a3f619e053fed9e01e4f0a2ccf602f770a5",
             "shasum": ""
         },
         "require": {
+            "topthink/framework": "5.1.*",
             "topthink/think-helper": ">=1.0.4",
-            "topthink/think-installer": ">=1.0.10"
+            "topthink/think-installer": "^2.0"
         },
-        "time": "2018-05-04T05:29:53+00:00",
+        "time": "2018-06-08T09:52:55+00:00",
         "type": "think-extend",
         "extra": {
             "think-config": {
                 "queue": "src/config.php"
             }
         },
-        "installation-source": "dist",
+        "installation-source": "source",
         "autoload": {
             "psr-4": {
                 "think\\": "src"

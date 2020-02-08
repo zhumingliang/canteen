@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "662b54a974aea6ab05bab9e570e7c7c1",
+    "content-hash": "7a78063331371138f0a5629fe619188a",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -1951,21 +1951,22 @@
         },
         {
             "name": "topthink/think-queue",
-            "version": "v2.0.3",
+            "version": "2.0.x-dev",
             "source": {
                 "type": "git",
                 "url": "https://github.com/top-think/think-queue.git",
-                "reference": "465320c9cb7811df22d4ff8f29f58ead7d104348"
+                "reference": "69ae7a3f619e053fed9e01e4f0a2ccf602f770a5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/top-think/think-queue/zipball/465320c9cb7811df22d4ff8f29f58ead7d104348",
-                "reference": "465320c9cb7811df22d4ff8f29f58ead7d104348",
+                "url": "https://api.github.com/repos/top-think/think-queue/zipball/69ae7a3f619e053fed9e01e4f0a2ccf602f770a5",
+                "reference": "69ae7a3f619e053fed9e01e4f0a2ccf602f770a5",
                 "shasum": ""
             },
             "require": {
+                "topthink/framework": "5.1.*",
                 "topthink/think-helper": ">=1.0.4",
-                "topthink/think-installer": ">=1.0.10"
+                "topthink/think-installer": "^2.0"
             },
             "type": "think-extend",
             "extra": {
@@ -1992,7 +1993,7 @@
                 }
             ],
             "description": "The ThinkPHP5 Queue Package",
-            "time": "2018-05-04T05:29:53+00:00"
+            "time": "2018-06-08T09:52:55+00:00"
         },
         {
             "name": "workerman/gatewayclient",
@@ -2025,7 +2026,9 @@
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {
+        "topthink/think-queue": 20
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {

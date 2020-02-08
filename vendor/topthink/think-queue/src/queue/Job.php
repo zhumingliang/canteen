@@ -12,7 +12,8 @@
 namespace think\queue;
 
 use DateTime;
-use think\Config;
+use think\facade\App;
+use think\facade\Env;
 
 abstract class Job
 {
@@ -147,11 +148,9 @@ abstract class Job
                 list($module, $name) = explode('/', $name, 2);
             }
 
-            $name = Config::get('app_namespace') . ($module ? '\\' . strtolower($module) : '') . '\\job\\' . $name;
+            $name = Env::get('app_namespace') . ($module ? '\\' . strtolower($module) : '') . '\\job\\' . $name;
         }
-        if (class_exists($name)) {
-            return new $name();
-        }
+        return App::get($name);
     }
 
     /**
