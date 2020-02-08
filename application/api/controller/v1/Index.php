@@ -19,14 +19,16 @@ use app\lib\enum\CommonEnum;
 use app\lib\exception\SuccessMessageWithData;
 use think\Db;
 use think\db\Where;
+use think\Queue;
 
 class Index extends BaseController
 {
     public function index($name)
     {
-        $detail = '[{"d_id":122,"ordering":[{"ordering_date":"2020-01-21","count":1}]}]';
+        $this->mailTask($name);
+        // $detail = '[{"d_id":122,"ordering":[{"ordering_date":"2020-01-21","count":1}]}]';
 
-        (new OrderService())->orderingOnlineTest($detail,$name);
+        // (new OrderService())->orderingOnlineTest($detail, $name);
         /* $strategy = ConsumptionStrategyT::where('state', CommonEnum::STATE_IS_OK)
           ->select()->toArray();
          foreach ($strategy as $k => $v) {
@@ -46,5 +48,23 @@ class Index extends BaseController
          }
          echo implode('|', $user_ids);*/
     }
+
+    //邮件队列
+    private function mailTask($email = '')
+    {
+        $jobHandlerClassName = 'app\api\job\SendMsg';//负责处理队列任务的类
+        $jobQueueName = "sendMsgQueue";//队列名称
+        $jobData = ['email' => $email];//当前任务的业务数据
+        $isPushed = Queue::push($jobHandlerClassName, $jobData, $jobQueueName);//将该任务推送到消息队列
+        if ($isPushed !== false) {
+            return true;
+//            echo date('Y-m-d H:i:s') . '邮件队列任务发送成功';
+        } else {
+            return false;
+//            echo date('Y-m-d H:i:s') . '邮件队列发送失败';
+        }
+
+    }
+
 
 }
