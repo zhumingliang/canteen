@@ -9,6 +9,7 @@ use app\lib\enum\CommonEnum;
 use app\lib\exception\SaveException;
 use think\Exception;
 use think\facade\Request;
+use think\Queue;
 use zml\tp_aliyun\SendSms;
 use zml\tp_tools\Redis;
 use function GuzzleHttp\Promise\each_limit;
@@ -26,7 +27,27 @@ class SendSMSService
             Redis::instance()->set($key, $phone . '-' . $code, 120);
             return true;
         }
-        $this->saveSend($phone, $params, $type, $key);
+        $this->msgTask($phone, $params, $type, $key);
+    }
+
+    //短信队列
+    private function msgTask($phone, $params, $type, $key)
+    {
+        //php think queue:work --queue sendMsgQueue
+        $jobHandlerClassName = 'app\api\job\SendMsg';//负责处理队列任务的类
+        $jobQueueName = "sendMsgQueue";//队列名称
+        $jobData = [
+            'phone' => $phone,
+            'params' => $params,
+            'type' => $type,
+            'token' => $key
+        ];;//当前任务的业务数据
+        $isPushed = Queue::push($jobHandlerClassName, $jobData, $jobQueueName);
+        //将该任务推送到消息队列
+        if ($isPushed == false) {
+            throw new SaveException(['msg' => '发送短信失败']);
+        }
+
     }
 
     public function saveSend($phone, $params, $type, $token = '')

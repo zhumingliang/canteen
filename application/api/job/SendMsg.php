@@ -7,6 +7,8 @@ namespace app\api\job;
 use app\api\service\LogService;
 use think\Exception;
 use think\queue\Job;
+use zml\tp_aliyun\SendSms;
+use zml\tp_tools\Redis;
 
 class SendMsg
 {
@@ -23,7 +25,7 @@ class SendMsg
             $job->delete();
             return;
         }
-        //执行发送邮件
+        //执行发送短信
         $isJobDone = $this->doJob($data);
         if ($isJobDone) {
             // 如果任务执行成功，删除任务
@@ -49,7 +51,7 @@ class SendMsg
     public function failed($data)
     {
         //可以发送邮件给相应的负责人员
-        LogService::save("失败:".json_encode($data));
+        LogService::save("失败:" . json_encode($data));
 
 //        print("Warning: Job failed after max retries. job data is :".var_export($data,true)."\n");
     }
@@ -70,7 +72,11 @@ class SendMsg
     private function doJob($data)
     {
         try {
-            LogService::save(json_encode($data));
+            $res = SendSms::instance()->send($data['phone'], $data['params'], $data['type']);
+            if (key_exists('Code', $res) && $res['Code'] == 'OK') {
+                Redis::instance()->set($data['token'], $data['phone'] . '-' . $data['params']['code'], 120);
+            }
+            LogService::save('sendmsg:' . json_encode($data));
             return true;
         } catch (Exception $e) {
             return false;
