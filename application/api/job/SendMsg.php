@@ -78,7 +78,7 @@ class SendMsg
                 Redis::instance()->set($data['token'], $data['phone'] . '-' . $data['params']['code'], 120);
                 return true;
             }
-            LogService::save('sendmsg:' . json_encode($data));
+            LogService::save('sendmsg:' . json_encode($res));
             return false;
         } catch (Exception $e) {
             return false;
