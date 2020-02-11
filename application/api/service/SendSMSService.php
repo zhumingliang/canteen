@@ -27,6 +27,7 @@ class SendSMSService
             Redis::instance()->set($key, $phone . '-' . $code, 120);
             return true;
         }
+        LogService::save(json_encode($res));
         $this->msgTask($phone, $params, $type, $key);
     }
 

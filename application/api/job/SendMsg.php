@@ -29,16 +29,16 @@ class SendMsg
         $isJobDone = $this->doJob($data);
         if ($isJobDone) {
             // 如果任务执行成功，删除任务
-            LogService::save("<warn>邮件队列已执行完成并且已删除！" . "</warn>\n");
+            LogService::save("<warn>短信队列已执行完成并且已删除！" . "</warn>\n");
             $job->delete();
         } else {
             LogService::save("<warn>任务执行失败！" . "</warn>\n");
             if ($job->attempts() > 3) {
                 //通过这个方法可以检查这个任务已经重试了几次了
-                LogService::save("<warn>邮件队列已经重试超过3次，现在已经删除该任务" . "</warn>\n");
+                LogService::save("<warn>短信队列已经重试超过3次，现在已经删除该任务" . "</warn>\n");
                 $job->delete();
             } else {
-                LogService::save("<info>重新执行该任务!第" . $job->attempts() . "次</info>\n");
+                LogService::save("<info>短信执行该任务!第" . $job->attempts() . "次</info>\n");
                 $job->release(); //重发任务
             }
         }
@@ -73,11 +73,13 @@ class SendMsg
     {
         try {
             $res = SendSms::instance()->send($data['phone'], $data['params'], $data['type']);
+            LogService::save('sendmsg:' . json_encode($data));
             if (key_exists('Code', $res) && $res['Code'] == 'OK') {
                 Redis::instance()->set($data['token'], $data['phone'] . '-' . $data['params']['code'], 120);
+                return true;
             }
             LogService::save('sendmsg:' . json_encode($data));
-            return true;
+            return false;
         } catch (Exception $e) {
             return false;
         }
