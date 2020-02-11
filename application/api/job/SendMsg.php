@@ -39,7 +39,7 @@ class SendMsg
                 $job->delete();
             } else {
                 LogService::save("<info>短信执行该任务!第" . $job->attempts() . "次</info>\n");
-                $job->release(); //重发任务
+                $job->release(3); //重发任务
             }
         }
     }
