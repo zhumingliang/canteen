@@ -25,6 +25,10 @@ class CORS
         header('Access-Control-Allow-Origin: https://cloudcanteen3.51canteen.com');
         header("Access-Control-Allow-Headers: token,Origin, X-Requested-With, Content-Type, Accept");
         header('Access-Control-Allow-Methods: POST,GET');
+        header('X-Content-Type-Options: nosniff');
+        header("Pragma: no-cache");
+        header('cache-control: no-cache, no-store, must-revalidate');
+        header("X-XSS-Protection: 1");
         if (request()->isOptions()) {
             exit();
         }
