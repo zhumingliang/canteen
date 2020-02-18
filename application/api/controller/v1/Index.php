@@ -20,12 +20,25 @@ use app\lib\exception\SuccessMessageWithData;
 use think\Db;
 use think\db\Where;
 use think\Queue;
+use zml\tp_tools\Aes;
 
 class Index extends BaseController
 {
-    public function index($name)
+    public function index($name = '')
     {
-        $this->mailTask($name);
+
+        //密钥
+        $keyStr = '6D6A39C7078F6783E561B0D1A9EB2E68';
+        //加密的字符串
+        $plainText = 'oOOf3kI71Z9MI3Ok1ycrMA==';
+
+        $aes = new Aes();
+        $aes->set_key($keyStr);
+        //$aes->require_pkcs5();
+        $encText = $aes->decrypt($plainText);
+
+        echo $encText;
+        // $this->mailTask($name);
         // $detail = '[{"d_id":122,"ordering":[{"ordering_date":"2020-01-21","count":1}]}]';
 
         // (new OrderService())->orderingOnlineTest($detail, $name);

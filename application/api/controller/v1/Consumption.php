@@ -48,4 +48,31 @@ class Consumption extends BaseController
 
     }
 
+
+    /**
+     * @api {POST} /api/v1/consumption/face 消费机-饭堂订单--人脸识别消费
+     * @apiGroup   CMS
+     * @apiVersion 3.0.0
+     * @apiDescription     消费机-饭堂订单--人脸识别消费
+     *    {
+     *       "face_id": "sacews12123",
+     *       "face_time": "2020-02-17 09:00",
+     *       "phone": "18956225230"
+     *     }
+     * @apiParam (请求参数说明) {string} face_id  人脸识别机唯一id
+     * @apiParam (请求参数说明) {string} face_time  识别时间
+     * @apiParam (请求参数说明) {string} phone  手机号
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     */
+    public function consumptionWithFace()
+    {
+        $face_time = Request::param('face_time');
+        $face_id = Request::param('face_id');
+        $phone = Request::param('phone');
+        return json(new SuccessMessage());
+    }
+
 }

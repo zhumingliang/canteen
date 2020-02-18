@@ -94,6 +94,7 @@ Route::get('api/:version/export/staffs', 'api/:version.Department/exportStaffs')
 Route::post('api/:version/staff/qrcode/save', 'api/:version.Department/createStaffQrcode');
 
 Route::rule('api/:version/consumption/staff', 'api/:version.Consumption/staff');
+Route::post('api/:version/consumption/face', 'api/:version.Consumption/consumptionWithFace');
 
 Route::rule('api/:version/image/upload', 'api/:version.Image/upload');
 
