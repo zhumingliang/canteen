@@ -25,6 +25,7 @@ class Takeout extends BaseController
      * @apiParam (请求参数说明) {string} company_ids  企业id：选择全部时，将企业id用逗号分隔，例如：1,2，此时饭堂id传入0;选择某一个企业时传入企业id
      * @apiParam (请求参数说明) {string} canteen_id  饭堂id：选择某一个饭堂时传入饭堂id，此时企业id为0，选择全部时，饭堂id传入0
      * @apiParam (请求参数说明) {string} dinner_id  餐次id：选择饭堂时才可以选择具体的餐次信息，否则传0
+     * @apiParam (请求参数说明) {string} department_id  部门id，全部传0
      * @apiParam (请求参数说明) {string} ordering_date  订餐日期
      * @apiParam (请求参数说明) {int} used  打印状态：1｜已打印；2｜未打印；3｜全部
      * @apiSuccessExample {json}返回样例:
@@ -49,10 +50,11 @@ class Takeout extends BaseController
         $ordering_date = Request::param('ordering_date');
         $company_ids = Request::param('company_ids');
         $canteen_id = Request::param('canteen_id');
+        $department_id = Request::param('department_id');
         $dinner_id = Request::param('company_id');
         $used = Request::param('used');
         $statistic = (new OrderStatisticService())->takeoutStatistic($page, $size,
-            $ordering_date, $company_ids, $canteen_id, $dinner_id, $used);
+            $ordering_date, $company_ids, $canteen_id, $dinner_id, $used,$department_id);
         return json(new SuccessMessageWithData(['data' => $statistic]));
 
 
@@ -71,6 +73,7 @@ class Takeout extends BaseController
      * @apiParam (请求参数说明) {string} dinner_id  餐次id：选择饭堂时才可以选择具体的餐次信息，否则传0
      * @apiParam (请求参数说明) {string} ordering_date  订餐日期
      * @apiParam (请求参数说明) {int} used  打印状态：1｜已打印；2｜未打印；3｜全部
+     * @apiParam (请求参数说明) {string} department_id  部门id，全部传0
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200,"data":{"url":"http:\/\/canteen.tonglingok.com\/static\/excel\/download\/材料价格明细_20190817005931.xls"}}
      * @apiSuccess (返回参数说明) {int} error_code 错误代码 0 表示没有错误
@@ -84,7 +87,8 @@ class Takeout extends BaseController
         $canteen_id = Request::param('canteen_id');
         $dinner_id = Request::param('company_id');
         $used = Request::param('used');
-        $statistic = (new OrderStatisticService())->exportTakeoutStatistic($ordering_date, $company_ids, $canteen_id, $dinner_id, $used);
+        $department_id = Request::param('department_id');
+        $statistic = (new OrderStatisticService())->exportTakeoutStatistic($ordering_date, $company_ids, $canteen_id, $dinner_id, $used,$department_id);
         return json(new SuccessMessageWithData(['data' => $statistic]));
 
 
