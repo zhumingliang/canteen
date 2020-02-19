@@ -7,6 +7,7 @@ namespace app\api\service;
 use app\api\model\CanteenAccountT;
 use app\api\model\CompanyStaffT;
 use app\api\model\DinnerT;
+use app\api\model\MachineT;
 use app\api\model\OrderingV;
 use app\api\model\OrderT;
 use app\api\model\ShopOrderQrcodeT;
@@ -16,9 +17,11 @@ use app\api\model\UserT;
 use app\lib\enum\CommonEnum;
 use app\lib\enum\OrderEnum;
 use app\lib\enum\PayEnum;
+use app\lib\exception\AuthException;
 use app\lib\exception\ParameterException;
 use app\lib\exception\SaveException;
 use app\lib\exception\UpdateException;
+use GatewayClient\Gateway;
 use think\Db;
 use think\Exception;
 
@@ -43,6 +46,39 @@ class ConsumptionService
             Db::rollback();
             throw $e;
         }
+    }
+
+    public function consumptionWithFace($face_time, $face_id, $phone)
+    {
+        //检测人脸识别机是否合法
+        $machine = $this->checkMachine($face_id);
+        $info = $this->handelCanteenByFaceProcedure($phone, $face_time, $machine['company_id'], $machine['canteen_id']);
+        $return_data = [
+            'errorCode' => 0,
+            'msg' => "success",
+            'type' => 'canteen',
+            'data' => $info
+        ];
+        Gateway::sendToUid($machine['id'], json_encode($return_data));
+    }
+
+    private function checkMachine($face_id)
+    {
+        $machine = MachineT::where('face_id', $face_id)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->where('machine_type', 'canteen')
+            ->find()->toArray();
+        if (empty($machine)) {
+            throw new AuthException([
+                'msg' => '人脸识别机不合法'
+            ]);
+        }
+        //检测消费机是否在线
+        if (!Gateway::isUidOnline($machine['id'])) {
+            throw new AuthException(['msg' => '消费机掉线']);
+        }
+        return $machine;
+
     }
 
     public function handelShop($code)
@@ -106,10 +142,53 @@ class ConsumptionService
     }
 
 
+    private function handelCanteenByFaceProcedure($phone, $face_time, $company_id, $canteen_id)
+    {
+        Db::query('call canteenConsumptionFace(:in_companyID,:in_canteenID,:in_faceTime,:in_phone,:in_Qrcode,
+                @currentOrderID,@currentConsumptionType,@resCode,@resMessage,@returnBalance,
+                @returnDinner,@returnDepartment,@returnUsername,@returnPrice,@returnMoney)',
+            [
+                'in_companyID' => $company_id,
+                'in_canteenID' => $canteen_id,
+                'in_faceTime' => $face_time,
+                'in_phone' => $phone,
+            ]);
+        $resultSet = Db::query('select @currentOrderID,@currentConsumptionType,@resCode,@resMessage,@returnBalance,@returnDinner,@returnDepartment,@returnUsername,@returnPrice,@returnMoney');
+        $errorCode = $resultSet[0]['@resCode'];
+        $resMessage = $resultSet[0]['@resMessage'];
+        $consumptionType = $resultSet[0]['@currentConsumptionType'];
+        $orderID = $resultSet[0]['@currentOrderID'];
+        $balance = $resultSet[0]['@returnBalance'];
+        $dinner = $resultSet[0]['@returnDinner'];
+        $department = $resultSet[0]['@returnDepartment'];
+        $username = $resultSet[0]['@returnUsername'];
+        $price = $resultSet[0]['@returnPrice'];
+        $money = $resultSet[0]['@returnMoney'];
+        if ($errorCode != 0) {
+            throw  new SaveException(['errorCode' => $errorCode, 'msg' => $resMessage]);
+        }
+        $order = OrderT::infoToCanteenMachine($orderID);
+        $order['remark'] = $consumptionType == 1 ? "订餐消费" : "未订餐消费";
+        //获取订单信息返回
+        return [
+            'create_time' => date('Y-m-d H:i:s'),
+            'dinner' => $dinner,
+            'price' => $price,
+            'money' => $money,
+            'department' => $department,
+            'username' => $username,
+            'type' => $consumptionType,
+            'balance' => $balance,
+            'remark' => $consumptionType == 1 ? "订餐消费" : "未订餐消费",
+            'products' => $order['foods']
+        ];
+    }
+
     private function handelCanteenByProcedure($code, $company_id, $canteen_id)
     {
         Db::query('call canteenConsumption(:in_companyID,:in_canteenID,:in_Qrcode,
-                @currentOrderID,@currentConsumptionType,@resCode,@resMessage,@returnBalance,@returnDinner,@returnDepartment,@returnUsername,@returnPrice,@returnMoney)',
+                @currentOrderID,@currentConsumptionType,@resCode,@resMessage,@returnBalance,
+                @returnDinner,@returnDepartment,@returnUsername,@returnPrice,@returnMoney)',
             [
                 'in_companyID' => $company_id,
                 'in_canteenID' => $canteen_id,
@@ -144,6 +223,7 @@ class ConsumptionService
             'products' => $order['foods']
         ];
     }
+
 
     private function handelCanteen($code, $company_id, $staff_id, $canteen_id)
     {

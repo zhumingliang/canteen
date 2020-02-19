@@ -72,6 +72,7 @@ class Consumption extends BaseController
         $face_time = Request::param('face_time');
         $face_id = Request::param('face_id');
         $phone = Request::param('phone');
+        (new ConsumptionService())->consumptionWithFace($face_time, $face_id, $phone);
         return json(new SuccessMessage());
     }
 
