@@ -68,7 +68,7 @@ class ConsumptionService
         $machine = MachineT::where('face_id', $face_id)
             ->where('state', CommonEnum::STATE_IS_OK)
             ->where('machine_type', 'canteen')
-            ->find()->toArray();
+            ->find();
         if (empty($machine)) {
             throw new AuthException([
                 'msg' => '人脸识别机不合法'
