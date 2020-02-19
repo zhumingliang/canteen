@@ -59,6 +59,7 @@ class ConsumptionService
             'type' => 'canteen',
             'data' => $info
         ];
+        LogService::save(json_encode($return_data));
         Gateway::sendToUid($machine['id'], json_encode($return_data));
     }
 
