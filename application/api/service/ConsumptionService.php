@@ -144,7 +144,7 @@ class ConsumptionService
 
     private function handelCanteenByFaceProcedure($phone, $face_time, $company_id, $canteen_id)
     {
-        Db::query('call canteenConsumptionFace(:in_companyID,:in_canteenID,:in_faceTime,:in_phone,:in_Qrcode,
+        Db::query('call canteenConsumptionFace(:in_companyID,:in_canteenID,:in_faceTime,:in_phone,
                 @currentOrderID,@currentConsumptionType,@resCode,@resMessage,@returnBalance,
                 @returnDinner,@returnDepartment,@returnUsername,@returnPrice,@returnMoney)',
             [
@@ -153,7 +153,9 @@ class ConsumptionService
                 'in_faceTime' => $face_time,
                 'in_phone' => $phone,
             ]);
-        $resultSet = Db::query('select @currentOrderID,@currentConsumptionType,@resCode,@resMessage,@returnBalance,@returnDinner,@returnDepartment,@returnUsername,@returnPrice,@returnMoney');
+        $resultSet = Db::query('select @currentOrderID,@currentConsumptionType,
+        @resCode,@resMessage,@returnBalance,@returnDinner,
+        @returnDepartment,@returnUsername,@returnPrice,@returnMoney');
         $errorCode = $resultSet[0]['@resCode'];
         $resMessage = $resultSet[0]['@resMessage'];
         $consumptionType = $resultSet[0]['@currentConsumptionType'];
