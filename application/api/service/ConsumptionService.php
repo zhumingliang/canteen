@@ -52,7 +52,7 @@ class ConsumptionService
     {
         //检测人脸识别机是否合法
         $machine = $this->checkMachine($face_id);
-        $info = $this->handelCanteenByFaceProcedure($phone, $face_time, $machine['company_id'], $machine['canteen_id']);
+        $info = $this->handelCanteenByFaceProcedure($phone, $face_time, $machine['company_id'], $machine['belong_id']);
         $return_data = [
             'errorCode' => 0,
             'msg' => "success",
