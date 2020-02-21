@@ -168,7 +168,7 @@ class ConsumptionService
                 'msg' => $resMessage,
                 'type' => 'canteen',
                 'data' => [
-                    'username'=>'username'
+                    'username'=>$username
                 ]
             ];
         }
