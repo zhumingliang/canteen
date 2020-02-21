@@ -53,7 +53,6 @@ class ConsumptionService
         //检测人脸识别机是否合法
         $machine = $this->checkMachine($face_id);
         $return_data = $this->handelCanteenByFaceProcedure($phone, $face_time, $machine['company_id'], $machine['belong_id']);
-        LogService::save(json_encode($return_data));
         Gateway::sendToUid($machine['id'], json_encode($return_data));
         return $return_data;
     }
@@ -168,7 +167,9 @@ class ConsumptionService
                 'errorCode' => $errorCode,
                 'msg' => $resMessage,
                 'type' => 'canteen',
-                'data' => []
+                'data' => [
+                    'username'=>'username'
+                ]
             ];
         }
         $order = OrderT::infoToCanteenMachine($orderID);
@@ -178,7 +179,8 @@ class ConsumptionService
             'errorCode' => $errorCode,
             'msg' => $resMessage,
             'type' => 'canteen',
-            'data' => ['create_time' => date('Y-m-d H:i:s'),
+            'data' => [
+                'create_time' => date('Y-m-d H:i:s'),
                 'dinner' => $dinner,
                 'price' => $price,
                 'money' => $money,
