@@ -52,15 +52,10 @@ class ConsumptionService
     {
         //检测人脸识别机是否合法
         $machine = $this->checkMachine($face_id);
-        $info = $this->handelCanteenByFaceProcedure($phone, $face_time, $machine['company_id'], $machine['belong_id']);
-        $return_data = [
-            'errorCode' => 0,
-            'msg' => "success",
-            'type' => 'canteen',
-            'data' => $info
-        ];
+        $return_data = $this->handelCanteenByFaceProcedure($phone, $face_time, $machine['company_id'], $machine['belong_id']);
         LogService::save(json_encode($return_data));
         Gateway::sendToUid($machine['id'], json_encode($return_data));
+        return $return_data;
     }
 
     private function checkMachine($face_id)
@@ -168,22 +163,32 @@ class ConsumptionService
         $price = $resultSet[0]['@returnPrice'];
         $money = $resultSet[0]['@returnMoney'];
         if ($errorCode != 0) {
-            throw  new SaveException(['errorCode' => $errorCode, 'msg' => $resMessage]);
+            // throw  new SaveException(['errorCode' => $errorCode, 'msg' => $resMessage]);
+            return [
+                'errorCode' => $errorCode,
+                'msg' => $resMessage,
+                'type' => 'canteen',
+                'data' => []
+            ];
         }
         $order = OrderT::infoToCanteenMachine($orderID);
         $order['remark'] = $consumptionType == 1 ? "订餐消费" : "未订餐消费";
         //获取订单信息返回
         return [
-            'create_time' => date('Y-m-d H:i:s'),
-            'dinner' => $dinner,
-            'price' => $price,
-            'money' => $money,
-            'department' => $department,
-            'username' => $username,
-            'type' => $consumptionType,
-            'balance' => $balance,
-            'remark' => $consumptionType == 1 ? "订餐消费" : "未订餐消费",
-            'products' => $order['foods']
+            'errorCode' => $errorCode,
+            'msg' => $resMessage,
+            'type' => 'canteen',
+            'data' => ['create_time' => date('Y-m-d H:i:s'),
+                'dinner' => $dinner,
+                'price' => $price,
+                'money' => $money,
+                'department' => $department,
+                'username' => $username,
+                'type' => $consumptionType,
+                'balance' => $balance,
+                'remark' => $consumptionType == 1 ? "订餐消费" : "未订餐消费",
+                'products' => $order['foods']
+            ]
         ];
     }
 
