@@ -75,7 +75,7 @@ class SupplierToken extends Token
         $key = empty($key) ? self::generateToken() : $key;
         $value = json_encode($cachedValue);
         $expire_in = config('setting.token_cms_expire_in');
-       //$request = Cache::remember($key, $value, $expire_in);
+        //$request = Cache::remember($key, $value, $expire_in);
         $request = Redis::instance()->set($key, $value, $expire_in);
         if (!$request) {
             throw new TokenException([
@@ -98,6 +98,7 @@ class SupplierToken extends Token
             'account' => $admin->account,
             'name' => $admin->name,
             'company_id' => $admin->c_id,
+            'grade' => 'supplier',
             'type' => 'supplier'
         ];
         return $cachedValue;
