@@ -27,9 +27,6 @@ class Index extends BaseController
 {
     public function index($name = '')
     {
-
-        $res = (new WeiXinService())->qRCode(78);
-        return json($res);
         // $this->mailTask($name);
         // $detail = '[{"d_id":122,"ordering":[{"ordering_date":"2020-01-21","count":1}]}]';
 

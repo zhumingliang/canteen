@@ -192,4 +192,22 @@ class Company extends BaseController
         return json(new SuccessMessage());
     }
 
+    /**
+     * @api {GET} /api/v1/company/qrcode CMS管理端--企业管理-获取非企业人员二维码
+     * @apiGroup  CMS
+     * @apiVersion 3.0.0
+     * @apiDescription CMS管理端--企业管理-获取非企业人员二维码
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/company/qrcode
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"url":"http://"}}
+     * @apiSuccess (返回参数说明) {string} url 地址
+     */
+    public function getOutQRCode()
+    {
+        $company_id = Request::param('company_id');
+        $url = (new CompanyService())->getOutQRCode($company_id);
+        return json(new SuccessMessageWithData(['data' => $url]));
+    }
+
 }

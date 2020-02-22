@@ -256,5 +256,20 @@ class CompanyService
         }
     }
 
+    public function getOutQRCode($company_id)
+    {
+        $company = CompanyT::get($company_id);
+        if (!$company_id) {
+            throw  new AuthException(['msg' => '企业不存在']);
+        }
+        if ($company->out_qrcode) {
+            return ['url' => config('setting.domain') . $company->out_qrcode];
+        }
+        $url = (new WeiXinService())->qRCode($company_id);
+        $company->out_qrcode = $url;
+        $company->save();
+        return ['url' => config('setting.domain') . $url];
+    }
+
 
 }
