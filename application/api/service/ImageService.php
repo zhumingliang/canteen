@@ -33,7 +33,7 @@ class ImageService
         if (!$info) {
             throw new SaveException();
         }
-        return ['url' => '/static/qrcode' . "/$name.jpg"];
+        return '/static/qrcode' . "/$name.jpg";
     }
 
 }
