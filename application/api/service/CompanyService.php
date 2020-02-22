@@ -258,7 +258,7 @@ class CompanyService
 
     public function getOutQRCode($company_id)
     {
-        $company = CompanyT::where('id', $company_id)->where('sate', CommonEnum::STATE_IS_OK)->find();
+        $company = CompanyT::where('id', $company_id)->where('state', CommonEnum::STATE_IS_OK)->find();
         if (!$company_id) {
             throw  new AuthException(['msg' => '企业不存在']);
         }
