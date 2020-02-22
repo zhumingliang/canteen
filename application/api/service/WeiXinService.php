@@ -51,7 +51,8 @@ class WeiXinService
     public function qRCode($company_id)
     {
         $result = $this->app->qrcode->forever($company_id);
-        return $result;
+        $url = $this->app->qrcode->url($result['ticket']);
+        return $url;
 
     }
 
