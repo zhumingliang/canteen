@@ -28,12 +28,14 @@ class Shop extends BaseController
      *    {
      *       "name": "鸡蛋",
      *       "price": 8,
+     *       "category_id": 8,
      *       "unit": "元/500g",
      *       "count": 100,
      *       "image": "/static/image/a.png",
      *     }
      * @apiParam (请求参数说明) {string} name  商品名称
      * @apiParam (请求参数说明) {float} price  价格
+     * @apiParam (请求参数说明) {int} category_id  商品类别id
      * @apiParam (请求参数说明) {string} unit  单位
      * @apiParam (请求参数说明) {int} count  商品库存数量
      * @apiParam (请求参数说明) {string} image  商品图片：由上传图片接口返回
