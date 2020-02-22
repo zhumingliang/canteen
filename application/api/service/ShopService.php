@@ -104,7 +104,7 @@ class ShopService
         try {
             Db::startTrans();
             (new AuthorService())->checkAuthorSupplier();
-            $params['company_id'] = Token::getCurrentTokenVar('c_id');
+            $params['company_id'] = Token::getCurrentTokenVar('company_id');
             $params['supplier_id'] = Token::getCurrentUid();
             if ($this->checkName($params['company_id'], $params['name'])) {
                 throw new SaveException(['msg' => '商品名称已经存在']);
