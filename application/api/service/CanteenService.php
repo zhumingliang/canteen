@@ -7,6 +7,7 @@ namespace app\api\service;
 use app\api\model\AdminCanteenT;
 use app\api\model\AdminCanteenV;
 use app\api\model\CanteenAccountT;
+use app\api\model\CanteenAddressT;
 use app\api\model\CanteenCommentT;
 use app\api\model\CanteenModuleT;
 use app\api\model\CanteenT;
@@ -17,6 +18,7 @@ use app\api\model\ConsumptionStrategyT;
 use app\api\model\DinnerT;
 use app\api\model\MachineT;
 use app\api\model\MenuT;
+use app\api\model\OutConfigT;
 use app\api\model\StaffCanteenV;
 use app\api\model\StaffV;
 use app\api\model\StrategyDetailT;
@@ -125,15 +127,69 @@ class CanteenService
     {
         try {
             $c_id = $params['c_id'];
-            $dinners = json_decode($params['dinners'], true);
-            $account = json_decode($params['account'], true);
-            $this->prefixDinner($c_id, $dinners);
-            $this->prefixCanteenAccount($c_id, $account);
+            if (!empty($params['dinners'])) {
+                $dinners = json_decode($params['dinners'], true);
+                $this->prefixDinner($c_id, $dinners);
+            }
+
+            if (!empty($params['account'])) {
+                $account = json_decode($params['account'], true);
+                $account['c_id'] = $c_id;
+                $this->prefixCanteenAccount($account);
+            }
+            if (!empty($params['out_config'])) {
+                $out_config = json_decode($params['out_config'], true);
+                $out_config['canteen_id'] = $c_id;
+                $this->prefixOutConfig($out_config);
+            }
+            if (!empty($params['address'])) {
+                $address = json_decode($params['address'], true);
+                $this->prefixCanteenAddress($c_id, $address, []);
+            }
             Db::commit();
         } catch (Exception $e) {
             Db::rollback();
             throw  $e;
 
+        }
+    }
+
+    private function prefixOutConfig($out_config)
+    {
+        if (key_exists('id', $out_config)) {
+            $outConfig = OutConfigT::update($out_config);
+        } else {
+            $outConfig = OutConfigT::create($out_config);
+        }
+        if (!$outConfig) {
+            throw new SaveException(['msg' => '处理外送配置失败']);
+        }
+
+    }
+
+    private function prefixCanteenAddress($canteen_id, $address, $cancel)
+    {
+
+        $dataList = [];
+        if (count($address)) {
+            foreach ($address as $k => $v) {
+                $v['canteen_id'] = $canteen_id;
+                $v['state'] = CommonEnum::STATE_IS_OK;
+                $dataList[] = $v;
+            }
+        }
+        if (count($cancel)) {
+            foreach ($cancel as $k => $v) {
+                $dataList[] = [
+                    'id' => $v,
+                    'state' => CommonEnum::STATE_IS_FAIL
+                ];
+            }
+        }
+
+        $address = (new CanteenAddressT())->saveAll($dataList);
+        if (!$address) {
+            throw new SaveException(['msg' => '保存外送限制地址失败']);
         }
     }
 
@@ -186,15 +242,15 @@ class CanteenService
         }
     }
 
-    private function prefixCanteenAccount($c_id, $account)
+    private function prefixCanteenAccount($account)
     {
-        if (!empty($account)) {
-            $account['state'] = CommonEnum::STATE_IS_OK;
-            $account['c_id'] = $c_id;
-            $res = CanteenAccountT::create($account);
-            if (!$res) {
-                throw new SaveException();
-            }
+        if (key_exists('id', $account)) {
+            $account = CanteenAccountT::update($account);
+        } else {
+            $account = CanteenAccountT::create($account);
+        }
+        if (!$account) {
+            throw new SaveException(['msg' => '处理饭堂配置失败']);
         }
     }
 
@@ -202,7 +258,9 @@ class CanteenService
     {
         return [
             'dinners' => DinnerT::dinners($c_id),
-            'account' => CanteenAccountT::account($c_id)
+            'account' => CanteenAccountT::account($c_id),
+            'out_config' => OutConfigT::config($c_id),
+            'address' => CanteenAddressT::address($c_id)
         ];
 
     }
@@ -263,16 +321,24 @@ class CanteenService
             }
             if (!empty($params['account'])) {
                 $account = json_decode($params['account'], true);
-
-                if (!key_exists('id', $account)) {
-                    $account['c_id'] = $c_id;
-                    $res = CanteenAccountT::create($account);
-                } else {
-                    $res = CanteenAccountT::update($account);
+                $account['c_id'] = $c_id;
+                $this->prefixCanteenAccount();
+            }
+            if (!empty($params['out_config'])) {
+                $out_config = json_decode($params['out_config'], true);
+                $out_config['canteen_id'] = $c_id;
+                $this->prefixOutConfig($out_config);
+            }
+            if (!empty($params['address'])) {
+                $address = json_decode($params['address'], true);
+                $add = $cancel = [];
+                if (!empty($address['add'])) {
+                    $add = $address['add'];
                 }
-                if (!$res) {
-                    throw new UpdateException();
+                if (!empty($address['cancel'])) {
+                    $cancel = $address['cancel'];
                 }
+                $this->prefixCanteenAddress($c_id, $add, $cancel);
             }
         } catch (Exception$e) {
             Db::rollback();

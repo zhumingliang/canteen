@@ -48,11 +48,7 @@ class Canteen extends BaseController
      * @apiVersion 3.0.0
      * @apiDescription     CMS管理端-新增饭堂配置信息
      * @apiExample {post}  请求样例:
-     *    {
-     *       "c_id": 2,
-     *       "dinners":[{"name":"早餐","type":"day","type_number":10,"limit_time":"10:00","meal_time_begin":"07:00","meal_time_end":"08:00","fixed":2},{"name":"中餐","type":"day","type_number":10,"limit_time":"10:00","meal_time_bgin":"12:00","meal_time_end":"13:00","fixed":1}],
-     *       "account":{"dining_mode":3,"type":2,"clean_type":3,"clean_day":1,"clean_time":01:00:00,"limit_money":0}
-     *     }
+     * {"c_id":2,"dinners":[{"name":"早餐","type":"day","type_number":10,"limit_time":"10:00","meal_time_begin":"07:00","meal_time_end":"08:00","fixed":2},{"name":"中餐","type":"day","type_number":10,"limit_time":"10:00","meal_time_bgin":"12:00","meal_time_end":"13:00","fixed":1}],"account":{"dining_mode":3,"type":2,"clean_type":3,"clean_day":1,"clean_time":"01:00:00","limit_money":0,"out":2},"out_config":{"in_fee":0,"out_fee":0,"address_limit":1,"remark":"备注"},"address":[{"province":"广东省","city":"江门市","area":"蓬江区","address":"人民医院A栋"}]}
      * @apiParam (请求参数说明) {int} c_id  饭堂id
      * @apiParam (请求参数说明) {string} dinners  订餐信息json字符串
      * @apiParam (请求参数说明) {string} name  餐次名称
@@ -69,6 +65,17 @@ class Canteen extends BaseController
      * @apiParam (请求参数说明) {int} clean_day  每月清零具体日期
      * @apiParam (请求参数说明) {int} clean_time  每月清零具体时间
      * @apiParam (请求参数说明) {int} limit_money  可预消费金额
+     * @apiParam (请求参数说明) {int} out  是否允许非企业人员就餐：1| 允许；2|不允许
+     * @apiParam (请求参数说明) {obj} out_config  外卖配置
+     * @apiParam (请求参数说明) {int} in_fee  企业人员配送费用
+     * @apiParam (请求参数说明) {int} out_fee  外来人员配送费用
+     * @apiParam (请求参数说明) {int} address_limit  是否限制配送范围
+     * @apiParam (请求参数说明) {string} remark  可预消费金额
+     * @apiParam (请求参数说明) {obj} address  限制配送范围
+     * @apiParam (请求参数说明) {string} province 省
+     * @apiParam (请求参数说明) {string} city  城市
+     * @apiParam (请求参数说明) {string} area  区域
+     * @apiParam (请求参数说明) {string} address  详细地址
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
@@ -90,7 +97,7 @@ class Canteen extends BaseController
      * http://canteen.tonglingok.com/canteen/configuration?c_id=2
      * @apiParam (请求参数说明) {int} c_id  饭堂id
      * @apiSuccessExample {json} 系统功能模块返回样例:
-     * {"msg":"ok","errorCode":0,"code":200,"data":{"dinners":[{"id":5,"c_id":1,"name":"早餐","type":"day","create_time":"2019-07-30 02:07:17","type_number":10,"meal_time_bgin":"07:00:00","meal_time_end":"08:00:00","limit_time":"10:00:00"},{"id":6,"c_id":1,"name":"中餐","type":"day","create_time":"2019-07-30 02:07:17","type_number":10,"meal_time_bgin":"12:00:00","meal_time_end":"13:00:00","limit_time":"10:00:00"}],"account":{"id":3,"c_id":1,"type":2,"clean_type":3,"clean_day":0,"create_time":"2019-07-30 02:07:17"}}}
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"dinners":[{"id":5,"c_id":1,"name":"早餐","type":"day","create_time":"2019-07-30 02:07:17","type_number":10,"meal_time_bgin":"07:00:00","meal_time_end":"08:00:00","limit_time":"10:00:00"},{"id":6,"c_id":1,"name":"中餐","type":"day","create_time":"2019-07-30 02:07:17","type_number":10,"meal_time_bgin":"12:00:00","meal_time_end":"13:00:00","limit_time":"10:00:00"}],"account":{"id":3,"c_id":1,"type":2,"clean_type":3,"clean_day":0,"create_time":"2019-07-30 02:07:17","out":1},"out_config":{"id":1,"in_fee":0,"out_fee":0,"address_limit":1,"remark":"备注"},"address":[{"id":1,"province":"广东省","city":"江门市","area":"蓬江区","address":"人民医院A栋"}]}}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
      * @apiSuccess (返回参数说明) {String} msg 信息描述
      * @apiSuccess (返回参数说明) {string} dinners  订餐信息json字符串
@@ -111,6 +118,19 @@ class Canteen extends BaseController
      * @apiSuccess (返回参数说明) {int} clean_day  每月清零具体日期
      * @apiSuccess (返回参数说明) {int} clean_time  每月清零具体时间
      * @apiSuccess (返回参数说明) {int} create_time  创建时间
+     * @apiSuccess (返回参数说明) {int} out  是否允许非企业人员就餐：1| 允许；2|不允许
+     * @apiSuccess (返回参数说明) {obj} out_config  外卖配置
+     * @apiSuccess (返回参数说明) {int} id  配置id
+     * @apiSuccess (返回参数说明) {int} in_fee  企业人员配送费用
+     * @apiSuccess (返回参数说明) {int} out_fee  外来人员配送费用
+     * @apiSuccess (返回参数说明) {int} address_limit  是否限制配送范围
+     * @apiSuccess (返回参数说明) {string} remark  可预消费金额
+     * @apiSuccess (返回参数说明) {obj} address  限制配送范围
+     * @apiSuccess (返回参数说明) {string} id 地址id
+     * @apiSuccess (返回参数说明) {string} province 省
+     * @apiSuccess (返回参数说明) {string} city  城市
+     * @apiSuccess (返回参数说明) {string} area  区域
+     * @apiSuccess (返回参数说明) {string} address  详细地址
      */
     public function configuration()
     {
@@ -128,7 +148,9 @@ class Canteen extends BaseController
      *    {
      *       "c_id": 2,
      *       "dinners":[{"id":1,"name":"早餐","type":"day","type_number":10,"limit_time":"10:00","meal_time_begin":"07:00","meal_time_end":"08:00"},{"name":"晚餐","type":"day","type_number":10,"limit_time":"10:00","meal_time_begin":"18:00","meal_time_end":"19:00"}],
-     *       "account":{"id":1,"type":2,"clean_type":3,"clean_day":1,"clean_day":02:00:00}
+     *       "account":{"id":1,"type":2,"clean_type":3,"clean_day":1,"clean_day":"02:00:00"},
+     *       "out_config":{"id":1,"in_fee":0,"out_fee":0,"address_limit":1,"remark":"备注"},
+     *       "address":{"add":[{"id":1,"province":"广东省","city":"江门市","area":"蓬江区","address":"人民医院A栋"}],"cancel":[1,2]}
      *     }
      * @apiParam (请求参数说明) {int} c_id  饭堂id
      * @apiParam (请求参数说明) {string} dinners  订餐信息json字符串
@@ -147,6 +169,20 @@ class Canteen extends BaseController
      * @apiParam (请求参数说明) {int} clean_type  系统清零方式：1|系统自动清零；2|系统自动清零；3|无
      * @apiParam (请求参数说明) {int} clean_day  每月清零具体日期
      * @apiParam (请求参数说明) {int} clean_time  每月清零具体时间
+     * @apiParam (请求参数说明) {obj} out_config  外卖配置
+     * @apiParam (请求参数说明) {int} id  配置id 首次新增无需上传
+     * @apiParam (请求参数说明) {int} in_fee  企业人员配送费用
+     * @apiParam (请求参数说明) {int} out_fee  外来人员配送费用
+     * @apiParam (请求参数说明) {int} address_limit  是否限制配送范围
+     * @apiParam (请求参数说明) {string} remark  可预消费金额
+     * @apiParam (请求参数说明) {obj} address  限制配送范围
+     * @apiParam (请求参数说明) {obj} add 新增地址
+     * @apiParam (请求参数说明) {string} id 地址id
+     * @apiParam (请求参数说明) {string} province 省
+     * @apiParam (请求参数说明) {string} city  城市
+     * @apiParam (请求参数说明) {string} area  区域
+     * @apiParam (请求参数说明) {string} address  详细地址
+     * @apiParam (请求参数说明) {obj} cancel  取消地址
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
