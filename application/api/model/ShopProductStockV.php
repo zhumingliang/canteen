@@ -44,7 +44,7 @@ class ShopProductStockV extends BaseModel
                 }
             })
             ->where('state', '<', CommonEnum::STATE_IS_DELETE)
-            ->field('product_id,image,name,category,unit,price,sum(count) as stock,supplier,state')
+            ->field('product_id,image,name,category_id,category,unit,price,sum(count) as stock,supplier,state')
             ->order('create_time desc')
             ->group('product_id')
             ->paginate($size, false, ['page' => $page]);
