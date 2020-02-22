@@ -33,7 +33,7 @@ class WeiXinService
             [
                 "name" => "云饭堂3.0",
                 "sub_button" => [
-                     ["type" => "view",
+                    ["type" => "view",
                         "name" => "进入饭堂",
                         "url" => "https://cloudcanteen3.51canteen.com/canteen3/wxcms"
                     ]
@@ -45,6 +45,13 @@ class WeiXinService
         if (!$res) {
             throw new WeChatException(['msg' => '创建菜单失败']);
         }
+
+    }
+
+    public function qRCode($company_id)
+    {
+        $result = $this->app->qrcode->forever($company_id);
+        return $result;
 
     }
 

@@ -5,6 +5,7 @@ namespace app\api\controller\v1;
 
 
 use app\api\controller\BaseController;
+use app\api\service\LogService;
 use app\api\service\WeiXinService;
 
 class WeiXin extends BaseController
@@ -13,7 +14,10 @@ class WeiXin extends BaseController
     {
         $app = app('wechat.official_account');
         $app->server->push(function ($message) {
-            return 'hello,world';
+            if ($message['MsgType'] == 'event') {
+                LogService::save(\GuzzleHttp\json_encode($message));
+            }
+            return '欢迎来到云饭堂！';
         });
         $app->server->serve()->send();
     }

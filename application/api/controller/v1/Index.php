@@ -15,6 +15,7 @@ use app\api\service\CompanyService;
 use app\api\service\DepartmentService;
 use app\api\service\OrderService;
 use app\api\service\QrcodeService;
+use app\api\service\WeiXinService;
 use app\lib\enum\CommonEnum;
 use app\lib\exception\SuccessMessageWithData;
 use think\Db;
@@ -27,17 +28,8 @@ class Index extends BaseController
     public function index($name = '')
     {
 
-        //密钥
-        $keyStr = '6D6A39C7078F6783E561B0D1A9EB2E68';
-        //加密的字符串
-        $plainText = 'oOOf3kI71Z9MI3Ok1ycrMA==';
-
-        $aes = new Aes();
-        $aes->set_key($keyStr);
-        //$aes->require_pkcs5();
-        $encText = $aes->decrypt($plainText);
-
-        echo $encText;
+        $res = (new WeiXinService())->qRCode(78);
+        return json($res);
         // $this->mailTask($name);
         // $detail = '[{"d_id":122,"ordering":[{"ordering_date":"2020-01-21","count":1}]}]';
 
