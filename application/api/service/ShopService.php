@@ -103,9 +103,9 @@ class ShopService
     {
         try {
             Db::startTrans();
-            (new AuthorService())->checkAuthorSupplier();
+            $params['supplier_id'] = (new AuthorService())->checkAuthorSupplier();
             $params['company_id'] = Token::getCurrentTokenVar('company_id');
-            $params['supplier_id'] = Token::getCurrentUid();
+
             if ($this->checkName($params['company_id'], $params['name'])) {
                 throw new SaveException(['msg' => '商品名称已经存在']);
             }
@@ -596,7 +596,7 @@ class ShopService
         $supplier_id = (new AuthorService())->checkAuthorSupplier();
         //获取供应商所有商品
         $products = ShopProductT::supplierProducts(1, 10000, $time_begin, $time_end, $supplier_id);
-        $header = ['序号','名称', '单价（元）', '单位', '总进货量', '总销售量', '总销售额（元）'];
+        $header = ['序号', '名称', '单价（元）', '单位', '总进货量', '总销售量', '总销售额（元）'];
         $file_name = $time_begin . "-" . $time_end . "-进销报表";
         $url = (new ExcelService())->makeExcel($header, $products, $file_name);
         return [
@@ -618,7 +618,7 @@ class ShopService
     {
         $products = ShopProductT::supplierProducts(1, 10000, $time_begin, $time_end, $supplier_id);
         $products = $this->prefixExportSalesReport($products['data']);
-        $header = ['序号','名称', '单价（元）', '单位', '总进货量', '总销售量', '总销售额（元）'];
+        $header = ['序号', '名称', '单价（元）', '单位', '总进货量', '总销售量', '总销售额（元）'];
         $file_name = $time_begin . "-" . $time_end . "-进销报表";
         $url = (new ExcelService())->makeExcel($header, $products, $file_name);
         return [
