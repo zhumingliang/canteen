@@ -52,7 +52,8 @@ class WeiXinService
     {
         $result = $this->app->qrcode->forever($company_id);
         $url = $this->app->qrcode->url($result['ticket']);
-        return $url;
+        return (new ImageService())->saveCompanyQRCode($company_id, $url);
+
 
     }
 
