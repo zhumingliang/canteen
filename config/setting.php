@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'domain' => 'http://canteen.tonglingok.com',
+    'domain' => 'https://tonglingok.com/canteen',
     'qrcode_expire_in' => 10,
     'shop_qrcode_expire_in' => 10,
     'qrcode_url' => 'type=%s&code=%s',

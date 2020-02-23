@@ -184,4 +184,27 @@ class UserService
             'username' => $staff->username
         ];
     }
+
+    public function saveUserFromQRCode($company_id, $openid)
+    {
+        //检测用户是否存在
+        $user = UserT::where('openid', $openid)->find();
+        if (empty($user)) {
+            //用户不存在，保存用户信息
+            $data = [
+                'openid' => $openid,
+                'current_company_id' => $company_id,
+                'outsiders' => CommonEnum::STATE_IS_OK
+            ];
+            UserT::create($data);
+            return true;
+        }
+        //用户信息存在，判断是否为企业员工
+        if ($user->outsiders == CommonEnum::STATE_IS_OK) {
+            $user->current_company_id = $company_id;
+            $user->current_canteen_id = 0;
+            $user->save();
+            return true;
+        }
+    }
 }
