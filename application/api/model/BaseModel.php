@@ -15,7 +15,7 @@ class BaseModel extends Model
 {
     protected function prefixImgUrl($value)
     {
-        $finalUrl = config('setting.canteen') . $value;
+        $finalUrl = config('setting.image') . $value;
         return $finalUrl;
     }
 
