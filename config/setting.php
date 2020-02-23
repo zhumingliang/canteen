@@ -2,6 +2,7 @@
 
 return [
     'domain' => 'https://tonglingok.com/canteen',
+    'image' => 'https://tonglingok.com',
     'qrcode_expire_in' => 10,
     'shop_qrcode_expire_in' => 10,
     'qrcode_url' => 'type=%s&code=%s',
