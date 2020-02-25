@@ -17,6 +17,7 @@ use app\api\model\SystemShopModuleT;
 use app\lib\enum\AdminEnum;
 use app\lib\enum\CommonEnum;
 use app\lib\enum\ModuleEnum;
+use app\lib\enum\UserEnum;
 use app\lib\exception\AuthException;
 use app\lib\exception\ParameterException;
 use app\lib\exception\SaveException;
@@ -148,13 +149,13 @@ class ModuleService
 
     }
 
-    public function updateCompanyModule($params)
+    public function updateCompanyModule($params, $type = "company")
     {
         try {
             $company_id = $params['company_id'];
             $canteen = $params['canteen'];
             if (strlen($canteen)) {
-                $this->updateCanteenModule($canteen, $company_id);
+                $this->updateCanteenModule($canteen, $company_id, $type);
             }
             Db::commit();
         } catch (Exception $e) {
@@ -165,8 +166,9 @@ class ModuleService
 
     }
 
+
     private function
-    updateCanteenModule($canteen, $company_id)
+    updateCanteenModule($canteen, $company_id, $type = "company")
     {
 
         $canteen = json_decode($canteen, true);
@@ -181,8 +183,9 @@ class ModuleService
                     'order' => $v['order']
                 ];
             }
-
             $res = (new CanteenModuleT())->saveAll($add_data);
+
+
             if (!$res) {
                 throw new SaveException(['msg' => '新增企业模块失败']);
 
@@ -257,6 +260,14 @@ class ModuleService
 
     public function userMobileModules()
     {
+        $outsiders = Token::getCurrentTokenVar('outsiders');
+        $company_id = (new UserService())->getUserCurrentCompanyID();
+
+        if ($outsiders == UserEnum::OUTSIDE) {
+            //获取企业外来人员可见模块
+            $modules = $this->companyOutsiderMobileModules($company_id);
+            return $modules;
+        }
         $admin_id = (new UserService())->checkUserAdminID();
         //当前用户为管理员
         if ($admin_id) {
@@ -264,7 +275,6 @@ class ModuleService
             return $modules;
         }
         //当前用户为普通用户
-        $company_id = (new UserService())->getUserCurrentCompanyID();
         $modules = $this->companyNormalMobileModules($company_id);
         return $modules;
     }
@@ -290,6 +300,12 @@ class ModuleService
     private function companyNormalMobileModules($company_id)
     {
         $modules = CanteenModuleV::companyNormalMobileModules($company_id);
+        return $modules;
+    }
+
+    private function companyOutsiderMobileModules($company_id)
+    {
+        $modules = OutsiderModuleV::outsiderMobileModules($company_id);
         return $modules;
     }
 

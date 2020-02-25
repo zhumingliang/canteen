@@ -10,6 +10,7 @@ use app\api\model\StaffCanteenT;
 use app\api\model\StaffQrcodeT;
 use app\api\model\UserT;
 use app\lib\enum\CommonEnum;
+use app\lib\enum\UserEnum;
 use app\lib\exception\AuthException;
 use app\lib\exception\UpdateException;
 use think\facade\Request;
@@ -17,7 +18,7 @@ use zml\tp_tools\Redis;
 
 class UserService
 {
-    public function bindPhone($phone, $code)
+    public function bindPhone($phone, $code, $type)
     {
         $token = Request::header('token');
         $key = "code:" . $token;
@@ -35,12 +36,15 @@ class UserService
             throw new UpdateException(['msg' => '用户已经绑定手机号，不能重复绑定']);
         }
         $user->phone = $phone;
+        $user->type = $type;
         $res = $user->save();
         if (!$res) {
             throw new UpdateException(['msg' => '绑定用户手机号失败']);
         }
         (new OfficialToken())->updatePhone($phone);
-        return (new CanteenService())->userCanteens();
+        (new OfficialToken())->updateType($type);
+
+
     }
 
 

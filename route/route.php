@@ -25,6 +25,7 @@ Route::post('api/:version/module/system/handel', 'api/:version.Module/handelSyst
 Route::post('api/:version/module/default/handel', 'api/:version.Module/handelModuleDefaultStatus');
 Route::post('api/:version/module/update', 'api/:version.Module/updateModule');
 Route::post('api/:version/module/company/update', 'api/:version.Module/updateCompanyModule');
+Route::post('api/:version/module/outsider/update', 'api/:version.Module/updateOutsiderModule');
 Route::get('api/:version/modules', 'api/:version.Module/systemModules');
 Route::get('api/:version/modules/canteen/withSystem', 'api/:version.Module/canteenModulesWithSystem');
 Route::get('api/:version/modules/shop/withSystem', 'api/:version.Module/shopModulesWithSystem');
@@ -141,6 +142,7 @@ Route::get('api/:version/user/card', 'api/:version.User/mealCard');
 Route::get('api/:version/user/phone', 'api/:version.User/userPhone');
 
 Route::post('api/:version/order/personChoice/save', 'api/:version.Order/personChoice');
+Route::post('api/:version/order/personChoice/outside/save', 'api/:version.Order/personChoiceOutsider');
 Route::post('api/:version/order/online/save', 'api/:version.Order/orderingOnline');
 Route::get('api/:version/order/userOrdering', 'api/:version.Order/userOrdering');
 Route::get('api/:version/order/online/info', 'api/:version.Order/infoForOnline');
@@ -252,3 +254,6 @@ Route::rule('api/:version/service/orderStateHandel', 'api/:version.Service/order
 Route::rule('api/:version/service/sendMsgHandel', 'api/:version.Service/sendMsgHandel');
 Route::rule('api/:version/service/noticeHandel', 'api/:version.Service/sendNoticeHandel');
 
+Route::post('api/:version/outsider/save', 'api/:version.Outsider/saveCanteen');
+Route::get('api/:version/outsiders', 'api/:version.Outsider/outsiders');
+Route::get('api/:version/outsider', 'api/:version.Outsider/outsider');

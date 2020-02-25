@@ -112,9 +112,10 @@ class  Token extends Controller
      * http://canteen.tonglingok.com/api/v1/token/official?code=121
      * @apiParam (请求参数说明) {String} code    授权token
      * @apiSuccessExample {json} 返回样例:
-     *{"msg":"ok","errorCode":0,"code":200,"data":{"token":"26837cbfd8c9c55d830d3f726927bfed","phone":1,"canteen_selected":2}
+     *{"msg":"ok","errorCode":0,"code":200,"data":{"token":"26837cbfd8c9c55d830d3f726927bfed","phone":1,"canteen_selected":2,"outsiders":2}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
      * @apiSuccess (返回参数说明) {String} msg 信息描述
+     * @apiSuccess (返回参数说明) {int} outsiders 用户是否为外来人员:1|是；2|否
      * @apiSuccess (返回参数说明) {int} phone 用户是否绑定手机号:1|绑定；2|未绑定；phone=2时需要用户绑定手机号，phone=1时，检测canteen_selected字段
      * @apiSuccess (返回参数说明) {int} canteen_selected 用户是否已选择饭堂：1|选择；2|未选择 ，canteen_selected=1时跳转首页，canteen_selected=2时通过接口获取当前用户可选择饭堂
      */

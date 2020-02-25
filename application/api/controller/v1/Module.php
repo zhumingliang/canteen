@@ -235,6 +235,7 @@ class Module extends BaseController
         return json(new SuccessMessage());
     }
 
+
     /**
      * @api {GET} /api/v1/modules/canteen/withoutSystem  CMS管理端-获取企业功能模块(不包括系统所有模块)
      * @apiGroup  CMS

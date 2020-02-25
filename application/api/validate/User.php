@@ -10,6 +10,7 @@ class User extends BaseValidate
         'id' => 'require|isPositiveInteger',
         'phone' => 'require|isMobile',
         'code' => 'require|isNotEmpty',
+        'type' => 'require|in:1,2',
         'canteen_id' => 'require|isPositiveInteger',
     ];
 

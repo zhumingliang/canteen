@@ -12,5 +12,8 @@ namespace app\lib\enum;
 class UserEnum
 {
 
+    const INSIDE = 2;
+
+    const OUTSIDE = 1;
 
 }

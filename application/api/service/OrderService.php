@@ -20,6 +20,7 @@ use app\api\model\OrderHandelT;
 use app\api\model\OrderingV;
 use app\api\model\OrderT;
 use app\api\model\OrderUsersStatisticV;
+use app\api\model\OutConfigT;
 use app\api\model\ShopOrderingV;
 use app\api\model\ShopOrderT;
 use app\api\model\UserBalanceV;
@@ -27,6 +28,7 @@ use app\lib\enum\CommonEnum;
 use app\lib\enum\MenuEnum;
 use app\lib\enum\OrderEnum;
 use app\lib\enum\PayEnum;
+use app\lib\enum\UserEnum;
 use app\lib\exception\AuthException;
 use app\lib\exception\ParameterException;
 use app\lib\exception\SaveException;
@@ -51,17 +53,20 @@ class OrderService extends BaseService
             $params['ordering_type'] = OrderEnum::ORDERING_CHOICE;
             $u_id = Token::getCurrentUid();
             $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
+            $company_id = Token::getCurrentTokenVar('current_company_id');
 
             //获取餐次信息
             $dinner = DinnerT::dinnerInfo($dinner_id);
             //检测该餐次订餐时间是否允许
             $this->checkDinnerForPersonalChoice($dinner, $ordering_date);
             //检测用户是否可以订餐并返回订单金额
-            $orderMoney = $this->checkUserCanOrder($u_id, $dinner, $ordering_date, $canteen_id, $count, $detail);
+            $orderMoney = $this->checkOutsiderOrderMoney($dinner_id, $detail);
             $pay_way = $this->checkBalance($u_id, $canteen_id, $orderMoney['money'] * $count + $orderMoney['sub_money'] * $count);
             if (!$pay_way) {
                 throw new SaveException(['errorCode' => 49000, 'msg' => '余额不足']);
             }
+            $delivery_fee = $this->checkUserOutsider( $params['type'], $canteen_id);
+
             //保存订单信息
             $params['order_num'] = makeOrderNo();
             $params['pay_way'] = $pay_way;
@@ -69,6 +74,8 @@ class OrderService extends BaseService
             $params['c_id'] = $canteen_id;
             $params['d_id'] = $dinner_id;
             $params['pay'] = CommonEnum::STATE_IS_OK;
+            $params['delivery_fee'] = $delivery_fee;
+            $params['outsider'] = UserEnum::INSIDE;
             $params['money'] = $orderMoney['money'] * $count;
             $params['sub_money'] = $orderMoney['sub_money'] * $count;
             $params['consumption_type'] = $orderMoney['consumption_type'];
@@ -77,13 +84,11 @@ class OrderService extends BaseService
             $params['no_meal_money'] = $orderMoney['no_meal_money'];
             $params['no_meal_sub_money'] = $orderMoney['no_meal_sub_money'];
             $params['pay'] = CommonEnum::STATE_IS_OK;
-
-            $company_id = Token::getCurrentTokenVar('current_company_id');
+            $params['company_id'] = $company_id;
             $phone = Token::getCurrentPhone();
             $staff = (new UserService())->getUserCompanyInfo($phone, $company_id);
             $params['staff_type_id'] = $staff->t_id;
             $params['department_id'] = $staff->d_id;
-            $params['company_id'] = $staff->company_id;
             $params['staff_id'] = $staff->id;
             $params['phone'] = $phone;
             $order = OrderT::create($params);
@@ -103,6 +108,91 @@ class OrderService extends BaseService
             throw $e;
         }
 
+    }
+
+
+    public function personChoiceOutsider($params)
+    {
+        try {
+            Db::startTrans();
+            $dinner_id = $params['dinner_id'];
+            $ordering_date = $params['ordering_date'];
+            $count = $params['count'];
+            $detail = json_decode($params['detail'], true);
+            unset($params['detail']);
+            $params['ordering_type'] = OrderEnum::ORDERING_CHOICE;
+            $u_id = Token::getCurrentUid();
+            $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
+            $company_id = Token::getCurrentTokenVar('current_company_id');
+            $phone = Token::getCurrentPhone();
+            //检测配送费用
+            $delivery_fee = $this->checkUserOutsider($params['type'], $canteen_id);
+
+            //获取餐次信息
+            $dinner = DinnerT::dinnerInfo($dinner_id);
+            //检测该餐次订餐时间是否允许
+            $this->checkDinnerForPersonalChoice($dinner, $ordering_date);
+
+            //获取订单金额
+            $orderMoney = $this->checkOutsiderOrderMoney($dinner_id, $detail);
+
+            //保存订单信息
+            $params['order_num'] = makeOrderNo();
+            $params['pay_way'] = PayEnum::PAY_WEIXIN;;
+            $params['u_id'] = $u_id;
+            $params['c_id'] = $canteen_id;
+            $params['d_id'] = $dinner_id;
+            $params['pay'] = CommonEnum::STATE_IS_OK;
+            $params['delivery_fee'] = $delivery_fee;
+            $params['outsider'] = UserEnum::OUTSIDE;
+            $params['money'] = $orderMoney * $count;
+            $params['sub_money'] = 0;
+            $params['consumption_type'] ='ordering_meals';
+            $params['meal_money'] = $orderMoney;
+            $params['meal_sub_money'] = 0;
+            $params['no_meal_money'] = 0;
+            $params['no_meal_sub_money'] =0;
+            $params['pay'] = PayEnum::PAY_NO;
+            $params['company_id'] = $company_id;
+            $params['phone'] = $phone;
+            $order = OrderT::create($params);
+            if (!$order) {
+                throw new SaveException(['msg' => '生成订单失败']);
+            }
+            $this->prefixDetail($detail, $order->id);
+            if ($params['type'] == OrderEnum::EAT_OUTSIDER && !empty($params['address_id'])) {
+                (new AddressService())->prefixAddressDefault($params['address_id']);
+            }
+            Db::commit();
+            return [
+                'id' => $order->id
+            ];
+        } catch (Exception $e) {
+            Db::rollback();
+            throw $e;
+        }
+
+    }
+
+
+    private function checkUserOutsider( $type, $canteen_id)
+    {
+
+        $outsiders = Token::getCurrentTokenVar('outsiders');
+        if ($outsiders == UserEnum::OUTSIDE && $type == OrderEnum::EAT_CANTEEN) {
+            throw new SaveException(['msg' => '用户没有权限堂食']);
+        }
+        if ($type == OrderEnum::EAT_OUTSIDER) {
+            $outConfig = OutConfigT::where('canteen_id', $canteen_id)
+                ->find();
+            if ($outConfig) {
+                return $outsiders == UserEnum::INSIDE ? $outConfig->in_fee : $outConfig->out_fee;
+
+            }
+
+        }
+
+        return 0;
     }
 
     public
@@ -188,7 +278,7 @@ class OrderService extends BaseService
         //获取用户指定日期订餐数量
         $consumptionCount = OrderingV::getRecordForDayOrderingByPhone($day, $dinner->name, $phone);
         //检测消费策略
-        $t_id = (new UserService())->getUserStaffTypeByPhone($phone,$company_id);
+        $t_id = (new UserService())->getUserStaffTypeByPhone($phone, $company_id);
         //获取指定用户消费策略
         $strategies = (new CanteenService())->getStaffConsumptionStrategy($canteen_id, $dinner->id, $t_id);
         $orderMoneyFixed = $dinner->fixed;
@@ -201,6 +291,16 @@ class OrderService extends BaseService
             }
         }
         return $strategyMoney;
+
+    }
+
+
+    public
+    function checkOutsiderOrderMoney($dinner_id, $detail)
+    {
+
+        $detailMoney = $this->checkMenu($dinner_id, $detail);
+        return $detailMoney;
 
     }
 
@@ -556,7 +656,7 @@ class OrderService extends BaseService
         $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
         $company_id = Token::getCurrentTokenVar('current_company_id');
         $phone = Token::getCurrentPhone();
-        $t_id = (new UserService())->getUserStaffTypeByPhone($phone,$company_id);
+        $t_id = (new UserService())->getUserStaffTypeByPhone($phone, $company_id);
         $dinner = (new CanteenService())->getDinners($canteen_id);
         $strategies = (new CanteenService())->staffStrategy($canteen_id, $t_id);
         foreach ($dinner as $k => $v) {
@@ -1202,7 +1302,7 @@ class OrderService extends BaseService
         $company_id = Token::getCurrentTokenVar('current_company_id');
         $u_id = Token::getCurrentUid();
         $phone = Token::getCurrentPhone();
-        $t_id = (new UserService())->getUserStaffTypeByPhone($phone,$company_id);
+        $t_id = (new UserService())->getUserStaffTypeByPhone($phone, $company_id);
         $dinner = DinnerT::canteenDinnerMenus($canteen_id);
         $strategies = (new CanteenService())->staffStrategy($canteen_id, $t_id);
         foreach ($dinner as $k => $v) {

@@ -7,6 +7,7 @@ namespace app\api\service;
 use app\api\model\CompanyStaffT;
 use app\api\model\StaffV;
 use app\api\model\UserT;
+use app\lib\enum\CommonEnum;
 use app\lib\exception\TokenException;
 use think\facade\Cache;
 use think\facade\Request;
@@ -23,10 +24,12 @@ class OfficialToken extends Token
         $openid = $user_info['openid'];
         $user = UserT::where('openid', $openid)->find();
         if (!$user) {
+            $user_info['outsiders'] = CommonEnum::STATE_IS_FAIL;
             $user = UserT::create($user_info);
             $u_id = $user->id;
         } else {
             $u_id = $user->id;
+            UserT::update($user_info, ['id' => $u_id]);
         }
 
 
@@ -36,6 +39,7 @@ class OfficialToken extends Token
             'token' => $token,
             'phone' => empty($cachedValue['phone']) ? 2 : 1,
             'canteen_id' => $cachedValue['current_canteen_id'],
+            'outsiders' => $cachedValue['outsiders'],
             'canteen_selected' => empty($cachedValue['current_canteen_id']) ? 2 : 1
         ];
 
@@ -74,6 +78,7 @@ class OfficialToken extends Token
         $cachedValue['openId'] = $user['openid'];
         $cachedValue['province'] = $user['province'];
         $cachedValue['nickName'] = $user['nickname'];
+        $cachedValue['outsiders'] = $user['outsiders'];
         $cachedValue['current_canteen_id'] = $user['current_canteen_id'];
         $cachedValue['current_company_id'] = $user['current_company_id'];
         $cachedValue['type'] = 'official';
@@ -84,6 +89,11 @@ class OfficialToken extends Token
     public function updatePhone($phone)
     {
         self::updateCurrentTokenVar('phone', $phone);
+    }
+
+    public function updateOutsiders($outsiders)
+    {
+        self::updateCurrentTokenVar('outsiders', $outsiders);
     }
 
 

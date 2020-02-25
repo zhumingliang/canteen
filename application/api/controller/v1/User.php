@@ -21,26 +21,23 @@ class User extends BaseController
      * @apiExample {post}  请求样例:
      *    {
      *       "phone": "18956225230",
-     *       "code": "34982"
+     *       "code": "34982",
+     *       "type": 1,
      *     }
      * @apiParam (请求参数说明) {String} phone  用户输入手机号
      * @apiParam (请求参数说明) {String} code   用户输入验证码
+     * @apiParam (请求参数说明) {String} type   验证人员类别：2:企业内部人员，1:外来人员
      * @apiSuccessExample {json} 返回样例:
-     * {"msg":"ok","errorCode":0,"code":200,"data":[{"id":9,"company_parent_id":2,"company_id":3,"company":"企业A","canteen_id":6,"canteen":"饭堂1"},{"id":10,"company_parent_id":0,"company_id":2,"company":"一级企业","canteen_id":1,"canteen":"大饭堂"},{"id":21,"company_parent_id":0,"company_id":2,"company":"一级企业","canteen_id":1,"canteen":"大饭堂"}]}
+     * {"msg":"ok","errorCode":0,"code":200}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
-     * @apiSuccess (返回参数说明) {string} msg 信息描述
-     * @apiSuccess (返回参数说明) {int} company_parent_id 企业上级id，0 为顶级企业
-     * @apiSuccess (返回参数说明) {int} company_id 企业id
-     * @apiSuccess (返回参数说明) {string} company  企业名称
-     * @apiSuccess (返回参数说明) {int} canteen_id 饭堂id
-     * @apiSuccess (返回参数说明) {string} canteen  饭堂名称
      */
     public function bindPhone()
     {
         $phone = Request::param('phone');
         $code = Request::param('code');
-        $bindRes = (new UserService())->bindPhone($phone, $code);
-        return json(new SuccessMessageWithData(['data' => $bindRes]));
+        $type = Request::param('type');
+        (new UserService())->bindPhone($phone, $code, $type);
+        return json(new SuccessMessage());
 
     }
 
@@ -155,8 +152,8 @@ class User extends BaseController
      */
     public function userPhone()
     {
-        $user=(new UserService())->userInfo();
-        return json(new SuccessMessageWithData(['data' =>$user]));
+        $user = (new UserService())->userInfo();
+        return json(new SuccessMessageWithData(['data' => $user]));
     }
 
 
