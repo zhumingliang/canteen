@@ -5,7 +5,6 @@ namespace app\api\controller\v1;
 
 
 use app\api\controller\BaseController;
-use app\api\service\AdminService;
 use app\api\service\OutsiderService;
 use app\lib\exception\SuccessMessage;
 use app\lib\exception\SuccessMessageWithData;
