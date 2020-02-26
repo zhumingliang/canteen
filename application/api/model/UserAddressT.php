@@ -9,9 +9,16 @@
 namespace app\api\model;
 
 
+use app\lib\enum\CommonEnum;
 use think\Model;
 
 class UserAddressT extends Model
 {
+    public static function userAddress($u_id){
+       return  self::where('u_id', $u_id)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->hidden(['create_time', 'update_time', 'state'])
+            ->select();
+    }
 
 }

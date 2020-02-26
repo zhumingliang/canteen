@@ -9,6 +9,8 @@
 namespace app\api\service;
 
 
+use app\api\model\CanteenAddressT;
+use app\api\model\OutConfigT;
 use app\api\model\UserAddressT;
 use app\lib\enum\CommonEnum;
 use app\lib\exception\SaveException;
@@ -49,12 +51,76 @@ class AddressService
     public function userAddresses()
     {
         $u_id = Token::getCurrentUid();
-        $company_id = Token::getCurrentTokenVar('current_company_id');
-        $address = UserAddressT::where('u_id', $u_id)
-            ->where('state', CommonEnum::STATE_IS_OK)
-            ->hidden(['create_time', 'update_time', 'state'])
-            ->select();
-        return $address;
+        $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
+        $limit = 2;
+        $outConfig = OutConfigT::config($canteen_id);
+        if ($outConfig) {
+            $limit = $outConfig->address_limit;
+        }
+        $limitAddress = array();
+        if ($limit == CommonEnum::STATE_IS_OK) {
+            $limitAddress = CanteenAddressT::address($canteen_id);
+        }
+        $address = UserAddressT::userAddress($u_id);
+        $address = $this->prefixAddressLimit($limitAddress, $address);
+
+        return [
+            'limit' => $limit,
+            'limit_address' => $limitAddress,
+            'user_address' => $address
+        ];
+    }
+
+    private function prefixAddressLimit($limitArr, $addressArr)
+    {
+        if (!count($addressArr)) {
+            return $addressArr;
+        }
+        foreach ($addressArr as $k => $v) {
+            $addressArr[$k]['use'] = CommonEnum::STATE_IS_FAIL;
+            if (!count($limitArr)) {
+                continue;
+            }
+            foreach ($limitArr as $k2 => $v2) {
+                $check = $this->checkAddressLimit($v2, $v);
+                if ($check == CommonEnum::STATE_IS_OK) {
+                    $addressArr[$k]['use'] = CommonEnum::STATE_IS_OK;
+                    break;
+                }
+            }
+        }
+        return $addressArr;
+
+    }
+
+    private function checkAddressLimit($limit, $address)
+    {
+        if (!empty($limit['province'])) {
+            if ($limit['province'] != $address['province']) {
+                return 2;
+            }
+        } else {
+            return 1;
+        }
+
+        if (!empty($limit['city'])) {
+            if ($limit['city'] != $address['city']) {
+                return 2;
+            }
+        } else {
+            return 1;
+        }
+
+        if (!empty($limit['area'])) {
+            if ($limit['area'] != $address['area']) {
+                return 2;
+            }
+        } else {
+            return 1;
+        }
+        return 1;
+
+
     }
 
     public function prefixAddressDefault($id)
