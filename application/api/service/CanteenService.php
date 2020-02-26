@@ -322,7 +322,7 @@ class CanteenService
             if (!empty($params['account'])) {
                 $account = json_decode($params['account'], true);
                 $account['c_id'] = $c_id;
-                $this->prefixCanteenAccount();
+                $this->prefixCanteenAccount($account);
             }
             if (!empty($params['out_config'])) {
                 $out_config = json_decode($params['out_config'], true);
