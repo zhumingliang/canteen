@@ -49,6 +49,7 @@ class AddressService
     public function userAddresses()
     {
         $u_id = Token::getCurrentUid();
+        $company_id = Token::getCurrentTokenVar('current_company_id');
         $address = UserAddressT::where('u_id', $u_id)
             ->where('state', CommonEnum::STATE_IS_OK)
             ->hidden(['create_time', 'update_time', 'state'])

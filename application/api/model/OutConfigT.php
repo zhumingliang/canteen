@@ -13,7 +13,7 @@ class OutConfigT extends Model
         return self::where('canteen_id', $canteen_id)
             ->hidden(['create_time','update_time','canteen_id'])
             ->order('create_time','DESC')
-            ->select();
+            ->find();
 
     }
 
