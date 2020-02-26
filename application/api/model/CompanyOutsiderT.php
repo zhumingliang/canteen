@@ -46,4 +46,10 @@ class CompanyOutsiderT extends Model
         return $role;
     }
 
+    public static function getCompanyOutsiderWithCompanyId($company_id)
+    {
+        $outsider = self::where('company_id', $company_id)->find();
+        return $outsider;
+
+    }
 }

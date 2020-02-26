@@ -21,9 +21,14 @@ class OutsiderService
     {
         try {
             Db::startTrans();
+            $company_id = $params['company_id'];
             if (empty($params['id'])) {
+                $outsider = CompanyOutsiderT::getCompanyOutsiderWithCompanyId($company_id);
+                if ($outsider) {
+                    throw new SaveException(['msg' =>'不能重复配置企业外来人员信息']);
+                }
                 $outsider = CompanyOutsiderT::create([
-                    'company_id' => $params['company_id'],
+                    'company_id' => $company_id,
                     'rules' => $params['rules']
                 ]);
                 if (!$outsider) {
@@ -109,5 +114,6 @@ class OutsiderService
         $role['modules'] = getTree($modules);
         return $role;
     }
+
 
 }

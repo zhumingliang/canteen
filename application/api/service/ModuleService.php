@@ -8,6 +8,7 @@ use app\api\model\AdminCanteenT;
 use app\api\model\AdminModuleT;
 use app\api\model\CanteenModuleT;
 use app\api\model\CanteenModuleV;
+use app\api\model\CompanyOutsiderT;
 use app\api\model\ShopModuleT;
 use app\api\model\ShopModuleV;
 use app\api\model\ShopT;
@@ -264,8 +265,12 @@ class ModuleService
         $company_id = (new UserService())->getUserCurrentCompanyID();
 
         if ($outsiders == UserEnum::OUTSIDE) {
-            //获取企业外来人员可见模块
-            $modules = $this->companyOutsiderMobileModules($company_id);
+            $outsider = CompanyOutsiderT::getCompanyOutsiderWithCompanyId($company_id);
+            if (empty($outsider)) {
+                return array();
+            }
+            $rules = $outsider->rules;
+            $modules = CanteenModuleV::adminModulesWithID($rules);
             return $modules;
         }
         $admin_id = (new UserService())->checkUserAdminID();
@@ -305,8 +310,7 @@ class ModuleService
 
     private function companyOutsiderMobileModules($company_id)
     {
-        $modules = OutsiderModuleV::outsiderMobileModules($company_id);
-        return $modules;
+
     }
 
     public function handelModuleDefaultStatus($params)
