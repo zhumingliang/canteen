@@ -8,6 +8,7 @@ use app\api\model\AdminModuleT;
 use app\api\model\AdminT;
 use app\api\model\CanteenModuleV;
 use app\api\model\CompanyOutsiderT;
+use app\api\model\OutConfigV;
 use app\api\model\OutsiderCanteenT;
 use app\api\model\OutsiderModuleT;
 use app\lib\enum\CommonEnum;
@@ -34,15 +35,8 @@ class OutsiderService
                 if (!$outsider) {
                     throw new SaveException();
                 }
-                $outsiderId = $outsider->id;
             } else {
-                $outsiderId = $params['id'];
                 CompanyOutsiderT::update($params);
-            }
-
-            if (!empty($params['canteens'])) {
-                $canteens = json_decode($params['canteens'], true);
-                $this->updateOutsiderCS($outsiderId, $canteens);
             }
             Db::commit();
         } catch (Exception $e) {
@@ -93,7 +87,7 @@ class OutsiderService
 
     public function outsiders($page, $size, $company_id)
     {
-        $outsiders = CompanyOutsiderT::outsiders($page, $size, $company_id);
+        $outsiders = OutConfigV::outsiders($page, $size, $company_id);
         return $outsiders;
 
     }

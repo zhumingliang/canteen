@@ -22,15 +22,10 @@ class Outsider extends BaseController
      *    {
      *       "id":2,
      *       "company_id": 1,
-     *       "canteens":{"add":[{"canteen_id":1}],"cancel":"1,2"},
      *       "rules": "1,2,3,4"
      *     }
      * @apiParam (请求参数说明) {int} id  配置id（更新操作传入，新增操作无需传入）
      * @apiParam (请求参数说明) {string} company_id 配置所属企业id（更新操作传入，新增操作无需传入）
-     * @apiParam (请求参数说明) {string} canteens 饭堂信息
-     * @apiParam (请求参数说明) {string} canteens  外部人员可见饭堂
-     * @apiParam (请求参数说明) {string} canteen_id 饭堂id
-     * @apiParam (请求参数说明) {string}  cancel  外部人员可见饭堂，取消多个饭堂，则将企业和饭堂关系id用逗号分隔
      * @apiParam (请求参数说明) {string} rules  可见模块，用逗号分隔。注意，一级模块也需要上传
      * @apiSuccessExample {json} 返回样例:
      *{"msg":"ok","errorCode":0}
@@ -55,17 +50,12 @@ class Outsider extends BaseController
      * @apiParam (请求参数说明) {int} size 每页多少条数据
      * @apiParam (请求参数说明) {int} company_id 企业id：0 表示获取全部
      * @apiSuccessExample {json} 返回样例:
-     * {"msg":"ok","errorCode":0,"code":200,"data":{"total":4,"per_page":10,"current_page":1,"last_page":1,"data":[{"id":1,"company_id":1,"create_time":"2019-07-26 08:34:16","canteen":[{"id":1,"canteen_id":2,"outsider_id":3,"canteen_name":"饭堂"}]}]}}     * @apiSuccess (返回参数说明) {int} total 数据总数
-     * @apiSuccess (返回参数说明) {int} per_page 每页多少条数据
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"total":2,"per_page":"10","current_page":1,"last_page":1,"data":[{"company_id":78,"company":"宜通世纪","canteen":"12楼饭堂，11楼饭堂"},{"company_id":82,"company":"666","canteen":"测试地址"}]}}     * @apiSuccess (返回参数说明) {int} per_page 每页多少条数据
      * @apiSuccess (返回参数说明) {int} current_page 当前页码
      * @apiSuccess (返回参数说明) {int} last_page 最后页码
-     * @apiSuccess (返回参数说明) {int} id 用户id
+     * @apiSuccess (返回参数说明) {string} company_id 归属企业id
      * @apiSuccess (返回参数说明) {string} company 归属企业
-     * @apiSuccess (返回参数说明) {int} state 状态：1|正常；2|停用
-     * @apiSuccess (返回参数说明) {string} create_time 创建时间
-     * @apiSuccess (返回参数说明) {obj} canteen 用户管理饭堂信息
-     * @apiSuccess (返回参数说明) {int} id 用户饭堂关联id：取消时需要传入该字段
-     * @apiSuccess (返回参数说明) {int} canteen_name 饭堂名称
+     * @apiSuccess (返回参数说明) {obj} canteen 饭堂信息
      */
     public function outsiders($page = 1, $size = 10, $company_id = 0)
     {
