@@ -24,7 +24,7 @@ class OfficialToken extends Token
         $openid = $user_info['openid'];
         $user = UserT::where('openid', $openid)->find();
         if (!$user) {
-            $user_info['outsiders'] = CommonEnum::STATE_IS_FAIL;
+            //$user_info['outsiders'] = CommonEnum::STATE_IS_FAIL;
             $user = UserT::create($user_info);
             $u_id = $user->id;
         } else {
@@ -56,8 +56,8 @@ class OfficialToken extends Token
         $key = self::generateToken();
         $value = json_encode($cachedValue);
         $expire_in = config('setting.token_official_expire_in');
-        //$request = Cache::remember($key, $value, $expire_in);
-        $request = Redis::instance()->set($key, $value, $expire_in);
+        $request = Cache::remember($key, $value, $expire_in);
+        //$request = Redis::instance()->set($key, $value, $expire_in);
         if (!$request) {
             throw new TokenException([
                 'msg' => '服务器缓存用户数据异常',
