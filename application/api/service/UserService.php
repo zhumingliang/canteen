@@ -36,13 +36,13 @@ class UserService
             throw new UpdateException(['msg' => '用户已经绑定手机号，不能重复绑定']);
         }
         $user->phone = $phone;
-        $user->type = $type;
+        $user->outsiders = $type;
         $res = $user->save();
         if (!$res) {
             throw new UpdateException(['msg' => '绑定用户手机号失败']);
         }
         (new OfficialToken())->updatePhone($phone);
-        (new OfficialToken())->updateType($type);
+        (new OfficialToken())->updateOutsiders($type);
 
 
     }
