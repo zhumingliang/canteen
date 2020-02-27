@@ -18,7 +18,7 @@ class CompanyOutsiderT extends Model
     {
         $list = self::with([
             'canteen' => function ($query) {
-                $query->field('id,canteen_id,outsider_id,canteen_name');
+                $query->field('id,canteen_id,company_name,outsider_id,canteen_name');
             }
         ])
             ->where(function ($query) use ($company_id) {
