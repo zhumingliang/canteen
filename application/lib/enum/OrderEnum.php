@@ -45,4 +45,14 @@ class OrderEnum
 
     const STATISTIC_BY_STATUS = 5;
 
+    const STATUS_ = 1;
+
+   /* const STATISTIC_BY_USERNAME = 2;
+
+    const STATISTIC_BY_STAFF_TYPE = 3;
+
+    const STATISTIC_BY_CANTEEN = 4;
+
+    const STATISTIC_BY_STATUS = 5;*/
+
 }
