@@ -149,7 +149,7 @@ class Canteen extends BaseController
      *       "c_id": 2,
      *       "dinners":[{"id":1,"name":"早餐","type":"day","type_number":10,"limit_time":"10:00","meal_time_begin":"07:00","meal_time_end":"08:00"},{"name":"晚餐","type":"day","type_number":10,"limit_time":"10:00","meal_time_begin":"18:00","meal_time_end":"19:00"}],
      *       "account":{"id":1,"type":2,"clean_type":3,"clean_day":1,"clean_day":"02:00:00"},
-     *       "out_config":{"id":1,"in_fee":0,"out_fee":0,"address_limit":1,"remark":"备注"},
+     *       "out_config":{"id":1,"in_fee":0,"out_fee":0,"address_limit":1,"remark":"备注","state":2},
      *       "address":{"add":[{"id":1,"province":"广东省","city":"江门市","area":"蓬江区","address":"人民医院A栋"}],"cancel":[1,2]}
      *     }
      * @apiParam (请求参数说明) {int} c_id  饭堂id
@@ -174,6 +174,7 @@ class Canteen extends BaseController
      * @apiParam (请求参数说明) {int} in_fee  企业人员配送费用
      * @apiParam (请求参数说明) {int} out_fee  外来人员配送费用
      * @apiParam (请求参数说明) {int} address_limit  是否限制配送范围
+     * @apiParam (请求参数说明) {int} state  状态：1：正常；2 ：停用
      * @apiParam (请求参数说明) {string} remark  可预消费金额
      * @apiParam (请求参数说明) {obj} address  限制配送范围
      * @apiParam (请求参数说明) {obj} add 新增地址

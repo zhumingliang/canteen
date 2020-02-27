@@ -340,6 +340,7 @@ class CanteenService
                 }
                 $this->prefixCanteenAddress($c_id, $add, $cancel);
             }
+            Db::commit();
         } catch (Exception$e) {
             Db::rollback();
             throw  $e;

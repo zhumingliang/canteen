@@ -93,6 +93,8 @@ class OrderService extends BaseService
             $params['department_id'] = $staff->d_id;
             $params['staff_id'] = $staff->id;
             $params['phone'] = $phone;
+            $params['state'] = CommonEnum::STATE_IS_OK;
+            $params['receive'] = Token::getCurrentTokenVar('outsiders');
             $order = OrderT::create($params);
             if (!$order) {
                 throw new SaveException(['msg' => '生成订单失败']);
@@ -157,6 +159,8 @@ class OrderService extends BaseService
             $params['pay'] = PayEnum::PAY_NO;
             $params['company_id'] = $company_id;
             $params['phone'] = $phone;
+            $params['state'] = CommonEnum::STATE_IS_OK;
+            $params['receive'] = CommonEnum::STATE_IS_FAIL;
             $order = OrderT::create($params);
             if (!$order) {
                 throw new SaveException(['msg' => '生成订单失败']);
@@ -592,6 +596,8 @@ class OrderService extends BaseService
                     $data['pay_way'] = '';
                     $data['phone'] = $phone;
                     $data['pay'] = CommonEnum::STATE_IS_OK;
+                    $params['state'] = CommonEnum::STATE_IS_OK;
+                    $params['receive'] = CommonEnum::STATE_IS_OK;
                     array_push($data_list, $data);
                     $all_money += $data['money'] + $data['sub_money'];
                 }

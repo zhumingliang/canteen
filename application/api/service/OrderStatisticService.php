@@ -72,7 +72,7 @@ class OrderStatisticService
             $phone, $canteen_id, $department_id,
             $dinner_id, $type);
         $list = $this->prefixOrderStatisticDetail($list);
-        $header = ['订单ID','订餐日期', '消费地点', '部门', '姓名', '餐次', '订餐类型', '明细'];
+        $header = ['订单ID', '订餐日期', '消费地点', '部门', '姓名', '餐次', '订餐类型', '明细'];
         $file_name = "订餐明细报表(" . $time_begin . "-" . $time_end . ")";
         $url = (new ExcelService())->makeExcel($header, $list, $file_name);
         return [
@@ -174,18 +174,19 @@ class OrderStatisticService
 
     public function takeoutStatistic($page, $size,
                                      $ordering_date, $company_ids,
-                                     $canteen_id, $dinner_id, $used,$department_id)
+                                     $canteen_id, $dinner_id, $status, $department_id, $user_type)
     {
         $records = OrderTakeoutStatisticV::statistic($page, $size,
-            $ordering_date, $company_ids, $canteen_id, $dinner_id, $used,$department_id);
+            $ordering_date, $company_ids, $canteen_id, $dinner_id, $status, $department_id, $user_type);
         return $records;
     }
 
+
     public function exportTakeoutStatistic($ordering_date, $company_ids,
-                                           $canteen_id, $dinner_id, $used,$department_id)
+                                           $canteen_id, $dinner_id, $status, $department_id, $user_type)
     {
-        $records = OrderTakeoutStatisticV::exportStatistic($ordering_date, $company_ids, $canteen_id, $dinner_id, $used,$department_id);
-        $header = ['订餐号', '日期', '消费地点', '姓名', '手机号', '餐次', '金额（元）', '送货地点', '状态'];
+        $records = OrderTakeoutStatisticV::exportStatistic($ordering_date, $company_ids, $canteen_id, $dinner_id, $status, $department_id, $user_type);
+        $header = ['订餐号', '日期', '消费地点', '姓名', '手机号', '餐次', '金额（元）', '送货地点', '状态', '人员类型'];
         $file_name = $ordering_date . "-外卖管理报表";
         $url = (new ExcelService())->makeExcel($header, $records, $file_name);
         return [

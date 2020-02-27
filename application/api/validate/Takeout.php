@@ -8,7 +8,7 @@ class Takeout extends BaseValidate
 {
     protected $rule = [
         'order_id' => 'require|isPositiveInteger',
-        'used' => 'require|in:1,2,3',
+        'status' => 'require|in:1,2,3,4,5,6',
         'ordering_date' => 'require|isNotEmpty',
         'ids' => 'require|isNotEmpty',
         'canteen_id ' => 'require',
@@ -17,7 +17,7 @@ class Takeout extends BaseValidate
     ];
 
     protected $scene = [
-        'statistic' => ['canteen_id', 'company_ids', 'ordering_date', 'dinner_id','used'],
+        'statistic' => ['canteen_id', 'company_ids', 'ordering_date', 'dinner_id','status'],
         'used'=>['ids'],
         'infoToPrint'=>['order_id']
     ];

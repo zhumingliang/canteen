@@ -4,18 +4,52 @@
 namespace app\api\model;
 
 
+use app\lib\enum\CommonEnum;
+use app\lib\enum\OrderEnum;
 use think\Model;
 use function GuzzleHttp\Promise\queue;
 
 class OrderTakeoutStatisticV extends Model
 {
+    public function getStatusAttr($value, $data)
+    {
+        if ($data['state'] = CommonEnum::STATE_IS_FAIL) {
+            return OrderEnum::STATUS_CANCEL;
+        } elseif ($data['state'] = OrderEnum::REFUND) {
+            return OrderEnum::STATUS_REFUND;
+        } else {
+            if ($data['used'] == CommonEnum::STATE_IS_OK) {
+                return OrderEnum::STATUS_COMPLETE;
+            }
+
+            if ($data['receive'] == CommonEnum::STATE_IS_OK) {
+                return OrderEnum::STATUS_RECEIVE;
+            }
+            return OrderEnum::STATUS_PAID;
+        }
+    }
+
     public static function statistic($page, $size,
-                                     $ordering_date, $company_ids, $canteen_id, $dinner_id, $used, $department_id)
+                                     $ordering_date, $company_ids, $canteen_id, $dinner_id,
+                                     $status, $department_id, $user_type)
     {
         $list = self::where('ordering_date', $ordering_date)
-            ->where(function ($query) use ($used) {
-                if ($used < 3) {
-                    $query->where('used', $used);
+            ->where(function ($query) use ($status) {
+                if ($status == OrderEnum::STATUS_PAID) {
+                    $query->where('state', CommonEnum::STATE_IS_OK)
+                        ->where('pay', 'paid')
+                        ->where('receive', CommonEnum::STATE_IS_FAIL);
+                } elseif ($status == OrderEnum::STATUS_CANCEL) {
+                    $query->where('state', CommonEnum::STATE_IS_FAIL);
+                } elseif ($status == OrderEnum::STATUS_RECEIVE) {
+                    $query->where('state', CommonEnum::STATE_IS_OK)
+                        ->where('pay', 'paid')
+                        ->where('receive', CommonEnum::STATE_IS_OK)
+                        ->where('used', CommonEnum::STATE_IS_FAIL);
+                } elseif ($status == OrderEnum::STATUS_COMPLETE) {
+                    $query->where('used', CommonEnum::STATE_IS_OK);
+                } elseif ($status == OrderEnum::STATUS_REFUND) {
+                    $query->where('state', OrderEnum::REFUND);
                 }
             })
             ->where(function ($query) use ($company_ids, $canteen_id, $dinner_id) {
@@ -37,19 +71,36 @@ class OrderTakeoutStatisticV extends Model
                 if (!empty($department_id)) {
                     $query->where('department_id', $department_id);
                 }
+            })->where(function ($query) use ($user_type) {
+                if (!empty($user_type)) {
+                    $query->where('outsider', $user_type);
+                }
             })
-            ->hidden(['create_time', 'canteen_id', 'company_id', 'dinner_id'])
+            ->hidden(['create_time', 'canteen_id', 'company_id', 'dinner_id','state','receive','used','pay'])
             ->order('used DESC')
-            ->paginate($size, false, ['page' => $page]);
+           ->paginate($size, false, ['page' => $page])->toArray();
         return $list;
     }
 
-    public static function exportStatistic($ordering_date, $company_ids, $canteen_id, $dinner_id, $used,$department_id)
+    public static function exportStatistic($ordering_date, $company_ids, $canteen_id, $dinner_id, $status, $department_id, $user_type)
     {
         $list = self::where('ordering_date', $ordering_date)
-            ->where(function ($query) use ($used) {
-                if ($used < 3) {
-                    $query->where('used', $used);
+            ->where(function ($query) use ($status) {
+                if ($status == OrderEnum::STATUS_PAID) {
+                    $query->where('state', CommonEnum::STATE_IS_OK)
+                        ->where('pay', 'paid')
+                        ->where('receive', CommonEnum::STATE_IS_FAIL);
+                } elseif ($status == OrderEnum::STATUS_CANCEL) {
+                    $query->where('state', CommonEnum::STATE_IS_FAIL);
+                } elseif ($status == OrderEnum::STATUS_RECEIVE) {
+                    $query->where('state', CommonEnum::STATE_IS_OK)
+                        ->where('pay', 'paid')
+                        ->where('receive', CommonEnum::STATE_IS_OK)
+                        ->where('used', CommonEnum::STATE_IS_FAIL);
+                } elseif ($status == OrderEnum::STATUS_COMPLETE) {
+                    $query->where('used', CommonEnum::STATE_IS_OK);
+                } elseif ($status == OrderEnum::STATUS_REFUND) {
+                    $query->where('state', OrderEnum::REFUND);
                 }
             })
             ->where(function ($query) use ($company_ids, $canteen_id, $dinner_id) {
@@ -72,7 +123,12 @@ class OrderTakeoutStatisticV extends Model
                     $query->where('department_id', $department_id);
                 }
             })
-            ->field('order_id,ordering_date,canteen,username,phone,dinner,money,address,if(used=1,"已派单","未派单") as used')
+            ->where(function ($query) use ($user_type) {
+                if (!empty($user_type)) {
+                    $query->where('outsider', $user_type);
+                }
+            })
+            ->hidden(['order_id','province','address','city','department_id','area','create_time', 'canteen_id', 'company_id', 'dinner_id','state','receive','used','pay'])
             ->order('used DESC')
             ->select()->toArray();
         return $list;

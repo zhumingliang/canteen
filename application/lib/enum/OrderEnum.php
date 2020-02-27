@@ -19,6 +19,8 @@ class OrderEnum
 
     const OVERDRAFT_NO = 2;
 
+    const REFUND = 3;
+
     const EAT_CANTEEN = 1;
 
     const EAT_OUTSIDER = 2;
@@ -45,14 +47,14 @@ class OrderEnum
 
     const STATISTIC_BY_STATUS = 5;
 
-    const STATUS_ = 1;
+    const STATUS_PAID = 1;
 
-   /* const STATISTIC_BY_USERNAME = 2;
+    const STATUS_CANCEL = 2;
 
-    const STATISTIC_BY_STAFF_TYPE = 3;
+    const STATUS_RECEIVE = 3;
 
-    const STATISTIC_BY_CANTEEN = 4;
+    const STATUS_COMPLETE = 4;
 
-    const STATISTIC_BY_STATUS = 5;*/
+    const STATUS_REFUND = 5;
 
 }
