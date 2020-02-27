@@ -36,8 +36,8 @@ class Token
     {
 
         $token = Request::header('token');
-        //$vars = Redis::instance()->get($token);
-        $vars = \think\facade\Cache::get($token);
+        $vars = Redis::instance()->get($token);
+        //$vars = \think\facade\Cache::get($token);
         if (!$vars) {
             throw new TokenException();
         } else {
