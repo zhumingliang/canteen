@@ -20,4 +20,8 @@ class PayEnum
     const PAY_WEIXIN = 4;
 
     const PAY_METHOD_WX = 1;
+
+    const PAY_FAIL = 'paid_fail';
+
+    const PAY_SUCCESS = 'paid';
 }

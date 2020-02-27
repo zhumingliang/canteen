@@ -13,6 +13,7 @@ use app\api\model\CanteenAddressT;
 use app\api\model\OutConfigT;
 use app\api\model\UserAddressT;
 use app\lib\enum\CommonEnum;
+use app\lib\enum\UserEnum;
 use app\lib\exception\SaveException;
 use app\lib\exception\UpdateException;
 
@@ -52,10 +53,17 @@ class AddressService
     {
         $u_id = Token::getCurrentUid();
         $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
+        $outsider = Token::getCurrentTokenVar('outsiders');
         $limit = 2;
+        $delivery_fee = 0;
         $outConfig = OutConfigT::config($canteen_id);
         if ($outConfig) {
             $limit = $outConfig->address_limit;
+            if ($outsider == UserEnum::OUTSIDE) {
+                $delivery_fee = $outConfig->out_fee;
+            } elseif ($outsider == UserEnum::INSIDE) {
+                $delivery_fee = $outConfig->in_fee;
+            }
         }
         $limitAddress = array();
         if ($limit == CommonEnum::STATE_IS_OK) {
@@ -66,6 +74,7 @@ class AddressService
 
         return [
             'limit' => $limit,
+            'delivery_fee' => $delivery_fee,
             'limit_address' => $limitAddress,
             'user_address' => $address
         ];

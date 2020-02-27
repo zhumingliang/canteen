@@ -309,10 +309,10 @@ class Wallet extends BaseController
     }
 
     /**
-     * @api {GET} /api/v1/wallet/pay/getPreOrder  微信端-余额充值-获取支付信息
+     * @api {GET} /api/v1/wallet/pay/getPreOrder  微信端-微信支付-获取支付信息
      * @apiGroup  Official
      * @apiVersion 1.0.1
-     * @apiDescription 微信端-余额充值-微信支付获取支付信息
+     * @apiDescription 微信端-微信支付-微信支付获取支付信息
      * @apiExample {get}  请求样例:
      * http://mengant.cn/api/v1/wallet/pay/getPreOrder?id=1
      * @apiParam (请求参数说明) {int} id 订单id
@@ -353,8 +353,11 @@ class Wallet extends BaseController
                     PayWxT::create($data);
                     $order->paid_at = time(); // 更新支付时间为当前时间
                     $order->status = 'paid';
-                    // 用户支付失败
+                    //修改订餐订单状态
+                    (new WalletService())->paySuccess($order->order_id, $order->type);
+
                 } elseif ($message['result_code'] === 'FAIL') {
+                    // 用户支付失败
                     $order->status = 'paid_fail';
                 }
             } else {

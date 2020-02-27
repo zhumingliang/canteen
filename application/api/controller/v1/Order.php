@@ -101,7 +101,7 @@ class Order extends BaseController
     public function personChoiceOutsider()
     {
         $params = Request::param();
-        $order = (new OrderService())->personChoice($params);
+        $order = (new OrderService())->personChoiceOutsider($params);
         return json(new SuccessMessageWithData(['data' => $order]));
 
     }

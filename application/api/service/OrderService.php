@@ -21,6 +21,7 @@ use app\api\model\OrderingV;
 use app\api\model\OrderT;
 use app\api\model\OrderUsersStatisticV;
 use app\api\model\OutConfigT;
+use app\api\model\PayT;
 use app\api\model\ShopOrderingV;
 use app\api\model\ShopOrderT;
 use app\api\model\UserBalanceV;
@@ -59,13 +60,14 @@ class OrderService extends BaseService
             $dinner = DinnerT::dinnerInfo($dinner_id);
             //检测该餐次订餐时间是否允许
             $this->checkDinnerForPersonalChoice($dinner, $ordering_date);
+            $delivery_fee = $this->checkUserOutsider($params['type'], $canteen_id);
             //检测用户是否可以订餐并返回订单金额
             $orderMoney = $this->checkOutsiderOrderMoney($dinner_id, $detail);
-            $pay_way = $this->checkBalance($u_id, $canteen_id, $orderMoney['money'] * $count + $orderMoney['sub_money'] * $count);
+            $checkMoney = $orderMoney['money'] * $count + $orderMoney['sub_money'] * $count + $delivery_fee;
+            $pay_way = $this->checkBalance($u_id, $canteen_id, $checkMoney);
             if (!$pay_way) {
                 throw new SaveException(['errorCode' => 49000, 'msg' => '余额不足']);
             }
-            $delivery_fee = $this->checkUserOutsider( $params['type'], $canteen_id);
 
             //保存订单信息
             $params['order_num'] = makeOrderNo();
@@ -73,7 +75,7 @@ class OrderService extends BaseService
             $params['u_id'] = $u_id;
             $params['c_id'] = $canteen_id;
             $params['d_id'] = $dinner_id;
-            $params['pay'] = CommonEnum::STATE_IS_OK;
+            $params['pay'] = PayEnum::PAY_SUCCESS;
             $params['delivery_fee'] = $delivery_fee;
             $params['outsider'] = UserEnum::INSIDE;
             $params['money'] = $orderMoney['money'] * $count;
@@ -118,6 +120,7 @@ class OrderService extends BaseService
             $dinner_id = $params['dinner_id'];
             $ordering_date = $params['ordering_date'];
             $count = $params['count'];
+            $openid = Token::getCurrentOpenid();
             $detail = json_decode($params['detail'], true);
             unset($params['detail']);
             $params['ordering_type'] = OrderEnum::ORDERING_CHOICE;
@@ -135,23 +138,22 @@ class OrderService extends BaseService
 
             //获取订单金额
             $orderMoney = $this->checkOutsiderOrderMoney($dinner_id, $detail);
-
             //保存订单信息
             $params['order_num'] = makeOrderNo();
             $params['pay_way'] = PayEnum::PAY_WEIXIN;;
             $params['u_id'] = $u_id;
             $params['c_id'] = $canteen_id;
             $params['d_id'] = $dinner_id;
-            $params['pay'] = CommonEnum::STATE_IS_OK;
+            $params['pay'] = PayEnum::PAY_FAIL;
             $params['delivery_fee'] = $delivery_fee;
             $params['outsider'] = UserEnum::OUTSIDE;
             $params['money'] = $orderMoney * $count;
             $params['sub_money'] = 0;
-            $params['consumption_type'] ='ordering_meals';
+            $params['consumption_type'] = 'ordering_meals';
             $params['meal_money'] = $orderMoney;
             $params['meal_sub_money'] = 0;
             $params['no_meal_money'] = 0;
-            $params['no_meal_sub_money'] =0;
+            $params['no_meal_sub_money'] = 0;
             $params['pay'] = PayEnum::PAY_NO;
             $params['company_id'] = $company_id;
             $params['phone'] = $phone;
@@ -163,10 +165,11 @@ class OrderService extends BaseService
             if ($params['type'] == OrderEnum::EAT_OUTSIDER && !empty($params['address_id'])) {
                 (new AddressService())->prefixAddressDefault($params['address_id']);
             }
+            //生成微信支付订单
+            $payMoney = $order->money + $delivery_fee;
+            $payOrder = $this->savePayOrder($order->id, $company_id, $openid, $u_id, $payMoney);
             Db::commit();
-            return [
-                'id' => $order->id
-            ];
+            return $payOrder;
         } catch (Exception $e) {
             Db::rollback();
             throw $e;
@@ -174,8 +177,28 @@ class OrderService extends BaseService
 
     }
 
+    public function savePayOrder($order_id, $company_id, $openid, $u_id, $money)
+    {
+        $data = [
+            'openid' => $openid,
+            'company_id' => $company_id,
+            'u_id' => $u_id,
+            'order_num' => makeOrderNo(),
+            'money' => $money,
+            'method_id' => PayEnum::PAY_METHOD_WX,
+            'order_id' => $order_id
+        ];
+        $order = PayT::create($data);
+        if (!$order) {
+            throw new SaveException();
+        }
+        return [
+            'id' => $order->id
+        ];
+    }
 
-    private function checkUserOutsider( $type, $canteen_id)
+
+    private function checkUserOutsider($type, $canteen_id)
     {
 
         $outsiders = Token::getCurrentTokenVar('outsiders');
