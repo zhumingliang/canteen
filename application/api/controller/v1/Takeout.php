@@ -131,10 +131,13 @@ class Takeout extends BaseController
      * http://canteen.tonglingok.com/api/v1/order/info/print?order_id=8
      * @apiParam (请求参数说明) {int} order_id 订单id
      * @apiSuccessExample {json} 返回样例:
-     * {"msg":"ok","errorCode":0,"code":200,"data":{"id":8,"address_id":1,"d_id":6,"type":2,"create_time":"2019-09-09 16:34:15","hidden":2,"foods":[{"detail_id":5,"o_id":8,"food_id":1,"count":1,"name":"菜品1","price":"5.0"},{"detail_id":6,"o_id":8,"food_id":3,"count":1,"name":"菜品2","price":"5.0"}],"address":{"id":1,"province":"广东省","city":"江门市","area":"蓬江区","address":"江门市白石大道东4号路3栋","name":"张三","phone":"18956225230","sex":1}}}
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"id":8,"address_id":1,"d_id":6,"type":2,"money":2,"sub_money":2,"delivery_fee":2,"create_time":"2019-09-09 16:34:15","hidden":2,"foods":[{"detail_id":5,"o_id":8,"food_id":1,"count":1,"name":"菜品1","price":"5.0"},{"detail_id":6,"o_id":8,"food_id":3,"count":1,"name":"菜品2","price":"5.0"}],"address":{"id":1,"province":"广东省","city":"江门市","area":"蓬江区","address":"江门市白石大道东4号路3栋","name":"张三","phone":"18956225230","sex":1}}}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
      * @apiSuccess (返回参数说明) {String} msg 信息描述
      * @apiSuccess (返回参数说明) {int} id 订单id
+     * @apiSuccess (返回参数说明) {int} money 订单基本金额
+     * @apiSuccess (返回参数说明) {int} sub_money 附加金额
+     * @apiSuccess (返回参数说明) {int} delivery_fee 配送费
      * @apiSuccess (返回参数说明) {int} hidden 是否隐藏订单明细价格：1｜隐藏；2｜不隐藏
      * @apiSuccess (返回参数说明) {obj} foods 菜品信息
      * @apiSuccess (返回参数说明) {int} count 数量
