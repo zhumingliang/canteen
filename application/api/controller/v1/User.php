@@ -31,11 +31,10 @@ class User extends BaseController
      * {"msg":"ok","errorCode":0,"code":200}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
      */
-    public function bindPhone()
+    public function bindPhone($type = 2)
     {
         $phone = Request::param('phone');
         $code = Request::param('code');
-        $type = Request::param('type');
         (new UserService())->bindPhone($phone, $code, $type);
         return json(new SuccessMessage());
 
