@@ -24,7 +24,7 @@ class OfficialToken extends Token
         $openid = $user_info['openid'];
         $user = UserT::where('openid', $openid)->find();
         if (!$user) {
-            //$user_info['outsiders'] = CommonEnum::STATE_IS_FAIL;
+            $user_info['outsiders'] = CommonEnum::STATE_IS_FAIL;
             $user = UserT::create($user_info);
             $u_id = $user->id;
         } else {

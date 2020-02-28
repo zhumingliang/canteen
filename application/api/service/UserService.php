@@ -178,6 +178,9 @@ class UserService
     {
         $u_id = Token::getCurrentUid();
         $user = UserT::get($u_id);
+        if (empty($user)) {
+            throw  new  AuthException(['msg' => '用户信息不存在']);
+        }
         $company_id = $user->current_company_id;
         $phone = $user->phone;
         $staff = CompanyStaffT::staffName($phone, $company_id);
@@ -197,7 +200,9 @@ class UserService
         if (empty($user)) {
             //用户不存在，保存用户信息
             $data = [
-                'openid' => $openid
+                'openid' => $openid,
+                'outsiders' => CommonEnum::STATE_IS_FAIL
+
             ];
             $user = UserT::create($data);
         }
