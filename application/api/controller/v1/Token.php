@@ -18,6 +18,7 @@ use app\api\service\LogService;
 use app\api\service\MachineToken;
 use app\api\service\OfficialToken;
 use app\api\service\SupplierToken;
+use app\api\service\UserService;
 use app\api\service\UserToken;
 use app\api\validate\TokenGet;
 use app\lib\enum\CommonEnum;
@@ -99,6 +100,10 @@ class  Token extends Controller
     {
         $token = Request::header('token');
         // Cache::rm($token);
+        $type = \app\api\service\Token::getCurrentTokenVar('type');
+        if ($type == 'official') {
+            (new UserService())->clearPhone();
+        }
         Redis::instance()->delete($token);
         return json(new SuccessMessage());
     }

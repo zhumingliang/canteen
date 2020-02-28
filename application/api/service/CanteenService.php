@@ -19,6 +19,8 @@ use app\api\model\DinnerT;
 use app\api\model\MachineT;
 use app\api\model\MenuT;
 use app\api\model\OutConfigT;
+use app\api\model\OutConfigV;
+use app\api\model\OutsiderCompanyT;
 use app\api\model\StaffCanteenV;
 use app\api\model\StaffV;
 use app\api\model\StrategyDetailT;
@@ -26,6 +28,7 @@ use app\api\model\SystemCanteenModuleT;
 use app\lib\enum\AdminEnum;
 use app\lib\enum\CommonEnum;
 use app\lib\enum\ModuleEnum;
+use app\lib\enum\UserEnum;
 use app\lib\exception\AuthException;
 use app\lib\exception\DeleteException;
 use app\lib\exception\ParameterException;
@@ -515,10 +518,23 @@ class CanteenService
     //获取当前用户归属饭堂和企业信息
     public function userCanteens()
     {
-        $phone = Token::getCurrentTokenVar('phone');
-        //获取用户所有饭堂
-        $canteens = CompanyStaffT::getStaffCanteens($phone);
+        $outsider = Token::getCurrentTokenVar('outsiders');
+        if ($outsider == UserEnum::INSIDE) {
+            $phone = Token::getCurrentTokenVar('phone');
+            //获取用户所有饭堂
+            $canteens = CompanyStaffT::getStaffCanteens($phone);
+        } else {
+            $user_id = Token::getCurrentUid();
+            $companies = OutsiderCompanyT::companies($user_id);
+            if (empty($companies)) {
+                return [];
+            }
+            $companyIds = $companies['ids'];
+            $canteens=OutConfigV::canteens($companyIds);
+
+        }
         return $canteens;
+
     }
 
     public function saveComment($params)

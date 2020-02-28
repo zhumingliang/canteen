@@ -22,4 +22,12 @@ class OutConfigV extends Model
         return $list;
 
     }
+
+    public static function canteens($companyIds)
+    {
+        $canteens = self::whereIn('company_id', $companyIds)
+            ->field('company_id,company,canteen_id,canteen')
+            ->select();
+        return $canteens;
+    }
 }

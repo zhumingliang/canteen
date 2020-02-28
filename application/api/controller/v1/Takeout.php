@@ -7,6 +7,7 @@ namespace app\api\controller\v1;
 use app\api\controller\BaseController;
 use app\api\service\OrderService;
 use app\api\service\OrderStatisticService;
+use app\api\service\TakeoutService;
 use app\lib\exception\SuccessMessage;
 use app\lib\exception\SuccessMessageWithData;
 use think\facade\Request;
@@ -63,7 +64,6 @@ class Takeout extends BaseController
 
     }
 
-
     /**
      * @api {GET} /api/v1/order/takeoutStatistic/export CMS管理端-外卖管理-订单列表-导出报表
      * @apiGroup  CMS管理端
@@ -98,7 +98,6 @@ class Takeout extends BaseController
 
 
     }
-
 
     /**
      * @api {POST} /api/v1/order/used CMS管理端-外卖管理-打印小票触发外卖完成状态
@@ -158,6 +157,28 @@ class Takeout extends BaseController
         $id = Request::param('order_id');
         $info = (new OrderStatisticService())->infoToPrint($id);
         return json(new SuccessMessageWithData(['data' => $info]));
+    }
+
+    /**
+     * @api {POST} /api/v1/order/receive CMS管理端-外卖管理-接单操作
+     * @apiGroup   Official
+     * @apiVersion 3.0.0
+     * @apiDescription CMS管理端-外卖管理-接单操作
+     * @apiExample {post}  请求样例:
+     *    {
+     *       "ids": "1,2,3"
+     *     }
+     * @apiParam (请求参数说明) {string} ids  订单id列表，用逗号分隔（前端需要自行检测是否可以接单）
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     */
+    public function receive()
+    {
+        $order_id = Request::param('ids');
+        (new  TakeoutService())->receiveOrder($order_id);
+        return json(new SuccessMessage());
     }
 
 }

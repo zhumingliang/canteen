@@ -41,7 +41,6 @@ class WeiXinService
             ]
         ];
         $res = $this->app->menu->create($menus);
-        var_dump($res);
         if (!$res) {
             throw new WeChatException(['msg' => '创建菜单失败']);
         }

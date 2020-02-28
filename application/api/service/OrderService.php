@@ -22,6 +22,7 @@ use app\api\model\OrderT;
 use app\api\model\OrderUsersStatisticV;
 use app\api\model\OutConfigT;
 use app\api\model\PayT;
+use app\api\model\PayWxT;
 use app\api\model\ShopOrderingV;
 use app\api\model\ShopOrderT;
 use app\api\model\UserBalanceV;
@@ -141,7 +142,7 @@ class OrderService extends BaseService
             //获取订单金额
             $orderMoney = $this->checkOutsiderOrderMoney($dinner_id, $detail);
             //保存订单信息
-            $params['order_num'] = makeOrderNo();
+            $params['type'] = OrderEnum::EAT_OUTSIDER;
             $params['pay_way'] = PayEnum::PAY_WEIXIN;;
             $params['u_id'] = $u_id;
             $params['c_id'] = $canteen_id;
@@ -711,12 +712,36 @@ class OrderService extends BaseService
         if (!$order) {
             throw new ParameterException(['msg' => '指定订餐信息不存在']);
         }
-        $this->checkOrderCanHandel($order->d_id, $order->ordering_date);
+        $outsider = Token::getCurrentTokenVar('outsiders');
+        if ($order->type == OrderEnum::EAT_OUTSIDER
+            && $order->receive == CommonEnum::STATE_IS_OK) {
+            throw new UpdateException(['msg' => '商家已经接单，不能取消']);
+        }
+        if ($outsider == UserEnum::INSIDE) {
+            $this->checkOrderCanHandel($order->d_id, $order->ordering_date);
+        } else {
+            //撤回订单
+
+
+        }
         $order->state = CommonEnum::STATE_IS_FAIL;
         $res = $order->save();
         if (!$res) {
             throw new SaveException();
         }
+    }
+
+    private function refundWxOrder($order_id)
+    {
+        $payOrder = PayT::where('order_id', $order_id);
+        if (!$payOrder) {
+            throw new UpdateException(['msg' => '取消订单失败，订单不存在']);
+        }
+        if ($payOrder->method_id != PayEnum::PAY_METHOD_WX) {
+            throw new UpdateException(['msg' => '取消订单失败，非微信订单']);
+        }
+
+
     }
 
     private
@@ -1354,4 +1379,6 @@ class OrderService extends BaseService
             throw new UpdateException();
         }
     }
+
+
 }

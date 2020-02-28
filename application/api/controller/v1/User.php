@@ -120,8 +120,10 @@ class User extends BaseController
      * @apiDescription  微信端-获取当前用户可进入饭堂
      * @apiExample {get}  请求样例:
      * http://canteen.tonglingok.com/api/v1/user/canteens
-     * @apiSuccessExample {json} 返回样例:
+     * @apiSuccessExample {json} 企业内部人员返回样例:
      * {"msg":"ok","errorCode":0,"code":200,"data":[{"id":350,"company_id":3,"company":{"id":3,"name":"企业A"},"canteens":[{"id":1,"staff_id":350,"canteen_id":1,"info":{"id":1,"name":"大饭堂"}}]}]}
+     * @apiSuccessExample {json} 外来人员返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":[{"company_id":4,"company":"企业","canteen_id":5,"canteen":"饭堂"}]}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
      * @apiSuccess (返回参数说明) {string} msg 信息描述
      * @apiSuccess (返回参数说明) {obj} company 企业信息

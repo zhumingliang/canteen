@@ -6,6 +6,7 @@ namespace app\api\service;
 
 use app\api\model\AdminT;
 use app\api\model\CompanyStaffT;
+use app\api\model\OutsiderCompanyT;
 use app\api\model\StaffCanteenT;
 use app\api\model\StaffQrcodeT;
 use app\api\model\UserT;
@@ -196,19 +197,32 @@ class UserService
         if (empty($user)) {
             //用户不存在，保存用户信息
             $data = [
-                'openid' => $openid,
-                'current_company_id' => $company_id,
-                'outsiders' => CommonEnum::STATE_IS_OK
+                'openid' => $openid
             ];
-            UserT::create($data);
+            $user = UserT::create($data);
+        }
+        $this->saveOutsiderCompany($user->id, $company_id);
+        return true;
+    }
+
+    private function saveOutsiderCompany($user_id, $company_id)
+    {
+        $check = OutsiderCompanyT::where('user_id', $user_id)
+            ->where('company_id', $company_id)
+            ->count();
+        if ($check) {
             return true;
         }
-        //用户信息存在，判断是否为企业员工
-        if ($user->outsiders == CommonEnum::STATE_IS_OK) {
-            $user->current_company_id = $company_id;
-            $user->current_canteen_id = 0;
-            $user->save();
-            return true;
-        }
+        OutsiderCompanyT::create([
+            'user_id' => $user_id,
+            'company_id' => $company_id
+        ]);
+
+    }
+
+    public function clearPhone()
+    {
+        $user_id = Token::getCurrentUid();
+        UserT::update(['phone' => ''], ['id' => $user_id]);
     }
 }
