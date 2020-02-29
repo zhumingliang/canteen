@@ -23,21 +23,22 @@ class OutsiderService
         try {
             Db::startTrans();
             $company_id = $params['company_id'];
-            if (empty($params['id'])) {
-                $outsider = CompanyOutsiderT::getCompanyOutsiderWithCompanyId($company_id);
-                if ($outsider) {
-                    throw new SaveException(['msg' =>'不能重复配置企业外来人员信息']);
-                }
+            $outsider = CompanyOutsiderT::getCompanyOutsiderWithCompanyId($company_id);
+            if (!$outsider) {
                 $outsider = CompanyOutsiderT::create([
                     'company_id' => $company_id,
                     'rules' => $params['rules']
                 ]);
-                if (!$outsider) {
-                    throw new SaveException();
-                }
             } else {
-                CompanyOutsiderT::update($params);
+                $outsider = CompanyOutsiderT::update([
+                    'rules' => $params['rules']
+                ], ['id' => $outsider->id]);
             }
+
+            if (!$outsider) {
+                throw new SaveException();
+            }
+
             Db::commit();
         } catch (Exception $e) {
             Db::rollback();
