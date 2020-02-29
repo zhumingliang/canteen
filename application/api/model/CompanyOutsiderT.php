@@ -35,12 +35,7 @@ class CompanyOutsiderT extends Model
 
     public static function outsider($id)
     {
-        $role = self::where('id', $id)
-            ->with([
-                'canteen' => function ($query) {
-                    $query->field('id,canteen_id,outsider_id,canteen_name');
-                }
-            ])
+        $role = self::where('company_id', $id)
             ->field('id,rules,company_id,create_time')
             ->find();
         return $role;

@@ -92,11 +92,11 @@ class OutsiderService
 
     }
 
-    public function outsider($id)
+    public function outsider($company_id)
     {
-        $outsider = CompanyOutsiderT::outsider($id);
+        $outsider = CompanyOutsiderT::outsider($company_id);
         //获取企业所有模块
-        $modules = CanteenModuleV::modules($outsider['company_id']);
+        $modules = CanteenModuleV::modules($company_id);
         $outsiderModulesArr = explode(',', $outsider['rules']);
         foreach ($modules as $k => $v) {
             $modules[$k]['have'] = CommonEnum::STATE_IS_FAIL;
