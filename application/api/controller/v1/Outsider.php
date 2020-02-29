@@ -89,7 +89,7 @@ class Outsider extends BaseController
      */
     public function outsider()
     {
-        $id = Request::param('id');
+        $id = Request::param('company_id');
         $role = (new OutsiderService())->outsider($id);
         return json(new SuccessMessageWithData(['data' => $role]));
     }

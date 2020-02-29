@@ -106,8 +106,9 @@ class OutsiderService
             }
 
         }
-        $role['modules'] = getTree($modules);
-        return $role;
+
+        $modules = getTree($modules);
+        return $modules;
     }
 
 
