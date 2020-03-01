@@ -52,22 +52,26 @@ class UserService
     public function bindCanteen($canteen_id)
     {
         $phone = Token::getCurrentTokenVar('phone');
+        $outsider = Token::getCurrentTokenVar('outsiders');
         $company_id = (new CanteenService())->getCanteenCompanyID($canteen_id);
-        $staff = CompanyStaffT::where('phone', $phone)
-            ->where('company_id', $company_id)
-            ->where('state', CommonEnum::STATE_IS_OK)
-            ->find();
-        if (!$staff) {
-            throw  new AuthException(['msg' => '用户信息不存在']);
+        if ($outsider == UserEnum::INSIDE) {
+            $staff = CompanyStaffT::where('phone', $phone)
+                ->where('company_id', $company_id)
+                ->where('state', CommonEnum::STATE_IS_OK)
+                ->find();
+            if (!$staff) {
+                throw  new AuthException(['msg' => '用户信息不存在']);
+            }
+
+            $userCanteen = StaffCanteenT::where('staff_id', $staff->id)
+                ->where('canteen_id', $canteen_id)
+                ->where('state', CommonEnum::STATE_IS_OK)
+                ->find();
+            if (!$userCanteen) {
+                throw  new AuthException(['msg' => '绑定失败，用户不属于该饭堂']);
+            }
         }
 
-        $userCanteen = StaffCanteenT::where('staff_id', $staff->id)
-            ->where('canteen_id', $canteen_id)
-            ->where('state', CommonEnum::STATE_IS_OK)
-            ->find();
-        if (!$userCanteen) {
-            throw  new AuthException(['msg' => '绑定失败，用户不属于该饭堂']);
-        }
         $res = UserT::update([
             'current_canteen_id' => $canteen_id,
             'current_company_id' => $staff->company_id
