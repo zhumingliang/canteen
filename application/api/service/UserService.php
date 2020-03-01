@@ -82,7 +82,7 @@ class UserService
         }
         //更新用户缓存
         Token::updateCurrentTokenVar('current_canteen_id', $canteen_id);
-        Token::updateCurrentTokenVar('current_company_id', $staff->company_id);
+        Token::updateCurrentTokenVar('current_company_id',$company_id);
     }
 
     public function getUserCurrentCompanyID()
