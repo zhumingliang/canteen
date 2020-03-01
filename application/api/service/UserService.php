@@ -74,7 +74,7 @@ class UserService
 
         $res = UserT::update([
             'current_canteen_id' => $canteen_id,
-            'current_company_id' => $staff->company_id
+            'current_company_id' =>$company_id
         ],
             ['id' => Token::getCurrentUid()]);
         if (!$res) {
