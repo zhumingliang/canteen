@@ -229,9 +229,9 @@ class UserService
 
     }
 
-    public function clearPhone()
+    public function clearUserInfo()
     {
         $user_id = Token::getCurrentUid();
-        UserT::update(['phone' => ''], ['id' => $user_id]);
+        UserT::update(['phone' => '','current_canteen_id'=>0,'current_company_i'=>0], ['id' => $user_id]);
     }
 }

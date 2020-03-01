@@ -102,7 +102,7 @@ class  Token extends Controller
         // Cache::rm($token);
         $type = \app\api\service\Token::getCurrentTokenVar('type');
         if ($type == 'official') {
-            (new UserService())->clearPhone();
+            (new UserService())->clearUserInfo();
         }
         Redis::instance()->delete($token);
         return json(new SuccessMessage());
