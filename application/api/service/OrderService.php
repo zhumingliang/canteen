@@ -1354,10 +1354,13 @@ class OrderService extends BaseService
     {
         $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
         $company_id = Token::getCurrentTokenVar('current_company_id');
-        $u_id = Token::getCurrentUid();
+        $outsider = Token::getCurrentTokenVar('outsiders');
         $phone = Token::getCurrentPhone();
-        $t_id = (new UserService())->getUserStaffTypeByPhone($phone, $company_id);
         $dinner = DinnerT::canteenDinnerMenus($canteen_id);
+        if ($outsider==UserEnum::OUTSIDE){
+            return $dinner;
+        }
+        $t_id = (new UserService())->getUserStaffTypeByPhone($phone, $company_id);
         $strategies = (new CanteenService())->staffStrategy($canteen_id, $t_id);
         foreach ($dinner as $k => $v) {
             $dinner[$k]['ordering_count'] = OrderingV::getRecordForDayOrderingByPhone($day, $v["name"], $phone);
