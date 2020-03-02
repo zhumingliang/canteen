@@ -200,6 +200,7 @@ class UserService
     public function saveUserFromQRCode($company_id, $openid)
     {
         //检测用户是否存在
+        LogService::save('openid:'.$openid);
         $user = UserT::where('openid', $openid)->find();
         if (empty($user)) {
             //用户不存在，保存用户信息
@@ -216,6 +217,7 @@ class UserService
 
     private function saveOutsiderCompany($user_id, $company_id)
     {
+        LogService::save('user_id:'.$user_id."company_id:".$company_id);
         $check = OutsiderCompanyT::where('user_id', $user_id)
             ->where('company_id', $company_id)
             ->count();
