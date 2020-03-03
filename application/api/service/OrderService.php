@@ -63,7 +63,7 @@ class OrderService extends BaseService
             $this->checkDinnerForPersonalChoice($dinner, $ordering_date);
             $delivery_fee = $this->checkUserOutsider($params['type'], $canteen_id);
             //检测用户是否可以订餐并返回订单金额
-            $orderMoney = $this->checkUserCanOrder($dinner_id, $detail);
+            $orderMoney = $this->checkUserCanOrder($dinner, $ordering_date, $canteen_id, $count, $detail);
             $checkMoney = $orderMoney['money'] * $count + $orderMoney['sub_money'] * $count + $delivery_fee;
             $pay_way = $this->checkBalance($u_id, $canteen_id, $checkMoney);
             if (!$pay_way) {
@@ -299,7 +299,7 @@ class OrderService extends BaseService
 
 
     public
-    function checkUserCanOrder($u_id, $dinner, $day, $canteen_id, $count, $detail, $ordering_type = "person_choice")
+    function checkUserCanOrder( $dinner, $day, $canteen_id, $count, $detail, $ordering_type = "person_choice")
     {
         $phone = Token::getCurrentPhone();
         $company_id = Token::getCurrentTokenVar('current_company_id');
