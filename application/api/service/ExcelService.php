@@ -104,9 +104,9 @@ class ExcelService
             'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'
         ];
         //把列名写入第1行 A1 B1 C1 ...
-        // for ($i = 0; $i < count($list[0]); $i++) {
-        for ($i = 0; $i < 20; $i++) {
-            //$letter[$i]1 = A1 B1 C1  $letter[$i] = 列1 列2 列3
+        for ($i = 0; $i < count($list[0]); $i++) {
+            // for ($i = 0; $i < 20; $i++) {
+            // $letter[$i]1 = A1 B1 C1  $letter[$i] = 列1 列2 列3
             $PHPSheet->setCellValue("$letter[$i]1", "$columName[$i]");
         }
         //内容第2行开始
