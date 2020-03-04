@@ -43,7 +43,7 @@ class  Token extends Controller
      *       "passwd": "a11111"
      *     }
      * @apiParam (请求参数说明) {String} account    用户账号
-     * @apiParam (请求参数说明) {String} pwd   用户密码
+     * @apiParam (请求参数说明) {String} passwd   用户密码
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200,"data":{"token":"fe6ed7b4a89aab3a31d0606a55116a49","role":"系统超级管理员","grade":1}}
      * @apiSuccess (返回参数说明) {int} grade 用户等级:1|系统管理员；2|企业系统管理员；3|企业内部角色

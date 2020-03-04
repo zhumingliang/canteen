@@ -72,7 +72,7 @@ class AdminT extends Model
             ->whereIn('c_id',$company_ids)
             ->where(function ($query) use ($key) {
                 if (strlen($key)) {
-                    $query->where('role', 'like', '%' . $key . '%');
+                    $query->where('company', 'like', '%' . $key . '%');
                 }
             })
             ->where(function ($query) use ($state) {

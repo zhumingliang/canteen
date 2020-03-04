@@ -89,13 +89,16 @@ class CompanyService
     public function getUserCompaniesWithOutSystemManager($grade)
     {
         $ids = [];
+        $company_id=Token::getCurrentTokenVar('company_id');
+        array_push($ids, $company_id);
         if ($grade == AdminEnum::COMPANY_SUPER) {
-            $parent_company_id = Token::getCurrentTokenVar('company_id');
+            $parent_company_id = $company_id;
         } else {
             $parent_admin_id = Token::getCurrentTokenVar('parent_id');
             $parent = AdminT::where('id', $parent_admin_id)->find();
             $parent_company_id = $parent->c_id;
         }
+
         $ids = $this->getSonID($ids, $parent_company_id);
         $ids = implode(',', $ids);
         return $ids;
