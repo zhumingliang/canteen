@@ -26,6 +26,7 @@ use app\api\model\PayWxT;
 use app\api\model\ShopOrderingV;
 use app\api\model\ShopOrderT;
 use app\api\model\UserBalanceV;
+use app\api\model\WxRefundT;
 use app\lib\enum\CommonEnum;
 use app\lib\enum\MenuEnum;
 use app\lib\enum\OrderEnum;
@@ -299,7 +300,7 @@ class OrderService extends BaseService
 
 
     public
-    function checkUserCanOrder( $dinner, $day, $canteen_id, $count, $detail, $ordering_type = "person_choice")
+    function checkUserCanOrder($dinner, $day, $canteen_id, $count, $detail, $ordering_type = "person_choice")
     {
         $phone = Token::getCurrentPhone();
         $company_id = Token::getCurrentTokenVar('current_company_id');
@@ -319,7 +320,6 @@ class OrderService extends BaseService
             }
         }
         return $strategyMoney;
-
     }
 
 
@@ -738,10 +738,26 @@ class OrderService extends BaseService
             throw new UpdateException(['msg' => '取消订单失败，订单不存在']);
         }
         if ($payOrder->method_id != PayEnum::PAY_METHOD_WX) {
-            throw new UpdateException(['msg' => '取消订单失败，非微信订单']);
+            throw new UpdateException(['msg' => '取消订单失败，非微信支付订单']);
         }
-
-
+        $company_id = $payOrder->company_id;
+        $money = $payOrder->money;
+        $order_number = $payOrder->order_num;
+        $refund_order_number = makeOrderNo();
+        $refund = WxRefundT::create([
+            'order_number' => $order_number,
+            'refund_order_number' => $refund_order_number,
+            'money' => $money,
+            'res' => CommonEnum::STATE_IS_FAIL
+        ]);
+        if ($refund) {
+            throw new UpdateException(['msg' => '取消订单失败']);
+        }
+        $refundRes = (new WeiXinPayService())->refundOrder($company_id, $order_number, $refund_order_number, $money, $money);
+        if ($refundRes['res'] == CommonEnum::STATE_IS_FAIL) {
+            throw new UpdateException(['msg' => '取消订单失败', "失败原因：" . $refundRes['return_msg']]);
+        }
+        //处理逻辑
     }
 
     private
@@ -837,6 +853,7 @@ class OrderService extends BaseService
                 throw new ParameterException(['msg' => '订单明细为空或者数据格式错误']);
             }
             $order = OrderT::where('id', $id)->find();
+
             //检测订单是否可操作
             $count = $order->count;
             $this->checkOrderCanHandel($order->d_id, $order->ordering_date);
@@ -859,7 +876,9 @@ class OrderService extends BaseService
             $order->money = $check_money['new_money'];
             $order->sub_money = $check_money['new_sub_money'];
             $order->count = $count;
-            if (!($order->save())) {
+            $order->update_time=date('Y-m-d H:i:m:s');
+            $res = $order->save();
+            if (!$res) {
                 throw new UpdateException();
             }
             //处理订单明细
@@ -879,7 +898,7 @@ class OrderService extends BaseService
             $menu_id = $v['menu_id'];
             $add_foods = empty($v['add_foods']) ? [] : $v['add_foods'];
             $update_foods = empty($v['update_foods']) ? [] : $v['update_foods'];
-            $cancel_foods = empty($v['cancel_foods']) ? [] : $v['cancel_foods'];
+            $cancel_foods = empty($v['cancel_foods']) ? '' : $v['cancel_foods'];
             if (!empty($add_foods)) {
                 foreach ($add_foods as $k2 => $v2) {
                     $data = [
@@ -1357,7 +1376,7 @@ class OrderService extends BaseService
         $outsider = Token::getCurrentTokenVar('outsiders');
         $phone = Token::getCurrentPhone();
         $dinner = DinnerT::canteenDinnerMenus($canteen_id);
-        if ($outsider==UserEnum::OUTSIDE){
+        if ($outsider == UserEnum::OUTSIDE) {
             return $dinner;
         }
         $t_id = (new UserService())->getUserStaffTypeByPhone($phone, $company_id);
