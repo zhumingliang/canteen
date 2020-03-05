@@ -597,6 +597,7 @@ class ShopService
         //获取供应商所有商品
         $products = ShopProductT::supplierProducts(1, 10000, $time_begin, $time_end, $supplier_id);
         $products=$products['data'];
+        echo $supplier_id;
         print_r($products);
         $header = ['序号', '名称', '单价（元）', '单位', '总进货量', '总销售量', '总销售额（元）'];
         $file_name = $time_begin . "-" . $time_end . "-进销报表";
