@@ -37,7 +37,6 @@ class WeiXinPayService
             'notify_url' => 'http://canteen.tonglingok.com/api/v1/wallet/WXNotifyUrl',
             // 你也可以在下单时单独设置来想覆盖它
         ];
-
         $app = Factory::payment($config);
         return $app;
     }
@@ -59,7 +58,8 @@ class WeiXinPayService
     public function refundOrder($company_id, $order_number, $refundNumber, $totalFee, $refundFee)
     {
         $app = $this->getApp($company_id);
-
+        $totalFee = $totalFee * 100;
+        $refundFee = $refundFee * 100;
         // 参数分别为：商户订单号、商户退款单号、订单金额、退款金额、其他参数
         $result = $app->refund->byOutTradeNumber($order_number, $refundNumber, $totalFee, $refundFee);
         print_r($result);
