@@ -721,8 +721,7 @@ class OrderService extends BaseService
             $this->checkOrderCanHandel($order->d_id, $order->ordering_date);
         } else {
             //撤回订单
-
-
+            $this->refundWxOrder($order->order_num);
         }
         $order->state = CommonEnum::STATE_IS_FAIL;
         $res = $order->save();
@@ -731,9 +730,9 @@ class OrderService extends BaseService
         }
     }
 
-    private function refundWxOrder($order_id)
+    public function refundWxOrder($order_number)
     {
-        $payOrder = PayT::where('order_id', $order_id);
+        $payOrder = PayT::where('order_num', $order_number)->find();
         if (!$payOrder) {
             throw new UpdateException(['msg' => '取消订单失败，订单不存在']);
         }
@@ -750,14 +749,21 @@ class OrderService extends BaseService
             'money' => $money,
             'res' => CommonEnum::STATE_IS_FAIL
         ]);
-        if ($refund) {
+        if (!$refund) {
             throw new UpdateException(['msg' => '取消订单失败']);
         }
         $refundRes = (new WeiXinPayService())->refundOrder($company_id, $order_number, $refund_order_number, $money, $money);
+        $refund->res = $refundRes['res'];
+        $refund->return_msg = $refundRes['return_msg'];
+        $refund->err_code_des = $refundRes['err_code_des'];
+        $refund->save();
         if ($refundRes['res'] == CommonEnum::STATE_IS_FAIL) {
             throw new UpdateException(['msg' => '取消订单失败', "失败原因：" . $refundRes['return_msg']]);
         }
         //处理逻辑
+        $payOrder->refund = CommonEnum::STATE_IS_OK;
+        $payOrder->save();
+
     }
 
     private
@@ -837,6 +843,7 @@ class OrderService extends BaseService
         $order->sub_money = $new_sub_money;
         //处理消费方式
         $order->pay_way = $check_res;
+        $order->update_time = date('Y-m-d H:i:s');
         if (!($order->save())) {
             throw new UpdateException();
         }
@@ -869,14 +876,14 @@ class OrderService extends BaseService
                 }
             }
 
-
             $check_money = $this->checkOrderUpdateMoney($id, $order->u_id, $order->c_id,
                 $order->d_id, $order->pay_way, $order->money, $order->sub_money, $order->count, $count, $detail);
+
             $order->pay_way = $check_money['pay_way'];
             $order->money = $check_money['new_money'];
             $order->sub_money = $check_money['new_sub_money'];
             $order->count = $count;
-            $order->update_time=date('Y-m-d H:i:m:s');
+            $order->update_time = date('Y-m-d H:i:s');
             $res = $order->save();
             if (!$res) {
                 throw new UpdateException();
@@ -941,7 +948,6 @@ class OrderService extends BaseService
         if (!$res) {
             throw new UpdateException(['msg' => '更新订单明细失败']);
         }
-
     }
 
     private
@@ -955,8 +961,8 @@ class OrderService extends BaseService
         }
         $dinner = DinnerT::dinnerInfo($dinner_id);
         $fixed = $dinner->fixed;
+
         $new_money = 0;
-        $new_sub_money = 0;
         foreach ($new_detail as $k => $v) {
             $menu_id = $v['menu_id'];
             $add_foods = $v['add_foods'];
@@ -981,6 +987,7 @@ class OrderService extends BaseService
                 }
             }
         }
+
         if ($fixed == CommonEnum::STATE_IS_FAIL) {
             $new_money = $new_money * $count;
         } else {

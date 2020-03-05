@@ -23,4 +23,12 @@ class OrderDetailT extends Model
         return $detail;
     }
 
+    public static function detail($order_id)
+    {
+        $detail = self::where('o_id', $order_id)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->select()->toArray();
+        return $detail;
+    }
+
 }

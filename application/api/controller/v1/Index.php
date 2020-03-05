@@ -20,13 +20,15 @@ use app\lib\enum\CommonEnum;
 use app\lib\exception\SuccessMessageWithData;
 use think\Db;
 use think\db\Where;
+use think\facade\Env;
 use think\Queue;
 use zml\tp_tools\Aes;
 
 class Index extends BaseController
 {
-    public function index($name = '')
+    public function index($id = '')
     {
+        (new OrderService())->refundWxOrder($id);
         // $this->mailTask($name);
         // $detail = '[{"d_id":122,"ordering":[{"ordering_date":"2020-01-21","count":1}]}]';
 

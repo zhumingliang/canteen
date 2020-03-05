@@ -289,7 +289,8 @@ class AdminService
     public function role($id)
     {
         $role = AdminT::admin($id);
-        $adminModules = AdminModuleT::where('admin_id', $role['id'])->field('rules')->find();
+        $adminModules = AdminModuleT::where('admin_id', $role['id'])
+            ->field('rules')->find();
         //获取企业所有模块
         $modules = CanteenModuleV::modules($role['c_id']);
         $adminModulesArr = explode(',', $adminModules['rules']);

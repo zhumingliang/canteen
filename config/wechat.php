@@ -84,8 +84,8 @@ return [
             'app_id'     => env('WECHAT_PAYMENT_APPID', 'wx60311f2f47c86a3e'),
             'mch_id'     => env('WECHAT_PAYMENT_MCH_ID', '1555725021'),
             'key'        => env('WECHAT_PAYMENT_KEY', '1234567890qwertyuiopasdfghjklzxc'),
-            'cert_path'  => env('WECHAT_PAYMENT_CERT_PATH', 'path/to/cert/apiclient_cert.pem'),    // XXX: 绝对路径！！！！
-            'key_path'   => env('WECHAT_PAYMENT_KEY_PATH', 'path/to/cert/apiclient_key.pem'),      // XXX: 绝对路径！！！！
+            'cert_path'  => env('WECHAT_PAYMENT_CERT_PATH', 'path/to/cert/cert.pem'),    // XXX: 绝对路径！！！！
+            'key_path'   => env('WECHAT_PAYMENT_KEY_PATH', 'path/to/cert/key.pem'),      // XXX: 绝对路径！！！！
             'notify_url' => 'http://canteen.tonglingok.com/api/v1/wallet/WXNotifyUrl',                           // 默认支付结果通知地址
         ],
         // ...
