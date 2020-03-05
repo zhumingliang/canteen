@@ -62,6 +62,7 @@ class WeiXinPayService
 
         // 参数分别为：商户订单号、商户退款单号、订单金额、退款金额、其他参数
         $result = $app->refund->byOutTradeNumber($order_number, $refundNumber, $totalFee, $refundFee);
+        print_r($result);
         LogService::save(json_encode($result));
         return [
             'res' => '',
