@@ -4,6 +4,7 @@
 namespace app\api\service;
 
 use app\api\model\PayWxConfigT;
+use app\lib\enum\CommonEnum;
 use app\lib\exception\ParameterException;
 use EasyWeChat\Factory;
 use think\facade\Env;
@@ -62,12 +63,16 @@ class WeiXinPayService
         $refundFee = $refundFee * 100;
         // 参数分别为：商户订单号、商户退款单号、订单金额、退款金额、其他参数
         $result = $app->refund->byOutTradeNumber($order_number, $refundNumber, $totalFee, $refundFee);
-        print_r($result);
-        LogService::save(json_encode($result));
+        if (empty($result['result_code']) || $result['result_code'] != 'SUCCESS' || $result['return_code'] != 'SUCCESS') {
+            return [
+                'res' => CommonEnum::STATE_IS_FAIL,
+                'return_msg' => json_encode($result),
+            ];
+        }
         return [
-            'res' => '',
-            'return_msg' => '',
-            'err_code_des' => '',
+            'res' => CommonEnum::STATE_IS_OK,
+            'return_msg' => json_encode($result),
         ];
+
     }
 }

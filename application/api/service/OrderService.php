@@ -755,7 +755,6 @@ class OrderService extends BaseService
         $refundRes = (new WeiXinPayService())->refundOrder($company_id, $order_number, $refund_order_number, $money, $money);
         $refund->res = $refundRes['res'];
         $refund->return_msg = $refundRes['return_msg'];
-        $refund->err_code_des = $refundRes['err_code_des'];
         $refund->save();
         if ($refundRes['res'] == CommonEnum::STATE_IS_FAIL) {
             throw new UpdateException(['msg' => '取消订单失败', "失败原因：" . $refundRes['return_msg']]);
