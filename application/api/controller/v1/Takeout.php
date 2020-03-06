@@ -77,7 +77,7 @@ class Takeout extends BaseController
      * @apiParam (请求参数说明) {string} ordering_date  订餐日期
      * @apiParam (请求参数说明) {int} status  状态：3：已接单；4:已完成 ;6 全部
      * @apiSuccessExample {json}返回样例:
-     * {"msg":"ok","errorCode":0,"code":200,"data":{"total":1,"per_page":"20","current_page":1,"last_page":1,"data":[{"order_id":233,"province":"广东省","city":"江门市","area":"蓬江区","address":"。。。","username":"宁晓晓","phone":"18219112778","used":2,"count":2}]}}
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"total":1,"per_page":"20","current_page":1,"last_page":1,"data":[{"order_id":233,"province":"广东省","city":"江门市","area":"蓬江区","address":"。。。","username":"小新","phone":"18219112778","used":2,"count":2,"money":"12.00","delivery_fee":"0.00","foods":[{"o_id":233,"name":"肉2","price":"1.0","count":1},{"o_id":233,"name":"肉","price":"1.0","count":1}]}]}}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
      * @apiSuccess (返回参数说明) {String} msg 信息描述
      * @apiSuccess (返回参数说明) {int} total 数据总数
@@ -91,8 +91,14 @@ class Takeout extends BaseController
      * @apiSuccess (返回参数说明) {string} city  城市
      * @apiSuccess (返回参数说明) {string} area  区
      * @apiSuccess (返回参数说明) {string} address  详细地址
-     * @apiSuccess (返回参数说明) {string} count  份数
+     * @apiSuccess (返回参数说明) {int} count  份数
+     * @apiSuccess (返回参数说明) {float} money  总金额
+     * @apiSuccess (返回参数说明) {float} delivery_fee  配送费
      * @apiSuccess (返回参数说明) {int} used 订单状态：2｜已接单；1：已完成
+     * @apiSuccess (返回参数说明) {obj} foods 菜品信息
+     * @apiSuccess (返回参数说明) {string} name 菜品名称
+     * @apiSuccess (返回参数说明) {float} price 菜品价格
+     * @apiSuccess (返回参数说明) {int} count 菜品数量
      */
     public function officialStatistic($page = 1, $size = 20)
     {

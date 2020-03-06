@@ -11,6 +11,11 @@ use function GuzzleHttp\Promise\queue;
 
 class OrderTakeoutStatisticV extends Model
 {
+    public function foods()
+    {
+        return $this->hasMany('OrderDetailT', 'o_id', 'order_id');
+    }
+
     public function getStatusAttr($value, $data)
     {
         if ($data['state'] == CommonEnum::STATE_IS_FAIL) {
@@ -138,6 +143,7 @@ class OrderTakeoutStatisticV extends Model
                                              $ordering_date, $dinner_id, $status, $department_id, $canteen_id)
     {
         $list = self::where('canteen_id', $canteen_id)
+
             ->where('ordering_date', $ordering_date)
             ->where(function ($query) use ($status) {
                 if ($status == OrderEnum::STATUS_RECEIVE) {
@@ -163,7 +169,13 @@ class OrderTakeoutStatisticV extends Model
                     $query->where('department_id', $department_id);
                 }
             })
-            ->field('order_id,province,city,area,address,address_username as username,address_phone as phone,used,count')
+            ->with([
+                'foods' => function ($query) {
+                    $query->where('state', CommonEnum::STATE_IS_OK)
+                        ->field('o_id,name,price,count');
+                }
+            ])
+            ->field('order_id,province,city,area,address,address_username as username,address_phone as phone,used,count,money,delivery_fee')
             ->order('used DESC')
             ->paginate($size, false, ['page' => $page])->toArray();
         return $list;

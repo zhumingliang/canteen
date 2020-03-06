@@ -77,7 +77,7 @@ class OrderService extends BaseService
             $params['u_id'] = $u_id;
             $params['c_id'] = $canteen_id;
             $params['d_id'] = $dinner_id;
-            $params['pay'] = PayEnum::PAY_SUCCESS;
+            $params['pay'] = 'paid';
             $params['delivery_fee'] = $delivery_fee;
             $params['outsider'] = UserEnum::INSIDE;
             $params['money'] = $orderMoney['money'] * $count;
@@ -596,7 +596,7 @@ class OrderService extends BaseService
                     $data['no_meal_sub_money'] = $checkOrder['no_meal_sub_money'];
                     $data['pay_way'] = '';
                     $data['phone'] = $phone;
-                    $data['pay'] = CommonEnum::STATE_IS_OK;
+                    $data['pay'] = 'paid';;
                     $params['state'] = CommonEnum::STATE_IS_OK;
                     $params['receive'] = CommonEnum::STATE_IS_OK;
                     array_push($data_list, $data);
