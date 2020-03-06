@@ -1372,7 +1372,11 @@ class OrderService extends BaseService
     public
     function used($order_id)
     {
-        $order = OrderT::update(['used' => CommonEnum::STATE_IS_OK], ['id' => $order_id]);
+        $order = OrderT::update([
+            'used' => CommonEnum::STATE_IS_OK,
+            'used_time' => date('Y-m-d H:i:s')
+        ],
+            ['id' => $order_id]);
         if (!$order) {
             throw new UpdateException();
         }
