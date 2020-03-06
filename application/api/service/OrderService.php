@@ -77,7 +77,7 @@ class OrderService extends BaseService
             $params['u_id'] = $u_id;
             $params['c_id'] = $canteen_id;
             $params['d_id'] = $dinner_id;
-            $params['pay'] = 'paid';
+            $params['pay'] = PayEnum::PAY_SUCCESS;
             $params['delivery_fee'] = $delivery_fee;
             $params['outsider'] = UserEnum::INSIDE;
             $params['money'] = $orderMoney['money'] * $count;
@@ -87,7 +87,6 @@ class OrderService extends BaseService
             $params['meal_sub_money'] = $orderMoney['meal_sub_money'];
             $params['no_meal_money'] = $orderMoney['no_meal_money'];
             $params['no_meal_sub_money'] = $orderMoney['no_meal_sub_money'];
-            $params['pay'] = CommonEnum::STATE_IS_OK;
             $params['company_id'] = $company_id;
             $phone = Token::getCurrentPhone();
             $staff = (new UserService())->getUserCompanyInfo($phone, $company_id);
