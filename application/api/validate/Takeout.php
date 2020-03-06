@@ -18,7 +18,7 @@ class Takeout extends BaseValidate
 
     protected $scene = [
         'statistic' => ['canteen_id', 'company_ids', 'ordering_date', 'dinner_id','status'],
-        'used'=>['ids'],
+        'used'=>['id'],
         'receive'=>['ids'],
         'infoToPrint'=>['order_id']
     ];

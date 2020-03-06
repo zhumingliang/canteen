@@ -100,15 +100,15 @@ class Takeout extends BaseController
     }
 
     /**
-     * @api {POST} /api/v1/order/used CMS管理端-外卖管理-打印小票触发外卖完成状态
+     * @api {POST} /api/v1/order/used 微信端-外卖管理-确认送达订单
      * @apiGroup   Official
      * @apiVersion 3.0.0
-     * @apiDescription CMS管理端-外卖管理-打印小票触发外卖完成状态
+     * @apiDescription 微信端-外卖管理-确认送达订单
      * @apiExample {post}  请求样例:
      *    {
-     *       "ids": "1,2,3"
+     *       "id": 1
      *     }
-     * @apiParam (请求参数说明) {string} ids  订单id列表，用逗号分隔
+     * @apiParam (请求参数说明) {string} ids  订单id
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
@@ -116,8 +116,8 @@ class Takeout extends BaseController
      */
     public function used()
     {
-        $ids = Request::param('ids');
-        (new OrderService())->used($ids);
+        $order_id= Request::param('id');
+        (new OrderService())->used($order_id);
         return json(new SuccessMessage());
     }
 
