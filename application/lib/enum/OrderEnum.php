@@ -57,4 +57,9 @@ class OrderEnum
 
     const STATUS_REFUND = 5;
 
+    const STATE_USER_CANCEL = 2;
+
+    const STATE_SHOP_REFUSE = 3;
+
+
 }

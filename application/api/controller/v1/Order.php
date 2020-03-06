@@ -190,8 +190,8 @@ class Order extends BaseController
     }
 
     /**
-     * @api {POST} /api/v1/order/cancel 微信端-取消订餐
-     * @apiGroup   Official
+     * @api {POST} /api/v1/order/cancel 微信端-取消订餐/CMS管理端-退回订单
+     * @apiGroup   COMMON
      * @apiVersion 3.0.0
      * @apiDescription 微信端-取消订餐（线上订餐/个人选菜）
      * @apiExample {post}  请求样例:
@@ -205,28 +205,6 @@ class Order extends BaseController
      * @apiSuccess (返回参数说明) {string} msg 信息描述
      */
     public function orderCancel()
-    {
-        $id = Request::param('id');
-        (new OrderService())->orderCancel($id);
-        return json(new SuccessMessage());
-    }
-
-    /**
-     * @api {POST} /api/v1/order/refund CMS管理端-商家退回外卖订单
-     * @apiGroup   Official
-     * @apiVersion 3.0.0
-     * @apiDescription CMS管理端-商家退回外卖订单
-     * @apiExample {post}  请求样例:
-     *    {
-     *       "id": 1
-     *     }
-     * @apiParam (请求参数说明) {string} id  订餐id
-     * @apiSuccessExample {json} 返回样例:
-     * {"msg":"ok","errorCode":0,"code":200}
-     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
-     * @apiSuccess (返回参数说明) {string} msg 信息描述
-     */
-    public function orderRefund()
     {
         $id = Request::param('id');
         (new OrderService())->orderCancel($id);

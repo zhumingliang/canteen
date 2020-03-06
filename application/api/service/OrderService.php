@@ -723,7 +723,12 @@ class OrderService extends BaseService
             //撤回订单
             $this->refundWxOrder($order->order_num);
         }
-        $order->state = CommonEnum::STATE_IS_FAIL;
+        $userType = Token::getCurrentTokenVar('type');
+        if ($userType == "cms") {
+            $order->state = OrderEnum::STATE_SHOP_REFUSE;
+        } else if ($userType == "official") {
+            $order->state = OrderEnum::STATUS_CANCEL;
+        }
         $res = $order->save();
         if (!$res) {
             throw new SaveException();
