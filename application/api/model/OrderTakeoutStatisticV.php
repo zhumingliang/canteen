@@ -13,9 +13,9 @@ class OrderTakeoutStatisticV extends Model
 {
     public function getStatusAttr($value, $data)
     {
-        if ($data['state'] = CommonEnum::STATE_IS_FAIL) {
+        if ($data['state'] == CommonEnum::STATE_IS_FAIL) {
             return OrderEnum::STATUS_CANCEL;
-        } elseif ($data['state'] = OrderEnum::REFUND) {
+        } elseif ($data['state'] == OrderEnum::REFUND) {
             return OrderEnum::STATUS_REFUND;
         } else {
             if ($data['used'] == CommonEnum::STATE_IS_OK) {
