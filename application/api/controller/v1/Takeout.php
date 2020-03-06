@@ -60,7 +60,49 @@ class Takeout extends BaseController
         $statistic = (new OrderStatisticService())->takeoutStatistic($page, $size,
             $ordering_date, $company_ids, $canteen_id, $dinner_id, $status, $department_id, $user_type);
         return json(new SuccessMessageWithData(['data' => $statistic]));
+    }
 
+
+    /**
+     * @api {GET} /api/v1/order/takeoutStatistic/official  微信端-外卖管理-订单列表
+     * @apiGroup  CMS管理端
+     * @apiVersion 3.0.0
+     * @apiDescription CMS管理端-外卖管理-订单列表
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/order/takeoutStatistic/official?ordering_date=2019-09-07&page=1&size=20&dinner_id=0&status=1
+     * @apiParam (请求参数说明) {int} page 当前页码
+     * @apiParam (请求参数说明) {int} size 每页多少条数据
+     * @apiParam (请求参数说明) {string} dinner_id  餐次id：全部传0
+     * @apiParam (请求参数说明) {string} department_id  部门id，全部传0
+     * @apiParam (请求参数说明) {string} ordering_date  订餐日期
+     * @apiParam (请求参数说明) {int} status  状态：3：已接单；4:已完成 ;6 全部
+     * @apiSuccessExample {json}返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"total":1,"per_page":"20","current_page":1,"last_page":1,"data":[{"order_id":233,"province":"广东省","city":"江门市","area":"蓬江区","address":"。。。","username":"宁晓晓","phone":"18219112778","used":2,"count":2}]}}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {String} msg 信息描述
+     * @apiSuccess (返回参数说明) {int} total 数据总数
+     * @apiSuccess (返回参数说明) {int} per_page 每页多少条数据
+     * @apiSuccess (返回参数说明) {int} current_page 当前页码
+     * @apiSuccess (返回参数说明) {int} last_page 最后页码
+     * @apiSuccess (返回参数说明) {int} order_id 订单id
+     * @apiSuccess (返回参数说明) {string} username 用户姓名
+     * @apiSuccess (返回参数说明) {string} phone 用户手机号
+     * @apiSuccess (返回参数说明) {int} id  地址id
+     * @apiSuccess (返回参数说明) {string} city  城市
+     * @apiSuccess (返回参数说明) {string} area  区
+     * @apiSuccess (返回参数说明) {string} address  详细地址
+     * @apiSuccess (返回参数说明) {string} count  份数
+     * @apiSuccess (返回参数说明) {int} used 订单状态：2｜已接单；1：已完成
+     */
+    public function officialStatistic($page = 1, $size = 20)
+    {
+        $ordering_date = Request::param('ordering_date');
+        $department_id = Request::param('department_id');
+        $dinner_id = Request::param('dinner_id');
+        $status = Request::param('status');
+        $statistic = (new OrderStatisticService())->takeoutStatisticForOfficial($page, $size,
+            $ordering_date, $dinner_id, $status, $department_id);
+        return json(new SuccessMessageWithData(['data' => $statistic]));
 
     }
 
@@ -116,7 +158,7 @@ class Takeout extends BaseController
      */
     public function used()
     {
-        $order_id= Request::param('id');
+        $order_id = Request::param('id');
         (new OrderService())->used($order_id);
         return json(new SuccessMessage());
     }

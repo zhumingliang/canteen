@@ -76,9 +76,9 @@ class OrderTakeoutStatisticV extends Model
                     $query->where('outsider', $user_type);
                 }
             })
-            ->hidden(['create_time', 'canteen_id', 'company_id', 'dinner_id','state','receive','used','pay'])
+            ->hidden(['create_time', 'canteen_id', 'company_id', 'dinner_id', 'state', 'receive', 'used', 'pay'])
             ->order('used DESC')
-           ->paginate($size, false, ['page' => $page])->toArray();
+            ->paginate($size, false, ['page' => $page])->toArray();
         return $list;
     }
 
@@ -128,9 +128,44 @@ class OrderTakeoutStatisticV extends Model
                     $query->where('outsider', $user_type);
                 }
             })
-            ->hidden(['order_id','province','address','city','department_id','area','create_time', 'canteen_id', 'company_id', 'dinner_id','state','receive','used','pay'])
+            ->hidden(['order_id', 'province', 'address', 'city', 'department_id', 'area', 'create_time', 'canteen_id', 'company_id', 'dinner_id', 'state', 'receive', 'used', 'pay'])
             ->order('used DESC')
             ->select()->toArray();
+        return $list;
+    }
+
+    public static function officialStatistic($page, $size,
+                                             $ordering_date, $dinner_id, $status, $department_id, $canteen_id)
+    {
+        $list = self::where('canteen_id', $canteen_id)
+            ->where('ordering_date', $ordering_date)
+            ->where(function ($query) use ($status) {
+                if ($status == OrderEnum::STATUS_RECEIVE) {
+                    $query->where('state', CommonEnum::STATE_IS_OK)
+                        ->where('pay', 'paid')
+                        ->where('receive', CommonEnum::STATE_IS_OK)
+                        ->where('used', CommonEnum::STATE_IS_FAIL);
+                } elseif ($status == OrderEnum::STATUS_COMPLETE) {
+                    $query->where('used', CommonEnum::STATE_IS_OK);
+                } else {
+                    $query->where('state', CommonEnum::STATE_IS_OK)
+                        ->where('pay', 'paid')
+                        ->where('receive', CommonEnum::STATE_IS_OK);
+                }
+            })
+            ->where(function ($query) use ($dinner_id) {
+                if (!empty($dinner_id)) {
+                    $query->where('dinner_id', $dinner_id);
+                }
+            })
+            ->where(function ($query) use ($department_id) {
+                if (!empty($department_id)) {
+                    $query->where('department_id', $department_id);
+                }
+            })
+            ->field('order_id,province,city,area,address,address_username as username,address_phone as phone,used,count')
+            ->order('used DESC')
+            ->paginate($size, false, ['page' => $page])->toArray();
         return $list;
     }
 

@@ -117,6 +117,30 @@ class Department extends BaseController
         return json(new SuccessMessageWithData(['data' => $departments]));
     }
 
+
+    /**
+     * @api {GET} /api/v1/departments/official 微信端-获取用户当前企业部门列表
+     * @apiGroup  Official
+     * @apiVersion 3.0.0
+     * @apiDescription 微信端-获取用户当前企业部门列表
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/departments/official
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":[{"id":3,"parent_id":0,"name":"董事会-修改","count":"0","items":[{"id":5,"parent_id":3,"name":"B部门","count":"0","items":[{"id":8,"parent_id":5,"name":"B1部门","count":"0"},{"id":9,"parent_id":5,"name":"B2部门","count":"0"}]},{"id":4,"parent_id":3,"name":"A部门","count":"0","items":[{"id":7,"parent_id":4,"name":"A2部门","count":"0"},{"id":6,"parent_id":4,"name":"A1部门","count":"0"}]}]}]}
+     * @apiSuccess (返回参数说明) {int} id 部门id
+     * @apiSuccess (返回参数说明) {String} parent_id 部门上级id
+     * @apiSuccess (返回参数说明) {String} name  部门名称
+     * @apiSuccess (返回参数说明) {int} count 部门员工数量
+     * @apiSuccess (返回参数说明) {obj} items 当前模块子级
+     */
+    public function officialDepartments()
+    {
+        $c_id = \app\api\service\Token::getCurrentTokenVar('current_company_id');
+        $departments = (new DepartmentService())->departments($c_id);
+        return json(new SuccessMessageWithData(['data' => $departments]));
+    }
+
+
     /**
      * @api {POST} /api/v1/department/staff/save CMS管理端-新增部门员工
      * @apiGroup   CMS

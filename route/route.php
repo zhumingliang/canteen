@@ -83,6 +83,7 @@ Route::post('api/:version/department/save', 'api/:version.Department/save');
 Route::post('api/:version/department/update', 'api/:version.Department/update');
 Route::post('api/:version/department/delete', 'api/:version.Department/delete');
 Route::get('api/:version/departments', 'api/:version.Department/departments');
+Route::get('api/:version/departments/official', 'api/:version.Department/officialDepartments');
 Route::get('api/:version/departments/recharge', 'api/:version.Department/departmentsForRecharge');
 Route::get('api/:version/department/staffs', 'api/:version.Department/departmentStaffs');
 Route::get('api/:version/department/staffs/recharge', 'api/:version.Department/staffsForRecharge');
@@ -233,6 +234,7 @@ Route::get('api/:version/shop/order/exportSalesReport/supplier', 'api/:version.S
 Route::get('api/:version/shop/order/exportConsumptionStatistic', 'api/:version.Shop/exportConsumptionStatistic');
 
 Route::get('api/:version/order/takeoutStatistic', 'api/:version.Takeout/statistic');
+Route::get('api/:version/order/takeoutStatistic/official', 'api/:version.Takeout/officialStatistic');
 Route::get('api/:version/order/takeoutStatistic/export', 'api/:version.Takeout/exportStatistic');
 Route::get('api/:version/order/info/print', 'api/:version.Takeout/infoToPrint');
 Route::post('api/:version/order/used', 'api/:version.Takeout/used');
