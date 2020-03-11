@@ -14,7 +14,7 @@ class OrderSettlementV extends Model
                                            $name, $phone, $canteen_id, $department_id, $dinner_id,
                                            $consumption_type, $time_begin, $time_end, $company_ids)
     {
-        $time_end = addDay(1, $time_end);
+       // $time_end = addDay(1, $time_end);
         $list = self::whereBetweenTime('ordering_date', $time_begin, $time_end)
             ->where(function ($query) use ($name, $phone, $department_id) {
                 if (strlen($name)) {
@@ -74,7 +74,7 @@ class OrderSettlementV extends Model
     public static function exportOrderSettlement($name, $phone, $canteen_id, $department_id, $dinner_id,
                                                  $consumption_type, $time_begin, $time_end, $company_ids)
     {
-        $time_end = addDay(1, $time_end);
+       // $time_end = addDay(1, $time_end);
         $list = self::whereBetweenTime('ordering_date', $time_begin, $time_end)
             ->where(function ($query) use ($name, $phone, $department_id) {
                 if (strlen($name)) {

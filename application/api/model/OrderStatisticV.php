@@ -70,7 +70,7 @@ class OrderStatisticV extends Model
                                   $phone, $canteen_id, $department_id,
                                   $dinner_id, $type)
     {
-        $time_end = addDay(1, $time_end);
+        //$time_end = addDay(1, $time_end);
         $list = self::whereBetweenTime('ordering_date', $time_begin, $time_end)
             ->where(function ($query) use ($name, $phone, $department_id) {
                 if (strlen($name)) {
