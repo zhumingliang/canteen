@@ -31,7 +31,7 @@ class OrderingV extends Model
             ->where('ordering_date', $ordering_date)
             ->where('state', CommonEnum::STATE_IS_OK)
             ->where('dinner', $dinner)
-            ->count();
+            ->select()->toArray();
         return $record;
     }
 

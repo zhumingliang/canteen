@@ -304,7 +304,9 @@ class OrderService extends BaseService
         $phone = Token::getCurrentPhone();
         $company_id = Token::getCurrentTokenVar('current_company_id');
         //获取用户指定日期订餐数量
-        $consumptionCount = OrderingV::getRecordForDayOrderingByPhone($day, $dinner->name, $phone);
+        $orders = OrderingV::getRecordForDayOrderingByPhone($day, $dinner->name, $phone);
+
+        $consumptionCount = $this->checkOrderedAnotherCanteen($canteen_id, $orders);
         //检测消费策略
         $t_id = (new UserService())->getUserStaffTypeByPhone($phone, $company_id);
         //获取指定用户消费策略
@@ -319,6 +321,21 @@ class OrderService extends BaseService
             }
         }
         return $strategyMoney;
+    }
+
+    private function checkOrderedAnotherCanteen($canteen_id, $orders)
+    {
+        $count = count($orders);
+        if ($count) {
+            foreach ($orders as $k => $v) {
+                if ($canteen_id != $v['c_id']) {
+                    throw  new ParameterException(['msg' => '当前餐次已经在饭堂：' . $v['canteen'] . '中预定']);
+
+                }
+            }
+        }
+        return $count;
+
     }
 
 
