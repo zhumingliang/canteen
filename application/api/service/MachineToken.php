@@ -5,7 +5,10 @@ namespace app\api\service;
 
 
 use app\api\model\AdminT;
+use app\api\model\CanteenT;
+use app\api\model\CompanyT;
 use app\api\model\MachineT;
+use app\api\model\ShopT;
 use app\lib\enum\CommonEnum;
 use app\lib\exception\ParameterException;
 use app\lib\exception\TokenException;
@@ -32,7 +35,7 @@ class MachineToken extends Token
                 ]);
             }
             if (empty($machine->company_id)) {
-                throw new ParameterException(['msg' =>'设备异常，没有归属企业']);
+                throw new ParameterException(['msg' => '设备异常，没有归属企业']);
             }
 
             /**
@@ -77,17 +80,39 @@ class MachineToken extends Token
 
         return [
             'token' => $key,
-            'u_id' => $cachedValue['u_id']
+            'u_id' => $cachedValue['u_id'],
+            'canteen' => $cachedValue['belong'],
+            'company' => $cachedValue['company']
         ];
     }
 
     private function prepareCachedValue($machine)
     {
+        $belong = '';
+        $company = '';
+        if ($machine->machine_type == "canteen") {
+            $canteen = CanteenT::canteen($machine->belong_id);
+            if ($canteen) {
+                $belong = $canteen->name;
+                $company_id = $canteen->c_id;
+            }
+        } else {
+            $shop = ShopT::shop($machine->belong_id);
+            if ($shop) {
+                $belong = $shop->name;
+                $company_id = $shop->c_id;
+            }
+        }
+
+        $companyObj = CompanyT::getCompanyWitID($company_id);
+        $company = $companyObj->name;
 
         $cachedValue = [
             'u_id' => $machine->id,
             'company_id' => $machine->company_id,
             'belong_id' => $machine->belong_id,
+            'company' => $company,
+            'belong' => $belong,
             'name' => $machine->name,
             'code' => $machine->code,
             'number' => $machine->number,

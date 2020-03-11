@@ -22,13 +22,15 @@ use think\Db;
 use think\db\Where;
 use think\facade\Env;
 use think\Queue;
+use think\Request;
 use zml\tp_tools\Aes;
 
 class Index extends BaseController
 {
-    public function index($id = '')
+    public function index(Request $request)
     {
-        (new OrderService())->refundWxOrder($id);
+        echo $request->controller();
+        //(new OrderService())->refundWxOrder($id);
         // $this->mailTask($name);
         // $detail = '[{"d_id":122,"ordering":[{"ordering_date":"2020-01-21","count":1}]}]';
 
