@@ -330,7 +330,6 @@ class OrderService extends BaseService
             foreach ($orders as $k => $v) {
                 if ($canteen_id != $v['c_id']) {
                     throw  new ParameterException(['msg' => '当前餐次已经在饭堂：' . $v['canteen'] . '中预定']);
-
                 }
             }
         }
@@ -349,14 +348,14 @@ class OrderService extends BaseService
     }
 
     public
-    function checkUserCanOrderForOnline($u_id, $dinner, $day, $count, $strategies, $phone = '')
+    function checkUserCanOrderForOnline($canteen_id, $dinner, $day, $count, $strategies, $phone = '')
     {
         //获取用户指定日期订餐数量
         if (empty($phone)) {
             $phone = Token::getCurrentPhone();
         }
-        $consumptionCount = OrderingV::getRecordForDayOrderingByPhone($day, $dinner->name, $phone);
-
+        $orders = OrderingV::getRecordForDayOrderingByPhone($day, $dinner->name, $phone);
+        $consumptionCount = $this->checkOrderedAnotherCanteen($canteen_id, $orders);
         //获取指定用户消费策略
         $strategyMoney = $this->checkConsumptionStrategy($strategies, $count, $consumptionCount);
         return $strategyMoney;
@@ -590,7 +589,7 @@ class OrderService extends BaseService
             if (!empty($ordering_data)) {
                 foreach ($ordering_data as $k2 => $v2) {
                     //检测是否可以订餐
-                    $checkOrder = $this->checkUserCanOrderForOnline($u_id, $dinner, $v2['ordering_date'], $v2['count'], $strategies, $phone);
+                    $checkOrder = $this->checkUserCanOrderForOnline($canteen_id, $dinner, $v2['ordering_date'], $v2['count'], $strategies, $phone);
                     $data = [];
                     $data['u_id'] = $u_id;
                     $data['c_id'] = $canteen_id;
