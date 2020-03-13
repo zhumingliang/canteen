@@ -416,12 +416,12 @@ class ShopService
             throw new AuthException();
         }
         $distribution = $order->distribution;
-        if ($distribution == OrderEnum::USER_ORDER_OUTSIDE) {
+        /*if ($distribution == OrderEnum::USER_ORDER_OUTSIDE) {
             //外送
             if ($order->send == CommonEnum::STATE_IS_OK) {
                 throw new UpdateException(['msg' => '订单正在派送，不能取消']);
             }
-        }
+        }*/
         $order->state = CommonEnum::STATE_IS_FAIL;
         $res = $order->save();
         if (!$res) {
@@ -596,7 +596,7 @@ class ShopService
         $supplier_id = (new AuthorService())->checkAuthorSupplier();
         //获取供应商所有商品
         $products = ShopProductT::supplierProducts(1, 10000, $time_begin, $time_end, $supplier_id);
-        $products=$products['data'];
+        $products = $products['data'];
         $header = ['序号', '名称', '单价（元）', '单位', '总进货量', '总销售量', '总销售额（元）'];
         $file_name = $time_begin . "-" . $time_end . "-进销报表";
         $url = (new ExcelService())->makeExcel($header, $products, $file_name);
@@ -816,6 +816,26 @@ class ShopService
         $supplier_id = (new AuthorService())->checkAuthorSupplier();
         $products = ShopProductT::supplierProductsToSearch($supplier_id, $product);
         return $products;
+    }
+
+    public function printOrder($order_id)
+    {
+        $order = ShopOrderT::order($order_id);
+        if (!$order) {
+            throw new ParameterException(['msg' => '订单不存在']);
+        }
+        if ($order->distribution != OrderEnum::USER_ORDER_OUTSIDE) {
+            throw new UpdateException(['msg' => '非外卖订单不能发货']);
+        }
+        if ($order->send == CommonEnum::STATE_IS_OK) {
+            throw new UpdateException(['msg' => '订单已经发货']);
+        }
+        //$order->send = CommonEnum::STATE_IS_OK;
+        $order->used = CommonEnum::STATE_IS_OK;
+        $res = $order->save();
+        if (!$res) {
+            throw new UpdateException();
+        }
     }
 
 

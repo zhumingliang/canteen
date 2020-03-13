@@ -929,4 +929,26 @@ class Shop extends BaseController
 
     }
 
+    /**
+     * @api {POST} /api/v1/shop/order/send CMS管理端-小卖部管理-订单明细查询-打印触发发货
+     * @apiGroup   Official
+     * @apiVersion 3.0.0
+     * @apiDescription  CMS管理端-小卖部管理-订单明细查询-打印触发发货
+     * @apiExample {post}  请求样例:
+     *    {
+     *       "id": "1"
+     *     }
+     * @apiParam (请求参数说明) {string} ids  订单id
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     */
+    public function send()
+    {
+        $order_id = Request::param('id');
+        (new  ShopService())->printOrder($order_id);
+        return json(new SuccessMessage());
+    }
+
 }

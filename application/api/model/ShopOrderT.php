@@ -4,6 +4,7 @@
 namespace app\api\model;
 
 
+use app\lib\enum\CommonEnum;
 use think\Model;
 
 class ShopOrderT extends Model
@@ -68,6 +69,15 @@ class ShopOrderT extends Model
             ->field('id,distribution as order_type,u_id,count,"shop" as ordering_type,address_id,state,used')
             ->find();
         return $order;
+    }
+
+    public static function order($order_id)
+    {
+        $order = self::where('id', $order_id)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->find();
+        return $order;
+
     }
 
 }

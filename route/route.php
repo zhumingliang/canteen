@@ -232,6 +232,7 @@ Route::get('api/:version/shop/order/exportSalesReport/manager', 'api/:version.Sh
 Route::get('api/:version/shop/order/exportOrderStatistic/supplier', 'api/:version.Shop/exportOrderStatisticToSupplier');
 Route::get('api/:version/shop/order/exportSalesReport/supplier', 'api/:version.Shop/exportSalesReportToSupplier');
 Route::get('api/:version/shop/order/exportConsumptionStatistic', 'api/:version.Shop/exportConsumptionStatistic');
+Route::post('api/:version/shop/order/send', 'api/:version.Shop/send');
 
 Route::get('api/:version/order/takeoutStatistic', 'api/:version.Takeout/statistic');
 Route::get('api/:version/order/takeoutStatistic/official', 'api/:version.Takeout/officialStatistic');

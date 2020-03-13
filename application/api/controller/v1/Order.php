@@ -1158,7 +1158,7 @@ class Order extends BaseController
      * @apiExample {post}  请求样例:
      *    {
      *       "order_id": 1,
-     *       "address_id":3,
+     *       "address_id":3
      * }
      * @apiParam (请求参数说明) {string} order_id  订单id
      * @apiParam (请求参数说明) {string} address_id  地址id
