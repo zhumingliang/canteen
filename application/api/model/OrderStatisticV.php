@@ -21,7 +21,7 @@ class OrderStatisticV extends Model
     }
     public static function statistic($time_begin, $time_end, $company_ids, $canteen_id, $page, $size)
     {
-        $time_end = addDay(1, $time_end);
+       // $time_end = addDay(1, $time_end);
         $list = self::whereBetweenTime('ordering_date', $time_begin, $time_end)
             ->where(function ($query) use ($company_ids, $canteen_id) {
                 if (empty($canteen_id)) {
@@ -44,7 +44,7 @@ class OrderStatisticV extends Model
 
     public static function exportStatistic($time_begin, $time_end, $company_ids, $canteen_id)
     {
-        $time_end = addDay(1, $time_end);
+        //$time_end = addDay(1, $time_end);
         $list = self::whereBetweenTime('ordering_date', $time_begin, $time_end)
             ->where(function ($query) use ($company_ids, $canteen_id) {
                 if (empty($canteen_id)) {
