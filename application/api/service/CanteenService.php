@@ -530,7 +530,7 @@ class CanteenService
                 return [];
             }
             $companyIds = $companies['ids'];
-            $canteens=OutConfigV::canteens($companyIds);
+            $canteens = OutConfigV::canteens($companyIds);
 
         }
         return $canteens;
@@ -715,9 +715,6 @@ class CanteenService
             }
             $strategy = $v['strategy'];
             foreach ($strategy as $k2 => $v2) {
-                if (empty($v2['sub_money'])) {
-                    continue;
-                }
                 array_push($dataList, [
                     'strategy_id' => $strategy_id,
                     'canteen_id' => $canteen_id,
@@ -725,8 +722,8 @@ class CanteenService
                     'staff_type_id' => $staff_type_id,
                     'number' => $v['number'],
                     'status' => $v2['status'],
-                    'money' => $v2['money'],
-                    'sub_money' => $v2['sub_money'],
+                    'money' => empty($v2['money']) ? 0 : empty($v2['money']),
+                    'sub_money' => empty($v2['sub_money']) ? 0 : empty($v2['sub_money']),
                     'state' => CommonEnum::STATE_IS_OK
                 ]);
             }
