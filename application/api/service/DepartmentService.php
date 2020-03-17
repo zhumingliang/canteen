@@ -27,8 +27,8 @@ class DepartmentService
 {
     public function save($params)
     {
-        if ($this->checkExit($params['c_id'],$params['name'])){
-            throw new SaveException(['msg'=>'部门：'.$params['name'].'已存在']);
+        if ($this->checkExit($params['c_id'], $params['name'])) {
+            throw new SaveException(['msg' => '部门：' . $params['name'] . '已存在']);
         }
         $params['state'] = CommonEnum::STATE_IS_OK;
         $department = CompanyDepartmentT::create($params);
@@ -227,17 +227,17 @@ class DepartmentService
                 throw  new SaveException();
             }
 
-          /*  $info = $this->getUploadStaffQrcodeAndCanteenInfo($all);
-            $qrcodeInfo = $info['qrcode'];
-            $canteenInfo = $info['canteen'];
-            $qrcods = (new StaffQrcodeT())->saveAll($qrcodeInfo);
-            if (!$qrcods) {
-                throw  new SaveException();
-            }
-            $canteens = (new StaffCanteenT())->saveAll($canteenInfo);
-            if (!$canteens) {
-                throw  new SaveException();
-            }*/
+            /*  $info = $this->getUploadStaffQrcodeAndCanteenInfo($all);
+              $qrcodeInfo = $info['qrcode'];
+              $canteenInfo = $info['canteen'];
+              $qrcods = (new StaffQrcodeT())->saveAll($qrcodeInfo);
+              if (!$qrcods) {
+                  throw  new SaveException();
+              }
+              $canteens = (new StaffCanteenT())->saveAll($canteenInfo);
+              if (!$canteens) {
+                  throw  new SaveException();
+              }*/
 
         }
 
@@ -434,7 +434,13 @@ class DepartmentService
         $expiry_date = date('Y-m-d H:i:s', time());
         $params['create_time'] = $expiry_date;
         $params['expiry_date'] = $this->prefixQrcodeExpiryDate($expiry_date, $params);
-        $qrcode = StaffQrcodeT::update($params, ['s_id' => $staff_id]);
+        $staffQRCode = StaffQrcodeT::where('s_id', $staff_id)->find();
+        if ($staffQRCode) {
+            $qrcode = StaffQrcodeT::update($params, ['s_id' => $staff_id]);
+        } else {
+            $params['s_id'] = $staff_id;
+            $qrcode = StaffQrcodeT::create($params);
+        }
         if (!$qrcode) {
             throw new SaveException();
         }
