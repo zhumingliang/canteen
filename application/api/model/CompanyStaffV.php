@@ -38,7 +38,7 @@ class CompanyStaffV extends BaseModel
                 }
             ])
             ->hidden(['company_id', 'state'])
-            ->order('create_time desc')
+            ->order('id desc')
             ->paginate($size, false, ['page' => $page]);
         return $list;
 
