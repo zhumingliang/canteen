@@ -718,6 +718,7 @@ class Order extends BaseController
      * @apiSuccess (返回参数说明) {string} department 部门
      * @apiSuccess (返回参数说明) {string} username 用户姓名
      * @apiSuccess (返回参数说明) {string} dinner 餐次
+     * @apiSuccess (返回参数说明) {string} ordering_type 订餐方式：online：线上订单，personal_choice：个人选菜；no:未订餐就餐
      */
     public function orderStatisticDetail($page = 1, $size = 20, $name = '', $phone = '', $canteen_id = 0, $department_id = 0, $dinner_id = 0, $type = 3)
     {
