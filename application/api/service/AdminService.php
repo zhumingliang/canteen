@@ -305,5 +305,18 @@ class AdminService
         return $role;
     }
 
+    public function saveStaffType($params)
+    {
+        $params['state'] = CommonEnum::STATE_IS_OK;
+        $staffType = StaffTypeT::where('name', $params['name'])->count('id');
+        if ($staffType) {
+            throw new SaveException(['msg' => '人员类型已经存在，不能重复添加']);
+        }
+        $type = StaffTypeT::create($params);
+        if (!$type) {
+            throw new SaveException(['msg' => '保存人员类型失败']);
+        }
+        return $type->id;
+    }
 
 }

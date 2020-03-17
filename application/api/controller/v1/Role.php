@@ -178,9 +178,8 @@ class Role extends BaseController
     public function saveRoleType()
     {
         $params = $this->request->param();
-        $params['state'] = CommonEnum::STATE_IS_OK;
-        $type = StaffTypeT::create($params);
-        return json(new SuccessMessageWithData(['data' => ['id' => $type->id]]));
+        $typeID = (new AdminService())->saveStaffType($params);
+        return json(new SuccessMessageWithData(['data' => ['id' => $typeID]]));
     }
 
     /**
