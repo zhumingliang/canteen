@@ -796,26 +796,26 @@ class OrderService extends BaseService
         if ($type == 'day') {
             $expiryDate = $this->prefixExpiryDateForOrder($ordering_date, $type_number, '-');
             if (strtotime(date('Y-m-d H:i:s', time())) > strtotime($expiryDate . ' ' . $limit_time)) {
-                throw  new  SaveException(['msg' => '当前时间不可操作订单']);
+                throw  new  SaveException(['msg' => '订餐操作时间已截止']);
             }
         } else if ($type == 'week') {
             $ordering_date_week = date('W', strtotime($ordering_date));
             $now_week = date('W', time());
             if ($ordering_date_week <= $now_week) {
-                throw  new  SaveException(['msg' => '当前时间不可操作订单']);
+                throw  new  SaveException(['msg' => '订餐操作时间已截止']);
             }
             if (($ordering_date_week - $now_week) === 1) {
                 if ($type_number == 0) {
                     //星期天
                     if (strtotime($limit_time) < time()) {
-                        throw  new  SaveException(['msg' => '当前时间不可操作订单']);
+                        throw  new  SaveException(['msg' => '订餐操作时间已截止']);
                     }
                 } else {
                     //周一到周六
                     if (date('w', time()) > $type_number) {
-                        throw  new  SaveException(['msg' => '当前时间不可操作订单']);
+                        throw  new  SaveException(['msg' => '订餐操作时间已截止']);
                     } else if (date('w', time()) == $type_number && strtotime($limit_time) < time()) {
-                        throw  new  SaveException(['msg' => '当前时间不可操作订单']);
+                        throw  new  SaveException(['msg' => '订餐操作时间已截止']);
                     }
                 }
             }
