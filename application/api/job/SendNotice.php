@@ -8,12 +8,9 @@ use app\api\model\NoticeUserT;
 use app\api\service\DepartmentService;
 use app\api\service\LogService;
 use app\lib\enum\CommonEnum;
-use app\lib\exception\SaveException;
 use think\Db;
 use think\Exception;
 use think\queue\Job;
-use zml\tp_aliyun\SendSms;
-use zml\tp_tools\Redis;
 
 class SendNotice
 {

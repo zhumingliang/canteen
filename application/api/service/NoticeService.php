@@ -37,7 +37,7 @@ class NoticeService
     }
 
     //短信队列
-    private function noticeTask($notice_id, $department_ids, $staff_ids)
+    public function noticeTask($notice_id, $department_ids, $staff_ids)
     {
         //php think queue:work --queue sendMsgQueue
         $jobHandlerClassName = 'app\api\job\SendNotice';//负责处理队列任务的类

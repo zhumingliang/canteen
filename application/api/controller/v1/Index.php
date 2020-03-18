@@ -13,6 +13,7 @@ use app\api\service\AddressService;
 use app\api\service\CanteenService;
 use app\api\service\CompanyService;
 use app\api\service\DepartmentService;
+use app\api\service\NoticeService;
 use app\api\service\OrderService;
 use app\api\service\QrcodeService;
 use app\api\service\WeiXinService;
@@ -25,11 +26,12 @@ use think\Queue;
 use think\Request;
 use zml\tp_tools\Aes;
 
-class Index extends BaseController
+class
+Index extends BaseController
 {
     public function index(Request $request)
     {
-        echo $request->controller();
+        (new  NoticeService())->noticeTask(26,155,'');
         //(new OrderService())->refundWxOrder($id);
         // $this->mailTask($name);
         // $detail = '[{"d_id":122,"ordering":[{"ordering_date":"2020-01-21","count":1}]}]';
