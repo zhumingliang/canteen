@@ -19,6 +19,7 @@ use app\lib\exception\DeleteException;
 use app\lib\exception\SaveException;
 use think\Db;
 use think\Exception;
+use think\Queue;
 use zml\tp_tools\Redis;
 
 class NoticeService
@@ -31,7 +32,27 @@ class NoticeService
         if (!$notice) {
             throw new SaveException();
         }
-        $this->prefixSendNotice($notice->id, $params['d_ids'], $params['s_ids']);
+        //$this->prefixSendNotice($notice->id, $params['d_ids'], $params['s_ids']);
+        $this->noticeTask($notice->id, $params['d_ids'], $params['s_ids']);
+    }
+
+    //短信队列
+    private function noticeTask($notice_id, $department_ids, $staff_ids)
+    {
+        //php think queue:work --queue sendMsgQueue
+        $jobHandlerClassName = 'app\api\job\SendNotice';//负责处理队列任务的类
+        $jobQueueName = "sendNoticeQueue";//队列名称
+        $jobData = [
+            'notice_id' => $notice_id,
+            'department_ids' => $department_ids,
+            'staff_ids' => $staff_ids,
+        ];;//当前任务的业务数据
+        $isPushed = Queue::push($jobHandlerClassName, $jobData, $jobQueueName);
+        //将该任务推送到消息队列
+        if ($isPushed == false) {
+            throw new SaveException(['msg' => '发送公告失败']);
+        }
+
     }
 
     /**
@@ -121,8 +142,7 @@ class NoticeService
                 for ($i = 0; $i < 2; $i++) {
                     $data = $redis->rPop('notice_d_send_no');
                     $data = json_decode($data, true);
-                    echo $data['n_id'];
-                   echo $data['d_id'];
+
                     if (!empty($data['n_id']) && !empty($data['d_id'])) {
                         $this->sendNotice($data['n_id'], $data['d_id'], 0);
                     }
