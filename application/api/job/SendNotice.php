@@ -74,6 +74,8 @@ class SendNotice
     {
         try {
             Db::startTrans();
+            LogService::save(json_encode($data));
+
             $n_id = $data['notice_id'];
             $d_ids = $data['department_ids'];
             $s_ids = $data['staff_ids'];
