@@ -274,7 +274,6 @@ class ModuleService
             return $modules;
         }
         $admin_id = (new UserService())->checkUserAdminID();
-        echo $admin_id;
         //当前用户为管理员
         if ($admin_id) {
             $modules = $this->getAdminMobileModules($admin_id);

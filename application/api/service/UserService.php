@@ -74,7 +74,7 @@ class UserService
 
         $res = UserT::update([
             'current_canteen_id' => $canteen_id,
-            'current_company_id' =>$company_id
+            'current_company_id' => $company_id
         ],
             ['id' => Token::getCurrentUid()]);
         if (!$res) {
@@ -82,7 +82,7 @@ class UserService
         }
         //更新用户缓存
         Token::updateCurrentTokenVar('current_canteen_id', $canteen_id);
-        Token::updateCurrentTokenVar('current_company_id',$company_id);
+        Token::updateCurrentTokenVar('current_company_id', $company_id);
     }
 
     public function getUserCurrentCompanyID()
@@ -103,10 +103,13 @@ class UserService
     public function checkUserAdminID()
     {
         $phone = Token::getCurrentTokenVar('phone');
+        $company_id = Token::getCurrentTokenVar('current_company_id');
         if (empty($phone)) {
             throw new AuthException(['msg' => '用户状态异常，未绑定手机号']);
         }
-        $admin = AdminT::where('phone', $phone)->where('state', CommonEnum::STATE_IS_OK)
+        $admin = AdminT::where('phone', $phone)
+            ->where('c_id', $company_id)
+            ->where('state', CommonEnum::STATE_IS_OK)
             ->find();
         if ($admin) {
             return $admin->id;
@@ -232,6 +235,6 @@ class UserService
     public function clearUserInfo()
     {
         $user_id = Token::getCurrentUid();
-        UserT::update(['phone' => '','current_canteen_id'=>0,'current_company_i'=>0], ['id' => $user_id]);
+        UserT::update(['phone' => '', 'current_canteen_id' => 0, 'current_company_i' => 0], ['id' => $user_id]);
     }
 }
