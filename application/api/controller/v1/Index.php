@@ -31,7 +31,9 @@ Index extends BaseController
 {
     public function index(Request $request)
     {
-        (new  NoticeService())->noticeTask(26,155,'');
+        $var = \app\api\service\Token::getCurrentTokenVar();
+        print_r($var);
+        // (new  NoticeService())->noticeTask(26,155,'');
         //(new OrderService())->refundWxOrder($id);
         // $this->mailTask($name);
         // $detail = '[{"d_id":122,"ordering":[{"ordering_date":"2020-01-21","count":1}]}]';
