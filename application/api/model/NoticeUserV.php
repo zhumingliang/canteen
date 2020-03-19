@@ -25,6 +25,7 @@ class NoticeUserV extends Model
         $notices = self::where('s_id', $s_id)
             ->where('state', CommonEnum::STATE_IS_OK)
             ->hidden(['state'])
+            ->order('create_time desc')
             ->paginate($size, false, ['page' => $page]);
         return $notices;
     }
