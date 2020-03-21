@@ -77,6 +77,9 @@ class SupplierService
 
     public function suppliers($page, $size, $c_id)
     {
+        if (empty($c_id)) {
+            $c_id = Token::getCurrentTokenVar('company_id');
+        }
         $suppliers = SupplierV::suppliers($c_id, $page, $size);
         return $suppliers;
     }
