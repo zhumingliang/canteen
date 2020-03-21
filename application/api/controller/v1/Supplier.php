@@ -21,12 +21,10 @@ class Supplier extends BaseController
      *    {
      *       "c_id": "1",
      *       "name": "供应商A",
-     *       "account": "18956225230",
      *       "pwd": "a111111",
      *     }
      * @apiParam (请求参数说明) {int} c_id  企业id
      * @apiParam (请求参数说明) {string} name  供应商名称
-     * @apiParam (请求参数说明) {string} account  账号
      * @apiParam (请求参数说明) {string} pwd  密码
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200}

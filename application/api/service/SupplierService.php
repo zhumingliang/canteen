@@ -19,8 +19,10 @@ class SupplierService
 {
     public function save($params)
     {
+        $account = $this->checkExit($params['c_id'], $params['name']);
         $params['admin_id'] = Token::getCurrentUid();
         $params['pwd'] = sha1($params['pwd']);
+        $params['account'] = $account;
         $supplier = SupplierT::create($params);
         if (!$supplier) {
             throw new SaveException();
@@ -30,14 +32,27 @@ class SupplierService
 
     private function checkExit($company_id, $name)
     {
-        $checkAccount = SupplierT::where('name', $name)
-            ->where('c_id',$company_id)
+        $checkName = SupplierT::where('name', $name)
+            ->where('c_id', $company_id)
             ->where('state', CommonEnum::STATE_IS_OK)
             ->count('id');
-        if ($checkAccount){
-            throw new SaveException(['msg'=>'供应商名称已存在']);
+        if ($checkName) {
+            throw new SaveException(['msg' => '供应商名称已存在']);
         }
+        return $this->checkAccount($company_id);
 
+    }
+
+    private function checkAccount($company_id)
+    {
+        $account = $company_id . 'S' . rand(1000, 9999);
+
+        $check = SupplierT::where('account', $account)->where('state', CommonEnum::STATE_IS_OK)
+            ->count('id');
+        if (!$check) {
+            return $account;
+        }
+        return $this->checkAccount($company_id);
     }
 
     public function update($params)

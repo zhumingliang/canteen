@@ -16,7 +16,7 @@ class Supplier extends BaseValidate
     ];
 
     protected $scene = [
-        'save' => ['c_id', 'name', 'account', 'pwd'],
+        'save' => ['c_id', 'account', 'pwd'],
         'update' => ['id'],
         'delete' => ['id'],
         'suppliers' => ['c_id']
