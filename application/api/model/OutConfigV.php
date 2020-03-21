@@ -11,7 +11,9 @@ class OutConfigV extends Model
     public static function outsiders($page, $size, $company_id)
     {
         $list = self::where(function ($query) use ($company_id) {
-            if ($company_id) {
+            if (strpos($company_id, ',') !== false) {
+                $query->whereIn('company_id', $company_id);
+            } else {
                 $query->where('company_id', $company_id);
             }
         })

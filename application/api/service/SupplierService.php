@@ -28,6 +28,18 @@ class SupplierService
 
     }
 
+    private function checkExit($company_id, $name)
+    {
+        $checkAccount = SupplierT::where('name', $name)
+            ->where('c_id',$company_id)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->count('id');
+        if ($checkAccount){
+            throw new SaveException(['msg'=>'供应商名称已存在']);
+        }
+
+    }
+
     public function update($params)
     {
         if (!empty($params['pwd'])) {
