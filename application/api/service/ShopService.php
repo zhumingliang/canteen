@@ -363,7 +363,6 @@ class ShopService
         }
        // $money = 0;
         $money = array_sum(array_column($products, 'price'));
-        echo $money;
         /* foreach ($products as $k => $v) {
              $money += $v['price'];
          }*/
@@ -379,9 +378,9 @@ class ShopService
         $company_id = Token::getCurrentTokenVar('current_company_id');
         $phone = Token::getCurrentTokenVar('phone');
         $balance = (new WalletService())->getUserBalance($company_id, $phone);
-        if ($balance < $money) {
+        /*if ($balance < $money) {
             throw new SaveException(['errorCode' => 49000, 'msg' => '余额不足']);
-        }
+        }*/
         return PayEnum::PAY_BALANCE;
 
     }
