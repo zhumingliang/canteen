@@ -363,6 +363,7 @@ class ShopService
         }
        // $money = 0;
         $money = array_sum(array_column($products, 'price'));
+        echo $money;
         /* foreach ($products as $k => $v) {
              $money += $v['price'];
          }*/
