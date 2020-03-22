@@ -320,9 +320,9 @@ class ShopService
             throw new  SaveException(['msg' => '余额不足，请先充值']);
         }
         $params['u_id'] = $u_id;
-        $params['money'] = $money * $params['count'];
+        $params['money'] = $money;
         $params['pay_way'] = $payCheck;
-        $params['pay'] = CommonEnum::STATE_IS_OK;
+        $params['pay'] = PayEnum::PAY_SUCCESS;
         $params['order_num'] = makeOrderNo();
 
         $phone = Token::getCurrentPhone();
@@ -361,10 +361,11 @@ class ShopService
         if (empty($products)) {
             throw new ParameterException(['msg' => '商品数据格式错误']);
         }
-        $money = 0;
-        foreach ($products as $k => $v) {
-            $money += $v['price'];
-        }
+       // $money = 0;
+        $money = array_sum(array_column($products, 'price'));
+        /* foreach ($products as $k => $v) {
+             $money += $v['price'];
+         }*/
         if (!$money) {
             throw new ParameterException(['msg' => '商品数据格式错误']);
         }
