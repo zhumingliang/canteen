@@ -11,6 +11,7 @@ namespace app\api\model;
 
 use app\api\service\LogService;
 use app\lib\enum\CommonEnum;
+use app\lib\enum\PayEnum;
 use think\Model;
 
 class OrderingV extends Model
@@ -19,6 +20,7 @@ class OrderingV extends Model
     {
         $record = self::where('u_id', $u_id)
             ->where('ordering_date', $ordering_date)
+            ->where('pay', PayEnum::PAY_SUCCESS)
             ->where('state', CommonEnum::STATE_IS_OK)
             ->where('dinner', $dinner)
             ->count();
@@ -30,6 +32,7 @@ class OrderingV extends Model
         $record = self::where('phone', $phone)
             ->where('ordering_date', $ordering_date)
             ->where('state', CommonEnum::STATE_IS_OK)
+            ->where('pay', PayEnum::PAY_SUCCESS)
             ->where('dinner', $dinner)
             ->select()->toArray();
         return $record;
@@ -40,6 +43,7 @@ class OrderingV extends Model
         $orderings = self::where('phone', $phone)
             ->where('ordering_month', $consumption_time)
             ->where('state', CommonEnum::STATE_IS_OK)
+            ->where('pay', PayEnum::PAY_SUCCESS)
             ->select();
         return $orderings;
     }
@@ -49,6 +53,7 @@ class OrderingV extends Model
         $orderings = self::where('u_id', $u_id)
             ->whereTime('ordering_date', '>=', date('Y-m-d'))
             ->where('state', CommonEnum::STATE_IS_OK)
+            ->where('pay', PayEnum::PAY_SUCCESS)
             ->where('used', CommonEnum::STATE_IS_FAIL)
             ->select()->toArray();
         return $orderings;
@@ -65,6 +70,7 @@ class OrderingV extends Model
                     $query->where('c_id', $canteen_id);
                 }
             })
+            ->where('pay', PayEnum::PAY_SUCCESS)
             ->where('used', CommonEnum::STATE_IS_FAIL)
             ->where('state', CommonEnum::STATE_IS_OK)
             ->field('id,canteen as address,if(type=1,"食堂","外卖") as type,create_time,dinner,money,ordering_date')
