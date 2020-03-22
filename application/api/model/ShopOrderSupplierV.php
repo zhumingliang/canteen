@@ -21,7 +21,7 @@ class ShopOrderSupplierV extends Model
                     $query->where('product_id', $product_id);
                 }
             })->whereBetweenTime('create_time', $time_begin, $time_end)
-            ->field('create_time,product,price,product_count as count,category')
+            ->field('create_time,product,price*product_count as price,product_count as count,category')
             ->paginate($size, false, ['page' => $page])
             ->toArray();
         return $orderings;
@@ -39,7 +39,7 @@ class ShopOrderSupplierV extends Model
                     $query->where('product_id', $product_id);
                 }
             })->whereBetweenTime('create_time', $time_begin, $time_end)
-            ->field('create_time,product,price,order_count*product_count as count,category')
+            ->field('create_time,product,price*product_count as price,product_count as count,category')
            ->select()
             ->toArray();
         return $orderings;
