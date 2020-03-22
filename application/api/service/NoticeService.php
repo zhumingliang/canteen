@@ -28,12 +28,23 @@ class NoticeService
     {
         $params['type'] = NoticeEnum::NOTICE;
         $params['u_id'] = Token::getCurrentUid();
+        if (empty($params['author'])) {
+            $params['author'] = $this->getAuthor();
+        }
         $notice = NoticeT::create($params);
         if (!$notice) {
             throw new SaveException();
         }
         //$this->prefixSendNotice($notice->id, $params['d_ids'], $params['s_ids']);
         $this->noticeTask($notice->id, $params['d_ids'], $params['s_ids']);
+    }
+
+    private function getAuthor()
+    {
+        $company_id = Token::getCurrentTokenVar('current_company_id');
+        $phone = Token::getCurrentTokenVar('phone');
+        $staff = (new DepartmentService())->getStaffWithPhone($company_id, $phone);
+        return $staff->name;
     }
 
     //短信队列
@@ -161,7 +172,7 @@ class NoticeService
 
             }
         } catch (Exception $e) {
-            LogService::save('sendNoticeHandel:'.$e->getMessage());
+            LogService::save('sendNoticeHandel:' . $e->getMessage());
         }
 
     }

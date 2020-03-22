@@ -19,7 +19,7 @@ class Notice extends BaseValidate
     ];
 
     protected $scene = [
-        'send' => ['title', 'content','author'],
+        'send' => ['title', 'content'],
         'deleteNotice' => ['id'],
         'notice' => ['id'],
     ];
