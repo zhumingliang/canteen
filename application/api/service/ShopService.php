@@ -478,8 +478,7 @@ class ShopService
 
     public function orderDetailStatisticToSupplier($page, $size, $category_id, $product_id, $time_begin, $time_end)
     {
-        (new AuthorService())->checkAuthorSupplier();
-        $supplier_id = Token::getCurrentUid();
+        $supplier_id = (new AuthorService())->checkAuthorSupplier();
         $statistic = ShopOrderSupplierV::orderDetailStatisticToSupplier($page, $size, $category_id, $product_id, $time_begin, $time_end, $supplier_id);
         return $statistic;
     }

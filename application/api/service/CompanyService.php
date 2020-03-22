@@ -24,6 +24,7 @@ class CompanyService
     {
         try {
             Db::startTrans();
+            $this->checkCompany($params['name']);
             $params['state'] = CommonEnum::STATE_IS_OK;
             $params['admin_id'] = Token::getCurrentUid();
             $parent = $this->getParentCompany($params['parent_id']);
@@ -56,6 +57,16 @@ class CompanyService
 
     }
 
+    private function checkCompany($name)
+    {
+        $check = CompanyT::where('name', $name)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->count('id');
+        if ($check) {
+            throw new SaveException(['msg' => '企业已存在，不能重复添加']);
+        }
+
+    }
 
     private function getParentCompany($c_id)
     {
@@ -89,7 +100,7 @@ class CompanyService
     public function getUserCompaniesWithOutSystemManager($grade)
     {
         $ids = [];
-        $company_id=Token::getCurrentTokenVar('company_id');
+        $company_id = Token::getCurrentTokenVar('company_id');
         array_push($ids, $company_id);
         if ($grade == AdminEnum::COMPANY_SUPER) {
             $parent_company_id = $company_id;

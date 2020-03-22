@@ -505,7 +505,7 @@ class Shop extends BaseController
      * @api {GET} /api/v1/shop/order/statistic/supplier CMS管理端-小卖部管理-订单明细查询-供应商
      * @apiGroup  CMS管理端
      * @apiVersion 3.0.0
-     * @apiDescription CMS管理端-材料管理-入库材料报表-列表
+     * @apiDescription CMS管理端-小卖部管理-订单明细查询-供应商
      * @apiExample {get}  请求样例:
      * http://canteen.tonglingok.com/api/v1/shop/order/statistic/supplier?category_id=0&product_id=0&time_begin=2019-09-07&time_end=2019-12-07&page=1&size=20
      * @apiParam (请求参数说明) {int} page 当前页码
