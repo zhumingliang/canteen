@@ -263,7 +263,6 @@ class ShopService
             }
             Db::commit();
         } catch (Exception $e) {
-            LogService::save($e->getMessage());
             Db::rollback();;
             throw  $e;
         }
@@ -362,11 +361,10 @@ class ShopService
         if (empty($products)) {
             throw new ParameterException(['msg' => '商品数据格式错误']);
         }
-       // $money = 0;
-        $money = array_sum(array_column($products, 'price'));
-        /* foreach ($products as $k => $v) {
-             $money += $v['price'];
-         }*/
+        $money = 0;
+        foreach ($products as $k => $v) {
+            $money += $v['price'];
+        }
         if (!$money) {
             throw new ParameterException(['msg' => '商品数据格式错误']);
         }
