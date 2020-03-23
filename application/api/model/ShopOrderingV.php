@@ -5,6 +5,7 @@ namespace app\api\model;
 
 
 use app\lib\enum\CommonEnum;
+use app\lib\enum\PayEnum;
 use think\Model;
 
 class ShopOrderingV extends Model
@@ -19,7 +20,7 @@ class ShopOrderingV extends Model
                 }
             })
             ->where('state', CommonEnum::STATE_IS_OK)
-            ->where('pay', CommonEnum::STATE_IS_OK)
+            ->where('pay', PayEnum::PAY_SUCCESS)
             ->field('id,company as address,"小卖部" as type,create_time,dinner,money')
             ->paginate($size, false, ['page' => $page]);
         return $orderings;

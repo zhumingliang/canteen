@@ -44,7 +44,10 @@ class NoticeService
         $company_id = Token::getCurrentTokenVar('current_company_id');
         $phone = Token::getCurrentTokenVar('phone');
         $staff = (new DepartmentService())->getStaffWithPhone($company_id, $phone);
-        return $staff->name;
+        if ($staff) {
+            return $staff->name;
+        }
+        return '';
     }
 
     //短信队列
