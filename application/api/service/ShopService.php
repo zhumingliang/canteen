@@ -363,7 +363,7 @@ class ShopService
         }
         $money = 0;
         foreach ($products as $k => $v) {
-            $money += $v['price'];
+            $money += $v['price']*$v['count'];
         }
         if (!$money) {
             throw new ParameterException(['msg' => '商品数据格式错误']);

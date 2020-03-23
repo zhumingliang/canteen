@@ -43,7 +43,7 @@ class NoticeService
     {
         $company_id = Token::getCurrentTokenVar('current_company_id');
         $phone = Token::getCurrentTokenVar('phone');
-        $staff = (new DepartmentService())->getStaffWithPhone($company_id, $phone);
+        $staff = (new DepartmentService())->getStaffWithPhone($phone,$company_id);
         if ($staff) {
             return $staff->name;
         }
