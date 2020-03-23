@@ -28,17 +28,13 @@ class Notice extends BaseController
      *       "content": "国庆放假七天",
      *       "author": "张三",
      *       "d_ids": "1,2,3",
-     *       "s_ids": "1,2,3",
-     *       "equity_url": "http:// ",
-     *       "equity_title": "国庆优惠",
+     *       "s_ids": "1,2,3"
      *     }
      * @apiParam (请求参数说明) {string} title  标题
      * @apiParam (请求参数说明) {string} content  内容
      * @apiParam (请求参数说明) {string} author  作者
      * @apiParam (请求参数说明) {string} d_ids  部门id，多个用逗号分隔
      * @apiParam (请求参数说明) {string} s_ids  部门人员id，多个用逗号分隔
-     * @apiParam (请求参数说明) {string} equity_url  权益跳转地址
-     * @apiParam (请求参数说明) {string} equity_title  权益标题
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
