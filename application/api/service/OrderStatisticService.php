@@ -186,7 +186,7 @@ class OrderStatisticService
     {
         $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
         $records = OrderTakeoutStatisticV::officialStatistic($page, $size,
-            $ordering_date, $dinner_id, $status, $department_id,$canteen_id);
+            $ordering_date, $dinner_id, $status, $department_id, $canteen_id);
         return $records;
     }
 
@@ -474,7 +474,6 @@ class OrderStatisticService
             default:
                 throw new ParameterException();
         }
-
         if ($type == OrderEnum::STATISTIC_BY_USERNAME) {
             $statistic = $info['statistic']['data'];
         } else {
@@ -498,7 +497,8 @@ class OrderStatisticService
         if (!empty($statistic)) {
             $i = 2;
             foreach ($statistic as $k => $v) {
-                $dinner_statistic = $v['dinnerStatistic'];
+               // $v['dinnerStatistic']
+                $dinner_statistic = array_key_exists('dinnerStatistic', $v) ? $v['dinnerStatistic'] : $v['dinner_statistic'];
                 if (empty($dinner_statistic)) {
                     array_push($dataList, [
                         'number' => $k + 1,
