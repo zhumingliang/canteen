@@ -59,10 +59,10 @@ class OrderingV extends Model
         return $orderings;
     }
 
-    public static function userOrderings($u_id, $type, $canteen_id, $page, $size)
+    public static function userOrderings($phone, $type, $canteen_id, $page, $size)
     {
 
-        $orderings = self::where('u_id', $u_id)
+        $orderings = self::where('phone', $phone)
             ->whereTime('ordering_date', '>=', date('Y-m-d'))
             ->where('type', $type)
             ->where(function ($query) use ($canteen_id) {
@@ -73,8 +73,8 @@ class OrderingV extends Model
             ->where('pay', PayEnum::PAY_SUCCESS)
             ->where('used', CommonEnum::STATE_IS_FAIL)
             ->where('state', CommonEnum::STATE_IS_OK)
-            ->field('id,canteen as address,if(type=1,"食堂","外卖") as type,create_time,dinner,money,ordering_date')
-            ->paginate($size, false, ['page' => $page]);
+            ->field('id,canteen as address,if(type=1,"食堂","外卖") as type,create_time,dinner,money,ordering_date,sub_money,delivery_fee')
+          ->paginate($size, false, ['page' => $page]);
         return $orderings;
     }
 

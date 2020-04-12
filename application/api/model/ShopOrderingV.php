@@ -11,9 +11,9 @@ use think\Model;
 class ShopOrderingV extends Model
 {
 
-    public static function userOrderings($u_id, $company_id, $page, $size)
+    public static function userOrderings($phone, $company_id, $page, $size)
     {
-        $orderings = self::where('u_id', $u_id)
+        $orderings = self::where('phone', $phone)
             ->where(function ($query) use ($company_id) {
                 if (!empty($company_id)) {
                     $query->where('company_id', $company_id);

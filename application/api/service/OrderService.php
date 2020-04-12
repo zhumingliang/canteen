@@ -1081,13 +1081,14 @@ class OrderService extends BaseService
     public
     function userOrders($type, $id, $page, $size)
     {
-        $u_id = Token::getCurrentUid();
+       // $u_id = Token::getCurrentUid();
+        $phone = Token::getCurrentPhone();
         if ($type == OrderEnum::USER_ORDER_SHOP) {
 
-            $orders = ShopOrderingV::userOrderings($u_id, $id, $page, $size);
+            $orders = ShopOrderingV::userOrderings($phone, $id, $page, $size);
 
         } else {
-            $orders = OrderingV::userOrderings($u_id, $type, $id, $page, $size);
+            $orders = OrderingV::userOrderings($phone, $type, $id, $page, $size);
         }
         return $orders;
     }
