@@ -214,11 +214,11 @@ class AdminService
 
     public function handel($params)
     {
-      /*  if ($params['state'] == CommonEnum::STATE_IS_OK) {
-            if (Token::getCurrentTokenVar('grade') != AdminEnum::COMPANY_SUPER) {
-                throw new AuthException();
-            }
-        }*/
+        /*  if ($params['state'] == CommonEnum::STATE_IS_OK) {
+              if (Token::getCurrentTokenVar('grade') != AdminEnum::COMPANY_SUPER) {
+                  throw new AuthException();
+              }
+          }*/
         $res = AdminT::update(['state' => $params['state']], ['id' => $params['id']]);
         if (!$res) {
             throw  new UpdateException();
@@ -308,7 +308,9 @@ class AdminService
     public function saveStaffType($params)
     {
         $params['state'] = CommonEnum::STATE_IS_OK;
-        $staffType = StaffTypeT::where('name', $params['name'])->count('id');
+        $staffType = StaffTypeT::where('name', $params['name'])
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->count('id');
         if ($staffType) {
             throw new SaveException(['msg' => '人员类型已经存在，不能重复添加']);
         }
