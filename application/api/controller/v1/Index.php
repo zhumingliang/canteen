@@ -7,6 +7,7 @@ namespace app\api\controller\v1;
 use app\api\controller\BaseController;
 use app\api\model\CanteenT;
 use app\api\model\ConsumptionStrategyT;
+use app\api\model\DinnerT;
 use app\api\model\Submitequity;
 use app\api\model\UserBalanceV;
 use app\api\service\AddressService;
@@ -31,8 +32,8 @@ Index extends BaseController
 {
     public function index(Request $request)
     {
-        $var = \app\api\service\Token::getCurrentTokenVar();
-        print_r($var);
+        $dinner = DinnerT::dinnerInfo(134);
+        (new OrderService())->checkDinnerForPersonalChoice($dinner,"2020-04-19");
         // (new  NoticeService())->noticeTask(26,155,'');
         //(new OrderService())->refundWxOrder($id);
         // $this->mailTask($name);

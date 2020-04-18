@@ -42,7 +42,10 @@ class BaseService
         foreach ($type as $k => $v) {
             if (key_exists($v, $params)) {
                 $exit = 1;
-                $expiry_date = date('Y-m-d H:i:s', strtotime($symbol . $params[$v] . "$v", strtotime($expiry_date)));
+
+                if ($params[$v] > 0) {
+                    $expiry_date = date('Y-m-d H:i:s', strtotime($symbol . $params[$v] . "$v", strtotime($expiry_date)));
+                }
                 break;
             }
 

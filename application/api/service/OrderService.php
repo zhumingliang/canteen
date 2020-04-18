@@ -367,6 +367,7 @@ class OrderService extends BaseService
     public
     function checkDinnerForPersonalChoice($dinner, $ordering_date)
     {
+        $ordering_date = $ordering_date . ' ' . date('H:i:s');
         if (!$dinner) {
             throw new ParameterException(['msg' => '指定餐次未设置']);
         }
@@ -376,6 +377,7 @@ class OrderService extends BaseService
         }
         $limit_time = $dinner->limit_time;
         $type_number = $dinner->type_number;
+
         $expiryDate = $this->prefixExpiryDate($ordering_date, [$type => $type_number]);
         if (strtotime($limit_time) > strtotime($expiryDate)) {
             throw  new  SaveException(['msg' => '超出订餐时间']);
