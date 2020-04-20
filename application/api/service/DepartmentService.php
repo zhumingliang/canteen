@@ -41,6 +41,7 @@ class DepartmentService
     private function checkExit($company_id, $name)
     {
         $department = CompanyDepartmentT::where('c_id', $company_id)
+            ->where('state',CommonEnum::STATE_IS_OK)
             ->where('name', $name)
             ->count('id');
         return $department;

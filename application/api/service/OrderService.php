@@ -1345,10 +1345,10 @@ class OrderService extends BaseService
                 throw new UpdateException(['msg' => '未找到消费策略，订单id：' . $order_id]);
             }
             if ($fixed == CommonEnum::STATE_IS_OK) {
-                $order->money = $money * $count;
-                $order->sub_money = $sub_money * $count;
+                $order->money = $money ;
+                $order->sub_money = $sub_money ;
             } else {
-                $order->sub_money = $sub_money * $count;
+                $order->sub_money = $sub_money;
             }
         }
 
