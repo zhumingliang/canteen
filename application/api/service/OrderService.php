@@ -379,7 +379,7 @@ class OrderService extends BaseService
         $type_number = $dinner->type_number;
 
         $expiryDate = $this->prefixExpiryDate($ordering_date, [$type => $type_number]);
-        if (strtotime($limit_time) > strtotime($expiryDate)) {
+        if (strtotime($limit_time) < strtotime($expiryDate)) {
             throw  new  SaveException(['msg' => '超出订餐时间']);
         }
     }
@@ -797,7 +797,7 @@ class OrderService extends BaseService
         $type_number = $dinner->type_number;
         if ($type == 'day') {
             $expiryDate = $this->prefixExpiryDateForOrder($ordering_date, $type_number, '-');
-            if (strtotime(date('Y-m-d H:i:s', time())) > strtotime($expiryDate . ' ' . $limit_time)) {
+            if (strtotime(date('Y-m-d H:i:s', time())) < strtotime($expiryDate . ' ' . $limit_time)) {
                 throw  new  SaveException(['msg' => '订餐操作时间已截止']);
             }
         } else if ($type == 'week') {
@@ -1345,8 +1345,8 @@ class OrderService extends BaseService
                 throw new UpdateException(['msg' => '未找到消费策略，订单id：' . $order_id]);
             }
             if ($fixed == CommonEnum::STATE_IS_OK) {
-                $order->money = $money ;
-                $order->sub_money = $sub_money ;
+                $order->money = $money;
+                $order->sub_money = $sub_money;
             } else {
                 $order->sub_money = $sub_money;
             }

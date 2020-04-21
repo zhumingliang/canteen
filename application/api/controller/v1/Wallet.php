@@ -372,15 +372,5 @@ class Wallet extends BaseController
         $response->send();
     }
 
-    public function agriculturalSearch()
-    {
-
-    }
-
-    public function agriculturalNotify()
-    {
-
-    }
-
 
 }

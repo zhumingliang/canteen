@@ -388,7 +388,7 @@ class Order extends BaseController
      * @api {GET} /api/v1/order/consumptionRecords 微信端-消费查询-订单列表
      * @apiGroup  Official
      * @apiVersion 3.0.0
-     * @apiDescription 微信端-订单查询-订单列表
+     * @apiDescription 微信端-消费查询-订单列表
      * @apiExample {get}  请求样例:
      * http://canteen.tonglingok.com/api/v1/order/consumptionRecords?$page=1&size=100&consumption_time=2019-10
      * @apiParam (请求参数说明) {int} page 当前页码
