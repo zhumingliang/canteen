@@ -367,7 +367,6 @@ class OrderService extends BaseService
     public
     function checkDinnerForPersonalChoice($dinner, $ordering_date)
     {
-        $ordering_date = $ordering_date . ' ' . date('H:i:s');
         if (!$dinner) {
             throw new ParameterException(['msg' => '指定餐次未设置']);
         }
@@ -377,9 +376,10 @@ class OrderService extends BaseService
         }
         $limit_time = $dinner->limit_time;
         $type_number = $dinner->type_number;
-
-        $expiryDate = $this->prefixExpiryDate($ordering_date, [$type => $type_number]);
-        if (strtotime($limit_time) < strtotime($expiryDate)) {
+        $limit_time = date('Y-m-d') . ' ' . $limit_time;
+        $expiryDate = $this->prefixExpiryDate($limit_time, [$type => $type_number]);
+        //$expiryDate = $this->prefixExpiryDate($ordering_date, [$type => $type_number]);
+        if (time() > strtotime($expiryDate)) {
             throw  new  SaveException(['msg' => '超出订餐时间']);
         }
     }
@@ -797,7 +797,7 @@ class OrderService extends BaseService
         $type_number = $dinner->type_number;
         if ($type == 'day') {
             $expiryDate = $this->prefixExpiryDateForOrder($ordering_date, $type_number, '-');
-            if (strtotime(date('Y-m-d H:i:s', time())) < strtotime($expiryDate . ' ' . $limit_time)) {
+            if (time() > strtotime($expiryDate . ' ' . $limit_time)) {
                 throw  new  SaveException(['msg' => '订餐操作时间已截止']);
             }
         } else if ($type == 'week') {
