@@ -73,7 +73,7 @@ class OrderingV extends Model
             ->where('pay', PayEnum::PAY_SUCCESS)
             ->where('used', CommonEnum::STATE_IS_FAIL)
             ->where('state', CommonEnum::STATE_IS_OK)
-            ->field('id,canteen as address,if(type=1,"食堂","外卖") as type,create_time,dinner,money,ordering_date,sub_money,delivery_fee')
+            ->field('id,canteen as address,if(type=1,"食堂","外卖") as type,create_time,dinner,money,ordering_date,sub_money,delivery_fee,count')
           ->paginate($size, false, ['page' => $page]);
         return $orderings;
     }

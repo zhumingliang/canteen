@@ -797,7 +797,7 @@ class OrderService extends BaseService
         $type_number = $dinner->type_number;
         if ($type == 'day') {
             $expiryDate = $this->prefixExpiryDateForOrder($ordering_date, $type_number, '-');
-            if (time() > strtotime($expiryDate . ' ' . $limit_time)) {
+            if (time() < strtotime($expiryDate . ' ' . $limit_time)) {
                 throw  new  SaveException(['msg' => '订餐操作时间已截止']);
             }
         } else if ($type == 'week') {
