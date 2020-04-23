@@ -1415,7 +1415,7 @@ class OrderService extends BaseService
         $t_id = (new UserService())->getUserStaffTypeByPhone($phone, $company_id);
         $strategies = (new CanteenService())->staffStrategy($canteen_id, $t_id);
         foreach ($dinner as $k => $v) {
-            $dinner[$k]['ordering_count'] = OrderingV::getRecordForDayOrderingByPhone($day, $v["name"], $phone);
+            $dinner[$k]['ordering_count'] = OrderingV::getOrderingCountByPhone($day, $v["name"], $phone);
             foreach ($strategies as $k2 => $v2) {
                 if ($v['id'] == $v2['d_id']) {
                     $dinner[$k]['ordered_count'] = $v2['ordered_count'];

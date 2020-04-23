@@ -32,8 +32,6 @@ Index extends BaseController
 {
     public function index(Request $request)
     {
-        $dinner = DinnerT::dinnerInfo(134);
-        (new OrderService())->checkDinnerForPersonalChoice($dinner,"2020-04-19");
         // (new  NoticeService())->noticeTask(26,155,'');
         //(new OrderService())->refundWxOrder($id);
         // $this->mailTask($name);
