@@ -166,7 +166,7 @@ class OrderService extends BaseService
             if (!$order) {
                 throw new SaveException(['msg' => '生成订单失败']);
             }
-            $this->prefixDetail($detail, $order->id);
+            $this->prefixDetail($detail, $order->id, true);
             if ($params['type'] == OrderEnum::EAT_OUTSIDER && !empty($params['address_id'])) {
                 (new AddressService())->prefixAddressDefault($params['address_id']);
             }
@@ -224,7 +224,7 @@ class OrderService extends BaseService
     }
 
     public
-    function prefixDetail($detail, $o_id)
+    function prefixDetail($detail, $o_id, $external = false)
     {
         $data_list = [];
         foreach ($detail as $k => $v) {

@@ -78,7 +78,7 @@ class Order extends BaseController
      *       "dinner": "早餐",
      *       "count": 1,
      *       "address_id": 1,
-     *       "detail":[{"menu_id":1,"foods":[{"food_id":1,"name":"商品1","price":5,""count":1},{"food_id":2,"name":"商品1","price":5,"count":1}]}]
+     *       "detail":[{"menu_id":1,"foods":[{"food_id":1,"name":"商品1","price":5,"count":1},{"food_id":2,"name":"商品1","price":5,"count":1}]}]
      *     }
      * @apiParam (请求参数说明) {string} ordering_date  订餐日期
      * @apiParam (请求参数说明) {int} dinner_id 餐次id
@@ -89,7 +89,7 @@ class Order extends BaseController
      * @apiParam (请求参数说明) {string} menu_id 菜品类别id
      * @apiParam (请求参数说明) {obj} foods 菜品明细
      * @apiParam (请求参数说明) {string} food_id 菜品id
-     * @apiParam (请求参数说明) {string} price 菜品实时单价
+     * @apiParam (请求参数说明) {string} price 菜品实时单价(外来人员传入对外价格)
      * @apiParam (请求参数说明) {string} count 菜品数量
      * @apiParam (请求参数说明) {string} name 菜品名称
      * @apiSuccessExample {json} 返回样例:

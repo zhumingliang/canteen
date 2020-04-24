@@ -24,6 +24,7 @@ class Food extends BaseController
      *       "c_id": 6,
      *       "name": "红烧土豆牛肉",
      *       "price": 5,
+     *       "external_price": 6,
      *       "chef":"李大厨",
      *       "des": "适合**人群，有利于***不适合***人群",
      *       "material": [{"name":"牛肉","count":"10"},{"name":"土豆","count":"10"}],
@@ -33,7 +34,8 @@ class Food extends BaseController
      * @apiParam (请求参数说明) {string} m_id 菜单菜品id
      * @apiParam (请求参数说明) {string} c_id 饭堂id
      * @apiParam (请求参数说明) {string} name 菜品名称
-     * @apiParam (请求参数说明) {string} price  菜品价格
+     * @apiParam (请求参数说明) {float} price  菜品价格
+     * @apiParam (请求参数说明) {float} external_price  对外价格
      * @apiParam (请求参数说明) {string} chef  主厨名称
      * @apiParam (请求参数说明) {string} des  描述
      * @apiParam (请求参数说明) {string} img_url 菜品图片地址：由新增图片接口  /api/v1/image/upload 返回
@@ -64,6 +66,7 @@ class Food extends BaseController
      *       "m_id": 1,
      *       "name": "西红柿牛肉",
      *       "price": 5,
+     *       "external_price": 8,
      *       "chef":"李大厨",
      *       "des": "适合**人群，有利于***不适合***人群",
      *       "material": [{"id":1,"count":"15"},{"id":2,"state":2},{"name":"西红柿","count":"10"}],
@@ -72,7 +75,8 @@ class Food extends BaseController
      * @apiParam (请求参数说明) {int} id  菜品ID
      * @apiParam (请求参数说明) {string} m_id 菜单菜品id
      * @apiParam (请求参数说明) {string} name 菜品名称
-     * @apiParam (请求参数说明) {string} price  菜品价格
+     * @apiParam (请求参数说明) {float} price  菜品价格
+     * @apiParam (请求参数说明) {float} external_price  对外价格
      * @apiParam (请求参数说明) {string} chef  主厨名称
      * @apiParam (请求参数说明) {string} des  描述
      * @apiParam (请求参数说明) {string} img_url 菜品图片地址：由新增图片接口  /api/v1/image/upload 返回
@@ -127,10 +131,10 @@ class Food extends BaseController
      * @apiParam (请求参数说明) {int} page 当前页码
      * @apiParam (请求参数说明) {int} size 每页多少条数据
      * @apiParam (请求参数说明) {int} f_type  菜品是否为无选菜：1|是；2|否
-     * @apiParam (请求参数说明) {String} menu_ids 类型ids，选择全部时传入所有id并逗号分隔,选择此选择项其他筛选字段（dinner_ids/canteen_ids/company_ids）无需上传无需上传
-     * @apiParam (请求参数说明) {String} dinner_ids 餐次ids，选择全部时传入所有id并逗号分隔，选择此选择项其他筛选字段（menu_ids/canteen_ids/company_ids）无需上传无需上传
-     * @apiParam (请求参数说明) {String} canteen_ids 饭堂ids，选择全部时传入所有id并逗号分隔，选择此选择项其他筛选字段（menu_ids，dinner_ids/company_ids）无需上传无需上传
-     * @apiParam (请求参数说明) {String} company_ids 公司ids，选择全部时传入所有id并逗号分隔，选择此选择项其他筛选字段（menu_ids/dinner_ids/canteen_ids）无需上传无需上传
+     * @apiParam (请求参数说明) {String} menu_ids 类型ids，选择全部时传入所有id并逗号分隔,选择此选择项其他筛选字段（dinner_ids/canteen_ids/company_ids）无需上传
+     * @apiParam (请求参数说明) {String} dinner_ids 餐次ids，选择全部时传入所有id并逗号分隔，选择此选择项其他筛选字段（menu_ids/canteen_ids/company_ids）无需上传
+     * @apiParam (请求参数说明) {String} canteen_ids 饭堂ids，选择全部时传入所有id并逗号分隔，选择此选择项其他筛选字段（menu_ids，dinner_ids/company_ids）无需上传
+     * @apiParam (请求参数说明) {String} company_ids 公司ids，选择全部时传入所有id并逗号分隔，选择此选择项其他筛选字段（menu_ids/dinner_ids/canteen_ids）无需上传
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200,"data":{"total":1,"per_page":10,"current_page":1,"last_page":1,"data":[{"id":1,"name":"红烧牛肉","price":5,"f_type":1,"chef":"李大厨","des":"适合**人群，有利于***不适合***人群","img_url":"http:\/\/canteen.tonglingok.com\/static\/image\/20190810\/ab9ce8ff0e2c5adb40263641b24f36d4.png","state":1,"menu":"荤菜","dinner":"中餐","create_time":"2019-08-10 01:07:24"}]}}
      * @apiSuccess (返回参数说明) {int} total 数据总数
@@ -140,6 +144,7 @@ class Food extends BaseController
      * @apiSuccess (返回参数说明) {int} id 菜品id
      * @apiSuccess (返回参数说明) {string} name  菜品名称
      * @apiSuccess (返回参数说明) {float} price  菜品价格
+     * @apiSuccess (返回参数说明) {float} external_price  对外菜品价格
      * @apiSuccess (返回参数说明) {string} chef  主厨名称
      * @apiSuccess (返回参数说明) {string} menu  菜品类别
      * @apiSuccess (返回参数说明) {string} dinner  餐次
@@ -163,10 +168,11 @@ class Food extends BaseController
      * http://canteen.tonglingok.com/api/v1/food?id=3
      * @apiParam (请求参数说明) {int} id 菜品id
      * @apiSuccessExample {json} 返回样例:
-     * {"msg":"ok","errorCode":0,"code":200,"data":{"id":3,"name":"西红柿牛肉","price":5,"chef":"李大厨","des":"适合**人群，有利于***不适合***人群","img_url":"http:\/\/canteen.tonglingok.com\/static\/image\/20190810\/ab9ce8ff0e2c5adb40263641b24f36d4.png","state":2,"menu":"荤菜","dinner":"中餐","material":[{"id":1,"f_id":3,"name":"牛肉","count":15},{"id":3,"f_id":3,"name":"西红柿","count":10}]}}
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"id":3,"name":"西红柿牛肉","price":5,"external_price":8,"chef":"李大厨","des":"适合**人群，有利于***不适合***人群","img_url":"http:\/\/canteen.tonglingok.com\/static\/image\/20190810\/ab9ce8ff0e2c5adb40263641b24f36d4.png","state":2,"menu":"荤菜","dinner":"中餐","material":[{"id":1,"f_id":3,"name":"牛肉","count":15},{"id":3,"f_id":3,"name":"西红柿","count":10}]}}
      * @apiSuccess (返回参数说明) {string} id 菜品id
      * @apiSuccess (返回参数说明) {string} name 菜品名称
      * @apiSuccess (返回参数说明) {string} price  菜品价格
+     * @apiSuccess (返回参数说明) {string} external_price  对外价格
      * @apiSuccess (返回参数说明) {string} chef  主厨名称
      * @apiSuccess (返回参数说明) {string} des  描述
      * @apiSuccess (返回参数说明) {string} canteen_id  饭堂id
@@ -230,7 +236,7 @@ class Food extends BaseController
      * @apiParam (请求参数说明) {String} day 日期
      * @apiParam (请求参数说明) {String} canteen_id 饭堂ID
      * @apiSuccessExample {json} 返回样例:
-     * {"msg":"ok","errorCode":0,"code":200,"data":{"total":2,"per_page":100,"current_page":1,"last_page":1,"data":[{"id":1,"name":"红烧牛肉","img_url":"http:\/\/canteen.tonglingok.com\/static\/image\/20190810\/ab9ce8ff0e2c5adb40263641b24f36d4.png","price":5,"status":2,"default":2}]}
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"total":2,"per_page":100,"current_page":1,"last_page":1,"data":[{"id":1,"name":"红烧牛肉","img_url":"http:\/\/canteen.tonglingok.com\/static\/image\/20190810\/ab9ce8ff0e2c5adb40263641b24f36d4.png","price":5,"external_price":5,"status":2,"default":2}]}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
      * @apiSuccess (返回参数说明) {String} msg 信息描述
      * @apiSuccess (返回参数说明) {int} total 数据总数
@@ -240,6 +246,7 @@ class Food extends BaseController
      * @apiSuccess (返回参数说明) {int} id 菜品id
      * @apiSuccess (返回参数说明) {string} name  菜品名称
      * @apiSuccess (返回参数说明) {float} price  菜品价格
+     * @apiSuccess (返回参数说明) {float} external_price  对外价格
      * @apiSuccess (返回参数说明) {string} img_url 菜品图片地址
      * @apiSuccess (返回参数说明) {int} status 菜品上架状态：1|上架；2|下架
      * @apiSuccess (返回参数说明) {int} default 菜品默认状态：1|默认；2|非默认
@@ -294,7 +301,7 @@ class Food extends BaseController
      * http://canteen.tonglingok.com/api/v1/foods/personChoice?dinner_id=6
      * @apiParam (请求参数说明) {int} dinner_id 餐次ID
      * @apiSuccessExample {json} 返回样例:
-     * {"msg":"ok","errorCode":0,"code":200,"data":[{"id":1,"category":"荤菜","status":1,"count":3,"foods":[{"id":2,"day":"2019-09-03","f_id":1,"status":2,"m_id":1,"d_id":6,"name":"红烧牛肉","price":5,"img_url":"\/static\/image\/20190810\/ab9ce8ff0e2c5adb40263641b24f36d4.png","f_type":2},{"id":3,"day":"2019-09-04","f_id":1,"status":1,"m_id":1,"d_id":6,"name":"红烧牛肉","price":5,"img_url":"\/static\/image\/20190810\/ab9ce8ff0e2c5adb40263641b24f36d4.png","f_type":2}]},{"id":2,"category":"汤","status":2,"count":0,"foods":[]}]}
+     * {"msg":"ok","errorCode":0,"code":200,"data":[{"id":1,"category":"荤菜","status":1,"count":3,"foods":[{"id":2,"day":"2019-09-03","f_id":1,"status":2,"m_id":1,"d_id":6,"name":"红烧牛肉","price":5,"external_price":5,"img_url":"\/static\/image\/20190810\/ab9ce8ff0e2c5adb40263641b24f36d4.png","f_type":2},{"id":3,"day":"2019-09-04","f_id":1,"status":1,"m_id":1,"d_id":6,"name":"红烧牛肉","price":5,"external_price":5,"img_url":"\/static\/image\/20190810\/ab9ce8ff0e2c5adb40263641b24f36d4.png","f_type":2}]},{"id":2,"category":"汤","status":2,"count":0,"foods":[]}]}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
      * @apiSuccess (返回参数说明) {String} msg 信息描述
      * @apiSuccess (返回参数说明) {int} id 菜品类别id
@@ -306,6 +313,7 @@ class Food extends BaseController
      * @apiSuccess (返回参数说明) {sting} day  日期
      * @apiSuccess (返回参数说明) {sting} name  菜品名称
      * @apiSuccess (返回参数说明) {float} price  菜品价格
+     * @apiSuccess (返回参数说明) {float} external_price  对外价格
      * @apiSuccess (返回参数说明) {string} img_url 菜品图片地址
      */
     public function foodsForOfficialPersonChoice()
@@ -355,15 +363,16 @@ class Food extends BaseController
      * {"msg":"ok","errorCode":0,"code":200,"data":{"food":{"id":1,"name":"红烧牛肉","price":5,"img_url":"http:\/\/canteen.tonglingok.com\/static\/image\/20190810\/ab9ce8ff0e2c5adb40263641b24f36d4.png","chef":"李大厨","comments":[{"id":4,"u_id":3,"f_id":1,"taste":3,"service":3,"remark":"4"},{"id":3,"u_id":3,"f_id":1,"taste":4,"service":4,"remark":"3"},{"id":2,"u_id":3,"f_id":1,"taste":5,"service":5,"remark":"2"}]},"canteenScore":{"taste":4.3,"service":4.3}}}
      * @apiSuccess (返回参数说明) {string} msg 信息描述
      * @apiSuccess (返回参数说明) {obj} food 菜品信息
-     * @apiSuccess (返回参数说明) {string} food|id 菜品id
-     * @apiSuccess (返回参数说明) {string} food|name 菜品名称
-     * @apiSuccess (返回参数说明) {string} food|price  菜品价格
-     * @apiSuccess (返回参数说明) {string} food|chef  主厨名称
+     * @apiSuccess (返回参数说明) {string} food：id 菜品id
+     * @apiSuccess (返回参数说明) {string} food：name 菜品名称
+     * @apiSuccess (返回参数说明) {string} food：price  菜品价格
+     * @apiSuccess (返回参数说明) {string} food：external_price  菜品价格
+     * @apiSuccess (返回参数说明) {string} food：chef  主厨名称
      * @apiSuccess (返回参数说明) {obj} comments  评论信息
-     * @apiSuccess (返回参数说明) {int} comments|id 评论id
-     * @apiSuccess (返回参数说明) {string} comments|taste 菜品味道评分
-     * @apiSuccess (返回参数说明) {string} comments|service 菜品服务评分
-     * @apiSuccess (返回参数说明) {string} comments|remark 评分说明
+     * @apiSuccess (返回参数说明) {int} comments：id 评论id
+     * @apiSuccess (返回参数说明) {string} comments：taste 菜品味道评分
+     * @apiSuccess (返回参数说明) {string} comments：service 菜品服务评分
+     * @apiSuccess (返回参数说明) {string} comments：remark 评分说明
      * @apiSuccess (返回参数说明) {obj} canteenScore 饭堂评分
      * @apiSuccess (返回参数说明) {string} canteenScore|taste 饭堂味道评分
      * @apiSuccess (返回参数说明) {string} canteenScore|service 饭堂服务评分

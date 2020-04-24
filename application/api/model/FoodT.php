@@ -28,7 +28,7 @@ class FoodT extends BaseModel
         $foods = self::where('m_id', $menu_id)
             ->where('f_type', $food_type)
             ->where('state', CommonEnum::STATE_IS_OK)
-            ->field('id,name,img_url,price')
+            ->field('id,name,img_url,price,external_price')
             ->paginate($size, false, ['page' => $page])->toArray();
         return $foods;
     }
@@ -43,7 +43,7 @@ class FoodT extends BaseModel
                         ->limit(0,3);
                 },
             ])
-            ->field('id,name,price,img_url,chef')
+            ->field('id,name,price,external_price,img_url,chef')
             ->find();
         return $info;
     }
