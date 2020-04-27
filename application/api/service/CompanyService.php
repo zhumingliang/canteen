@@ -107,7 +107,11 @@ class CompanyService
         } else {
             $parent_admin_id = Token::getCurrentTokenVar('parent_id');
             $parent = AdminT::where('id', $parent_admin_id)->find();
-            $parent_company_id = $parent->c_id;
+            if ($parent->grade == AdminEnum::SYSTEM_SUPER) {
+                $parent_company_id = $company_id;
+            } else {
+                $parent_company_id = $parent->c_id;
+            }
         }
 
         $ids = $this->getSonID($ids, $parent_company_id);
