@@ -12,7 +12,7 @@ class FoodsStatisticV extends Model
     {
         $statistic = self::where('dinner_id', $dinner_id)
             ->where('food_id', $food_id)
-            ->whereBetweenTime('ordering_date', $consumption_time)
+            ->where('ordering_date', $consumption_time)
             ->field('phone,username')
             ->paginate($size, false, ['page' => $page]);
         return $statistic;

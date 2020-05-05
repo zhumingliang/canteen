@@ -81,7 +81,7 @@ class OrderT extends Model
         $statistic = self::where('c_id', $canteen_id)
             ->where('state', CommonEnum::STATE_IS_OK)
             ->where('pay', PayEnum::PAY_SUCCESS)
-            ->whereBetweenTime('ordering_date', $consumption_time)
+            ->where('ordering_date', $consumption_time)
             ->field('d_id,used,booking,sum(count) as count')
             ->group('d_id,used,booking')
             ->select()->toArray();
@@ -92,7 +92,7 @@ class OrderT extends Model
     {
 
         $statistic = self::where('d_id', $dinner_id)
-            ->whereBetweenTime('ordering_date', $consumption_time)
+            ->where('ordering_date', $consumption_time)
             ->where('state', CommonEnum::STATE_IS_OK)
             ->where('used', CommonEnum::STATE_IS_FAIL)
             ->field('id')

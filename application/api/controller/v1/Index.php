@@ -32,6 +32,7 @@ Index extends BaseController
 {
     public function index(Request $request)
     {
+        echo  md5(111111);
         // (new  NoticeService())->noticeTask(26,155,'');
         //(new OrderService())->refundWxOrder($id);
         // $this->mailTask($name);

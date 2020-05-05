@@ -12,7 +12,7 @@ class OrderUsersStatisticV extends Model
     public static function orderUsers($dinner_id, $consumption_time, $consumption_type, $page, $size)
     {
         $users = self::where('dinner_id', $dinner_id)
-            ->whereBetweenTime('ordering_date', $consumption_time)
+            ->where('ordering_date', $consumption_time)
             ->where(function ($query) use ($consumption_type) {
                 if ($consumption_type == 'used') {
                     $query->where('used', CommonEnum::STATE_IS_OK);
