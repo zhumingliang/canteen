@@ -502,7 +502,7 @@ class Order extends BaseController
      * http://canteen.tonglingok.com/api/v1/order/managerDinnerStatistic?dinner_id=6&consumption_time=2019-09-07&page=1&size=20
      * @apiParam (请求参数说明) {int} page 当前页码
      * @apiParam (请求参数说明) {int} size 每页多少条数据
-     * @apiParam (请求参数说明) {string} dinner_id  残次id
+     * @apiParam (请求参数说明) {string} dinner_id  餐次id
      * @apiParam (请求参数说明) {string} consumption_time  消费日期
      * @apiSuccessExample {json} 无选菜返回样例:
      * {"msg":"ok","errorCode":0,"code":200,"data":{"haveFoods":2,"statistic":{"total":1,"per_page":20,"current_page":1,"last_page":1,"data":[{"username":"张三","phone":"18956225230"}]}}}
@@ -561,7 +561,6 @@ class Order extends BaseController
         $dinner_id = Request::param('dinner_id');
         $consumption_time = Request::param('consumption_time');
         $consumption_type = Request::param('consumption_type');
-        LogService::save(json_encode(Request::param()));
         $info = (new OrderService())->orderUsersStatistic($dinner_id, $consumption_time, $consumption_type, $page, $size);
         return json(new SuccessMessageWithData(['data' => $info]));
     }

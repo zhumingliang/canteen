@@ -1189,9 +1189,6 @@ class OrderService extends BaseService
                 foreach ($orderInfo as $k2 => $v2) {
                     if ($v['id'] == $v2['d_id']) {
                         $all += $v2['count'];
-                        if (strtotime($today) < strtotime($consumption_time)) {
-                            continue;
-                        }
                         if ($v2['used'] == CommonEnum::STATE_IS_OK) {
                             $used += $v2['count'];
                             if ($v2['booking'] == CommonEnum::STATE_IS_FAIL) {
