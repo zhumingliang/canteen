@@ -14,6 +14,7 @@ use app\api\model\MaterialReportT;
 use app\api\model\OnlineOrderingT;
 use app\api\model\PersonalChoiceT;
 use app\api\model\ShopOrderDetailV;
+use app\api\service\LogService;
 use app\api\service\OrderService;
 use app\api\service\OrderStatisticService;
 use app\lib\enum\CommonEnum;
@@ -560,6 +561,7 @@ class Order extends BaseController
         $dinner_id = Request::param('dinner_id');
         $consumption_time = Request::param('consumption_time');
         $consumption_type = Request::param('consumption_type');
+        LogService::save(json_encode(Request::param()));
         $info = (new OrderService())->orderUsersStatistic($dinner_id, $consumption_time, $consumption_type, $page, $size);
         return json(new SuccessMessageWithData(['data' => $info]));
     }
