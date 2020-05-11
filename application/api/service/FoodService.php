@@ -243,6 +243,7 @@ class FoodService extends BaseService
         $dayFood = FoodDayStateT::where('f_id', $food_id)
             ->whereBetweenTime('day', $day)
             ->find();
+
         if (!$dayFood) {
             $data = [
                 'f_id' => $food_id,
@@ -274,6 +275,7 @@ class FoodService extends BaseService
                 $dayFood->status = CommonEnum::STATE_IS_OK;
             }
         }
+        $dayFood->update_time=date('Y-m-d H:i:s');
         if (!$dayFood->save()) {
             throw new UpdateException (['msg' => '修改菜品信息状态失败']);
 

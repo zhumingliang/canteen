@@ -148,7 +148,6 @@ class OrderT extends Model
             ])
             ->field('id,d_id,type,pay_way,money,sub_money,(money+sub_money) as all_money ,consumption_type,meal_sub_money,meal_money')
             ->find()->toArray();
-
         return $info;
     }
 
