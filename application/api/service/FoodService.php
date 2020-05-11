@@ -241,7 +241,7 @@ class FoodService extends BaseService
             }
         }
         $dayFood = FoodDayStateT::where('f_id', $food_id)
-            ->whereBetweenTime('day', $day)
+            ->where('day', $day)
             ->find();
 
         if (!$dayFood) {
@@ -265,7 +265,6 @@ class FoodService extends BaseService
             }
             return true;
         }
-
         if (!empty($params['status'])) {
             $dayFood->status = $params['status'];
         }
