@@ -122,6 +122,7 @@ class OrderService extends BaseService
             Db::startTrans();
             $dinner_id = $params['dinner_id'];
             $ordering_date = $params['ordering_date'];
+            $type = $params['type'];
             $count = $params['count'];
             $openid = Token::getCurrentOpenid();
             $detail = json_decode($params['detail'], true);
@@ -142,7 +143,7 @@ class OrderService extends BaseService
             //获取订单金额
             $orderMoney = $this->checkOutsiderOrderMoney($dinner_id, $detail);
             //保存订单信息
-            $params['type'] = OrderEnum::EAT_OUTSIDER;
+            $params['type'] = $type;
             $params['pay_way'] = PayEnum::PAY_WEIXIN;;
             $params['u_id'] = $u_id;
             $params['c_id'] = $canteen_id;

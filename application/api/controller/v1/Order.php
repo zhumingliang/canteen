@@ -75,6 +75,7 @@ class Order extends BaseController
      * @apiExample {post}  请求样例:
      *    {
      *       "ordering_date": "2019-09-07",
+     *       "type": 1,
      *       "dinner_id": 1,
      *       "dinner": "早餐",
      *       "count": 1,
@@ -83,6 +84,7 @@ class Order extends BaseController
      *     }
      * @apiParam (请求参数说明) {string} ordering_date  订餐日期
      * @apiParam (请求参数说明) {int} dinner_id 餐次id
+     * @apiParam (请求参数说明) {int} type 就餐类别：1|食堂；2|外卖
      * @apiParam (请求参数说明) {int} dinner 餐次名称
      * @apiParam (请求参数说明) {int} count 订餐数量
      * @apiParam (请求参数说明) {int} address_id 配送地址id

@@ -646,12 +646,18 @@ class CanteenService
     {
         $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
         $account = CanteenAccountT::where('c_id', $canteen_id)
-            ->field('dining_mode')
             ->find();
         if (empty($account)) {
             throw new ParameterException(['msg' => '未设置饭堂账户信息']);
         }
-        return $account;
+        $outsider = Token::getCurrentTokenVar('outsiders');
+        if ($outsider == UserEnum::INSIDE) {
+            return $account->dining_mode;
+        }
+        if ($account->out == CommonEnum::STATE_IS_FAIL) {
+            throw  new AuthException(['msg' => "饭堂未开通外来人员就餐功能"]);
+        }
+        return $account->out_dining_mode;
     }
 
     public function machines($belong_id, $machine_type, $page, $size)
@@ -732,6 +738,19 @@ class CanteenService
         if (!$res) {
             throw new SaveException(['msg' => '保存消费策略明细失败']);
         }
+    }
+
+    public function checkConfirm()
+    {
+        $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
+        $account = CanteenAccountT::where('c_id', $canteen_id)
+            ->find();
+        if (!$account) {
+            throw new ParameterException(['msg' => '饭堂未设置账户']);
+        }
+        return [
+            'confirm' => $account->confirm
+        ];
     }
 
 }
