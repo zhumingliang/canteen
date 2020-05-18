@@ -189,11 +189,13 @@ class OrderService extends BaseService
             'openid' => $openid,
             'company_id' => $company_id,
             'u_id' => $u_id,
-            'order_num' => makeOrderNo(),
+            'order_num' =>time(),// makeOrderNo(),
             'money' => $money,
             'status' => 'paid_fail',
             'method_id' => PayEnum::PAY_METHOD_WX,
-            'order_id' => $order_id
+            'order_id' => $order_id,
+            'type' => 'canteen'
+
         ];
         $order = PayT::create($data);
         if (!$order) {
