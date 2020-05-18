@@ -53,7 +53,7 @@ class WeiXinPayService
             'sign_type' => 'MD5',
             'openid' => $data['openid']
         ]);
-        print_r($result);
+        //print_r($result);
         return $result;
     }
 
