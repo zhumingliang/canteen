@@ -168,7 +168,7 @@ class ConsumptionService
                 'msg' => $resMessage,
                 'type' => 'canteen',
                 'data' => [
-                    'username'=>$username
+                    'username' => $username
                 ]
             ];
         }
@@ -433,4 +433,57 @@ class ConsumptionService
         return $dinner;
     }
 
+    public function confirmOrder($order_id)
+    {
+        Db::query('call canteenConsumptionWX(:in_orderID,
+                @currentOrderID,@currentConsumptionType,@resCode,@resMessage,@returnBalance,
+                @returnDinner,@returnDepartment,@returnUsername,@returnPrice,@returnMoney)',
+            [
+                'in_orderID' => $order_id,
+            ]);
+        $resultSet = Db::query('select @currentOrderID,@currentConsumptionType,
+        @resCode,@resMessage,@returnBalance,@returnDinner,
+        @returnDepartment,@returnUsername,@returnPrice,@returnMoney');
+        $errorCode = $resultSet[0]['@resCode'];
+        $resMessage = $resultSet[0]['@resMessage'];
+        $consumptionType = $resultSet[0]['@currentConsumptionType'];
+        $orderID = $resultSet[0]['@currentOrderID'];
+        $balance = $resultSet[0]['@returnBalance'];
+        $dinner = $resultSet[0]['@returnDinner'];
+        $department = $resultSet[0]['@returnDepartment'];
+        $username = $resultSet[0]['@returnUsername'];
+        $price = $resultSet[0]['@returnPrice'];
+        $money = $resultSet[0]['@returnMoney'];
+        if ($errorCode != 0) {
+            // throw  new SaveException(['errorCode' => $errorCode, 'msg' => $resMessage]);
+            return [
+                'errorCode' => $errorCode,
+                'msg' => $resMessage,
+                'type' => 'canteen',
+                'data' => [
+                    'username' => $username
+                ]
+            ];
+        }
+        $order = OrderT::infoToCanteenMachine($orderID);
+        $order['remark'] = $consumptionType == 1 ? "订餐消费" : "未订餐消费";
+        //获取订单信息返回
+        return [
+            'errorCode' => $errorCode,
+            'msg' => $resMessage,
+            'type' => 'canteen',
+            'data' => [
+                'create_time' => date('Y-m-d H:i:s'),
+                'dinner' => $dinner,
+                'price' => $price,
+                'money' => $money,
+                'department' => $department,
+                'username' => $username,
+                'type' => $consumptionType,
+                'balance' => $balance,
+                'remark' => $consumptionType == 1 ? "订餐消费" : "未订餐消费",
+                'products' => $order['foods']
+            ]
+        ];
+    }
 }

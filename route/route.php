@@ -63,7 +63,7 @@ Route::get('api/:version/canteens', 'api/:version.Canteen/canteens');
 Route::get('api/:version/managerCanteens', 'api/:version.Canteen/managerCanteens');
 Route::get('api/:version/canteen/dinners/user', 'api/:version.Canteen/currentCanteenDinners');
 Route::get('api/:version/canteen/dinners', 'api/:version.Canteen/canteenDinners');
-Route::get('api/:version/canteen/check/confirm', 'api/:version.Canteen/check/confirm');
+Route::get('api/:version/canteen/check/confirm', 'api/:version.Canteen/checkConfirm');
 Route::get('api/:version/canteen/diningMode', 'api/:version.Canteen/diningMode');
 Route::get('api/:version/machines/company', 'api/:version.Canteen/companyMachines');
 Route::get('api/:version/machines', 'api/:version.Canteen/machines');
