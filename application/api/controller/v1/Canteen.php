@@ -584,7 +584,7 @@ class Canteen extends BaseController
     public function diningMode()
     {
         $mode = (new CanteenService())->diningMode();
-        return json(new SuccessMessageWithData(['data' => $mode]));
+        return json(new SuccessMessageWithData(['data' => ['dining_mode' => $mode]]));
     }
 
     /**
