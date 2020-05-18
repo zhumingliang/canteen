@@ -189,7 +189,7 @@ class OrderService extends BaseService
             'openid' => $openid,
             'company_id' => $company_id,
             'u_id' => $u_id,
-            'order_num' =>time(),// makeOrderNo(),
+            'order_num' =>makeOrderNo(),
             'money' => $money,
             'status' => 'paid_fail',
             'method_id' => PayEnum::PAY_METHOD_WX,
@@ -377,8 +377,9 @@ class OrderService extends BaseService
         }
         $limit_time = $dinner->limit_time;
         $type_number = $dinner->type_number;
-        $limit_time = date('Y-m-d') . ' ' . $limit_time;
-        $expiryDate = $this->prefixExpiryDate($limit_time, [$type => $type_number]);
+        //$limit_time = date('Y-m-d') . ' ' . $limit_time;
+        $limit_time = $ordering_date . ' ' . $limit_time;
+        $expiryDate = $this->prefixExpiryDate($limit_time, [$type => $type_number],'-');
         //$expiryDate = $this->prefixExpiryDate($ordering_date, [$type => $type_number]);
         if (time() > strtotime($expiryDate)) {
             throw  new  SaveException(['msg' => '超出订餐时间']);
