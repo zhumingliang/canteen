@@ -288,7 +288,7 @@ class WalletService
         // $openid = "oSi030oELLvP4suMSvOxTAF8HrLE";//Token::getCurrentOpenid();
         $openid = Token::getCurrentOpenid();
         $status = $this->checkOrderValid($order_id, $openid);
-        $method_id = $status['method_id'];
+        $method_id = $status['methodID'];
         $company_id = $status['companyID'];
         switch ($method_id) {
             case PayEnum::PAY_METHOD_WX:
@@ -353,7 +353,7 @@ class WalletService
             throw new ParameterException(['msg' => '用户与订单不匹配']);
         }
         $status = [
-            'method_id' => $order->method_id,
+            'methodID' => $order->method_id,
             'orderNumber' => $order->order_num,
             'orderPrice' => $order->money,
             'companyID' => $order->company_id

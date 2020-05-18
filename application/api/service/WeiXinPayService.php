@@ -44,7 +44,6 @@ class WeiXinPayService
 
     public function getPayInfo($data)
     {
-        LogService::save(json_encode($data));
         $app = $this->getApp($data['company_id']);
         $result = $app->order->unify([
             'body' => $data['body'],
@@ -54,6 +53,7 @@ class WeiXinPayService
             'sign_type' => 'MD5',
             'openid' => $data['openid']
         ]);
+        LogService::save(json_encode($result));
         return $result;
     }
 
