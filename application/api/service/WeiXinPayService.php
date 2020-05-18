@@ -53,9 +53,9 @@ class WeiXinPayService
             'sign_type' => 'MD5',
             'openid' => $data['openid']
         ]);
-        $jssdk = $app->jssdk;
+       /* $jssdk = $app->jssdk;
         $config = $jssdk->sdkConfig($result['prepay_id']);
-        print_r($config);
+        print_r($config);*/
         //print_r($result);
         return $result;
     }
