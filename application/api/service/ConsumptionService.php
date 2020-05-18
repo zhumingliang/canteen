@@ -24,6 +24,7 @@ use app\lib\exception\UpdateException;
 use GatewayClient\Gateway;
 use think\Db;
 use think\Exception;
+use zml\tp_tools\Redis;
 
 class ConsumptionService
 {
@@ -435,55 +436,45 @@ class ConsumptionService
 
     public function confirmOrder($order_id)
     {
-        Db::query('call canteenConsumptionWX(:in_orderID,
-                @currentOrderID,@currentConsumptionType,@resCode,@resMessage,@returnBalance,
-                @returnDinner,@returnDepartment,@returnUsername,@returnPrice,@returnMoney)',
+        $phone = Token::getCurrentPhone();
+        $canteenID = Token::getCurrentTokenVar('current_canteen_id');
+        Db::query('call canteenConsumptionWX(:in_orderID,:in_userPhone,
+               @resCode,@resMessage,@dinnerID)',
             [
                 'in_orderID' => $order_id,
+                'in_userPhone' => $phone
             ]);
-        $resultSet = Db::query('select @currentOrderID,@currentConsumptionType,
-        @resCode,@resMessage,@returnBalance,@returnDinner,
-        @returnDepartment,@returnUsername,@returnPrice,@returnMoney');
+        $resultSet = Db::query('select @resCode,@resMessage,@dinnerID');
         $errorCode = $resultSet[0]['@resCode'];
         $resMessage = $resultSet[0]['@resMessage'];
-        $consumptionType = $resultSet[0]['@currentConsumptionType'];
-        $orderID = $resultSet[0]['@currentOrderID'];
-        $balance = $resultSet[0]['@returnBalance'];
-        $dinner = $resultSet[0]['@returnDinner'];
-        $department = $resultSet[0]['@returnDepartment'];
-        $username = $resultSet[0]['@returnUsername'];
-        $price = $resultSet[0]['@returnPrice'];
-        $money = $resultSet[0]['@returnMoney'];
         if ($errorCode != 0) {
-            // throw  new SaveException(['errorCode' => $errorCode, 'msg' => $resMessage]);
             return [
                 'errorCode' => $errorCode,
                 'msg' => $resMessage,
                 'type' => 'canteen',
                 'data' => [
-                    'username' => $username
+                    'username' => ''
                 ]
             ];
         }
-        $order = OrderT::infoToCanteenMachine($orderID);
-        $order['remark'] = $consumptionType == 1 ? "订餐消费" : "未订餐消费";
-        //获取订单信息返回
         return [
             'errorCode' => $errorCode,
             'msg' => $resMessage,
             'type' => 'canteen',
             'data' => [
                 'create_time' => date('Y-m-d H:i:s'),
-                'dinner' => $dinner,
-                'price' => $price,
-                'money' => $money,
-                'department' => $department,
-                'username' => $username,
-                'type' => $consumptionType,
-                'balance' => $balance,
-                'remark' => $consumptionType == 1 ? "订餐消费" : "未订餐消费",
-                'products' => $order['foods']
             ]
         ];
+    }
+
+    public function saveRedisOrderCode($canteen_id, $dinner_id, $order_id)
+    {
+
+        $hash = "$canteen_id:$dinner_id";
+        $code = Redis::instance()->hLan($hash);
+        $newCode = $code + 1;
+        Redis::instance()->hSet($hash, $order_id, $newCode);
+        return str_pad($newCode, 5, "0", STR_PAD_LEFT);;
+
     }
 }

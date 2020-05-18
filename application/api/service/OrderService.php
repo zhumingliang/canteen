@@ -191,6 +191,7 @@ class OrderService extends BaseService
             'u_id' => $u_id,
             'order_num' => makeOrderNo(),
             'money' => $money,
+            'status' => 'paid_fail',
             'method_id' => PayEnum::PAY_METHOD_WX,
             'order_id' => $order_id
         ];

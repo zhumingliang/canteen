@@ -44,6 +44,7 @@ class WeiXinPayService
 
     public function getPayInfo($data)
     {
+        LogService::save(json_encode($data));
         $app = $this->getApp($data['company_id']);
         $result = $app->order->unify([
             'body' => $data['body'],
