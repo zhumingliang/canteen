@@ -208,9 +208,6 @@ class OrderService extends BaseService
     {
 
         $outsiders = Token::getCurrentTokenVar('outsiders');
-        if ($outsiders == UserEnum::OUTSIDE && $type == OrderEnum::EAT_CANTEEN) {
-            throw new SaveException(['msg' => '用户没有权限堂食']);
-        }
         if ($type == OrderEnum::EAT_OUTSIDER) {
             $outConfig = OutConfigT::where('canteen_id', $canteen_id)
                 ->find();
