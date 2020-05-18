@@ -45,8 +45,6 @@ class WeiXinPayService
     public function getPayInfo($data)
     {
         $app = $this->getApp($data['company_id']);
-        $jssdk = $app->jssdk;
-        var_dump($jssdk);
         $result = $app->order->unify([
             'body' => $data['body'],
             'out_trade_no' => $data['out_trade_no'],
@@ -55,6 +53,9 @@ class WeiXinPayService
             'sign_type' => 'MD5',
             'openid' => $data['openid']
         ]);
+        $jssdk = $app->jssdk;
+        $config = $jssdk->sdkConfig($result['prepay_id']);
+        print_r($config);
         //print_r($result);
         return $result;
     }
