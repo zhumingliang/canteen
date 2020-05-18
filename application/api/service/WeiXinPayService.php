@@ -45,6 +45,8 @@ class WeiXinPayService
     public function getPayInfo($data)
     {
         $app = $this->getApp($data['company_id']);
+        $jssdk = $app->jssdk;
+        var_dump($jssdk);
         $result = $app->order->unify([
             'body' => $data['body'],
             'out_trade_no' => $data['out_trade_no'],

@@ -32,7 +32,9 @@ Index extends BaseController
 {
     public function index(Request $request)
     {
-        echo  md5(111111);
+        $text='{"company_id":69,"openid":"oSi030qTHU0p3vD4um68F4z2rdHU","total_fee":100,"body":"\u4e91\u996d\u5802\u5145\u503c\u4e2d\u5fc3-\u70b9\u9910\u5145\u503c","out_trade_no":"D518099607512833"}';
+        $text1='{"company_id":69,"openid":"oSi030qTHU0p3vD4um68F4z2rdHU","total_fee":1,"body":"\u4e91\u996d\u5802\u5145\u503c\u4e2d\u5fc3-\u70b9\u9910\u5145\u503c","out_trade_no":"1589795993"}';
+        print_r(\GuzzleHttp\json_decode($text1,true)) ;
         // (new  NoticeService())->noticeTask(26,155,'');
         //(new OrderService())->refundWxOrder($id);
         // $this->mailTask($name);
