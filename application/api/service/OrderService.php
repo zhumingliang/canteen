@@ -143,6 +143,7 @@ class OrderService extends BaseService
             //获取订单金额
             $orderMoney = $this->checkOutsiderOrderMoney($dinner_id, $detail);
             //保存订单信息
+            $params['order_num'] = makeOrderNo();
             $params['type'] = $type;
             $params['pay_way'] = PayEnum::PAY_WEIXIN;;
             $params['u_id'] = $u_id;
@@ -158,7 +159,7 @@ class OrderService extends BaseService
             $params['meal_sub_money'] = 0;
             $params['no_meal_money'] = 0;
             $params['no_meal_sub_money'] = 0;
-            $params['pay'] = PayEnum::PAY_NO;
+            $params['pay'] = PayEnum::PAY_FAIL;
             $params['company_id'] = $company_id;
             $params['phone'] = $phone;
             $params['state'] = CommonEnum::STATE_IS_OK;
@@ -189,7 +190,7 @@ class OrderService extends BaseService
             'openid' => $openid,
             'company_id' => $company_id,
             'u_id' => $u_id,
-            'order_num' => time(),//makeOrderNo(),
+            'order_num' => makeOrderNo(),
             'money' => $money,
             'status' => 'paid_fail',
             'method_id' => PayEnum::PAY_METHOD_WX,
