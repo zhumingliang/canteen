@@ -54,7 +54,7 @@ class Takeout extends BaseController
         $company_ids = Request::param('company_ids');
         $canteen_id = Request::param('canteen_id');
         $department_id = Request::param('department_id');
-        $dinner_id = Request::param('company_id');
+        $dinner_id = Request::param('dinner_id');
         $status = Request::param('status');
         $user_type = Request::param('user_type');
         $statistic = (new OrderStatisticService())->takeoutStatistic($page, $size,
@@ -137,7 +137,7 @@ class Takeout extends BaseController
         $ordering_date = Request::param('ordering_date');
         $company_ids = Request::param('company_ids');
         $canteen_id = Request::param('canteen_id');
-        $dinner_id = Request::param('company_id');
+        $dinner_id = Request::param('dinner_id');
         $status = Request::param('status');
         $department_id = Request::param('department_id');
         $user_type = Request::param('user_type');
