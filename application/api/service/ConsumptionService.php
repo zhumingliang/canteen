@@ -451,7 +451,7 @@ class ConsumptionService
             return [
                 'errorCode' => $errorCode,
                 'msg' => $resMessage,
-                'type' => 'canteen',
+                'type' => 'showCode',
                 'data' => [
                     'username' => ''
                 ]

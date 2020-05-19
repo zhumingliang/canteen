@@ -6,6 +6,7 @@ namespace app\api\model;
 
 use app\lib\enum\CommonEnum;
 use app\lib\enum\OrderEnum;
+use app\lib\enum\PayEnum;
 use think\Model;
 use function GuzzleHttp\Promise\queue;
 
@@ -42,13 +43,13 @@ class OrderTakeoutStatisticV extends Model
             ->where(function ($query) use ($status) {
                 if ($status == OrderEnum::STATUS_PAID) {
                     $query->where('state', CommonEnum::STATE_IS_OK)
-                        ->where('pay', 'paid')
+                        ->where('pay', PayEnum::PAY_SUCCESS)
                         ->where('receive', CommonEnum::STATE_IS_FAIL);
                 } elseif ($status == OrderEnum::STATUS_CANCEL) {
                     $query->where('state', CommonEnum::STATE_IS_FAIL);
                 } elseif ($status == OrderEnum::STATUS_RECEIVE) {
                     $query->where('state', CommonEnum::STATE_IS_OK)
-                        ->where('pay', 'paid')
+                        ->where('pay', PayEnum::PAY_SUCCESS)
                         ->where('receive', CommonEnum::STATE_IS_OK)
                         ->where('used', CommonEnum::STATE_IS_FAIL);
                 } elseif ($status == OrderEnum::STATUS_COMPLETE) {
@@ -81,6 +82,7 @@ class OrderTakeoutStatisticV extends Model
                     $query->where('outsider', $user_type);
                 }
             })
+            ->where('pay', PayEnum::PAY_SUCCESS)
             ->hidden(['create_time', 'canteen_id', 'company_id', 'dinner_id', 'state', 'receive', 'used', 'pay'])
             ->order('used DESC')
             ->paginate($size, false, ['page' => $page])->toArray();
