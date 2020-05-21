@@ -17,7 +17,7 @@ class FoodDayStateT extends Model
     {
         $list = self::where('canteen_id', $canteen_id)
             ->where('day', '=',$day)
-            ->select();
+            ->select()->toArray();
         return $list;
 
     }

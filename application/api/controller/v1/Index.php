@@ -8,6 +8,7 @@ use app\api\controller\BaseController;
 use app\api\model\CanteenT;
 use app\api\model\ConsumptionStrategyT;
 use app\api\model\DinnerT;
+use app\api\model\OrderT;
 use app\api\model\Submitequity;
 use app\api\model\UserBalanceV;
 use app\api\service\AddressService;
@@ -20,6 +21,7 @@ use app\api\service\QrcodeService;
 use app\api\service\WeiXinService;
 use app\lib\enum\CommonEnum;
 use app\lib\exception\SuccessMessageWithData;
+use app\lib\printer\Printer;
 use think\Db;
 use think\db\Where;
 use think\facade\Env;
@@ -32,9 +34,7 @@ Index extends BaseController
 {
     public function index(Request $request)
     {
-        $text='{"company_id":69,"openid":"oSi030qTHU0p3vD4um68F4z2rdHU","total_fee":100,"body":"\u4e91\u996d\u5802\u5145\u503c\u4e2d\u5fc3-\u70b9\u9910\u5145\u503c","out_trade_no":"D518099607512833"}';
-        $text1='{"company_id":69,"openid":"oSi030qTHU0p3vD4um68F4z2rdHU","total_fee":1,"body":"\u4e91\u996d\u5802\u5145\u503c\u4e2d\u5fc3-\u70b9\u9910\u5145\u503c","out_trade_no":"1589795993"}';
-        print_r(\GuzzleHttp\json_decode($text1,true)) ;
+        (new Printer())->printOrderDetail(1,1388,2,'0001');
         // (new  NoticeService())->noticeTask(26,155,'');
         //(new OrderService())->refundWxOrder($id);
         // $this->mailTask($name);

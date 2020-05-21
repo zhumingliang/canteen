@@ -24,6 +24,7 @@ use app\lib\exception\UpdateException;
 use GatewayClient\Gateway;
 use think\Db;
 use think\Exception;
+use think\Queue;
 use zml\tp_tools\Redis;
 
 class ConsumptionService
@@ -434,36 +435,40 @@ class ConsumptionService
         return $dinner;
     }
 
-    public function confirmOrder($order_id)
+    public function confirmOrder($orderID)
     {
         $phone = Token::getCurrentPhone();
         $canteenID = Token::getCurrentTokenVar('current_canteen_id');
-        Db::query('call canteenConsumptionWX(:in_orderID,:in_userPhone,
-               @resCode,@resMessage,@dinnerID)',
+        $outsider = Token::getCurrentTokenVar('outsiders');
+        $readyCode = getRandChar(8);
+        $takeCode = getRandChar(8);
+        $qrcodeUrl = $this->saveQRCode($orderID, $readyCode, $takeCode);
+        Db::query('call canteenConsumptionWX(:in_orderID,:in_userPhone,:in_readyCode,
+        :in_takeCode,:in_qrcodeUrl,@resCode,@resMessage,@returnDinnerID)',
             [
-                'in_orderID' => $order_id,
-                'in_userPhone' => $phone
+                'in_orderID' => $orderID,
+                'in_userPhone' => $phone,
+                'in_readyCode' => $readyCode,
+                'in_takeCode' => $takeCode,
+                'in_qrcodeUrl' => $qrcodeUrl,
             ]);
-        $resultSet = Db::query('select @resCode,@resMessage,@dinnerID');
+        $resultSet = Db::query('select @resCode,@resMessage,@returnDinnerID');
         $errorCode = $resultSet[0]['@resCode'];
         $resMessage = $resultSet[0]['@resMessage'];
+        $returnDinnerID = $resultSet[0]['@returnDinnerID'];
         if ($errorCode != 0) {
-            return [
+            throw new UpdateException([
                 'errorCode' => $errorCode,
-                'msg' => $resMessage,
-                'type' => 'showCode',
-                'data' => [
-                    'username' => ''
-                ]
-            ];
+                'msg' => $resMessage
+            ]);
         }
+        $sortCode = $this->saveRedisOrderCode($canteenID, $returnDinnerID, $orderID);
+        //推送消息给显示器
+        $this->sortTask($canteenID, $outsider, $orderID, $sortCode);
+        //启动打印机打印信息
+
         return [
-            'errorCode' => $errorCode,
-            'msg' => $resMessage,
-            'type' => 'canteen',
-            'data' => [
-                'create_time' => date('Y-m-d H:i:s'),
-            ]
+            'code' => $sortCode
         ];
     }
 
@@ -474,7 +479,46 @@ class ConsumptionService
         $code = Redis::instance()->hLan($hash);
         $newCode = $code + 1;
         Redis::instance()->hSet($hash, $order_id, $newCode);
-        return str_pad($newCode, 5, "0", STR_PAD_LEFT);;
+        return str_pad($newCode, 4, "0", STR_PAD_LEFT);;
 
     }
+
+    private function saveQRCode($order_id, $ready_code, $take_code)
+    {
+        $url = "$order_id&$ready_code&$take_code";
+        $url = (new QrcodeService())->qr_code($url);
+        return $url;
+    }
+
+
+    //短信队列
+    public function sortTask($canteenID, $outsider,
+                             $orderID, $sortCode)
+    {
+        $websocketCode = $this->saveRedisSortCode();
+        $jobHandlerClassName = 'app\api\job\SendSort';//负责处理队列任务的类
+        $jobQueueName = "sendSortQueue";//队列名称
+        $jobData = [
+            'canteenID' => $canteenID,
+            'outsider' => $outsider,
+            'orderID' => $orderID,
+            'sortCode' => $sortCode,
+            'websocketCode' => $websocketCode
+        ];;//当前任务的业务数据
+        $isPushed = Queue::push($jobHandlerClassName, $jobData, $jobQueueName);
+        //将该任务推送到消息队列
+        if ($isPushed == false) {
+            throw new SaveException(['msg' => '发送webSocket推送失败']);
+        }
+
+    }
+
+    public function saveRedisSortCode()
+    {
+        $set = "webSocketReceiveCode";
+        $sortCode = getRandChar(8);
+        Redis::instance()->sAdd($set, $sortCode);
+        return $sortCode;
+    }
+
 }

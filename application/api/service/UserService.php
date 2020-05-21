@@ -237,4 +237,16 @@ class UserService
         $user_id = Token::getCurrentUid();
         UserT::update(['phone' => '', 'current_canteen_id' => 0, 'current_company_i' => 0], ['id' => $user_id]);
     }
+
+    public function getUserName($companyID, $phone, $outsider)
+    {
+        if ($outsider == UserEnum::OUTSIDE) {
+            return "";
+        }
+        $staff = CompanyStaffT::staffName($phone, $companyID);
+        if (!$staff){
+            return  "";
+        }
+        return $staff->username;
+    }
 }

@@ -216,7 +216,7 @@ class FoodService extends BaseService
         foreach ($foods as $k => $v) {
             $status = 2;
             $default = 2;
-            if (!$foodDay->isEmpty()) {
+            if (!empty($foodDay)) {
                 foreach ($foodDay as $k2 => $v2) {
                     if ($v['id'] == $v2['f_id']) {
                         $status = $v2['status'];
@@ -274,7 +274,7 @@ class FoodService extends BaseService
                 $dayFood->status = CommonEnum::STATE_IS_OK;
             }
         }
-        $dayFood->update_time=date('Y-m-d H:i:s');
+        $dayFood->update_time = date('Y-m-d H:i:s');
         if (!$dayFood->save()) {
             throw new UpdateException (['msg' => '修改菜品信息状态失败']);
 
@@ -296,7 +296,7 @@ class FoodService extends BaseService
         //获取该餐类下设置数量
         $count = FoodDayStateV::where('day', $day)
             ->where('m_id', $food->menu->id)
-            ->where('status', 2)
+            ->where('status', CommonEnum::STATE_IS_OK)
             ->count('id');
         if ($count < $menu_count) {
             return true;

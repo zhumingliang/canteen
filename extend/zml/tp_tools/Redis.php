@@ -30,10 +30,10 @@ class Redis
 
     public function __construct($options = [])
     {
-       /* if (!config('app.app_debug')) {
-            $this->host = '10.66.217.183';
-            $this->auth='crs-qwfosn9e:mengant@2018';
-        }*/
+        /* if (!config('app.app_debug')) {
+             $this->host = '10.66.217.183';
+             $this->auth='crs-qwfosn9e:mengant@2018';
+         }*/
         $host = trim(isset($options["host"]) ? $options["host"] : $this->host);
         $port = trim(isset($options["port"]) ? $options["port"] : $this->port);
         $auth = trim(isset($options["auth"]) ? $options["auth"] : $this->auth);
@@ -50,14 +50,14 @@ class Redis
                 $this->redisObj[$this->sn]->auth($auth);
                 $this->redisObj[$this->sn]->select($index);
             } catch (\Exception $e) {
-               // Rollbar::log(Level::ERROR, $e->getMessage());
+                // Rollbar::log(Level::ERROR, $e->getMessage());
                 try {
                     $this->redisObj[$this->sn] = new \Redis();
                     $this->redisObj[$this->sn]->connect($host, $port);
                     $this->redisObj[$this->sn]->auth($auth);
                     $this->redisObj[$this->sn]->select($index);
                 } catch (\Exception $e) {
-                 //   Rollbar::log(Level::ERROR, $e->getMessage());
+                    //   Rollbar::log(Level::ERROR, $e->getMessage());
                 }
             }
         }
@@ -226,6 +226,20 @@ class Redis
         $re = $this->redisObj[$this->sn]->exists($key);//存在返回1，不存在返回0
         if (!$re) return false;
         return $this->redisObj[$this->sn]->smembers($key);
+    }
+
+
+    /**
+     * 查，集合对应元素是否存在
+     * @param string $key 集合名字
+     * @param string $value 植
+     * @return mixed
+     */
+    public function sIsMembers($key, $value)
+    {
+        $re = $this->redisObj[$this->sn]->exists($key);//存在返回1，不存在返回0
+        if (!$re) return false;
+        return $this->redisObj[$this->sn]->sismember($key, $value);;
     }
 
     /*------------------------------------3.end  set结构----------------------------------------------------*/
@@ -453,7 +467,6 @@ class Redis
 
 
     /*------------------------------------end hash结构----------------------------------------------------*/
-
 
 
     /*------------------------------------其他结构----------------------------------------------------*/

@@ -79,8 +79,8 @@ class Consumption extends BaseController
     public function confirmOrder()
     {
         $order_id = Request::param('order_id');
-        (new ConsumptionService())->confirmOrder($order_id);
-        return json(new SuccessMessage());
+        $code = (new ConsumptionService())->confirmOrder($order_id);
+        return json(new SuccessMessageWithData(['data' => $code]));
     }
 
 

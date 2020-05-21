@@ -21,10 +21,21 @@ class OrderT extends Model
         return $this->hasMany('OrderDetailT', 'o_id', 'id');
     }
 
+    public function dinner()
+    {
+        return $this->belongsTo('DinnerT', 'd_id', 'id');
+    }
+
     public function address()
     {
         return $this->belongsTo('UserAddressT', 'address_id', 'id');
 
+    }
+
+    protected function getQrcodeUrlAttr($value)
+    {
+        $finalUrl = config('setting.image') . $value;
+        return $finalUrl;
     }
 
     public static function personalChoiceInfo($id)
@@ -147,6 +158,23 @@ class OrderT extends Model
                 }
             ])
             ->field('id,d_id,type,pay_way,money,sub_money,(money+sub_money) as all_money ,consumption_type,meal_sub_money,meal_money')
+            ->find()->toArray();
+        return $info;
+    }
+
+    public static function infoForPrinter($id)
+    {
+        $info = self::where('id', $id)
+            ->with([
+                'foods' => function ($query) {
+                    $query->where('state', CommonEnum::STATE_IS_OK)
+                        ->field('id as detail_id ,o_id,count,name,price');
+                },
+                'dinner' => function ($query) {
+                    $query->field('id,name');
+                }
+            ])
+            ->field('id,d_id,money,sub_money,phone,outsider,company_id,confirm_time,qrcode_url,remark,count')
             ->find()->toArray();
         return $info;
     }

@@ -53,8 +53,6 @@ class SendNotice
     {
         //可以发送邮件给相应的负责人员
         LogService::save("失败:" . json_encode($data));
-
-//        print("Warning: Job failed after max retries. job data is :".var_export($data,true)."\n");
     }
 
     /**
@@ -74,8 +72,6 @@ class SendNotice
     {
         try {
             Db::startTrans();
-            LogService::save(json_encode($data));
-
             $n_id = $data['notice_id'];
             $d_ids = $data['department_ids'];
             $s_ids = $data['staff_ids'];

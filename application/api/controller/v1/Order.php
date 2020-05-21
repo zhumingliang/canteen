@@ -37,12 +37,14 @@ class Order extends BaseController
      *       "dinner": "早餐",
      *       "type": 1,
      *       "count": 1,
+     *       "remark": "备注",
      *       "address_id": 1,
      *       "detail":[{"menu_id":1,"foods":[{"food_id":1,"name":"商品1","price":5,""count":1},{"food_id":2,"name":"商品1","price":5,"count":1}]}]
      *     }
      * @apiParam (请求参数说明) {string} ordering_date  订餐日期
      * @apiParam (请求参数说明) {int} dinner_id 餐次id
      * @apiParam (请求参数说明) {int} dinner 餐次名称
+     * @apiParam (请求参数说明) {string} remark 备注
      * @apiParam (请求参数说明) {int} type 就餐类别：1|食堂；2|外卖
      * @apiParam (请求参数说明) {int} count 订餐数量
      * @apiParam (请求参数说明) {int} address_id 配送地址id
@@ -77,6 +79,7 @@ class Order extends BaseController
      *       "ordering_date": "2019-09-07",
      *       "type": 1,
      *       "dinner_id": 1,
+     *       "remark": "备注",
      *       "dinner": "早餐",
      *       "count": 1,
      *       "address_id": 1,
@@ -86,6 +89,7 @@ class Order extends BaseController
      * @apiParam (请求参数说明) {int} dinner_id 餐次id
      * @apiParam (请求参数说明) {int} type 就餐类别：1|食堂；2|外卖
      * @apiParam (请求参数说明) {int} dinner 餐次名称
+     * @apiParam (请求参数说明) {string} remark 备注
      * @apiParam (请求参数说明) {int} count 订餐数量
      * @apiParam (请求参数说明) {int} address_id 配送地址id
      * @apiParam (请求参数说明) {obj} detail 订餐菜品明细

@@ -28,4 +28,15 @@ class MachineT extends Model
             ->paginate($size, false, ['page' => $page])->toArray();
         return $machines;
     }
+
+    public static function getSortMachine($canteenID, $outsider)
+    {
+        $machine = self::where('belong_id', $canteenID)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->where('sort_code', CommonEnum::STATE_IS_OK)
+            ->where('out', $outsider)
+            ->find();
+        return $machine;
+
+    }
 }
