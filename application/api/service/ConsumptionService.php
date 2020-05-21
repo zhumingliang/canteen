@@ -21,6 +21,7 @@ use app\lib\exception\AuthException;
 use app\lib\exception\ParameterException;
 use app\lib\exception\SaveException;
 use app\lib\exception\UpdateException;
+use app\lib\printer\Printer;
 use GatewayClient\Gateway;
 use think\Db;
 use think\Exception;
@@ -466,9 +467,12 @@ class ConsumptionService
         //推送消息给显示器
         $this->sortTask($canteenID, $outsider, $orderID, $sortCode);
         //启动打印机打印信息
-
+        $printRes = (new Printer())->printOrderDetail($canteenID, $orderID, $outsider, $sortCode);
+        if ($printRes) {
+            OrderT::update(['print' => CommonEnum::STATE_IS_OK], ['id' => $orderID]);
+        }
         return [
-            'code' => $sortCode
+            'sortCode' => $sortCode
         ];
     }
 

@@ -174,7 +174,7 @@ class OrderT extends Model
                     $query->field('id,name');
                 }
             ])
-            ->field('id,d_id,money,sub_money,phone,outsider,company_id,confirm_time,qrcode_url,remark,count')
+            ->field('id,d_id,money,sub_money,phone,outsider,company_id,confirm_time,qrcode_url,remark,count,fixed')
             ->find()->toArray();
         return $info;
     }

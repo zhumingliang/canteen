@@ -94,6 +94,7 @@ class OrderService extends BaseService
             $params['department_id'] = $staff->d_id;
             $params['staff_id'] = $staff->id;
             $params['phone'] = $phone;
+            $params['fixed'] = $dinner->fixed;
             $params['state'] = CommonEnum::STATE_IS_OK;
             $params['receive'] = Token::getCurrentTokenVar('outsiders');
             $order = OrderT::create($params);
@@ -162,6 +163,7 @@ class OrderService extends BaseService
             $params['pay'] = PayEnum::PAY_FAIL;
             $params['company_id'] = $company_id;
             $params['phone'] = $phone;
+            $params['fixed'] = $dinner->fixed;
             $params['state'] = CommonEnum::STATE_IS_OK;
             $params['receive'] = CommonEnum::STATE_IS_FAIL;
             $order = OrderT::create($params);
@@ -380,7 +382,7 @@ class OrderService extends BaseService
         $type_number = $dinner->type_number;
         //$limit_time = date('Y-m-d') . ' ' . $limit_time;
         $limit_time = $ordering_date . ' ' . $limit_time;
-        $expiryDate = $this->prefixExpiryDate($limit_time, [$type => $type_number],'-');
+        $expiryDate = $this->prefixExpiryDate($limit_time, [$type => $type_number], '-');
         //$expiryDate = $this->prefixExpiryDate($ordering_date, [$type => $type_number]);
         if (time() > strtotime($expiryDate)) {
             throw  new  SaveException(['msg' => '超出订餐时间']);
@@ -616,6 +618,7 @@ class OrderService extends BaseService
                     $data['no_meal_sub_money'] = $checkOrder['no_meal_sub_money'] * $v2['count'];
                     $data['pay_way'] = '';
                     $data['phone'] = $phone;
+                    $data['fixed'] = $dinner->fixed;
                     $data['pay'] = 'paid';;
                     $params['state'] = CommonEnum::STATE_IS_OK;
                     $params['receive'] = CommonEnum::STATE_IS_OK;

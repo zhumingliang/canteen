@@ -8,18 +8,23 @@ use app\api\model\OrderT;
 use app\api\model\PrinterT;
 use app\api\service\OrderService;
 use app\api\service\UserService;
+use app\lib\enum\CommonEnum;
 
 class Printer extends PrinterBase
 {
     public function printOrderDetail($canteenID, $orderID, $outsider, $sortCode)
     {
         //获取打印机信息
-        /* $printer = PrinterT::getPrinter($canteenID, $outsider);
-         if (!$printer) {
-             return false;
-         }
-         $sn = $printer->code;*/
-        $sn = '921527631';
+        $printer = PrinterT::getPrinter($canteenID, $outsider);
+        if (!$printer) {
+            return false;
+        }
+        $sn = $printer->code;
+        //$sn = '921527631';
+        $printerStatus = $this->queryPrinterStatus($sn);
+        if (strpos($printerStatus['data'], '离线') !== false || strpos($printerStatus['data'], '不正常') !== false) {
+            return false;
+        }
         $canteenName = $outsider == 1 ? "外部食堂" : "内部食堂";
         $order = OrderT::infoForPrinter($orderID);
         $name = (new  UserService())->getUserName($order['company_id'], $order['phone'], $outsider);
@@ -29,6 +34,7 @@ class Printer extends PrinterBase
         $C = 3;
         $D = 6;
         $money = $order['money'] + $order['sub_money'];
+        $fixed = $order['fixed'];
         $content = '<CB>' . $canteenName . '｜' . $sortCode . '</CB><BR>';
         $content .= '确认时间：' . $order['confirm_time'] . '<BR>';
         $content .= '餐次：' . $order['dinner']['name'] . '<BR>';
@@ -42,9 +48,9 @@ class Printer extends PrinterBase
         if (count($arr)) {
             foreach ($arr as $k5 => $v5) {
                 $name = $v5['name'];
-                $price = $v5['price'];
+                $price = $fixed == CommonEnum::STATE_IS_OK ? '*' : $v5['price'];
                 $num = $v5['count'];
-                $prices = $v5['price'] * $v5['count'];
+                $prices = $fixed == CommonEnum::STATE_IS_OK ? '*' : $v5['price'] * $v5['count'];
                 $kw3 = '';
                 $kw1 = '';
                 $kw2 = '';
@@ -135,8 +141,12 @@ class Printer extends PrinterBase
         $content .= '<QR>' . $order['qrcode_url'] . '</QR>';
         //把二维码字符串用标签套上即可自动生成二维码
 
-        $res = $this->printMsg($sn, $content, 1);
-        var_dump($res);
+        $printRes = $this->printMsg($sn, $content, 1);
+        if ($printRes['msg'] == 'ok' && $printRes['ret'] == 0) {
+            return true;
+        }
+        return false;
+
 
     }
 

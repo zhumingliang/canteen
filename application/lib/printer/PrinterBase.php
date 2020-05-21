@@ -51,9 +51,34 @@ class PrinterBase
         } else {
             //服务器返回的JSON字符串，建议要当做日志记录起来
             $result = $client->getContent();
-            echo $result;
+            return json_decode($result, true);
         }
     }
+
+    /**
+     * [获取某台打印机状态接口 Open_queryPrinterStatus]
+     * @param  [string] $sn [打印机编号]
+     * @return [string]     [接口返回值]
+     */
+    public function queryPrinterStatus($sn)
+    {
+        $time = time();         //请求时间
+        $msgInfo = array(
+            'user' => $this->USER,
+            'stime' => $time,
+            'sig' => $this->signature($time),
+            'apiname' => 'Open_queryPrinterStatus',
+            'sn' => $sn
+        );
+        $client = new HttpClient($this->IP, $this->PORT);
+        if (!$client->post($this->PATH, $msgInfo)) {
+            echo 'error';
+        } else {
+            $result = $client->getContent();
+            return json_decode($result, true);
+        }
+    }
+
 
     /**
      * [signature 生成签名]

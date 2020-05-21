@@ -100,6 +100,7 @@ Route::post('api/:version/staff/qrcode/save', 'api/:version.Department/createSta
 
 Route::rule('api/:version/consumption/staff', 'api/:version.Consumption/staff');
 Route::post('api/:version/consumption/face', 'api/:version.Consumption/consumptionWithFace');
+Route::post('api/:version/consumption/order/confirm', 'api/:version.Consumption/confirmOrder');
 
 Route::rule('api/:version/image/upload', 'api/:version.Image/upload');
 

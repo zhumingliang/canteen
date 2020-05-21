@@ -76,6 +76,21 @@ class Consumption extends BaseController
         return json(new SuccessMessageWithData($info));
     }
 
+    /**
+     * @api {POST} /api/v1/consumption/order/confirm 微信端-确认就餐
+     * @apiGroup   WX
+     * @apiVersion 3.0.0
+     * @apiDescription     微信端-确认就餐
+     *    {
+     *       "order_id": 1
+     *     }
+     * @apiParam (请求参数说明) {string} order_id  订单id
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"sortCode":0001}}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     * @apiSuccess (返回参数说明) {string} sortCode 取餐号
+     */
     public function confirmOrder()
     {
         $order_id = Request::param('order_id');
