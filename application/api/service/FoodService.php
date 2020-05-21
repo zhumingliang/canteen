@@ -283,7 +283,7 @@ class FoodService extends BaseService
 
     private function checkStatus($food_id, $day, $status)
     {
-        if ($status != 2) {
+        if ($status == CommonEnum::STATE_IS_FAIL) {
             return true;
         }
         $food = FoodT::where('id', $food_id)->with('menu')->find();
