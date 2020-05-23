@@ -23,7 +23,7 @@ class MachineT extends Model
         $machines = self::where('belong_id', $belong_id)
             ->where('machine_type', $machine_type)
             ->where('state', CommonEnum::STATE_IS_OK)
-            ->field('id,machine_type,name,code,number')
+            ->field('id,machine_type,name,code,number,out,sort_code')
             ->order('create_time desc')
             ->paginate($size, false, ['page' => $page])->toArray();
         return $machines;

@@ -21,6 +21,7 @@ use app\api\model\MenuT;
 use app\api\model\OutConfigT;
 use app\api\model\OutConfigV;
 use app\api\model\OutsiderCompanyT;
+use app\api\model\PrinterT;
 use app\api\model\StaffCanteenV;
 use app\api\model\StaffV;
 use app\api\model\StrategyDetailT;
@@ -663,9 +664,9 @@ class CanteenService
     public function machines($belong_id, $machine_type, $page, $size)
     {
         $machines = MachineT::machines($page, $size, $belong_id, $machine_type);
-
         $data = $machines['data'];
         $machines['data'] = $this->prefixMachinesState($data);
+
         return $machines;
     }
 

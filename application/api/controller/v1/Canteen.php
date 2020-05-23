@@ -430,6 +430,8 @@ class Canteen extends BaseController
      *       "number": "001",
      *       "code": "dadas12121",
      *       "pwd": "a111",
+     *       "out": 1,
+     *       "sort_code": 1
      *     }
      * @apiParam (请求参数说明) {string} name  设备名称
      * @apiParam (请求参数说明) {int} company_id  企业id
@@ -438,6 +440,8 @@ class Canteen extends BaseController
      * @apiParam (请求参数说明) {string} machine_type  设备类别 canteen:饭堂id；shop：小卖部id
      * @apiParam (请求参数说明) {string} code  设备号
      * @apiParam (请求参数说明) {string} pwd  设备登陆密码
+     * @apiParam (请求参数说明) {int} out  设备使用类别：1：外部食堂；2 ：内部食堂;3 无
+     * @apiParam (请求参数说明) {int} sort_code  是否接收排队序列 1： 接收；2 ： 不接收
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
@@ -484,12 +488,16 @@ class Canteen extends BaseController
      *       "number": "001",
      *       "code": "dadas12121",
      *       "pwd": "a111",
+     *       "out": 1,
+     *       "sort_code": 1
      *     }
      * @apiParam (请求参数说明) {int} id  设备id
      * @apiParam (请求参数说明) {string} name  设备名称
      * @apiParam (请求参数说明) {string} number  编号
      * @apiParam (请求参数说明) {string} code  设备号
      * @apiParam (请求参数说明) {string} pwd  设备登陆密码
+     * @apiParam (请求参数说明) {int} out  设备使用类别：1：外部食堂；2 ：内部食堂;3 无
+     * @apiParam (请求参数说明) {int} sort_code  是否接收排队序列 1： 接收；2 ： 不接收
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
@@ -597,7 +605,7 @@ class Canteen extends BaseController
      * @apiParam (请求参数说明) {int} page 当前页码
      * @apiParam (请求参数说明) {int} size 每页多少条数据
      * @apiParam (请求参数说明) {int} belong_id  归属id：饭堂id/小卖部id（和machine_type一一对应）
-     * @apiParam (请求参数说明) {int} machine_type 设备类别：canteen｜饭堂；shop|小卖部
+     * @apiParam (请求参数说明) {int} machine_type 设备类别：canteen：饭堂；shop：小卖部
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200,"data":{"total":1,"per_page":"20","current_page":1,"last_page":1,"data":[{"id":2,"machine_type":"canteen","name":"刷卡器1号","code":"a111111","number":"001","state":1}]}}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
@@ -611,6 +619,8 @@ class Canteen extends BaseController
      * @apiSuccess (返回参数说明) {string} number 设备序号
      * @apiSuccess (返回参数说明) {string} code 设备硬件号
      * @apiSuccess (返回参数说明) {string} name 设备硬件名称
+     * @apiSuccess (返回参数说明) {int} out  设备使用类别：1：外部食堂；2 ：内部食堂;3 无
+     * @apiSuccess (返回参数说明) {int} sort_code  是否接收排队序列 1： 接收；2 ： 不接收
      * @apiSuccess (返回参数说明) {int} state 状态：1|正常；2|异常
      */
     public function machines($page = 1, $size = 20)

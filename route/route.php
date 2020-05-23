@@ -68,6 +68,11 @@ Route::get('api/:version/canteen/diningMode', 'api/:version.Canteen/diningMode')
 Route::get('api/:version/machines/company', 'api/:version.Canteen/companyMachines');
 Route::get('api/:version/machines', 'api/:version.Canteen/machines');
 
+Route::post('api/:version/printer/save', 'api/:version.Printer/save');
+Route::post('api/:version//printer/update', 'api/:version.Printer/update');
+Route::post('api/:version//printer/delete', 'api/:version.Printer/delete');
+Route::get('api/:version/printers', 'api/:version.Printer/printers');
+
 Route::get('api/:version/roles', 'api/:version.Role/roles');
 Route::get('api/:version/role', 'api/:version.Role/role');
 Route::post('api/:version/role/save', 'api/:version.Role/save');

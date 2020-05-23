@@ -495,7 +495,6 @@ class ConsumptionService
     }
 
 
-    //短信队列
     public function sortTask($canteenID, $outsider,
                              $orderID, $sortCode)
     {
