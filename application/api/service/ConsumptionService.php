@@ -469,12 +469,15 @@ class ConsumptionService
         //启动打印机打印信息
         $printRes = (new Printer())->printOrderDetail($canteenID, $orderID, $outsider, $sortCode);
         if ($printRes) {
-            OrderT::update(['print' => CommonEnum::STATE_IS_OK], ['id' => $orderID]);
+            $updateData = ['print' => CommonEnum::STATE_IS_OK];
         }
+        $updateData['sort_code'] = $sortCode;
+        OrderT::update($updateData, ['id' => $orderID]);
         return [
             'sortCode' => $sortCode
         ];
     }
+
 
     public function saveRedisOrderCode($canteen_id, $dinner_id, $order_id)
     {
