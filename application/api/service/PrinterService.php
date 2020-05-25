@@ -23,7 +23,7 @@ class PrinterService
 
     public function delete($id)
     {
-        $printer = PrinterT::update(['state' => CommonEnum::STATE_IS_OK], ['id' => $id]);
+        $printer = PrinterT::update(['state' => CommonEnum::STATE_IS_FAIL], ['id' => $id]);
         if (!$printer) {
             throw new DeleteException();
         }
