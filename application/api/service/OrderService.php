@@ -832,6 +832,47 @@ class OrderService extends BaseService
         return true;
     }
 
+
+    private
+    function checkOrderCanHandelToDetail($d_id, $ordering_date)
+    {
+        //获取餐次设置
+        $dinner = DinnerT::dinnerInfo($d_id);
+        $type = $dinner->type;
+        $limit_time = $dinner->limit_time;
+        $type_number = $dinner->type_number;
+        if ($type == 'day') {
+            $expiryDate = $this->prefixExpiryDateForOrder($ordering_date, $type_number, '-');
+            if (time() > strtotime($expiryDate . ' ' . $limit_time)) {
+                return 2;
+            }
+        } else if ($type == 'week') {
+            $ordering_date_week = date('W', strtotime($ordering_date));
+            $now_week = date('W', time());
+            if ($ordering_date_week <= $now_week) {
+                return 2;
+            }
+            if (($ordering_date_week - $now_week) === 1) {
+                if ($type_number == 0) {
+                    //星期天
+                    if (strtotime($limit_time) < time()) {
+                        return 2;
+                    }
+                } else {
+                    //周一到周六
+                    if (date('w', time()) > $type_number) {
+                        return 2;
+                    } else if (date('w', time()) == $type_number && strtotime($limit_time) < time()) {
+                        return 2;
+                    }
+                }
+            }
+
+        }
+        return 1;
+    }
+
+
     /**
      * 修改订餐数量
      */
@@ -1109,6 +1150,7 @@ class OrderService extends BaseService
             $order = ShopOrderT::orderInfo($id);
         } else {
             $order = OrderT::orderDetail($id);
+            $order['handel'] = $this->checkOrderCanHandelToDetail($order->dinner_id,$order->ordering_date);
         }
         /*if ($order->u_id != $u_id) {
             throw new AuthException();
@@ -1116,6 +1158,7 @@ class OrderService extends BaseService
 
         return $order;
     }
+
 
 //用户查询消费记录
     public
