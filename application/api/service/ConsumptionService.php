@@ -494,6 +494,7 @@ class ConsumptionService
     {
         $url = "$order_id&$ready_code&$take_code";
         $url = (new QrcodeService())->qr_code($url);
+        LogService::save($url);
         return $url;
     }
 
