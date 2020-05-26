@@ -75,7 +75,6 @@ class OrderingV extends Model
 
         $orderings = self::where('phone', $phone)
             ->whereTime('ordering_date', '>=', date('Y-m-d'))
-            ->where('type', $type)
             ->where(function ($query) use ($canteen_id) {
                 if (!empty($canteen_id)) {
                     $query->where('c_id', $canteen_id);
@@ -85,7 +84,11 @@ class OrderingV extends Model
             ->where('used', CommonEnum::STATE_IS_FAIL)
             ->where('state', CommonEnum::STATE_IS_OK)
             ->field('id,canteen as address,if(type=1,"食堂","外卖") as type,create_time,dinner,money,ordering_date,sub_money,delivery_fee,count')
-          ->paginate($size, false, ['page' => $page]);
+            ->where('type', $type)
+            ->fetchSql(true)
+            ->select();
+        LogService::save($orderings);
+           // ->paginate($size, false, ['page' => $page]);
         return $orderings;
     }
 
