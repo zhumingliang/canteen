@@ -32,11 +32,11 @@ class OrderT extends Model
 
     }
 
-    protected function getQrcodeUrlAttr($value)
+   /* protected function getQrcodeUrlAttr($value)
     {
         $finalUrl = config('setting.image') . $value;
         return $finalUrl;
-    }
+    }*/
 
     public static function personalChoiceInfo($id)
     {
