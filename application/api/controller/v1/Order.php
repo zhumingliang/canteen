@@ -1183,6 +1183,37 @@ class Order extends BaseController
         return json(new SuccessMessage());
     }
 
+    /**
+     * @api {GET} /api/v1/order/usersStatistic/info 微信端-总订单查询-获取订单详情
+     * @apiGroup  Official
+     * @apiVersion 3.0.0
+     * @apiDescription 微信端-订单查询-获取订单详情
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/order/usersStatistic/info?order_ids=1,2
+     * @apiParam (请求参数说明) {int} order_ids  订单id
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":[{"id":4665,"count":1,"money":"3.0","sub_money":"0.0","ordering_type":"personal_choice","delivery_fee":"0.00","wx_confirm":2,"sort_code":null,"remark":null,"foods":[{"detail_id":401,"o_id":4665,"count":1,"name":"对内3对外0.2的早餐","price":"3.0"}]},{"id":4666,"count":1,"money":"1.0","sub_money":"0.0","ordering_type":"online","delivery_fee":"0.00","wx_confirm":2,"sort_code":null,"remark":null,"foods":[]}]}     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     * @apiSuccess (返回参数说明) {int} id 订单id
+     * @apiSuccess (返回参数说明) {int} count  订餐数量
+     * @apiSuccess (返回参数说明) {int} money  标准金额
+     * @apiSuccess (返回参数说明) {int} ordering_type 订餐类别：personal_choice：个人选菜；online：在线订餐
+     * @apiSuccess (返回参数说明) {int} sub_money  附加金额
+     * @apiSuccess (返回参数说明) {int} delivery_fee  派送费
+     * @apiSuccess (返回参数说明) {string} remark  备注
+     * @apiSuccess (返回参数说明) {int} wx_confirm  是否微信确认 1:是；2：否
+     * @apiSuccess (返回参数说明) {string} sort_code  排序号 wx_confirm=1 时才有
+     * @apiSuccess (返回参数说明) {int} food_id 菜品id
+     * @apiSuccess (返回参数说明) {string} price 菜品实时单价
+     * @apiSuccess (返回参数说明) {string} count 菜品数量
+     * @apiSuccess (返回参数说明) {string} name 菜品名称
+     */
+    public function usersStatisticInfo()
+    {
+        $orderIds = Request::param('order_ids');
+        $orders = (new OrderService())->usersStatisticInfo($orderIds);
+        return json(new SuccessMessageWithData(['data' => $orders]));
+    }
 
 
 }

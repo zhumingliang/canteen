@@ -169,6 +169,7 @@ Route::get('api/:version/order/consumptionRecords/detail', 'api/:version.Order/r
 Route::get('api/:version/order/managerOrders', 'api/:version.Order/managerOrders');
 Route::get('api/:version/order/managerDinnerStatistic', 'api/:version.Order/managerDinnerStatistic');
 Route::get('api/:version/order/usersStatistic', 'api/:version.Order/orderUsersStatistic');
+Route::get('api/:version/order/usersStatistic/info', 'api/:version.Order/usersStatisticInfo');
 Route::get('api/:version/order/foodUsersStatistic', 'api/:version.Order/foodUsersStatistic');
 Route::get('api/:version/order/orderStatistic', 'api/:version.Order/orderStatistic');
 Route::get('api/:version/order/orderStatistic/export', 'api/:version.Order/exportOrderStatistic');

@@ -1150,7 +1150,7 @@ class OrderService extends BaseService
             $order = ShopOrderT::orderInfo($id);
         } else {
             $order = OrderT::orderDetail($id);
-            $order['handel'] = $this->checkOrderCanHandelToDetail($order->dinner_id,$order->ordering_date);
+            $order['handel'] = $this->checkOrderCanHandelToDetail($order->dinner_id, $order->ordering_date);
         }
         /*if ($order->u_id != $u_id) {
             throw new AuthException();
@@ -1479,5 +1479,11 @@ class OrderService extends BaseService
         if (!$order) {
             throw new UpdateException();
         }
+    }
+
+    public function usersStatisticInfo($orderIds)
+    {
+        $orders = OrderT::usersStatisticInfo($orderIds);
+        return $orders;
     }
 }

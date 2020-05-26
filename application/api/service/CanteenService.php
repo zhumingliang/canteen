@@ -741,9 +741,11 @@ class CanteenService
         }
     }
 
-    public function checkConfirm()
+    public function checkConfirm($canteen_id)
     {
-        $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
+        if (!$canteen_id){
+            $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
+        }
         $account = CanteenAccountT::where('c_id', $canteen_id)
             ->find();
         if (!$account) {

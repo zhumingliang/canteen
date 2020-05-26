@@ -179,4 +179,24 @@ class OrderT extends Model
         return $info;
     }
 
+    public static function usersStatisticInfo($orderIds)
+    {
+        $info = self::where(function ($query) use ($orderIds) {
+            if (strpos($orderIds, ',') !== false) {
+               $query->whereIn('id',$orderIds);
+            }else{
+                $query->where('id',$orderIds);
+
+            }
+        })
+            ->with([
+                'foods' => function ($query) {
+                    $query->where('state', CommonEnum::STATE_IS_OK)
+                        ->field('id as detail_id ,o_id,count,name,price');
+                }
+            ])
+            ->field('id,count,money,sub_money,ordering_type,delivery_fee,wx_confirm,sort_code,remark')
+            ->select();
+        return $info;
+    }
 }
