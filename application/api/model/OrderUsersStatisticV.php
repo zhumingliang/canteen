@@ -22,7 +22,7 @@ class OrderUsersStatisticV extends Model
                     $query->where('used', CommonEnum::STATE_IS_FAIL);
                 }
             })
-            ->field('username,phone,sum(count) as count')
+            ->field('username,phone,sum(count) as count,group_concat(order_id) as order_id')
             ->group('u_id')
             ->paginate($size, false, ['page' => $page]);
         return $users;
