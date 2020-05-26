@@ -85,10 +85,7 @@ class OrderingV extends Model
             ->where('state', CommonEnum::STATE_IS_OK)
             ->field('id,canteen as address,if(type=1,"食堂","外卖") as type,create_time,dinner,money,ordering_date,sub_money,delivery_fee,count')
             ->where('type', $type)
-            ->fetchSql(true)
-            ->select();
-        LogService::save($orderings);
-           // ->paginate($size, false, ['page' => $page]);
+             ->paginate($size, false, ['page' => $page]);
         return $orderings;
     }
 
