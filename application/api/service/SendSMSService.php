@@ -35,9 +35,8 @@ class SendSMSService
         //$res = SendSms::instance()->send($phone, $params, $type);
         $this->sendSms($phone, 'canteen_' . $type, $params);
         $token = Request::header('token');
-        $redis = new Redis();
         $key = "code:" . $token;
-        $redis->set($key, $phone . '-' . $code, 120);
+        Redis::instance()->set($key, $phone . '-' . $code, 120);
         return true;
     }
 
