@@ -31,7 +31,7 @@ class SendSMS extends BaseController
     public function sendCode()
     {
         $phone = Request::param('phone');
-        (new SendSMSService())->sendCode($phone,'register');
+        (new SendSMSService())->sendCode($phone,'login');
         return json(new SuccessMessage());
 
     }
