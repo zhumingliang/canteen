@@ -444,15 +444,17 @@ class ConsumptionService
         $readyCode = getRandChar(8);
         $takeCode = getRandChar(8);
         $qrcodeUrl = $this->saveQRCode($orderID, $readyCode, $takeCode);
+        $data = [
+            'in_orderID' => $orderID,
+            'in_userPhone' => $phone,
+            'in_readyCode' => $readyCode,
+            'in_takeCode' => $takeCode,
+            'in_qrcodeUrl' => $qrcodeUrl,
+        ];
+        LogService::save(json_encode($data));
         Db::query('call canteenConsumptionWX(:in_orderID,:in_userPhone,:in_readyCode,
         :in_takeCode,:in_qrcodeUrl,@resCode,@resMessage,@returnDinnerID)',
-            [
-                'in_orderID' => $orderID,
-                'in_userPhone' => $phone,
-                'in_readyCode' => $readyCode,
-                'in_takeCode' => $takeCode,
-                'in_qrcodeUrl' => $qrcodeUrl,
-            ]);
+            $data);
         $resultSet = Db::query('select @resCode,@resMessage,@returnDinnerID');
         $errorCode = $resultSet[0]['@resCode'];
         $resMessage = $resultSet[0]['@resMessage'];
@@ -493,7 +495,7 @@ class ConsumptionService
     private function saveQRCode($order_id, $ready_code, $take_code)
     {
         $url = "$order_id&$ready_code&$take_code";
-       // $url = (new QrcodeService())->qr_code($url);
+        // $url = (new QrcodeService())->qr_code($url);
         return $url;
     }
 
