@@ -70,7 +70,6 @@ class CanteenService
         if ($canteen) {
             throw new SaveException(['msg' => '企业已经存在饭堂：' . $name]);
         }
-
     }
 
     public function saveDefault($company_id, $name)
@@ -743,7 +742,7 @@ class CanteenService
 
     public function checkConfirm($canteen_id)
     {
-        if (!$canteen_id){
+        if (!$canteen_id) {
             $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
         }
         $account = CanteenAccountT::where('c_id', $canteen_id)
@@ -756,4 +755,14 @@ class CanteenService
         ];
     }
 
+    public function deleteDinner($id)
+    {
+        $res = DinnerT::update(['state' => CommonEnum::STATE_IS_FAIL], ['id' => $id]);
+        if (!$res) {
+            throw new DeleteException();
+        }
+        //清除消费策略
+        ConsumptionStrategyT::update(['state' => CommonEnum::STATE_IS_FAIL], ['d_id'=>$id]);
+        StrategyDetailT::update(['state' => CommonEnum::STATE_IS_FAIL], ['dinner_id'=>$id]);
+    }
 }

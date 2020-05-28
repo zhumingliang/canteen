@@ -144,7 +144,7 @@ class ConsumptionService
     {
         Db::query('call canteenConsumptionFace(:in_companyID,:in_canteenID,:in_faceTime,:in_phone,
                 @currentOrderID,@currentConsumptionType,@resCode,@resMessage,@returnBalance,
-                @returnDinner,@returnDepartment,@returnUsername,@returnPrice,@returnMoney)',
+                @returnDinner,@returnDepartment,@returnUsername,@returnPrice,@returnMoney,@returnCount)',
             [
                 'in_companyID' => $company_id,
                 'in_canteenID' => $canteen_id,
@@ -153,7 +153,7 @@ class ConsumptionService
             ]);
         $resultSet = Db::query('select @currentOrderID,@currentConsumptionType,
         @resCode,@resMessage,@returnBalance,@returnDinner,
-        @returnDepartment,@returnUsername,@returnPrice,@returnMoney');
+        @returnDepartment,@returnUsername,@returnPrice,@returnMoney,@returnCount');
         $errorCode = $resultSet[0]['@resCode'];
         $resMessage = $resultSet[0]['@resMessage'];
         $consumptionType = $resultSet[0]['@currentConsumptionType'];
@@ -164,6 +164,7 @@ class ConsumptionService
         $username = $resultSet[0]['@returnUsername'];
         $price = $resultSet[0]['@returnPrice'];
         $money = $resultSet[0]['@returnMoney'];
+        $count = $resultSet[0]['@returnCount'];
         if ($errorCode != 0) {
             // throw  new SaveException(['errorCode' => $errorCode, 'msg' => $resMessage]);
             return [
@@ -189,6 +190,7 @@ class ConsumptionService
                 'money' => $money,
                 'department' => $department,
                 'username' => $username,
+                'count' => $count,
                 'type' => $consumptionType,
                 'balance' => $balance,
                 'remark' => $consumptionType == 1 ? "订餐消费" : "未订餐消费",
@@ -201,13 +203,13 @@ class ConsumptionService
     {
         Db::query('call canteenConsumption(:in_companyID,:in_canteenID,:in_Qrcode,
                 @currentOrderID,@currentConsumptionType,@resCode,@resMessage,@returnBalance,
-                @returnDinner,@returnDepartment,@returnUsername,@returnPrice,@returnMoney)',
+                @returnDinner,@returnDepartment,@returnUsername,@returnPrice,@returnMoney,@returnCount)',
             [
                 'in_companyID' => $company_id,
                 'in_canteenID' => $canteen_id,
                 'in_Qrcode' => $code
             ]);
-        $resultSet = Db::query('select @currentOrderID,@currentConsumptionType,@resCode,@resMessage,@returnBalance,@returnDinner,@returnDepartment,@returnUsername,@returnPrice,@returnMoney');
+        $resultSet = Db::query('select @currentOrderID,@currentConsumptionType,@resCode,@resMessage,@returnBalance,@returnDinner,@returnDepartment,@returnUsername,@returnPrice,@returnMoney,@returnCount');
         $errorCode = $resultSet[0]['@resCode'];
         $resMessage = $resultSet[0]['@resMessage'];
         $consumptionType = $resultSet[0]['@currentConsumptionType'];
@@ -218,6 +220,7 @@ class ConsumptionService
         $username = $resultSet[0]['@returnUsername'];
         $price = $resultSet[0]['@returnPrice'];
         $money = $resultSet[0]['@returnMoney'];
+        $count = $resultSet[0]['@returnCount'];
         if ($errorCode != 0) {
             throw  new SaveException(['errorCode' => $errorCode, 'msg' => $resMessage]);
         }
@@ -228,6 +231,7 @@ class ConsumptionService
             'dinner' => $dinner,
             'price' => $price,
             'money' => $money,
+            'count' => $count,
             'department' => $department,
             'username' => $username,
             'type' => $consumptionType,

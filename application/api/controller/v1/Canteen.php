@@ -681,10 +681,7 @@ class Canteen extends BaseController
     public function deleteDinner()
     {
         $id = Request::param('dinner_id');
-        $res = DinnerT::update(['state' => CommonEnum::STATE_IS_FAIL], ['id' => $id]);
-        if (!$res) {
-            throw new DeleteException();
-        }
+        (new CanteenService())->deleteDinner($id);
         return json(new SuccessMessage());
     }
 
@@ -701,7 +698,7 @@ class Canteen extends BaseController
      * @apiSuccess (返回参数说明) {string} msg 信息描述
      * @apiSuccess (返回参数说明) {int} confirm 是否开启：1：开启；2：关闭
      */
-    public function checkConfirm($canteen_id=0)
+    public function checkConfirm($canteen_id = 0)
     {
         $res = (new CanteenService())->checkConfirm($canteen_id);
         return json(new SuccessMessageWithData(['data' => $res]));
