@@ -740,7 +740,7 @@ class OrderService extends BaseService
         if ($order->used == CommonEnum::STATE_IS_OK) {
             throw new ParameterException(['msg' => '订单已消费，不能取消']);
         }
-        $outsider = Token::getCurrentTokenVar('outsiders');
+        $outsider =$order->outsider;
         if ($order->type == OrderEnum::EAT_OUTSIDER
             && $order->receive == CommonEnum::STATE_IS_OK) {
             throw new UpdateException(['msg' => '商家已经接单，不能取消']);
@@ -749,7 +749,7 @@ class OrderService extends BaseService
             $this->checkOrderCanHandel($order->d_id, $order->ordering_date);
         } else {
             //撤回订单
-            $this->refundWxOrder($order->order_num);
+            $this->refundWxOrder($id);
         }
         $userType = Token::getCurrentTokenVar('type');
         if ($userType == "cms") {
@@ -763,9 +763,9 @@ class OrderService extends BaseService
         }
     }
 
-    public function refundWxOrder($order_number)
+    public function refundWxOrder($order_id)
     {
-        $payOrder = PayT::where('order_num', $order_number)->find();
+        $payOrder = PayT::where('order_id', $order_id)->find();
         if (!$payOrder) {
             throw new UpdateException(['msg' => '取消订单失败，订单不存在']);
         }
