@@ -519,7 +519,7 @@ class OrderService extends BaseService
             if (!$ordering) {
                 throw  new SaveException();
             }
-            // Db::commit();
+             Db::commit();
         } catch (Exception $e) {
             Db::rollback();
             throw $e;
