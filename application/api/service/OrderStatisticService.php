@@ -497,7 +497,7 @@ class OrderStatisticService
         if (!empty($statistic)) {
             $i = 2;
             foreach ($statistic as $k => $v) {
-               // $v['dinnerStatistic']
+                // $v['dinnerStatistic']
                 $dinner_statistic = array_key_exists('dinnerStatistic', $v) ? $v['dinnerStatistic'] : $v['dinner_statistic'];
                 if (empty($dinner_statistic)) {
                     array_push($dataList, [
@@ -627,6 +627,7 @@ class OrderStatisticService
         $statistic = OrderConsumptionV::consumptionStatisticByUsername($canteen_id, $status, $department_id,
             $username, $staff_type_id, $time_begin,
             $time_end, $company_id);
+
         $users['data'] = $data;
         return [
             'statistic' => $users,
