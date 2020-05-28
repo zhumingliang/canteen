@@ -476,7 +476,7 @@ class Order extends BaseController
      * @apiVersion 3.0.0
      * @apiDescription 微信端-总订餐查询-餐次订餐信息
      * @apiExample {get}  请求样例:
-     * http://canteen.tonglingok.com/api/v1/order/managerOrders?canteen_id=6&consumption_time=2019-09-07
+     * http://canteen.tonglingok.comx
      * @apiParam (请求参数说明) {string} canteen_id  饭堂id
      * @apiParam (请求参数说明) {string} consumption_time  消费日期
      * @apiSuccessExample {json} 返回样例:

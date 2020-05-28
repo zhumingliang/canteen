@@ -34,7 +34,7 @@ class OrderStatisticV extends Model
                     $query->where('canteen_id', $canteen_id);
                 }
             })
-            ->field('ordering_date,company,canteen,dinner,count(order_id) as count')
+            ->field('ordering_date,company,canteen,dinner,sum(count) as count')
             ->order('ordering_date DESC')
             ->group('dinner_id')
             ->paginate($size, false, ['page' => $page]);
@@ -57,7 +57,7 @@ class OrderStatisticV extends Model
                     $query->where('canteen_id', $canteen_id);
                 }
             })
-            ->field('ordering_date,company,canteen,dinner,count(order_id) as count')
+            ->field('ordering_date,company,canteen,dinner,sum(count) as count')
             ->order('ordering_date DESC')
             ->group('dinner_id')
             ->select()->toArray();

@@ -451,7 +451,6 @@ class ConsumptionService
             'in_takeCode' => $takeCode,
             'in_qrcodeUrl' => $qrcodeUrl,
         ];
-        LogService::save(json_encode($data));
         Db::query('call canteenConsumptionWX(:in_orderID,:in_userPhone,:in_readyCode,
         :in_takeCode,:in_qrcodeUrl,@resCode,@resMessage,@returnDinnerID)',
             $data);
