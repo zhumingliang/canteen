@@ -506,7 +506,9 @@ class OrderService extends BaseService
             }
             $u_id = Token::getCurrentUid();
             $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
-            $data = $this->prefixOnlineOrderingData($u_id, $canteen_id, $detail);
+            $company_id = Token::getCurrentTokenVar('current_company_id');
+            $phone =Token::getCurrentPhone();
+            $data = $this->prefixOnlineOrderingData($u_id, $canteen_id, $detail,$company_id,$phone);
             $money = $data['all_money'];
             $pay_way = $this->checkBalance($u_id, $canteen_id, $money);
             if (!$pay_way) {
@@ -517,7 +519,7 @@ class OrderService extends BaseService
             if (!$ordering) {
                 throw  new SaveException();
             }
-            Db::commit();
+            // Db::commit();
         } catch (Exception $e) {
             Db::rollback();
             throw $e;
@@ -1229,32 +1231,32 @@ class OrderService extends BaseService
         //获取饭堂订餐信息
         $orderInfo = OrderT::statisticToOfficial($canteen_id, $consumption_time);
         foreach ($dinner as $k => $v) {
-        $all = 0;
-        $used = 0;
-        $noOrdering = 0;
-        $orderingNoMeal = 0;
-        if (!empty($orderInfo)) {
-            foreach ($orderInfo as $k2 => $v2) {
-                if ($v['id'] == $v2['d_id']) {
-                    $all += $v2['count'];
-                    if ($v2['used'] == CommonEnum::STATE_IS_OK) {
-                        $used += $v2['count'];
-                        if ($v2['booking'] == CommonEnum::STATE_IS_FAIL) {
-                            $noOrdering += $v2['count'];
+            $all = 0;
+            $used = 0;
+            $noOrdering = 0;
+            $orderingNoMeal = 0;
+            if (!empty($orderInfo)) {
+                foreach ($orderInfo as $k2 => $v2) {
+                    if ($v['id'] == $v2['d_id']) {
+                        $all += $v2['count'];
+                        if ($v2['used'] == CommonEnum::STATE_IS_OK) {
+                            $used += $v2['count'];
+                            if ($v2['booking'] == CommonEnum::STATE_IS_FAIL) {
+                                $noOrdering += $v2['count'];
+                            }
+                        } else if ($v2['used'] == CommonEnum::STATE_IS_FAIL) {
+                            $orderingNoMeal += $v2['count'];
                         }
-                    } else if ($v2['used'] == CommonEnum::STATE_IS_FAIL) {
-                        $orderingNoMeal += $v2['count'];
+                        unset($orderInfo[$k2]);
                     }
-                    unset($orderInfo[$k2]);
-                }
 
+                }
             }
+            $dinner[$k]['all'] = $all;
+            $dinner[$k]['used'] = $used;
+            $dinner[$k]['noOrdering'] = $noOrdering;
+            $dinner[$k]['orderingNoMeal'] = $orderingNoMeal;
         }
-        $dinner[$k]['all'] = $all;
-        $dinner[$k]['used'] = $used;
-        $dinner[$k]['noOrdering'] = $noOrdering;
-        $dinner[$k]['orderingNoMeal'] = $orderingNoMeal;
-    }
         return $dinner;
 
     }
