@@ -507,8 +507,8 @@ class OrderService extends BaseService
             $u_id = Token::getCurrentUid();
             $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
             $company_id = Token::getCurrentTokenVar('current_company_id');
-            $phone =Token::getCurrentPhone();
-            $data = $this->prefixOnlineOrderingData($u_id, $canteen_id, $detail,$company_id,$phone);
+            $phone = Token::getCurrentPhone();
+            $data = $this->prefixOnlineOrderingData($u_id, $canteen_id, $detail, $company_id, $phone);
             $money = $data['all_money'];
             $pay_way = $this->checkBalance($u_id, $canteen_id, $money);
             if (!$pay_way) {
@@ -519,7 +519,7 @@ class OrderService extends BaseService
             if (!$ordering) {
                 throw  new SaveException();
             }
-             Db::commit();
+            Db::commit();
         } catch (Exception $e) {
             Db::rollback();
             throw $e;
@@ -736,6 +736,9 @@ class OrderService extends BaseService
         $order = OrderT::where('id', $id)->find();
         if (!$order) {
             throw new ParameterException(['msg' => '指定订餐信息不存在']);
+        }
+        if ($order->used == CommonEnum::STATE_IS_OK) {
+            throw new ParameterException(['msg' => '订单已消费，不能取消']);
         }
         $outsider = Token::getCurrentTokenVar('outsiders');
         if ($order->type == OrderEnum::EAT_OUTSIDER
