@@ -328,6 +328,7 @@ class WalletService
         ];
         $wxOrder = (new WeiXinPayService())->getPayInfo($data);
         if (empty($wxOrder['result_code']) || $wxOrder['result_code'] != 'SUCCESS' || $wxOrder['return_code'] != 'SUCCESS') {
+            LogService::save(json_encode($wxOrder));
             throw new ParameterException(['msg' => '获取微信支付信息失败']);
         }
         return $wxOrder;
