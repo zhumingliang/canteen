@@ -33,12 +33,14 @@ class WeiXinPayService
             // 如需使用敏感接口（如退款、发送红包等）需要配置 API 证书路径(登录商户平台下载 API 证书)
             'cert_path' => $certPath . 'cert.pem', // XXX: 绝对路径！！！！
             'key_path' => $certPath . 'key.pem',      // XXX: 绝对路径！！！！
-            'sub_appid' => $sub_app_id,
-            'sub_mch_id' => $sub_mch_id,
+          //  'sub_appid' => $sub_app_id,
+           // 'sub_mch_id' => $sub_mch_id,
             'notify_url' => 'http://canteen.tonglingok.com/api/v1/wallet/WXNotifyUrl',
             // 你也可以在下单时单独设置来想覆盖它
         ];
         $app = Factory::payment($config);
+        $app->setSubMerchant($sub_mch_id);  // 子商户 AppID 为可选项
+
         return $app;
     }
 

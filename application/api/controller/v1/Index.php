@@ -40,11 +40,8 @@ Index extends BaseController
 
     public function index(Request $request)
     {
-        $name=\think\facade\Request::param('name');
-        $data = [
-            'name'=>$name
-        ];
-        return json($data);
+        $info='{"return_code":"FAIL","return_msg":"sub_mch_id\u4e0esub_appid\u4e0d\u5339\u914d"}';
+        print_r(json_decode($info));
 
 //(new Printer())->printOrderDetail(1,1388,2,'0001');
 // (new  NoticeService())->noticeTask(26,155,'');
