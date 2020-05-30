@@ -28,21 +28,17 @@ use think\facade\Env;
 use think\Queue;
 use think\Request;
 use zml\tp_tools\Aes;
+use zml\tp_tools\Redis;
 
 class
 Index extends BaseController
 {
-    public function test()
-    {
-
-    }
-
-
     public function index(Request $request)
     {
-        $info='{"return_code":"FAIL","return_msg":"sub_mch_id\u4e0esub_appid\u4e0d\u5339\u914d"}';
-        print_r(json_decode($info));
-
+        $set = "webSocketReceiveCode";
+        $sortCode = getRandChar(8);
+        Redis::instance()->sAdd($set, $sortCode);
+        echo   Redis::instance()->sIsMember($set,$sortCode);
 //(new Printer())->printOrderDetail(1,1388,2,'0001');
 // (new  NoticeService())->noticeTask(26,155,'');
 //(new OrderService())->refundWxOrder($id);

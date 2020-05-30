@@ -235,11 +235,11 @@ class Redis
      * @param string $value 植
      * @return mixed
      */
-    public function sIsMembers($key, $value)
+    public function sIsMember($key, $value)
     {
         $re = $this->redisObj[$this->sn]->exists($key);//存在返回1，不存在返回0
         if (!$re) return false;
-        return $this->redisObj[$this->sn]->sismember($key, $value);;
+        return $this->redisObj[$this->sn]->sismember($key, $value);
     }
 
     /*------------------------------------3.end  set结构----------------------------------------------------*/
