@@ -65,7 +65,7 @@ class SendSort
     {
         //return true;
         $set = "webSocketReceiveCode";
-        $code = $data['webSocketCode'];
+        $code = $data['websocketCode'];
         $check = Redis::instance()->sIsMember($set, $code);
         return $check;
     }

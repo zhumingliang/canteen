@@ -513,7 +513,7 @@ class ConsumptionService
                 $orderID = $data['orderID'];
                 $sortCode = $data['sortCode'];
                 $websocketCode = $data['websocketCode'];*/
-        $machine = MachineT::getSortMachine($canteenID, $outsider);
+      /*  $machine = MachineT::getSortMachine($canteenID, $outsider);
         if ($machine) {
             $sendData = [
                 'errorCode' => 0,
@@ -525,10 +525,10 @@ class ConsumptionService
                     'websocketCode' => 111
                 ]
             ];
-            GatewayService::sendToMachine($machine->id, json_encode($sendData));
+            GatewayService::sendToMachine($machine->id, json_encode($sendData));*/
 
 
-            /* $websocketCode = $this->saveRedisSortCode();
+             $websocketCode = $this->saveRedisSortCode();
              $jobHandlerClassName = 'app\api\job\SendSort';//负责处理队列任务的类
              $jobQueueName = "sendSortQueue";//队列名称
              $jobData = [
@@ -542,9 +542,7 @@ class ConsumptionService
              //将该任务推送到消息队列
              if ($isPushed == false) {
                  throw new SaveException(['msg' => '发送webSocket推送失败']);
-             }*/
-
-        }
+             }
     }
 
     public function saveRedisSortCode()
