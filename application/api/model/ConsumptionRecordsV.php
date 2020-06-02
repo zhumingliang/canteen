@@ -36,7 +36,8 @@ class ConsumptionRecordsV extends Model
         $time_end = date('Y-m-d', strtotime("+1 month", strtotime($consumption_time)));
 
         $records = self::where('phone', $phone)
-            ->whereBetweenTime('ordering_date', $time_begin, $time_end)
+            ->where('ordering_date', '>', $time_begin)
+            ->where('ordering_date', '<', $time_end)
             ->hidden(['u_id', 'location_id', 'dinner_id'])
             ->order('create_time desc')
             ->paginate($size, false, ['page' => $page]);
