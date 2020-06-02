@@ -606,7 +606,7 @@ class OrderStatisticService
         }
         return [
             'statistic' => $data,
-            'allMoney' => $allMoney,
+            'allMoney' => round($allMoney, 1),
             'allCount' => $allCount
         ];
     }
@@ -631,7 +631,7 @@ class OrderStatisticService
         $users['data'] = $data;
         return [
             'statistic' => $users,
-            'allMoney' => $statistic['order_money'],
+            'allMoney' =>round($statistic['order_money'], 1) ,
             'allCount' => $statistic['order_count']
         ];
     }
