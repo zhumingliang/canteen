@@ -20,10 +20,11 @@ class ConsumptionRecordsV extends Model
 
     public static function records($u_id, $consumption_time, $page, $size)
     {
-        $time_begin = date('Y-m-d H:i:s', strtotime($consumption_time));
-        $time_end = date('Y-m-d H:i:s', strtotime("+1 month", strtotime($consumption_time)));
+        $time_begin = date('Y-m-d', strtotime($consumption_time));
+        $time_end = date('Y-m-d', strtotime("+1 month", strtotime($consumption_time)));
         $records = self::where('u_id', $u_id)
-            ->whereBetweenTime('create_time', $time_begin, $time_end)
+            ->where('ordering_date', '>=', $time_begin)
+            ->where('ordering_date', '<=', $time_end)
             ->hidden(['u_id', 'location_id', 'dinner_id'])
             ->order('create_time desc')
             ->paginate($size, false, ['page' => $page]);
@@ -36,8 +37,8 @@ class ConsumptionRecordsV extends Model
         $time_end = date('Y-m-d', strtotime("+1 month", strtotime($consumption_time)));
 
         $records = self::where('phone', $phone)
-            ->where('ordering_date', '>', $time_begin)
-            ->where('ordering_date', '<', $time_end)
+            ->where('ordering_date', '>=', $time_begin)
+            ->where('ordering_date', '<=', $time_end)
             ->hidden(['u_id', 'location_id', 'dinner_id'])
             ->order('create_time desc')
             ->paginate($size, false, ['page' => $page]);
@@ -46,11 +47,12 @@ class ConsumptionRecordsV extends Model
 
     public static function monthConsumptionMoney($u_id, $consumption_time)
     {
-        $time_begin = date('Y-m-d H:i:s', strtotime($consumption_time));
-        $time_end = date('Y-m-d H:i:s', strtotime("+1 month", strtotime($consumption_time)));
+        $time_begin = date('Y-m-d', strtotime($consumption_time));
+        $time_end = date('Y-m-d', strtotime("+1 month", strtotime($consumption_time)));
         $money = self::where('u_id', $u_id)
             ->whereIn('order_type', 'canteen,shop')
-            ->whereBetweenTime('create_time', $time_begin, $time_end)
+            ->where('ordering_date', '>=', $time_begin)
+            ->where('ordering_date', '<=', $time_end)
             ->sum('money');
         return 0 - $money;
 

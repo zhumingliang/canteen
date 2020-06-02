@@ -6,6 +6,7 @@ namespace app\api\controller\v1;
 
 use app\api\controller\BaseController;
 use app\api\model\CanteenT;
+use app\api\model\ConsumptionRecordsV;
 use app\api\model\ConsumptionStrategyT;
 use app\api\model\DinnerT;
 use app\api\model\OrderT;
@@ -35,10 +36,8 @@ Index extends BaseController
 {
     public function index(Request $request)
     {
-        $set = "webSocketReceiveCode";
-        $sortCode = getRandChar(8);
-        Redis::instance()->sAdd($set, $sortCode);
-        echo   Redis::instance()->sIsMember($set,$sortCode);
+        $records = ConsumptionRecordsV::recordsByPhone('15236427636', '2020-06', 1, 200);
+        return json($records);
 //(new Printer())->printOrderDetail(1,1388,2,'0001');
 // (new  NoticeService())->noticeTask(26,155,'');
 //(new OrderService())->refundWxOrder($id);
