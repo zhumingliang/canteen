@@ -5,7 +5,9 @@ namespace app\api\model;
 
 
 use app\api\service\LogService;
+use app\lib\Date;
 use think\Model;
+use function GuzzleHttp\Psr7\str;
 
 class ConsumptionRecordsV extends Model
 {
@@ -20,8 +22,10 @@ class ConsumptionRecordsV extends Model
 
     public static function records($u_id, $consumption_time, $page, $size)
     {
-        $time_begin = date('Y-m-d', strtotime($consumption_time));
-        $time_end = date('Y-m-d', strtotime("+1 month", strtotime($consumption_time)));
+        $consumption_time = strtotime($consumption_time);
+        $consumption_time = Date::mFristAndLast(date('Y', $consumption_time), date('m', $consumption_time));
+        $time_begin = $consumption_time['fist'];
+        $time_end = $consumption_time['last'];
         $records = self::where('u_id', $u_id)
             ->where('ordering_date', '>=', $time_begin)
             ->where('ordering_date', '<=', $time_end)
@@ -33,9 +37,10 @@ class ConsumptionRecordsV extends Model
 
     public static function recordsByPhone($phone, $consumption_time, $page, $size)
     {
-        $time_begin = date('Y-m-d', strtotime($consumption_time));
-        $time_end = date('Y-m-d', strtotime("+1 month", strtotime($consumption_time)));
-
+        $consumption_time = strtotime($consumption_time);
+        $consumption_time = Date::mFristAndLast(date('Y', $consumption_time), date('m', $consumption_time));
+        $time_begin = $consumption_time['fist'];
+        $time_end = $consumption_time['last'];
         $records = self::where('phone', $phone)
             ->where('ordering_date', '>=', $time_begin)
             ->where('ordering_date', '<=', $time_end)
@@ -47,8 +52,10 @@ class ConsumptionRecordsV extends Model
 
     public static function monthConsumptionMoney($u_id, $consumption_time)
     {
-        $time_begin = date('Y-m-d', strtotime($consumption_time));
-        $time_end = date('Y-m-d', strtotime("+1 month", strtotime($consumption_time)));
+        $consumption_time = strtotime($consumption_time);
+        $consumption_time = Date::mFristAndLast(date('Y', $consumption_time), date('m', $consumption_time));
+        $time_begin = $consumption_time['fist'];
+        $time_end = $consumption_time['last'];
         $money = self::where('u_id', $u_id)
             ->whereIn('order_type', 'canteen,shop')
             ->where('ordering_date', '>=', $time_begin)
@@ -60,8 +67,10 @@ class ConsumptionRecordsV extends Model
 
     public static function monthConsumptionMoneyByPhone($phone, $consumption_time)
     {
-        $time_begin = date('Y-m-d H:i:s', strtotime($consumption_time));
-        $time_end = date('Y-m-d H:i:s', strtotime("+1 month", strtotime($consumption_time)));
+        $consumption_time = strtotime($consumption_time);
+        $consumption_time = Date::mFristAndLast(date('Y', $consumption_time), date('m', $consumption_time));
+        $time_begin = $consumption_time['fist'];
+        $time_end = $consumption_time['last'];
         $money = self::where('phone', $phone)
             ->whereIn('order_type', 'canteen,shop')
             ->whereBetweenTime('create_time', $time_begin, $time_end)

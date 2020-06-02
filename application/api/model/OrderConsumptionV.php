@@ -19,7 +19,6 @@ class OrderConsumptionV extends Model
                                                             $username, $staff_type_id, $time_begin,
                                                             $time_end, $company_id)
     {
-        //$time_end = addDay(1, $time_end);
         $statistic = self::where(function ($query) use ($company_id, $canteen_id) {
             if (!empty($canteen_id)) {
                 $query->where('canteen_id', $canteen_id);
