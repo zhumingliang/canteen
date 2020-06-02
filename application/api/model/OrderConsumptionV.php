@@ -112,7 +112,8 @@ class OrderConsumptionV extends Model
                 }
             }
         })
-            ->whereBetweenTime('consumption_date', $time_begin, $time_end)
+            ->where('consumption_date', '>=', $time_begin)
+            ->where('consumption_date', '<=', $time_end)
             ->where(function ($query) use (
                 $status, $department_id,
                 $username, $staff_type_id
@@ -126,7 +127,7 @@ class OrderConsumptionV extends Model
                 if (!empty($username)) {
                     $query->where('username', $username);
                 }
-                if (!empty($status)) {
+                if (!empty($staff_type_id)) {
                     $query->where('staff_type_id', $staff_type_id);
                 }
 
@@ -142,7 +143,7 @@ class OrderConsumptionV extends Model
                                                          $username, $staff_type_id, $time_begin,
                                                          $time_end, $company_id)
     {
-       // $time_end = addDay(1, $time_end);
+        // $time_end = addDay(1, $time_end);
         $statistic = self::where(function ($query) use ($company_id, $canteen_id) {
             if (!empty($canteen_id)) {
                 $query->where('canteen_id', $canteen_id);

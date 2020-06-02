@@ -37,6 +37,8 @@ Index extends BaseController
 {
     public function index(Request $request)
     {
+        $records = ConsumptionRecordsV::recordsByPhone('15236427636', '2020-06', 1, 200);
+        return json($records);
 //(new Printer())->printOrderDetail(1,1388,2,'0001');
 // (new  NoticeService())->noticeTask(26,155,'');
 //(new OrderService())->refundWxOrder($id);
