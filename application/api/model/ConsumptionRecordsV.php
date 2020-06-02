@@ -32,16 +32,8 @@ class ConsumptionRecordsV extends Model
 
     public static function recordsByPhone($phone, $consumption_time, $page, $size)
     {
-        $time_begin = date('Y-m-d H:i:s', strtotime($consumption_time));
-        $time_end = date('Y-m-d H:i:s', strtotime("+1 month", strtotime($consumption_time)));
-
-        $records = self::where('phone', $phone)
-            ->whereBetweenTime('create_time', $time_begin, $time_end)
-            ->hidden(['u_id', 'location_id', 'dinner_id'])
-            ->order('create_time desc')
-            ->fetchSql(true)
-            ->select();
-        LogService::save($records);
+        $time_begin = date('Y-m-d', strtotime($consumption_time));
+        $time_end = date('Y-m-d', strtotime("+1 month", strtotime($consumption_time)));
 
         $records = self::where('phone', $phone)
             ->whereBetweenTime('create_time', $time_begin, $time_end)
