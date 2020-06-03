@@ -11,7 +11,7 @@ class OrderConsumptionV extends Model
 
     public function getStatusAttr($value)
     {
-        $status = ['1' => '订餐就餐', 2 => '未订餐就餐', 3 => '未订餐就餐', 4 => '补录操作'];
+        $status = ['1' => '订餐就餐', 2 => '订餐未就餐', 3 => '未订餐就餐', 4 => '补录操作'];
         return $status[$value];
     }
 
