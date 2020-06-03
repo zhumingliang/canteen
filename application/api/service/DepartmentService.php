@@ -41,7 +41,7 @@ class DepartmentService
     private function checkExit($company_id, $name)
     {
         $department = CompanyDepartmentT::where('c_id', $company_id)
-            ->where('state',CommonEnum::STATE_IS_OK)
+            ->where('state', CommonEnum::STATE_IS_OK)
             ->where('name', $name)
             ->count('id');
         return $department;
@@ -194,7 +194,7 @@ class DepartmentService
     {
         $date = (new ExcelService())->saveExcel($staffs_excel);
         $res = $this->prefixStaffs($company_id, $date);
-        return $res;
+         return $res;
     }
 
     private function prefixStaffs($company_id, $data)
@@ -208,10 +208,14 @@ class DepartmentService
         if (count($data) < 2) {
             return [];
         }
+
         foreach ($data as $k => $v) {
             if ($k == 1) {
                 $param_key = $data[$k];
-            } else if ($k > 1) {
+            } else if ($k > 1 && !empty($data[$k])) {
+                if (empty($v[0])) {
+                    continue;
+                }
                 $check = $this->validateParams($company_id, $param_key, $data[$k], $types, $canteens, $departments);
                 if (!$check['res']) {
                     $fail[] = $check['info'];
@@ -241,7 +245,6 @@ class DepartmentService
               }*/
 
         }
-
         return [
             'fail' => $fail
         ];
@@ -249,9 +252,12 @@ class DepartmentService
 
     }
 
-    private function validateParams($company_id, $param_key, $data, $types, $canteens, $departments)
+    private function validateParams($company_id, $param_key, $data, $types, $canteens, $departments, $len = 7)
     {
         foreach ($data as $k => $v) {
+            if ($k >= $len) {
+                break;
+            }
             if (!strlen($v)) {
                 $fail = [
                     'name' => $data[4],

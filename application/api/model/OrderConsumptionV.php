@@ -30,7 +30,8 @@ class OrderConsumptionV extends Model
                 }
             }
         })
-            ->whereBetweenTime('consumption_date', $time_begin, $time_end)
+            ->where('consumption_date', '>=', $time_begin)
+            ->where('consumption_date', '<=', $time_end)
             ->where(function ($query) use (
                 $status, $department_id,
                 $username, $staff_type_id
@@ -44,7 +45,7 @@ class OrderConsumptionV extends Model
                 if (!empty($username)) {
                     $query->where('username', $username);
                 }
-                if (!empty($status)) {
+                if (!empty($staff_type_id)) {
                     $query->where('staff_type_id', $staff_type_id);
                 }
 
@@ -72,7 +73,8 @@ class OrderConsumptionV extends Model
                 }
             }
         })
-            ->whereBetweenTime('consumption_date', $time_begin, $time_end)
+            ->where('consumption_date', '>=', $time_begin)
+            ->where('consumption_date', '<=', $time_end)
             ->where(function ($query) use (
                 $status, $department_id,
                 $username, $staff_type_id
@@ -86,7 +88,7 @@ class OrderConsumptionV extends Model
                 if (!empty($username)) {
                     $query->where('username', $username);
                 }
-                if (!empty($status)) {
+                if (!empty($staff_type_id)) {
                     $query->where('staff_type_id', $staff_type_id);
                 }
 
@@ -100,7 +102,6 @@ class OrderConsumptionV extends Model
                                                         $username, $staff_type_id, $time_begin,
                                                         $time_end, $company_id)
     {
-        //$time_end = addDay(1, $time_end);
         $statistic = self::where(function ($query) use ($company_id, $canteen_id) {
             if (!empty($canteen_id)) {
                 $query->where('canteen_id', $canteen_id);
@@ -155,7 +156,8 @@ class OrderConsumptionV extends Model
                 }
             }
         })
-            ->whereBetweenTime('consumption_date', $time_begin, $time_end)
+            ->where('consumption_date', '>=', $time_begin)
+            ->where('consumption_date', '<=', $time_end)
             ->where(function ($query) use (
                 $status, $department_id,
                 $username, $staff_type_id
@@ -169,7 +171,7 @@ class OrderConsumptionV extends Model
                 if (!empty($username)) {
                     $query->where('username', $username);
                 }
-                if (!empty($status)) {
+                if (!empty($staff_type_id)) {
                     $query->where('staff_type_id', $staff_type_id);
                 }
 
@@ -197,7 +199,8 @@ class OrderConsumptionV extends Model
                 }
             }
         })
-            ->whereBetweenTime('consumption_date', $time_begin, $time_end)
+            ->where('consumption_date', '>=', $time_begin)
+            ->where('consumption_date', '<=', $time_end)
             ->where(function ($query) use (
                 $status, $department_id,
                 $username, $staff_type_id
@@ -211,7 +214,7 @@ class OrderConsumptionV extends Model
                 if (!empty($username)) {
                     $query->where('username', $username);
                 }
-                if (!empty($status)) {
+                if (!empty($staff_type_id)) {
                     $query->where('staff_type_id', $staff_type_id);
                 }
 
@@ -221,6 +224,23 @@ class OrderConsumptionV extends Model
             ->select()
             ->toArray();
         return $statistic;
+    }
+
+    public static function userDinnerStatistic($staff_id, $status,
+                                               $time_begin, $time_end)
+    {
+        return self::where('staff_id', $staff_id)
+          ->where('consumption_date', '>=', $time_begin)
+            ->where('consumption_date', '<=', $time_end)
+            ->where(function ($query2) use (
+                $status
+            ) {
+                if (!empty($status)) {
+                    $query2->where('status', $status);
+                }
+            })
+            ->field('staff_id,dinner_id,dinner,sum(order_count) as order_count,sum(order_money) as order_money')
+            ->group('dinner')->select();
     }
 
 

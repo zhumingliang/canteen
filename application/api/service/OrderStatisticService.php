@@ -623,15 +623,16 @@ class OrderStatisticService
         foreach ($data as $k => $v) {
             $data[$k]['time_begin'] = $time_begin;
             $data[$k]['time_end'] = $time_end;
+            $data[$k]['dinnerStatistic'] = OrderConsumptionV::userDinnerStatistic($v['staff_id'], $status,
+                $time_begin, $time_end);
         }
         $statistic = OrderConsumptionV::consumptionStatisticByUsername($canteen_id, $status, $department_id,
             $username, $staff_type_id, $time_begin,
             $time_end, $company_id);
-
         $users['data'] = $data;
         return [
             'statistic' => $users,
-            'allMoney' =>round($statistic['order_money'], 1) ,
+            'allMoney' => round($statistic['order_money'], 1),
             'allCount' => $statistic['order_count']
         ];
     }
