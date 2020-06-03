@@ -740,7 +740,7 @@ class OrderService extends BaseService
         if ($order->used == CommonEnum::STATE_IS_OK) {
             throw new ParameterException(['msg' => '订单已消费，不能取消']);
         }
-        $outsider =$order->outsider;
+        $outsider = $order->outsider;
         if ($order->type == OrderEnum::EAT_OUTSIDER
             && $order->receive == CommonEnum::STATE_IS_OK) {
             throw new UpdateException(['msg' => '商家已经接单，不能取消']);
@@ -846,35 +846,47 @@ class OrderService extends BaseService
         $type = $dinner->type;
         $limit_time = $dinner->limit_time;
         $type_number = $dinner->type_number;
+        $meal_time_begin = $dinner->meal_time_begin;
+        $meal_time_end = $dinner->meal_time_end;
+        $handel = CommonEnum::STATE_IS_OK;
+        $showConfirm = CommonEnum::STATE_IS_FAIL;
+        if (time() >= strtotime($ordering_date . ' ' . $meal_time_begin) &&
+            time() <= strtotime($ordering_date . ' ' . $meal_time_end)) {
+            $showConfirm = CommonEnum::STATE_IS_OK;
+        }
         if ($type == 'day') {
             $expiryDate = $this->prefixExpiryDateForOrder($ordering_date, $type_number, '-');
             if (time() > strtotime($expiryDate . ' ' . $limit_time)) {
-                return 2;
+                $handel = CommonEnum::STATE_IS_FAIL;
             }
         } else if ($type == 'week') {
             $ordering_date_week = date('W', strtotime($ordering_date));
             $now_week = date('W', time());
             if ($ordering_date_week <= $now_week) {
-                return 2;
+                $handel = CommonEnum::STATE_IS_FAIL;
             }
             if (($ordering_date_week - $now_week) === 1) {
                 if ($type_number == 0) {
                     //星期天
                     if (strtotime($limit_time) < time()) {
-                        return 2;
+                        $handel = CommonEnum::STATE_IS_FAIL;
                     }
                 } else {
                     //周一到周六
                     if (date('w', time()) > $type_number) {
-                        return 2;
+                        $handel = CommonEnum::STATE_IS_FAIL;
                     } else if (date('w', time()) == $type_number && strtotime($limit_time) < time()) {
-                        return 2;
+                        $handel = CommonEnum::STATE_IS_FAIL;
+                        2;
                     }
                 }
             }
 
         }
-        return 1;
+        return [
+            'handel' => $handel,
+            'showConfirm' => $showConfirm
+        ];
     }
 
 
@@ -1155,7 +1167,9 @@ class OrderService extends BaseService
             $order = ShopOrderT::orderInfo($id);
         } else {
             $order = OrderT::orderDetail($id);
-            $order['handel'] = $this->checkOrderCanHandelToDetail($order->dinner_id, $order->ordering_date);
+            $check = $this->checkOrderCanHandelToDetail($order->dinner_id, $order->ordering_date);
+            $order['handel'] = $check['handel'];
+            $order['showConfirm'] = $check['showConfirm'];
         }
         /*if ($order->u_id != $u_id) {
             throw new AuthException();
