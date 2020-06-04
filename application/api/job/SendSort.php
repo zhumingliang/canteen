@@ -95,7 +95,6 @@ class SendSort
             GatewayService::sendToMachine($machine->id, json_encode($sendData));
 
         }
-
     }
 
 

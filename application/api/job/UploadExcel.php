@@ -36,6 +36,7 @@ class UploadExcel
         $isJobDone = $this->doJob($data);
         if ($isJobDone) {
             // 如果任务执行成功，删除任务
+            LogService::save("<warn>导入Excel任务执行成功！" . "</warn>\n");
             $job->delete();
         } else {
             if ($job->attempts() > 3) {
@@ -43,7 +44,7 @@ class UploadExcel
                 LogService::save("<warn>导入excel已经重试超过3次，现在已经删除该任务" . "</warn>\n");
                 $job->delete();
             } else {
-                $job->release(10); //重发任务
+                $job->release(3); //重发任务
             }
         }
     }
@@ -74,18 +75,12 @@ class UploadExcel
     private function doJob($data)
     {
         try {
-            Db::startTrans();
             $type = $data['type'];
             if ($type == "rechargeCash") {
-                if (!$this->uploadRechargeCash($data)) {
-                    Db::rollback();
-                    return false;
-                }
+                return $this->uploadRechargeCash($data);
             }
-            Db::commit();
-            return true;
+            return false;
         } catch (Exception $e) {
-            Db::rollback();
             return false;
         }
 
