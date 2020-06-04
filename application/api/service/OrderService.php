@@ -955,7 +955,7 @@ class OrderService extends BaseService
             if (!empty($params['count']) && ($params['count'] != $count)) {
                 //检测订单修改数量是否合法
                 $count = $params['count'];
-                $strategy = (new CanteenService())->getStaffConsumptionStrategy($order->c_id, $order->d_id, $order->t_id);
+                $strategy = (new CanteenService())->getStaffConsumptionStrategy($order->c_id, $order->d_id, $order->staff_type_id);
                 if (!$strategy) {
                     throw new ParameterException(['msg' => '当前用户消费策略不存在']);
                 }
