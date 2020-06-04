@@ -30,6 +30,27 @@ class ExcelService
     }
 
 
+    /**
+     * 保存excel返回excel保存地址
+     * @param $skus
+     * @return array
+     * @throws \PHPExcel_Exception
+     * @throws \PHPExcel_Reader_Exception
+     */
+    public function saveExcelReturnName($excel)
+    {
+        $path = dirname($_SERVER['SCRIPT_FILENAME']) . '/static/excel/upload';
+        if (!is_dir($path)) {
+            mkdir(iconv("UTF-8", "GBK", $path), 0777, true);
+        }
+        $info = $excel->move($path);
+        $file_name = $info->getPathname();
+        // $file_name = dirname($_SERVER['SCRIPT_FILENAME']) . '/static/excel/upload/test.xlsx';
+        // $result_excel = $this->importExcel($file_name);
+        return $file_name;
+    }
+
+
     public function importExcel($file)
     {
         // 判断文件是什么格式

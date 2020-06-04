@@ -839,7 +839,7 @@ class OrderService extends BaseService
 
 
     private
-    function checkOrderCanHandelToDetail($d_id, $ordering_date)
+    function checkOrderCanHandelToDetail($d_id, $ordering_date, $outsider)
     {
         //获取餐次设置
         $dinner = DinnerT::dinnerInfo($d_id);
@@ -853,6 +853,9 @@ class OrderService extends BaseService
         if (time() >= strtotime($ordering_date . ' ' . $meal_time_begin) &&
             time() <= strtotime($ordering_date . ' ' . $meal_time_end)) {
             $showConfirm = CommonEnum::STATE_IS_OK;
+        }
+        if ($outsider == CommonEnum::STATE_IS_OK) {
+            $showConfirm = CommonEnum::STATE_IS_FAIL;
         }
         if ($type == 'day') {
             $expiryDate = $this->prefixExpiryDateForOrder($ordering_date, $type_number, '-');
@@ -1167,7 +1170,7 @@ class OrderService extends BaseService
             $order = ShopOrderT::orderInfo($id);
         } else {
             $order = OrderT::orderDetail($id);
-            $check = $this->checkOrderCanHandelToDetail($order->dinner_id, $order->ordering_date);
+            $check = $this->checkOrderCanHandelToDetail($order->dinner_id, $order->ordering_date, $order->outsider);
             $order['handel'] = $check['handel'];
             $order['showConfirm'] = $check['showConfirm'];
         }

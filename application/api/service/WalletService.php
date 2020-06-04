@@ -18,6 +18,7 @@ use app\lib\exception\ParameterException;
 use app\lib\exception\SaveException;
 use think\Db;
 use think\Model;
+use think\Queue;
 use think\Request;
 
 class WalletService
@@ -41,19 +42,40 @@ class WalletService
     {
         $company_id = Token::getCurrentTokenVar('company_id');
         $admin_id = Token::getCurrentUid();
-        $data = (new ExcelService())->saveExcel($cash_excel);
-        $dataList = $this->prefixUploadData($company_id, $admin_id, $data);
-        $cash = (new RechargeCashT())->saveAll($dataList);
-        if (!$cash) {
-            throw new SaveException();
+        $fileName = (new ExcelService())->saveExcelReturnName($cash_excel);
+        $this->rechargeCashTask($company_id, $admin_id, $fileName);
+        //$data = (new ExcelService())->saveExcel($cash_excel);
+        //$dataList = $this->prefixUploadData($company_id, $admin_id, $data);
+        /* $cash = (new RechargeCashT())->saveAll($dataList);
+         if (!$cash) {
+             throw new SaveException();
+         }*/
+    }
+
+
+    public function rechargeCashTask($company_id, $u_id, $fileName)
+    {
+
+        $jobHandlerClassName = 'app\api\job\UploadExcel';//负责处理队列任务的类
+        $jobQueueName = "sendSortQueue";//队列名称
+        $jobData = [
+            'type' => "rechargeCash",
+            'company_id' => $company_id,
+            'u_id' => $u_id,
+            'sortCode' => $fileName,
+        ];//当前任务的业务数据
+        $isPushed = Queue::push($jobHandlerClassName, $jobData, $jobQueueName);
+        //将该任务推送到消息队列
+        if ($isPushed == false) {
+            throw new SaveException(['msg' => '上传excel失败']);
         }
     }
 
-    private function prefixUploadData($company_id, $admin_id, $data)
+    public function prefixUploadData($company_id, $admin_id, $data)
     {
         $dataList = [];
         foreach ($data as $k => $v) {
-            if ($k == 1) {
+            if ($k == 1 || empty($v[0])) {
                 continue;
             }
             array_push($dataList, [
@@ -285,7 +307,7 @@ class WalletService
 
     public function getPreOrder($order_id)
     {
-         //$openid = "oSi030qTHU0p3vD4um68F4z2rdHU";//Token::getCurrentOpenid();
+        //$openid = "oSi030qTHU0p3vD4um68F4z2rdHU";//Token::getCurrentOpenid();
         $openid = Token::getCurrentOpenid();
         $status = $this->checkOrderValid($order_id, $openid);
         $method_id = $status['methodID'];
@@ -394,7 +416,7 @@ class WalletService
     {
         if ($order_type == "canteen") {
             OrderT::update([
-                'pay'=>'paid'
+                'pay' => 'paid'
             ], ['id' => $order_id]);
         }
     }
