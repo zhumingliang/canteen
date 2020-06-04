@@ -81,10 +81,11 @@ class WalletService
             array_push($dataList, [
                 'admin_id' => $admin_id,
                 'company_id' => $company_id,
-                'phone' => $v[0],
-                'card_num' => $v[1],
-                'money' => $v[2],
-                'remark' => $v[3]
+                'username' => $v[0],
+                'phone' => $v[1],
+                'card_num' => $v[2],
+                'money' => $v[3],
+                'remark' => $v[4]
             ]);
         }
         return $dataList;
