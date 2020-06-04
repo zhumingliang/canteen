@@ -57,7 +57,7 @@ class WalletService
     {
 
         $jobHandlerClassName = 'app\api\job\UploadExcel';//负责处理队列任务的类
-        $jobQueueName = "sendSortQueue";//队列名称
+        $jobQueueName = "uploadQueue";//队列名称
         $jobData = [
             'type' => "rechargeCash",
             'company_id' => $company_id,
