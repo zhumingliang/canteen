@@ -944,9 +944,9 @@ class OrderService extends BaseService
             Db::startTrans();
             $id = $params['id'];
             $detail = json_decode($params['detail'], true);
-            if (empty($detail)) {
-                throw new ParameterException(['msg' => '订单明细为空或者数据格式错误']);
-            }
+            /* if (empty($detail)) {
+                 throw new ParameterException(['msg' => '订单明细为空或者数据格式错误']);
+             }*/
             $order = OrderT::where('id', $id)->find();
 
             //检测订单是否可操作
@@ -1049,37 +1049,41 @@ class OrderService extends BaseService
         }
         $dinner = DinnerT::dinnerInfo($dinner_id);
         $fixed = $dinner->fixed;
+        if (!empty($new_detail)) {
+            $new_money = 0;
+            foreach ($new_detail as $k => $v) {
+                $menu_id = $v['menu_id'];
+                $add_foods = $v['add_foods'];
+                $update_foods = $v['update_foods'];
+                $cancel_foods = $v['cancel_foods'];
 
-        $new_money = 0;
-        foreach ($new_detail as $k => $v) {
-            $menu_id = $v['menu_id'];
-            $add_foods = $v['add_foods'];
-            $update_foods = $v['update_foods'];
-            $cancel_foods = $v['cancel_foods'];
+                $old_detail = OrderDetailT::orderDetail($o_id, $menu_id);
+                $check_data = $this->checkOrderDetailUpdate($update_foods, $old_detail);
+                $check_data = $this->checkOrderDetailCancel($cancel_foods, $check_data);
+                $check_data = $this->checkOrderDetailAdd($add_foods, $check_data);
+                $menu = $this->getMenuInfo($menus, $menu_id);
+                if (empty($menu)) {
+                    throw new ParameterException(['msg' => '菜品类别id错误']);
+                }
+                if (($menu['status'] == MenuEnum::FIXED) && ($menu['count'] < count($check_data))) {
+                    throw new SaveException(['msg' => '选菜失败,菜品类别：<' . $menu['category'] . '> 选菜数量超过最大值：' . $menu['count']]);
+                }
 
-            $old_detail = OrderDetailT::orderDetail($o_id, $menu_id);
-            $check_data = $this->checkOrderDetailUpdate($update_foods, $old_detail);
-            $check_data = $this->checkOrderDetailCancel($cancel_foods, $check_data);
-            $check_data = $this->checkOrderDetailAdd($add_foods, $check_data);
-            $menu = $this->getMenuInfo($menus, $menu_id);
-            if (empty($menu)) {
-                throw new ParameterException(['msg' => '菜品类别id错误']);
-            }
-            if (($menu['status'] == MenuEnum::FIXED) && ($menu['count'] < count($check_data))) {
-                throw new SaveException(['msg' => '选菜失败,菜品类别：<' . $menu['category'] . '> 选菜数量超过最大值：' . $menu['count']]);
-            }
-
-            if ($fixed == CommonEnum::STATE_IS_FAIL) {
-                foreach ($check_data as $k3 => $v3) {
-                    $new_money += $v3['price'] * $v3['count'];
+                if ($fixed == CommonEnum::STATE_IS_FAIL) {
+                    foreach ($check_data as $k3 => $v3) {
+                        $new_money += $v3['price'] * $v3['count'];
+                    }
                 }
             }
+        } else {
+            $new_money = $old_money;
         }
 
-        if ($fixed == CommonEnum::STATE_IS_FAIL) {
+
+        if ($fixed == CommonEnum::STATE_IS_FAIL && (!empty($new_detail))) {
             $new_money = $new_money * $count;
         } else {
-            $new_money = $old_money * $count;
+            $new_money = $old_money / $old_count * $count;
         }
         $new_sub_money = $old_sub_money / $old_count * $count;
         if ($new_money > $old_money) {
