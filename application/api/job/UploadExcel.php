@@ -77,7 +77,7 @@ class UploadExcel
             Db::startTrans();
             $type = $data['type'];
             if ($type == "rechargeCash") {
-                if ($this->uploadRechargeCash($data)) {
+                if (!$this->uploadRechargeCash($data)) {
                     return false;
                 }
             }
