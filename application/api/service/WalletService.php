@@ -62,7 +62,7 @@ class WalletService
             'type' => "rechargeCash",
             'company_id' => $company_id,
             'u_id' => $u_id,
-            'sortCode' => $fileName,
+            'fileName' => $fileName,
         ];//当前任务的业务数据
         $isPushed = Queue::push($jobHandlerClassName, $jobData, $jobQueueName);
         //将该任务推送到消息队列
