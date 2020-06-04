@@ -78,10 +78,10 @@ class UploadExcel
             $type = $data['type'];
             if ($type == "rechargeCash") {
                 if (!$this->uploadRechargeCash($data)) {
+                    Db::rollback();
                     return false;
                 }
             }
-
             Db::commit();
             return true;
         } catch (Exception $e) {
