@@ -15,6 +15,7 @@ use app\lib\enum\CommonEnum;
 use app\lib\exception\SaveException;
 use think\Db;
 use think\Exception;
+use think\exception\ErrorException;
 use think\queue\Job;
 use zml\tp_tools\Redis;
 
@@ -106,13 +107,22 @@ class UploadExcel
         }
         return true;
     }
-    private
-    function clearUploading($company_id, $u_id, $type){
 
-        $set = "uploadExcel";
-        $code = "$company_id:$u_id:$type";
-        Redis::instance()->sRem($set, $code);
-        LogService::save('clear:' . $code);
+    private
+    function clearUploading($company_id, $u_id, $type)
+    {
+
+        try {
+            $set = "uploadExcel";
+            $code = "$company_id:$u_id:$type";
+            Redis::instance()->sRem($set, $code);
+            LogService::save('clear:' . $code);
+
+        } catch (Exception $e) {
+            LogService::save('clear:' . $e->getMessage());
+
+        }
+
 
     }
 
