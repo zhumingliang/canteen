@@ -16,6 +16,7 @@ use app\lib\exception\SaveException;
 use think\Db;
 use think\Exception;
 use think\queue\Job;
+use zml\tp_tools\Redis;
 
 class UploadExcel
 {
@@ -102,8 +103,16 @@ class UploadExcel
         if (!$cash) {
             return false;
         }
+        $this->clearUploading($company_id, $admin_id, $data['type']);
         return true;
     }
 
+    private
+    function clearUploading($company_id, $u_id, $type)
+    {
+        $set = "uploadExcel";
+        $code = "$company_id:$u_id:$type";
+        self::$redis->srem($set, $code);
+    }
 
 }

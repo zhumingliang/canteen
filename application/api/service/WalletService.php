@@ -20,6 +20,7 @@ use think\Db;
 use think\Model;
 use think\Queue;
 use think\Request;
+use zml\tp_tools\Redis;
 
 class WalletService
 {
@@ -44,6 +45,7 @@ class WalletService
         $admin_id = Token::getCurrentUid();
         $fileName = (new ExcelService())->saveExcelReturnName($cash_excel);
         $this->rechargeCashTask($company_id, $admin_id, $fileName);
+
         //$data = (new ExcelService())->saveExcel($cash_excel);
         //$dataList = $this->prefixUploadData($company_id, $admin_id, $data);
         /* $cash = (new RechargeCashT())->saveAll($dataList);
@@ -55,7 +57,10 @@ class WalletService
 
     public function rechargeCashTask($company_id, $u_id, $fileName)
     {
-
+        //设置限制未上传完成不能继续上传
+        if (!$this->checkUploading($company_id, $u_id, "rechargeCash")) {
+            throw new SaveException(['有文件正在上传，请稍等']);
+        }
         $jobHandlerClassName = 'app\api\job\UploadExcel';//负责处理队列任务的类
         $jobQueueName = "uploadQueue";//队列名称
         $jobData = [
@@ -69,6 +74,19 @@ class WalletService
         if ($isPushed == false) {
             throw new SaveException(['msg' => '上传excel失败']);
         }
+    }
+
+
+    private function checkUploading($company_id, $u_id, $type)
+    {
+        $set = "uploadExcel";
+        $code = "$company_id:$u_id:$type";
+        $check = Redis::instance()->sIsMember($set, $code);
+        if ($check) {
+            return false;
+        }
+        Redis::instance()->sAdd($set, $code);
+        return $code;
     }
 
     public function prefixUploadData($company_id, $admin_id, $data)
