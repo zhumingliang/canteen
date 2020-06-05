@@ -225,7 +225,7 @@ class Redis
     {
         $re = $this->redisObj[$this->sn]->exists($key);//存在返回1，不存在返回0
         if (!$re) return false;
-        return $this->redisObj[$this->sn]->smembers($key);
+        return $this->redisObj[$this->sn]->sMembers($key);
     }
 
 
@@ -239,7 +239,7 @@ class Redis
     {
         $re = $this->redisObj[$this->sn]->exists($key);//存在返回1，不存在返回0
         if (!$re) return false;
-        return $this->redisObj[$this->sn]->sismember($key, $value);
+        return $this->redisObj[$this->sn]->sIsMember($key, $value);
     }
 
     /**
@@ -252,7 +252,7 @@ class Redis
     {
         $re = $this->redisObj[$this->sn]->exists($key);//存在返回1，不存在返回0
         if (!$re) return false;
-        return $this->redisObj[$this->sn]->srem($key, $value);
+        return $this->redisObj[$this->sn]->sRem($key, $value);
     }
 
     /*------------------------------------3.end  set结构----------------------------------------------------*/
