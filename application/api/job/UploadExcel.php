@@ -113,6 +113,8 @@ class UploadExcel
         $set = "uploadExcel";
         $code = "$company_id:$u_id:$type";
         self::$redis->srem($set, $code);
+        LogService::save('clear:' . $code);
+
     }
 
 }
