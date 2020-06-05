@@ -11,7 +11,7 @@
 
 return [
     'connector'  => 'Redis',		    // 可选驱动类型：sync(默认)、Redis、database、topthink等其他自定义类型
-    'expire'     => null,				    // 任务的过期时间，默认为60秒; 若要禁用，则设置为 null
+    'expire'     => 600,				    // 任务的过期时间，默认为60秒; 若要禁用，则设置为 null
     'default'    => 'default',		    // 默认的队列名称
     'host'       => '127.0.0.1',	    // redis 主机ip
     'port'       => 6379,			    // redis 端口
