@@ -59,7 +59,7 @@ class WalletService
     {
         //设置限制未上传完成不能继续上传
         if (!$this->checkUploading($company_id, $u_id, "rechargeCash")) {
-            throw new SaveException(['有文件正在上传，请稍等']);
+            throw new SaveException(["msg" => '有文件正在上传，请稍等']);
         }
         $jobHandlerClassName = 'app\api\job\UploadExcel';//负责处理队列任务的类
         $jobQueueName = "uploadQueue";//队列名称
