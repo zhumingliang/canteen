@@ -44,6 +44,7 @@ class UploadExcel
             if ($job->attempts() > 3) {
                 //通过这个方法可以检查这个任务已经重试了几次了
                 LogService::save("<warn>导入excel已经重试超过3次，现在已经删除该任务" . "</warn>\n");
+                $this->clearUploading($data['company_id'], $data['u_id'], $data['type']);
                 $job->delete();
             } else {
                 $job->release(3); //重发任务
@@ -81,7 +82,7 @@ class UploadExcel
             if ($type == "rechargeCash") {
                 return $this->uploadRechargeCash($data);
             }
-            return false;
+            return true;
         } catch (Exception $e) {
             return false;
         }
@@ -101,7 +102,6 @@ class UploadExcel
         $data = (new ExcelService())->importExcel($fileName);
         $dataList = (new WalletService())->prefixUploadData($company_id, $admin_id, $data);
         $cash = (new RechargeCashT())->saveAll($dataList);
-        $this->clearUploading($company_id, $admin_id, $data['type']);
         if (!$cash) {
             return false;
         }
@@ -115,7 +115,7 @@ class UploadExcel
         try {
             $set = "uploadExcel";
             $code = "$company_id:$u_id:$type";
-            LogService::save('begin:'. $code);
+            LogService::save('begin:' . $code);
             $res = Redis::instance()->sRem($set, $code);
             LogService::save('res:' . $res);
             LogService::save('clear:' . $code);
