@@ -38,13 +38,15 @@ class UploadExcel
         $isJobDone = $this->doJob($data);
         if ($isJobDone) {
             // 如果任务执行成功，删除任务
+            $code = $data['company_id'] . ":" . $data['u_id'] . ":" . $data['type'];
             $this->clearUploading($data['company_id'], $data['u_id'], $data['type']);
-            LogService::save("<warn>导入Excel任务执行成功！" . "</warn>\n");
+            LogService::save("<warn>导入Excel任务执行成功！编号：$code" . "</warn>\n");
             $job->delete();
         } else {
             if ($job->attempts() > 3) {
                 //通过这个方法可以检查这个任务已经重试了几次了
-                LogService::save("<warn>导入excel已经重试超过3次，现在已经删除该任务" . "</warn>\n");
+                $code = $data['company_id'] . ":" . $data['u_id'] . ":" . $data['type'];
+                LogService::save("<warn>导入excel已经重试超过3次，现在已经删除该任务编号：$code" . "</warn>\n");
                 $this->clearUploading($data['company_id'], $data['u_id'], $data['type']);
                 $job->delete();
             } else {
@@ -116,11 +118,7 @@ class UploadExcel
         try {
             $set = "uploadExcel";
             $code = "$company_id:$u_id:$type";
-            LogService::save('begin:' . $code);
             $res = Redis::instance()->sRem($set, $code);
-            LogService::save('res:' . $res);
-            LogService::save('clear:' . $code);
-
         } catch (Exception $e) {
             LogService::save('clear:' . $e->getMessage());
 
