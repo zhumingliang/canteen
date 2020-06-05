@@ -101,7 +101,8 @@ class UploadExcel
         $data = (new ExcelService())->importExcel($fileName);
         $dataList = (new WalletService())->prefixUploadData($company_id, $admin_id, $data);
         $cash = (new RechargeCashT())->saveAll($dataList);
-        $this->clearUploading($company_id, $admin_id, $data['type']);
+        LogService::save('res:' . $cash);
+        //$this->clearUploading($company_id, $admin_id, $data['type']);
         if (!$cash) {
             return false;
         }
