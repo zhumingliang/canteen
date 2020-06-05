@@ -102,7 +102,7 @@ class UploadExcel
         $dataList = (new WalletService())->prefixUploadData($company_id, $admin_id, $data);
         $cash = (new RechargeCashT())->saveAll($dataList);
         LogService::save('res:' . $cash);
-        //$this->clearUploading($company_id, $admin_id, $data['type']);
+        $this->clearUploading($company_id, $admin_id, $data['type']);
         if (!$cash) {
             return false;
         }
@@ -116,7 +116,8 @@ class UploadExcel
         try {
             $set = "uploadExcel";
             $code = "$company_id:$u_id:$type";
-            Redis::instance()->sRem($set, $code);
+            $res = Redis::instance()->sRem($set, $code);
+            LogService::save('res:' . $res);
             LogService::save('clear:' . $code);
 
         } catch (Exception $e) {
