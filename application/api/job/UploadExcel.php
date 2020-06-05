@@ -38,6 +38,7 @@ class UploadExcel
         $isJobDone = $this->doJob($data);
         if ($isJobDone) {
             // 如果任务执行成功，删除任务
+            $this->clearUploading($data['company_id'], $data['u_id'], $data['type']);
             LogService::save("<warn>导入Excel任务执行成功！" . "</warn>\n");
             $job->delete();
         } else {
