@@ -106,13 +106,12 @@ class UploadExcel
         }
         return true;
     }
-
     private
-    function clearUploading($company_id, $u_id, $type)
-    {
+    function clearUploading($company_id, $u_id, $type){
+
         $set = "uploadExcel";
         $code = "$company_id:$u_id:$type";
-        self::$redis->srem($set, $code);
+        Redis::instance()->sRem($set, $code);
         LogService::save('clear:' . $code);
 
     }
