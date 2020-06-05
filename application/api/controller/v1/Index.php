@@ -5,6 +5,7 @@ namespace app\api\controller\v1;
 
 
 use app\api\controller\BaseController;
+use app\api\job\UploadExcel;
 use app\api\model\CanteenT;
 use app\api\model\ConsumptionRecordsV;
 use app\api\model\ConsumptionStrategyT;
@@ -37,9 +38,8 @@ Index extends BaseController
 {
     public function index(Request $request)
     {
-        $set = "uploadExcel";
-        $code = "67:141:rechargeCash";
-        $res = Redis::instance()->sRem($set, $code);
+
+        (new UploadExcel())->clearUploading(67,141,'rechargeCash');
 //(new Printer())->printOrderDetail(1,1388,2,'0001');
 // (new  NoticeService())->noticeTask(26,155,'');
 //(new OrderService())->refundWxOrder($id);
