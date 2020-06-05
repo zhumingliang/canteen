@@ -115,6 +115,7 @@ class UploadExcel
         try {
             $set = "uploadExcel";
             $code = "$company_id:$u_id:$type";
+            LogService::save('begin:'. $code);
             $res = Redis::instance()->sRem($set, $code);
             LogService::save('res:' . $res);
             LogService::save('clear:' . $code);
