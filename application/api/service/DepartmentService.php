@@ -194,7 +194,7 @@ class DepartmentService
     {
         $date = (new ExcelService())->saveExcel($staffs_excel);
         $res = $this->prefixStaffs($company_id, $date);
-         return $res;
+        return $res;
     }
 
     private function prefixStaffs($company_id, $data)
@@ -425,6 +425,32 @@ class DepartmentService
             throw new SaveException();
         }
         return $qrcode_url;
+    }
+
+
+    public
+    function saveQrcode2($s_id)
+    {
+        $code = QRcodeNUmber();
+        $url = sprintf(config("setting.qrcode_url"), 'canteen', $code);
+        $qrcode_url = (new QrcodeService())->qr_code($url);
+        $expiry_date = date('Y-m-d H:i:s', strtotime("+" . config("setting.qrcode_expire_in") . "minute", time()));
+        $data = [
+            'code' => $code,
+            's_id' => $s_id,
+            'minute' => config("setting.qrcode_expire_in"),
+            'expiry_date' => $expiry_date,
+            'url' => $qrcode_url
+        ];
+        $qrcode = StaffQrcodeT::create($data);
+        if (!$qrcode) {
+            throw new SaveException();
+        }
+        return [
+            'url' => $qrcode->url,
+            'create_time' => $qrcode->create_time,
+            'expiry_date' => $qrcode->expiry_date
+        ];
     }
 
 
