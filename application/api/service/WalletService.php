@@ -96,11 +96,6 @@ class WalletService
             if ($k == 1 || empty($v[0])) {
                 continue;
             }
-
-            if (in_array($v[0], ['卓怡涵', '陈映雪', '范星'])) {
-                print_r($v);
-
-            }
             array_push($dataList, [
                 'admin_id' => $admin_id,
                 'company_id' => $company_id,
