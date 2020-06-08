@@ -38,7 +38,6 @@ Index extends BaseController
 {
     public function index(Request $request)
     {
-
         (new UploadExcel())->clearUploading(67,141,'rechargeCash');
 //(new Printer())->printOrderDetail(1,1388,2,'0001');
 // (new  NoticeService())->noticeTask(26,155,'');

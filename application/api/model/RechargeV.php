@@ -21,9 +21,9 @@ class RechargeV extends Model
     public static function rechargeRecords($time_begin, $time_end,
                                            $page, $size, $type, $admin_id, $username, $company_id)
     {
-        $time_end = addDay(1, $time_end);
         $orderings = self::where('company_id', $company_id)
-            ->whereBetweenTime('create_time', $time_begin, $time_end)
+            ->where('create_time', '>=',$time_begin)
+            ->where('create_time', '<=',$time_end)
             ->where(function ($query) use ($type) {
                 if ($type != "all") {
                     $query->where('type', $type);

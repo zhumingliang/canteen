@@ -46,12 +46,12 @@ class WalletService
         $fileName = (new ExcelService())->saveExcelReturnName($cash_excel);
         $this->rechargeCashTask($company_id, $admin_id, $fileName);
 
-        //$data = (new ExcelService())->saveExcel($cash_excel);
+        // $data = (new ExcelService())->saveExcel($cash_excel);
         //$dataList = $this->prefixUploadData($company_id, $admin_id, $data);
-        /* $cash = (new RechargeCashT())->saveAll($dataList);
-         if (!$cash) {
-             throw new SaveException();
-         }*/
+        /*  $cash = (new RechargeCashT())->saveAll($dataList);
+          if (!$cash) {
+              throw new SaveException();
+          }*/
     }
 
 
@@ -95,6 +95,11 @@ class WalletService
         foreach ($data as $k => $v) {
             if ($k == 1 || empty($v[0])) {
                 continue;
+            }
+
+            if (in_array($v[0], ['卓怡涵', '陈映雪', '范星'])) {
+                print_r($v);
+
             }
             array_push($dataList, [
                 'admin_id' => $admin_id,

@@ -45,6 +45,32 @@ class Wallet extends BaseController
         return json(new SuccessMessage());
     }
 
+
+    /**
+     * @api {POST} /api/v1/wallet/recharge/delete CMS管理端--充值管理--现金充值-回撤充值记录
+     * @apiGroup   CMS
+     * @apiVersion 3.0.0
+     * @apiDescription     CMS管理端--充值管理--现金充值-回撤充值记录
+     * @apiExample {post}  请求样例:
+     *    {
+     *       "id": 1,
+     *       "type": 1
+     *     }
+     * @apiParam (请求参数说明) {int} id 充值id,
+     * @apiParam (请求参数说明) {int} type 充值渠道,
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     */
+    public function deleteRecharge()
+    {
+        $params = Request::param();
+        (new WalletService())->rechargeCash($params);
+        return json(new SuccessMessage());
+    }
+
+
     /**
      * @api {POST}  /api/v1/wallet/recharge/upload CMS管理端--充值管理--批量充值
      * @apiGroup  CMS
