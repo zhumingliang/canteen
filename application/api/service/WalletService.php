@@ -130,7 +130,7 @@ class WalletService
     public function rechargeRecords($time_begin, $time_end,
                                     $page, $size, $type, $admin_id, $username)
     {
-        $company_id = Token::getCurrentTokenVar('company_id');
+        $company_id = 95;//Token::getCurrentTokenVar('company_id');
         $records = RechargeV::rechargeRecords($time_begin, $time_end,
             $page, $size, $type, $admin_id, $username, $company_id);
         return $records;
