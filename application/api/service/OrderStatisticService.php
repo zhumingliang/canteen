@@ -157,6 +157,7 @@ class OrderStatisticService
     {
         if (count($data)) {
             foreach ($data as $k => $v) {
+                $v['used'] = $v['used'] == CommonEnum::STATE_IS_OK ? $v['used_time'] : "-";
                 if ($v['type'] == 'recharge') {
                     $data[$k]['consumption_type'] = "补录";
                     continue;
