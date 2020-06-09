@@ -7,10 +7,14 @@ namespace app\api\controller\v1;
 use app\api\controller\BaseController;
 use app\api\job\UploadExcel;
 use app\api\model\CanteenT;
+use app\api\model\CompanyStaffT;
 use app\api\model\ConsumptionRecordsV;
 use app\api\model\ConsumptionStrategyT;
 use app\api\model\DinnerT;
 use app\api\model\OrderT;
+use app\api\model\PayT;
+use app\api\model\RechargeCashT;
+use app\api\model\RechargeV;
 use app\api\model\Submitequity;
 use app\api\model\UserBalanceV;
 use app\api\service\AddressService;
@@ -38,8 +42,18 @@ Index extends BaseController
 {
     public function index(Request $request)
     {
-        (new UploadExcel())->clearUploading(67,141,'rechargeCash');
-//(new Printer())->printOrderDetail(1,1388,2,'0001');
+        $records = RechargeV::where('type','<>','cash')->select();
+        //return json($records);
+        foreach ($records as $k => $v) {
+
+            $data = ['username' => $v['username'],
+                'phone' => $v['phone'], 'outsider' => 2
+            ];
+            PayT::update($data, ['id' => $v['id']]);
+
+
+        }
+        //(new Printer())->printOrderDetail(1,1388,2,'0001');
 // (new  NoticeService())->noticeTask(26,155,'');
 //(new OrderService())->refundWxOrder($id);
 // $this->mailTask($name);

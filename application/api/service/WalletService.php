@@ -313,7 +313,9 @@ class WalletService
             'money' => $params['money'],
             'method_id' => $params['method_id'],
             'staff_id' => $staff->id,
-            'type' => 'recharge'
+            'type' => 'recharge',
+            'username' => $staff->username,
+            'phone' => $phone
         ];
         $order = PayT::create($data);
         if (!$order) {

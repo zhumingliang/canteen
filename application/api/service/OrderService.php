@@ -126,6 +126,7 @@ class OrderService extends BaseService
             $type = $params['type'];
             $count = $params['count'];
             $openid = Token::getCurrentOpenid();
+            $username = Token::getCurrentTokenVar('nickName');
             $detail = json_decode($params['detail'], true);
             unset($params['detail']);
             $params['ordering_type'] = OrderEnum::ORDERING_CHOICE;
@@ -176,7 +177,7 @@ class OrderService extends BaseService
             }
             //生成微信支付订单
             $payMoney = $order->money + $delivery_fee;
-            $payOrder = $this->savePayOrder($order->id, $company_id, $openid, $u_id, $payMoney);
+            $payOrder = $this->savePayOrder($order->id, $company_id, $openid, $u_id, $payMoney, $phone, $username);
             Db::commit();
             return $payOrder;
         } catch (Exception $e) {
@@ -186,7 +187,7 @@ class OrderService extends BaseService
 
     }
 
-    public function savePayOrder($order_id, $company_id, $openid, $u_id, $money)
+    public function savePayOrder($order_id, $company_id, $openid, $u_id, $money, $phone, $username)
     {
         $data = [
             'openid' => $openid,
@@ -197,7 +198,10 @@ class OrderService extends BaseService
             'status' => 'paid_fail',
             'method_id' => PayEnum::PAY_METHOD_WX,
             'order_id' => $order_id,
-            'type' => 'canteen'
+            'type' => 'canteen',
+            'phone' => $phone,
+            'username' => $username,
+            'outsider' => UserEnum::OUTSIDE
 
         ];
         $order = PayT::create($data);
