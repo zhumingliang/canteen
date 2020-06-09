@@ -8,7 +8,10 @@ use app\api\model\CompanyStaffT;
 use app\api\model\StaffV;
 use app\api\model\UserT;
 use app\lib\enum\CommonEnum;
+use app\lib\exception\ParameterException;
+use app\lib\exception\SaveException;
 use app\lib\exception\TokenException;
+use think\Exception;
 use think\facade\Cache;
 use think\facade\Request;
 use zml\tp_tools\Redis;
@@ -18,18 +21,24 @@ class OfficialToken extends Token
 
     public function get($code)
     {
-        $app = app('wechat.official_account.default');
-        $info = $app->oauth->user();
-        $user_info = $info->getOriginal();
-        $openid = $user_info['openid'];
-        $user = UserT::where('openid', $openid)->find();
-        if (!$user) {
-            $user_info['outsiders'] = CommonEnum::STATE_IS_FAIL;
-            $user = UserT::create($user_info);
-            $u_id = $user->id;
-        } else {
-            $u_id = $user->id;
-            UserT::update($user_info, ['id' => $u_id]);
+        try {
+            $this->checkCode($code);
+            $app = app('wechat.official_account.default');
+            $info = $app->oauth->user();
+            $user_info = $info->getOriginal();
+            $openid = $user_info['openid'];
+            $user = UserT::where('openid', $openid)->find();
+            if (!$user) {
+                $user_info['outsiders'] = CommonEnum::STATE_IS_FAIL;
+                $user = UserT::create($user_info);
+                $u_id = $user->id;
+            } else {
+                $u_id = $user->id;
+                UserT::update($user_info, ['id' => $u_id]);
+            }
+        } catch (Exception $e) {
+
+            throw  new SaveException(['msg' => $e->getMessage()]);
         }
 
 
@@ -46,6 +55,16 @@ class OfficialToken extends Token
 
     }
 
+
+    private function checkCode($code)
+    {
+        $check = Redis::instance()->get($code);
+        if ($check) {
+            throw  new ParameterException(['errorCode' => 40163,
+                'msg' => 'code been used']);
+        }
+        Redis::instance()->set($code, 1, 60 * 60);
+    }
 
     /**
      * @param $cachedValue
