@@ -21,6 +21,7 @@ use app\api\service\AddressService;
 use app\api\service\CanteenService;
 use app\api\service\CompanyService;
 use app\api\service\DepartmentService;
+use app\api\service\ExcelService;
 use app\api\service\NoticeService;
 use app\api\service\OrderService;
 use app\api\service\QrcodeService;
@@ -45,8 +46,9 @@ Index extends BaseController
     public function index(Request $request)
     {
         $file_name = dirname($_SERVER['SCRIPT_FILENAME']) . '/static/excel/upload/test.xlsx';
-       $fail= (new WalletService())->checkData(95, $file_name);
-        return json(new SuccessMessageWithData(['data'=>$fail]));
+        $data = (new ExcelService())->importExcel($file_name);
+        $fail = (new WalletService())->prefixUploadData(69, 1, $data);
+        return json(new SuccessMessageWithData(['data' => $fail]));
 
         //(new Printer())->printOrderDetail(1,1388,2,'0001');
 // (new  NoticeService())->noticeTask(26,155,'');

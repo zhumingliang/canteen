@@ -124,10 +124,9 @@ class WalletService
     {
         $dataList = [];
         $staffs = CompanyStaffT::staffs($company_id);
+        $newStaffs=[];
         foreach ($staffs as $k => $v) {
-            array_push($newStaffs, [
-                $v['phone']=>$v['id']
-            ]);
+            $newStaffs[$v['phone']]=$v['id'];
         }
         foreach ($data as $k => $v) {
             if ($k == 1 || empty($v[0])) {
