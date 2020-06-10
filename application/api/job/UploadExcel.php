@@ -84,6 +84,8 @@ class UploadExcel
             $type = $data['type'];
             if ($type == "rechargeCash") {
                 return $this->uploadRechargeCash($data);
+            } else if ($type == "supplement") {
+                return $this->uploadSupplement($data);
             }
             return true;
         } catch (Exception $e) {
@@ -92,9 +94,18 @@ class UploadExcel
 
     }
 
-    public function uploadStaff()
+    public function uploadSupplement($data)
     {
-
+        $company_id = $data['company_id'];
+        $admin_id = $data['u_id'];
+        $fileName = $data['fileName'];
+        $data = (new ExcelService())->importExcel($fileName);
+        $dataList = (new WalletService())->prefixSupplementUploadData($company_id, $admin_id, $data);
+        $cash = (new RechargeCashT())->saveAll($dataList);
+        if (!$cash) {
+            return false;
+        }
+        return true;
     }
 
     public function uploadRechargeCash($data)

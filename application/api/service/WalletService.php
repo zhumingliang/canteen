@@ -52,17 +52,10 @@ class WalletService
                 'fail' => $fail
             ];
         }
-        $this->rechargeCashTask($company_id, $admin_id, $fileName);
+        $this->uploadExcelTask($company_id, $admin_id, $fileName, "rechargeCash");
         return [
             'res' => true
         ];
-
-        // $data = (new ExcelService())->saveExcel($cash_excel);
-        //$dataList = $this->prefixUploadData($company_id, $admin_id, $data);
-        /*  $cash = (new RechargeCashT())->saveAll($dataList);
-          if (!$cash) {
-              throw new SaveException();
-          }*/
     }
 
     public function checkData($company_id, $fileName)
@@ -86,16 +79,16 @@ class WalletService
 
     }
 
-    public function rechargeCashTask($company_id, $u_id, $fileName)
+    public function uploadExcelTask($company_id, $u_id, $fileName, $type)
     {
         //设置限制未上传完成不能继续上传
-        if (!$this->checkUploading($company_id, $u_id, "rechargeCash")) {
+        if (!$this->checkUploading($company_id, $u_id, $type)) {
             throw new SaveException(["msg" => '有文件正在上传，请稍等']);
         }
         $jobHandlerClassName = 'app\api\job\UploadExcel';//负责处理队列任务的类
         $jobQueueName = "uploadQueue";//队列名称
         $jobData = [
-            'type' => "rechargeCash",
+            'type' => $type,
             'company_id' => $company_id,
             'u_id' => $u_id,
             'fileName' => $fileName,
@@ -124,9 +117,9 @@ class WalletService
     {
         $dataList = [];
         $staffs = CompanyStaffT::staffs($company_id);
-        $newStaffs=[];
+        $newStaffs = [];
         foreach ($staffs as $k => $v) {
-            $newStaffs[$v['phone']]=$v['id'];
+            $newStaffs[$v['phone']] = $v['id'];
         }
         foreach ($data as $k => $v) {
             if ($k == 1 || empty($v[0])) {
@@ -263,37 +256,92 @@ class WalletService
     {
         $company_id = Token::getCurrentTokenVar('company_id');
         $admin_id = Token::getCurrentUid();
-        $data = (new ExcelService())->saveExcel($supplement_excel);
-        $dataList = $this->prefixSupplementUploadData($company_id, $admin_id, $data);
-        $supplement = (new RechargeSupplementT())->saveAll($dataList);
-        if (!$supplement) {
-            throw new SaveException();
+        $fileName = (new ExcelService())->saveExcelReturnName($supplement_excel);
+        $fail = $this->checkSupplementData($company_id, $supplement_excel);
+        //  $dataList = $this->prefixSupplementUploadData($company_id, $admin_id, $data);
+        // $supplement = (new RechargeSupplementT())->saveAll($dataList);
+        if (count($fail)) {
+            return [
+                'res' => false,
+                'fail' => $fail
+            ];
         }
+        $this->uploadExcelTask($company_id, $admin_id, $fileName, "supplement");
+        return [
+            'res' => true
+        ];
     }
 
-    private function prefixSupplementUploadData($company_id, $admin_id, $data)
+    private function checkSupplementData($company_id, $fileName)
+    {
+        $newCanteen = [];
+        $newDinner = [];
+        $canteens = (new CanteenService())->companyCanteens($company_id);
+        $dinners = DinnerV::companyDinners($company_id);
+        $staffs = CompanyStaffT::staffs($company_id);
+        foreach ($canteens as $k => $v) {
+            array_push($newCanteen, $v['name']);
+        }
+        foreach ($dinners as $k => $v) {
+            array_push($newDinner, $v['name']);
+        }
+        if (!count($newCanteen) || !count($newDinner)) {
+            throw  new  SaveException(['msg' => '企业饭堂或者餐次设置异常']);
+        }
+        $newStaffs = [];
+        foreach ($staffs as $k => $v) {
+            array_push($newStaffs, $v['username'] . '&' . $v['phone']);
+        }
+        $fail = [];
+        $data = (new ExcelService())->importExcel($fileName);
+
+        foreach ($data as $k => $v) {
+            if ($k < 2) {
+                continue;
+            }
+            if (!in_array($v[1] . '&' . $v[3], $newStaffs) ||
+                !in_array($v[4], $newCanteen) || !in_array($v[7], $newCanteen)) {
+                array_push($fail, '第' . $k . '行数据有问题');
+            }
+        }
+        return $fail;
+    }
+
+    public function prefixSupplementUploadData($company_id, $admin_id, $data)
     {
         $dataList = [];
         $canteens = (new CanteenService())->companyCanteens($company_id);
         $dinners = DinnerV::companyDinners($company_id);
+        $staffs = CompanyStaffT::staffs($company_id);
+        $newStaffs = [];
+        $newCanteen = [];
+        $newDinner = [];
+        foreach ($staffs as $k => $v) {
+            $newStaffs[$v['phone']] = $v['id'];
+        }
+        foreach ($dinners as $k => $v) {
+            $newDinner[$v['dinner']] = $v['dinner_id'];
+        }
+        foreach ($canteens as $k => $v) {
+            $newCanteen[$v['name']] = $v['id'];
+        }
         foreach ($data as $k => $v) {
             if ($k == 1) {
                 continue;
             }
-            $canteen_id = $this->getCanteenID($canteens, $v[4]);
-            $dinner_id = $this->getDinnerID($dinners, $canteen_id, $v[7]);
             array_push($dataList, [
                 'admin_id' => $admin_id,
                 'company_id' => $company_id,
+                'staff_id' => $newStaffs[$v[3]],
                 'source' => 'upload',
                 'code' => $v[0],
                 'username' => $v[1],
                 'card_num' => $v[2],
                 'phone' => $v[3],
                 'canteen' => $v[4],
-                'canteen_id' => $canteen_id,
+                'canteen_id' => $newCanteen[$v[4]],
                 'consumption_date' => $v[5],
-                'dinner_id' => $dinner_id,
+                'dinner_id' => $newDinner[$v[7]],
                 'dinner' => $v[7],
                 'type' => $v[7] == "补扣" ? 2 : 1,
                 'money' => $v[8]

@@ -45,10 +45,26 @@ Index extends BaseController
 {
     public function index(Request $request)
     {
-        $file_name = dirname($_SERVER['SCRIPT_FILENAME']) . '/static/excel/upload/test.xlsx';
-        $data = (new ExcelService())->importExcel($file_name);
-        $fail = (new WalletService())->prefixUploadData(69, 1, $data);
-        return json(new SuccessMessageWithData(['data' => $fail]));
+        $recharges = RechargeCashT::where('state', CommonEnum::STATE_IS_OK)
+            ->where('staff_id',0)
+            ->select();
+        foreach ($recharges as $k => $v) {
+            $staff = CompanyStaffT::where('company_id', $v['company_id'])
+                ->where('phone', $v['phone'])
+                ->where('state', CommonEnum::STATE_IS_OK)
+                ->find();
+            if ($staff){
+                RechargeCashT::update([
+                    'staff_id' => $staff->id
+                ], ['id' => $v['id']]);
+            }
+
+        }
+
+        /* $file_name = dirname($_SERVER['SCRIPT_FILENAME']) . '/static/excel/upload/test.xlsx';
+         $data = (new ExcelService())->importExcel($file_name);
+         $fail = (new WalletService())->prefixUploadData(69, 1, $data);
+         return json(new SuccessMessageWithData(['data' => $fail]));*/
 
         //(new Printer())->printOrderDetail(1,1388,2,'0001');
 // (new  NoticeService())->noticeTask(26,155,'');
@@ -75,23 +91,6 @@ Index extends BaseController
              array_push($user_ids, $v['name']);
          }
          echo implode('|', $user_ids);*/
-    }
-
-//邮件队列
-    private
-    function mailTask($email = '')
-    {
-        //php think queue:work --queue sendMsgQueue
-        $jobHandlerClassName = 'app\api\job\SendMsg';//负责处理队列任务的类
-        $jobQueueName = "sendMsgQueue";//队列名称
-        $jobData = ['email' => $email];//当前任务的业务数据
-        $isPushed = Queue::push($jobHandlerClassName, $jobData, $jobQueueName);//将该任务推送到消息队列
-        if ($isPushed !== false) {
-            echo date('Y-m-d H:i:s') . '邮件队列任务发送成功';
-        } else {
-            echo date('Y-m-d H:i:s') . '邮件队列发送失败';
-        }
-
     }
 
 

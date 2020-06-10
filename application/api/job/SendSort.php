@@ -36,12 +36,12 @@ class SendSort
             // 如果任务执行成功，删除任务
             $job->delete();
         } else {
-            if ($job->attempts() > 3) {
+            if ($job->attempts() > 10) {
                 //通过这个方法可以检查这个任务已经重试了几次了
                 LogService::save("<warn>饭堂排队队列已经重试超过3次，现在已经删除该任务" . "</warn>\n");
                 $job->delete();
             } else {
-                $job->release(1); //重发任务
+                $job->release(30); //重发任务
             }
         }
     }
