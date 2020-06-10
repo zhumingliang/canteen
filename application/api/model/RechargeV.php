@@ -42,6 +42,7 @@ class RechargeV extends Model
             })
             ->where('state', CommonEnum::STATE_IS_OK)
             ->hidden(['admin_id', 'company_id', 'state'])
+            ->order('create_time desc')
             ->paginate($size, false, ['page' => $page]);
         return $orderings;
     }
