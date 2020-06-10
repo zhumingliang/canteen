@@ -87,7 +87,7 @@ class Wallet extends BaseController
             throw  new ParameterException(['msg' => '缺少excel文件']);
         }
         $res = (new WalletService())->rechargeCashUpload($cash_excel);
-        return json(new SuccessMessageWithData($res['fail']));
+        return json(new SuccessMessageWithData(['data'=>$res]));
 
     }
 
