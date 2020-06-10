@@ -4,6 +4,7 @@
 namespace app\api\service;
 
 
+use app\api\model\CompanyStaffT;
 use app\api\model\DinnerV;
 use app\api\model\OrderT;
 use app\api\model\PayT;
@@ -44,7 +45,17 @@ class WalletService
         $company_id = Token::getCurrentTokenVar('company_id');
         $admin_id = Token::getCurrentUid();
         $fileName = (new ExcelService())->saveExcelReturnName($cash_excel);
+        $fail = $this->checkData($company_id, $fileName);
+        if (count($fail)) {
+            return [
+                'res' => false,
+                'fail' => $fail
+            ];
+        }
         $this->rechargeCashTask($company_id, $admin_id, $fileName);
+        return [
+            'res' => true
+        ];
 
         // $data = (new ExcelService())->saveExcel($cash_excel);
         //$dataList = $this->prefixUploadData($company_id, $admin_id, $data);
@@ -54,6 +65,26 @@ class WalletService
           }*/
     }
 
+    public function checkData($company_id, $fileName)
+    {
+        $data = (new ExcelService())->importExcel($fileName);
+        $staffs = CompanyStaffT::staffs($company_id);
+        $newStaffs = [];
+        foreach ($staffs as $k => $v) {
+            array_push($newStaffs, $v['username'] . '&' . $v['phone']);
+        }
+        $fail = [];
+        foreach ($data as $k => $v) {
+            if ($k < 2) {
+                continue;
+            }
+            if (!in_array($v[0] . '&' . $v[1], $newStaffs)) {
+                array_push($fail, '第' . $k . '行数据有问题');
+            }
+        }
+        return $fail;
+
+    }
 
     public function rechargeCashTask($company_id, $u_id, $fileName)
     {
@@ -92,6 +123,12 @@ class WalletService
     public function prefixUploadData($company_id, $admin_id, $data)
     {
         $dataList = [];
+        $staffs = CompanyStaffT::staffs($company_id);
+        foreach ($staffs as $k => $v) {
+            array_push($newStaffs, [
+                $v['phone']=>$v['id']
+            ]);
+        }
         foreach ($data as $k => $v) {
             if ($k == 1 || empty($v[0])) {
                 continue;
@@ -99,6 +136,7 @@ class WalletService
             array_push($dataList, [
                 'admin_id' => $admin_id,
                 'company_id' => $company_id,
+                'staff_id' => $newStaffs[$v[1]],
                 'username' => $v[0],
                 'phone' => $v[1],
                 'card_num' => $v[2],
@@ -117,8 +155,8 @@ class WalletService
             $data = [];
             $data['company_id'] = $company_id;
             $data['money'] = $money;
-            $data['phone'] = $v['phone'];
-            $data['card_num'] = $v['card_num'];
+            $data['staff_id'] = $v['staff_id'];
+            // $data['card_num'] = $v['card_num'];
             $data['state'] = CommonEnum::STATE_IS_OK;
             $data['admin_id'] = $admin_id;
             $data['remark'] = $remark;

@@ -113,4 +113,11 @@ class CompanyStaffT extends Model
             ->select();
     }
 
+    public static function staffs($company_id)
+    {
+        return self::where('company_id', $company_id)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->select();
+    }
+
 }

@@ -9,6 +9,7 @@ use app\api\model\PrinterT;
 use app\api\service\OrderService;
 use app\api\service\UserService;
 use app\lib\enum\CommonEnum;
+use zml\tp_tools\Redis;
 
 class Printer extends PrinterBase
 {
@@ -22,6 +23,7 @@ class Printer extends PrinterBase
         $sn = $printer->code;
         //$sn = '921527631';
         $printerStatus = $this->queryPrinterStatus($sn);
+       // print_r($printerStatus);
         if (strpos($printerStatus['data'], '离线') !== false || strpos($printerStatus['data'], '不正常') !== false) {
             return false;
         }
@@ -127,10 +129,6 @@ class Printer extends PrinterBase
                 $content .= $head . $tail;
             }
         }
-
-
-        /*  $content .= '饭　　　　　 　10.0   10  100.0<BR>';
-          $content .= '炒饭　　　　　 10.0   10  100.0<BR>';*/
         $content .= '--------------------------------<BR>';
         $content .= '份数：' . $order['count'] . '<BR>';
         $content .= '<B>附加金额：' . $order['sub_money'] . '</B><BR>';
@@ -142,6 +140,7 @@ class Printer extends PrinterBase
         //把二维码字符串用标签套上即可自动生成二维码
 
         $printRes = $this->printMsg($sn, $content, 1);
+        //print_r($printRes);
         if ($printRes['msg'] == 'ok' && $printRes['ret'] == 0) {
             return true;
         }
@@ -150,4 +149,15 @@ class Printer extends PrinterBase
 
     }
 
+    private function saveRedisNoPrint($printerID, $sn, $content)
+    {
+        $list = "noPrint";
+        $data = json_encode([
+            'printerID' => $printerID,
+            'sn' => $sn,
+            'content' => $content
+
+        ]);
+        Redis::instance()->lPush($list, $data);
+    }
 }

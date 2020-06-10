@@ -24,9 +24,11 @@ use app\api\service\DepartmentService;
 use app\api\service\NoticeService;
 use app\api\service\OrderService;
 use app\api\service\QrcodeService;
+use app\api\service\WalletService;
 use app\api\service\WeiXinService;
 use app\lib\Date;
 use app\lib\enum\CommonEnum;
+use app\lib\exception\SuccessMessage;
 use app\lib\exception\SuccessMessageWithData;
 use app\lib\printer\Printer;
 use think\Db;
@@ -42,17 +44,10 @@ Index extends BaseController
 {
     public function index(Request $request)
     {
-        $records = RechargeV::where('type','<>','cash')->select();
-        //return json($records);
-        foreach ($records as $k => $v) {
+        $file_name = dirname($_SERVER['SCRIPT_FILENAME']) . '/static/excel/upload/test.xlsx';
+       $fail= (new WalletService())->checkData(95, $file_name);
+        return json(new SuccessMessageWithData(['data'=>$fail]));
 
-            $data = ['username' => $v['username'],
-                'phone' => $v['phone'], 'outsider' => 2
-            ];
-            PayT::update($data, ['id' => $v['id']]);
-
-
-        }
         //(new Printer())->printOrderDetail(1,1388,2,'0001');
 // (new  NoticeService())->noticeTask(26,155,'');
 //(new OrderService())->refundWxOrder($id);

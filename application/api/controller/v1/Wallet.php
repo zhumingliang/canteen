@@ -26,13 +26,12 @@ class Wallet extends BaseController
      *    {
      *       "money": 200,
      *       "remark": '备注',
-     *       "detail":[{"phone":"18956225230","card_num":"123"},{"phone":"18956225230","card_num":"123"}]
+     *       "detail":[{"staff_id":1},{"staff_id":2}]
      *     }
      * @apiParam (请求参数说明) {int} money 充值金额
      * @apiParam (请求参数说明) {int} remark 备注
      * @apiParam (请求参数说明) {obj} detail  充值人员信息json字符串
-     * @apiParam (请求参数说明) {string} phone  充值用户手机号
-     * @apiParam (请求参数说明) {string} card_num  充值用户卡号
+     * @apiParam (请求参数说明) {int} staff_id  充值用户id
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
@@ -87,8 +86,9 @@ class Wallet extends BaseController
         if (is_null($cash_excel)) {
             throw  new ParameterException(['msg' => '缺少excel文件']);
         }
-        (new WalletService())->rechargeCashUpload($cash_excel);
-        return json(new SuccessMessage());
+        $res = (new WalletService())->rechargeCashUpload($cash_excel);
+        return json(new SuccessMessageWithData($res['fail']));
+
     }
 
     /**

@@ -90,4 +90,29 @@ class PrinterBase
         return sha1($this->USER . $this->UKEY . $time);//公共参数，请求公钥
     }
 
+    /**
+     * [查询订单是否打印成功接口 Open_queryOrderState]
+     * @param  [string] $orderid [调用打印机接口成功后,服务器返回的JSON中的编号 例如：123456789_20190919163739_95385649]
+     * @return [string]          [接口返回值]
+     */
+    public function queryOrderState($orderid)
+    {
+        $time = time();         //请求时间
+        $msgInfo = array(
+            'user' => $this->USER,
+            'stime' => $time,
+            'sig' => $this->signature($time),
+            'apiname' => 'Open_queryOrderState',
+            'orderid' => $orderid
+        );
+        $client = new HttpClient($this->IP, $this->PORT);
+        if (!$client->post($this->PATH, $msgInfo)) {
+            echo 'error';
+        } else {
+            $result = $client->getContent();
+            echo $result;
+        }
+    }
+
+
 }
