@@ -135,7 +135,7 @@ class OrderTakeoutStatisticV extends Model
                     $query->where('outsider', $user_type);
                 }
             })
-            ->field('id,ordering_date,canteen,username,phone,dinner,money,CONCAT(province,city,area,address)  as address,status')
+            ->field('order_id,ordering_date,canteen,username,phone,dinner,money,CONCAT(province,city,area,address)  as address,status')
             ->order('used DESC')
             ->select()->toArray();
         return $list;
