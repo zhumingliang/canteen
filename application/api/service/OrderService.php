@@ -38,8 +38,7 @@ use app\lib\exception\SaveException;
 use app\lib\exception\UpdateException;
 use think\Db;
 use think\Exception;
-use think\Request;
-use function GuzzleHttp\Psr7\str;
+
 
 class OrderService extends BaseService
 {
@@ -500,7 +499,7 @@ class OrderService extends BaseService
      * 线上订餐
      */
     public
-    function orderingOnline($detail)
+    function orderingOnline($address_id,$type,$detail)
     {
         try {
             Db::startTrans();
@@ -512,7 +511,7 @@ class OrderService extends BaseService
             $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
             $company_id = Token::getCurrentTokenVar('current_company_id');
             $phone = Token::getCurrentPhone();
-            $data = $this->prefixOnlineOrderingData($u_id, $canteen_id, $detail, $company_id, $phone);
+            $data = $this->prefixOnlineOrderingData($address_id,$type,$u_id, $canteen_id, $detail, $company_id, $phone);
             $money = $data['all_money'];
             $pay_way = $this->checkBalance($u_id, $canteen_id, $money);
             if (!$pay_way) {
@@ -531,43 +530,6 @@ class OrderService extends BaseService
 
     }
 
-    public
-    function orderingOnlineTest($detail, $name)
-    {
-        try {
-            Db::startTrans();
-            $detail = json_decode($detail, true);
-            if (empty($detail)) {
-                throw new ParameterException(['msg' => '订餐数据格式错误']);
-            }
-            $u_id = '';
-            $canteen_id = 147;
-            $staff = CompanyStaffT::where('username', $name)->field('phone')
-                ->find();
-            if (empty($staff)) {
-                throw new ParameterException(['msg' => '用户不存在']);
-            }
-            $phone = $staff->phone;
-            $data = $this->prefixOnlineOrderingData($u_id, $canteen_id, $detail, 78, $phone);
-            $money = $data['all_money'];
-            $pay_way = $this->checkBalance($u_id, $canteen_id, $money, 78, $phone);
-            if (!$pay_way) {
-                throw new SaveException(['errorCode' => 49000, 'msg' => '余额不足']);
-            }
-            $list = $this->prefixPayWay($pay_way, $data['list']);
-            $ordering = (new OrderT())->saveAll($list);
-            if (!$ordering) {
-                throw  new SaveException();
-            }
-            Db::commit();
-        } catch (Exception $e) {
-            Db::rollback();
-            throw $e;
-        }
-
-    }
-
-
     private
     function prefixPayWay($pay_way, $list)
     {
@@ -582,7 +544,7 @@ class OrderService extends BaseService
      * 计算订单总价格
      */
     private
-    function prefixOnlineOrderingData($u_id, $canteen_id, $detail, $company_id = '', $phone = '')
+    function prefixOnlineOrderingData($address_id,$type,$u_id, $canteen_id, $detail, $company_id = '', $phone = '')
     {
 
         $data_list = [];
@@ -607,6 +569,8 @@ class OrderService extends BaseService
                     $data['u_id'] = $u_id;
                     $data['c_id'] = $canteen_id;
                     $data['d_id'] = $v['d_id'];
+                    $data['address_id'] = $address_id;
+                    $data['type'] = $type;
                     $data['staff_type_id'] = $staff_type_id;
                     $data['department_id'] = $department_id;
                     $data['staff_id'] = $staff_id;

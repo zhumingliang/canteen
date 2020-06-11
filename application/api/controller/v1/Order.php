@@ -176,8 +176,12 @@ class Order extends BaseController
      * @apiDescription    微信端--线上订餐--新增订单
      * @apiExample {post}  请求样例:
      *    {
+     *       "address_id":1,
+     *       "type":1,
      *       "detail":[{"d_id":5,"ordering":[{"ordering_date":"2019-10-01","count":1},{"ordering_date":"2019-10-02","count":1}]},{"d_id":6,"ordering":[{"ordering_date":"2019-10-01","count":1},{"ordering_date":"2019-10-02","count":1}]}]
      *     }
+     * @apiParam (请求参数说明) {int} address_id  外送地址id
+     * @apiParam (请求参数说明) {int} type 就餐类别：1|食堂；2|外卖
      * @apiParam (请求参数说明) {obj} detail  订餐明细
      * @apiParam (请求参数说明) {int} d_id  餐次id
      * @apiParam (请求参数说明) {obj} ordering 指定餐次订餐明细
@@ -191,7 +195,9 @@ class Order extends BaseController
     public function orderingOnline()
     {
         $detail = Request::param('detail');
-        (new OrderService())->orderingOnline($detail);
+        $address_id = Request::param('address_id');
+        $type = empty(Request::param('type')) ? 1 : 2;
+        (new OrderService())->orderingOnline($address_id, $type, $detail);
         return json(new SuccessMessage());
 
     }
