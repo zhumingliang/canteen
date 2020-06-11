@@ -87,7 +87,7 @@ class Wallet extends BaseController
             throw  new ParameterException(['msg' => '缺少excel文件']);
         }
         $res = (new WalletService())->rechargeCashUpload($cash_excel);
-        return json(new SuccessMessageWithData(['data'=>$res ]));
+        return json(new SuccessMessageWithData(['data' => $res]));
 
     }
 
@@ -302,10 +302,10 @@ class Wallet extends BaseController
     {
         $supplement_excel = request()->file('supplement');
         if (is_null($supplement_excel)) {
-            throw  new ParameterException(['msg' => '缺少excel文件']);
+             throw  new ParameterException(['msg' => '缺少excel文件']);
         }
-        (new WalletService())->rechargeSupplementUpload($supplement_excel);
-        return json(new SuccessMessage());
+        $res = (new WalletService())->rechargeSupplementUpload($supplement_excel);
+        return json(new SuccessMessageWithData(['data'=>$res]));
     }
 
     /**

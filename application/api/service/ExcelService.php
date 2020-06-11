@@ -17,13 +17,13 @@ class ExcelService
      */
     public function saveExcel($excel)
     {
-       /* $path = dirname($_SERVER['SCRIPT_FILENAME']) . '/static/excel/upload';
+        $path = dirname($_SERVER['SCRIPT_FILENAME']) . '/static/excel/upload';
         if (!is_dir($path)) {
             mkdir(iconv("UTF-8", "GBK", $path), 0777, true);
         }
         $info = $excel->move($path);
-        $file_name = $info->getPathname();*/
-         $file_name = dirname($_SERVER['SCRIPT_FILENAME']) . '/static/excel/upload/test.xlsx';
+        $file_name = $info->getPathname();
+        // $file_name = dirname($_SERVER['SCRIPT_FILENAME']) . '/static/excel/upload/test.xlsx';
         $result_excel = $this->importExcel($file_name);
         return $result_excel;
 
