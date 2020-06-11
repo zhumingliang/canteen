@@ -257,7 +257,7 @@ class WalletService
         $company_id = Token::getCurrentTokenVar('company_id');
         $admin_id = Token::getCurrentUid();
         $fileName = (new ExcelService())->saveExcelReturnName($supplement_excel);
-        $fail = $this->checkSupplementData($company_id, $supplement_excel);
+        $fail = $this->checkSupplementData($company_id, $fileName);
         //  $dataList = $this->prefixSupplementUploadData($company_id, $admin_id, $data);
         // $supplement = (new RechargeSupplementT())->saveAll($dataList);
         if (count($fail)) {
