@@ -196,7 +196,8 @@ class OrderStatisticService
                                            $canteen_id, $dinner_id, $status, $department_id, $user_type)
     {
         $records = OrderTakeoutStatisticV::exportStatistic($ordering_date, $company_ids, $canteen_id, $dinner_id, $status, $department_id, $user_type);
-        $header = ['订餐号', '日期', '消费地点', '姓名', '手机号', '餐次', '金额（元）', '送货地点', '状态', '人员类型'];
+        return $records;
+        $header = ['订餐号', '日期', '消费地点', '姓名', '手机号', '餐次', '金额（元）', '送货地点', '状态'];
         $file_name = $ordering_date . "-外卖管理报表";
         $url = (new ExcelService())->makeExcel($header, $records, $file_name);
         return [
