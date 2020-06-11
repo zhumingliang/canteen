@@ -283,7 +283,7 @@ class WalletService
             array_push($newCanteen, $v['name']);
         }
         foreach ($dinners as $k => $v) {
-            array_push($newDinner, $v['name']);
+            array_push($newDinner, $v['dinner']);
         }
         if (!count($newCanteen) || !count($newDinner)) {
             throw  new  SaveException(['msg' => '企业饭堂或者餐次设置异常']);
