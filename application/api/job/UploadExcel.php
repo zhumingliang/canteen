@@ -6,6 +6,7 @@ namespace app\api\job;
 
 use app\api\model\NoticeUserT;
 use app\api\model\RechargeCashT;
+use app\api\model\RechargeSupplementT;
 use app\api\service\DepartmentService;
 use app\api\service\ExcelService;
 use app\api\service\LogService;
@@ -101,7 +102,7 @@ class UploadExcel
         $fileName = $data['fileName'];
         $data = (new ExcelService())->importExcel($fileName);
         $dataList = (new WalletService())->prefixSupplementUploadData($company_id, $admin_id, $data);
-        $cash = (new RechargeCashT())->saveAll($dataList);
+        $cash = (new RechargeSupplementT())->saveAll($dataList);
         if (!$cash) {
             return false;
         }
