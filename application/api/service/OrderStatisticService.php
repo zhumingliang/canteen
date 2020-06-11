@@ -196,13 +196,34 @@ class OrderStatisticService
                                            $canteen_id, $dinner_id, $status, $department_id, $user_type)
     {
         $records = OrderTakeoutStatisticV::exportStatistic($ordering_date, $company_ids, $canteen_id, $dinner_id, $status, $department_id, $user_type);
-        return $records;
+        $records = $this->prefixExportTakeoutStatistic($records);
         $header = ['订餐号', '日期', '消费地点', '姓名', '手机号', '餐次', '金额（元）', '送货地点', '状态'];
         $file_name = $ordering_date . "-外卖管理报表";
         $url = (new ExcelService())->makeExcel($header, $records, $file_name);
         return [
             'url' => config('setting.domain') . $url
         ];
+    }
+
+    private function prefixExportTakeoutStatistic($records)
+    {
+        $statusText = [
+            1 => '已支付',
+            2 => '已取消',
+            3 => '已接单',
+            4 => '已完成',
+            5 => '已退款',
+        ];
+        if (count($records)) {
+            foreach ($records as $k => $v) {
+                unset($records[$k]['state']);
+                unset($records[$k]['used']);
+                unset($records[$k]['receive']);
+                $records[$k]['status'] = $statusText[$v['status']];
+            }
+        }
+        return $records;
+
     }
 
     public function infoToPrint($id)

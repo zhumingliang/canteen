@@ -23,7 +23,6 @@ class OfficialToken extends Token
     {
         try {
             $this->checkCode($code);
-            LogService::save('errorCode:' . $code);
             $app = app('wechat.official_account.default');
             $info = $app->oauth->user();
             $user_info = $info->getOriginal();
