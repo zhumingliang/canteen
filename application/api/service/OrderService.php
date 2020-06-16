@@ -534,11 +534,9 @@ class OrderService extends BaseService
     public function checkEatingOutsider($type, $address_id)
     {
 
-        if ($type == OrderEnum::EAT_OUTSIDER && !empty($address_id)) {
-            return true;
+        if ($type == OrderEnum::EAT_OUTSIDER && empty($address_id)) {
+            throw new ParameterException(['msg' => '外卖订单，没有选择地址']);
         }
-
-        throw new ParameterException(['msg' => '外卖订单，没有选择地址']);
     }
 
     private
