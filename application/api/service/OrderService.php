@@ -56,7 +56,7 @@ class OrderService extends BaseService
             $u_id = Token::getCurrentUid();
             $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
             $company_id = Token::getCurrentTokenVar('current_company_id');
-
+            $this->checkEatingOutsider($params['type'], $params['address_id']);
             //获取餐次信息
             $dinner = DinnerT::dinnerInfo($dinner_id);
             //检测该餐次订餐时间是否允许
@@ -499,10 +499,11 @@ class OrderService extends BaseService
      * 线上订餐
      */
     public
-    function orderingOnline($address_id,$type,$detail)
+    function orderingOnline($address_id, $type, $detail)
     {
         try {
             Db::startTrans();
+            $this->checkEatingOutsider($type, $address_id);
             $detail = json_decode($detail, true);
             if (empty($detail)) {
                 throw new ParameterException(['msg' => '订餐数据格式错误']);
@@ -511,7 +512,7 @@ class OrderService extends BaseService
             $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
             $company_id = Token::getCurrentTokenVar('current_company_id');
             $phone = Token::getCurrentPhone();
-            $data = $this->prefixOnlineOrderingData($address_id,$type,$u_id, $canteen_id, $detail, $company_id, $phone);
+            $data = $this->prefixOnlineOrderingData($address_id, $type, $u_id, $canteen_id, $detail, $company_id, $phone);
             $money = $data['all_money'];
             $pay_way = $this->checkBalance($u_id, $canteen_id, $money);
             if (!$pay_way) {
@@ -530,6 +531,16 @@ class OrderService extends BaseService
 
     }
 
+    public function checkEatingOutsider($type, $address_id)
+    {
+
+        if ($type == OrderEnum::EAT_OUTSIDER && !empty($address_id)) {
+            return true;
+        }
+
+        throw new ParameterException(['msg' => '外卖订单，没有选择地址']);
+    }
+
     private
     function prefixPayWay($pay_way, $list)
     {
@@ -544,7 +555,7 @@ class OrderService extends BaseService
      * 计算订单总价格
      */
     private
-    function prefixOnlineOrderingData($address_id,$type,$u_id, $canteen_id, $detail, $company_id = '', $phone = '')
+    function prefixOnlineOrderingData($address_id, $type, $u_id, $canteen_id, $detail, $company_id = '', $phone = '')
     {
 
         $data_list = [];
@@ -569,7 +580,7 @@ class OrderService extends BaseService
                     $data['u_id'] = $u_id;
                     $data['c_id'] = $canteen_id;
                     $data['d_id'] = $v['d_id'];
-                   // $data['address_id'] = $address_id;
+                    $data['address_id'] = $address_id;
                     $data['type'] = $type;
                     $data['staff_type_id'] = $staff_type_id;
                     $data['department_id'] = $department_id;

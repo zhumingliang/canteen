@@ -45,21 +45,18 @@ Index extends BaseController
 {
     public function index(Request $request)
     {
-        $recharges = RechargeCashT::where('state', CommonEnum::STATE_IS_OK)
-            ->where('staff_id',0)
+        $orders = OrderT::where('sort_code', 'in', '0291,029 2')
             ->select();
-        foreach ($recharges as $k => $v) {
-            $staff = CompanyStaffT::where('company_id', $v['company_id'])
-                ->where('phone', $v['phone'])
-                ->where('state', CommonEnum::STATE_IS_OK)
-                ->find();
-            if ($staff){
-                RechargeCashT::update([
-                    'staff_id' => $staff->id
-                ], ['id' => $v['id']]);
-            }
-
+      //  return json($orders);
+        foreach ($orders as $k => $v) {
+            $canteenID = 179;
+            $orderID = $v['id'];
+            $outsider = 2;
+            $sortCode = $v['sort_code'];
+            $printRes = (new Printer())->printOrderDetail($canteenID, $orderID, $outsider, $sortCode);
+            print_r($printRes);
         }
+
 
         /* $file_name = dirname($_SERVER['SCRIPT_FILENAME']) . '/static/excel/upload/test.xlsx';
          $data = (new ExcelService())->importExcel($file_name);
