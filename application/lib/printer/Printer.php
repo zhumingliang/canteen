@@ -24,9 +24,9 @@ class Printer extends PrinterBase
         //$sn = '921527631';
         $printerStatus = $this->queryPrinterStatus($sn);
        // print_r($printerStatus);
-        if (strpos($printerStatus['data'], '离线') !== false || strpos($printerStatus['data'], '不正常') !== false) {
+       /* if (strpos($printerStatus['data'], '离线') !== false || strpos($printerStatus['data'], '不正常') !== false) {
             return false;
-        }
+        }*/
         $canteenName = $outsider == 1 ? "外部食堂" : "内部食堂";
         $order = OrderT::infoForPrinter($orderID);
         $name = (new  UserService())->getUserName($order['company_id'], $order['phone'], $outsider);
