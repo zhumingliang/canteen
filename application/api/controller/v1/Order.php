@@ -196,7 +196,8 @@ class Order extends BaseController
     {
         $detail = Request::param('detail');
         $address_id = Request::param('address_id');
-        $type = empty(Request::param('type')) ? 1 : Request::param('type');
+        $type = Request::param('type');
+        $type = empty($type) ? 2 : $type;
         (new OrderService())->orderingOnline($address_id, $type, $detail);
         return json(new SuccessMessage());
 
