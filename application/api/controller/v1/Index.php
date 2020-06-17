@@ -29,6 +29,7 @@ use app\api\service\WalletService;
 use app\api\service\WeiXinService;
 use app\lib\Date;
 use app\lib\enum\CommonEnum;
+use app\lib\exception\ParameterException;
 use app\lib\exception\SuccessMessage;
 use app\lib\exception\SuccessMessageWithData;
 use app\lib\printer\Printer;
@@ -43,19 +44,22 @@ use zml\tp_tools\Redis;
 class
 Index extends BaseController
 {
-    public function index(Request $request)
+    public function index($sorts)
     {
-        $orders = OrderT::where('sort_code', 'in', '0291,029 2')
+        if (empty($sorts)) {
+            throw new ParameterException(['排队号，不能为空']);
+        }
+        $orders = OrderT::where('sort_code', 'in', $sorts)
+            ->where('ordering_date', \date('Y-m-d'))
             ->select();
-      //  return json($orders);
         foreach ($orders as $k => $v) {
             $canteenID = 179;
             $orderID = $v['id'];
             $outsider = 2;
             $sortCode = $v['sort_code'];
             $printRes = (new Printer())->printOrderDetail($canteenID, $orderID, $outsider, $sortCode);
-            print_r($printRes);
         }
+        return json(new  SuccessMessage());
 
 
         /* $file_name = dirname($_SERVER['SCRIPT_FILENAME']) . '/static/excel/upload/test.xlsx';
