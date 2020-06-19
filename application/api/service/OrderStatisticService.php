@@ -505,7 +505,7 @@ class OrderStatisticService
         $allMoney = empty($info['allMoney']) ? 0 : $info['allMoney'];
         $allCount = empty($info['allCount']) ? 0 : $info['allCount'];
         $reports = $this->prefixConsumptionStatistic($statistic, $allMoney, $allCount);
-        $header = ['序号', '统计变量', '开始时间', '结束时间', '姓名', '部门', '餐次', '数量', '金额（元）', '合计'];
+        $header = ['序号', '统计变量', '开始时间', '结束时间', '姓名', '部门', '餐次', '数量', '金额（元）'];
         $file_name = "消费总报表(" . $time_begin . "-" . $time_end . ")";
         $url = (new ExcelService())->makeExcelMerge($header, $reports, $file_name, 6);
         return [
@@ -573,7 +573,7 @@ class OrderStatisticService
                     'order_count' => $all_order_count,
                     'order_money' => $all_order_money,
                     'merge' => CommonEnum::STATE_IS_OK,
-                    'start' => $i - 1,
+                    'start' =>  $i ,
                     'end' => $i
                 ]);
 
