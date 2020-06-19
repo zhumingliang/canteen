@@ -569,7 +569,7 @@ class OrderStatisticService
                     'time_end' => '/',
                     'username' => empty($v['username']) ? '' : $v['username'],
                     'department' => empty($v['department']) ? '' : $v['department'],
-                    'dinner' => $v2['dinner'],
+                    'dinner' => "合计",
                     'order_count' => $all_order_count,
                     'order_money' => $all_order_money,
                     'merge' => CommonEnum::STATE_IS_OK,
