@@ -561,20 +561,20 @@ class OrderStatisticService
                     $all_order_money += $v2['order_money'];
                     $i++;
                 }
-                $i = $i + 1;
+                //  $i = $i + 1;
                 array_push($dataList, [
-                    'number' =>'',
+                    'number' => '',
                     'statistic' => '',
                     'time_begin' => '',
                     'time_end' => '',
-                    'username' =>'',
+                    'username' => '',
                     'department' => '',
                     'dinner' => "合计",
                     'order_count' => $all_order_count,
                     'order_money' => $all_order_money,
                     'merge' => CommonEnum::STATE_IS_OK,
-                    'start' =>  $i ,
-                    'end' => $i+1
+                    'start' => $i - 1,
+                    'end' => $i
                 ]);
 
             }
