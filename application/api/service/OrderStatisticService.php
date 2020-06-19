@@ -559,6 +559,7 @@ class OrderStatisticService
                             'start' => $k2 == 0 ? $i : $i - 1,
                             'end' => $i
                         ]);
+                        $i++;
                         break;
                     }
                     array_push($dataList, [
