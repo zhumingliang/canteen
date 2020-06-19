@@ -561,7 +561,7 @@ class OrderStatisticService
                     $all_order_money += $v2['order_money'];
                     $i++;
                 }
-                //$i = $i + 1;
+                $i = $i + 1;
                 array_push($dataList, [
                     'number' => $k + 1,
                     'statistic' => $v['statistic'],
@@ -574,7 +574,7 @@ class OrderStatisticService
                     'order_money' => $all_order_money,
                     'merge' => CommonEnum::STATE_IS_OK,
                     'start' =>  $i ,
-                    'end' => $i
+                    'end' => $i+1
                 ]);
 
             }
