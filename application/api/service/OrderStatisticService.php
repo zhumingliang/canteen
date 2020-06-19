@@ -572,7 +572,7 @@ class OrderStatisticService
                     'dinner' => "合计",
                     'order_count' => $all_order_count,
                     'order_money' => $all_order_money,
-                    'merge' => CommonEnum::STATE_IS_OK,
+                    'merge' => CommonEnum::STATE_IS_FAIL,
                     'start' => 0,
                     'end' => 0
                 ]);
