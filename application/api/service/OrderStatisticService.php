@@ -573,8 +573,8 @@ class OrderStatisticService
                     'order_count' => $all_order_count,
                     'order_money' => $all_order_money,
                     'merge' => CommonEnum::STATE_IS_OK,
-                    'start' => $i - 1,
-                    'end' => $i
+                    'start' => 0,
+                    'end' => 0
                 ]);
 
             }
