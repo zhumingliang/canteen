@@ -563,12 +563,12 @@ class OrderStatisticService
                 }
                 //  $i = $i + 1;
                 array_push($dataList, [
-                    'number' => '',
-                    'statistic' => '',
-                    'time_begin' => '',
-                    'time_end' => '',
-                    'username' => '',
-                    'department' => '',
+                    'number' => $k + 1,
+                    'statistic' => $v['statistic'],
+                    'time_begin' => '/',
+                    'time_end' => '/',
+                    'username' => empty($v['username']) ? '' : $v['username'],
+                    'department' => empty($v['department']) ? '' : $v['department'],
                     'dinner' => "合计",
                     'order_count' => $all_order_count,
                     'order_money' => $all_order_money,
