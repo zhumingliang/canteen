@@ -563,18 +563,18 @@ class OrderStatisticService
                 }
                 $i = $i + 1;
                 array_push($dataList, [
-                    'number' => $k + 1,
-                    'statistic' => $v['statistic'],
-                    'time_begin' => '/',
-                    'time_end' => '/',
-                    'username' => empty($v['username']) ? '' : $v['username'],
-                    'department' => empty($v['department']) ? '' : $v['department'],
+                    'number' =>'',
+                    'statistic' => '',
+                    'time_begin' => '',
+                    'time_end' => '',
+                    'username' =>'',
+                    'department' => '',
                     'dinner' => "合计",
                     'order_count' => $all_order_count,
                     'order_money' => $all_order_money,
                     'merge' => CommonEnum::STATE_IS_OK,
-                    'start' =>  $i+1 ,
-                    'end' => $i+2
+                    'start' =>  $i-1 ,
+                    'end' => $i
                 ]);
 
             }
