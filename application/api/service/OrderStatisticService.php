@@ -561,7 +561,7 @@ class OrderStatisticService
                     $all_order_money += $v2['order_money'];
                     $i++;
                 }
-                $i = $i + 1;
+                //$i = $i + 1;
                 array_push($dataList, [
                     'number' => $k + 1,
                     'statistic' => $v['statistic'],
