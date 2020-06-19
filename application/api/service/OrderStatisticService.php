@@ -505,7 +505,7 @@ class OrderStatisticService
         $allMoney = empty($info['allMoney']) ? 0 : $info['allMoney'];
         $allCount = empty($info['allCount']) ? 0 : $info['allCount'];
         $reports = $this->prefixConsumptionStatistic($statistic, $allMoney, $allCount);
-        $header = ['序号', '统计变量', '开始时间', '结束时间', '姓名', '部门', '餐次', '数量', '金额（元）'];
+        $header = ['序号', '统计变量', '开始时间', '结束时间', '姓名', '部门', '餐次', '数量', '金额（元）', '合计'];
         $file_name = "消费总报表(" . $time_begin . "-" . $time_end . ")";
         $url = (new ExcelService())->makeExcelMerge($header, $reports, $file_name, 6);
         return [
@@ -540,6 +540,8 @@ class OrderStatisticService
                     $i++;
                     continue;
                 }
+                $all_order_count = 0;
+                $all_order_money = 0;
                 foreach ($dinner_statistic as $k2 => $v2) {
                     array_push($dataList, [
                         'number' => $k + 1,
@@ -555,8 +557,26 @@ class OrderStatisticService
                         'start' => $k2 == 0 ? $i : $i - 1,
                         'end' => $i
                     ]);
+                    $all_order_count += $v2['order_count'];
+                    $all_order_money += $v2['order_money'];
                     $i++;
                 }
+                $i++;
+                array_push($dataList, [
+                    'number' => $k + 1,
+                    'statistic' => $v['statistic'],
+                    'time_begin' => '/',
+                    'time_end' => '/',
+                    'username' => empty($v['username']) ? '' : $v['username'],
+                    'department' => empty($v['department']) ? '' : $v['department'],
+                    'dinner' => $v2['dinner'],
+                    'order_count' => $all_order_count,
+                    'order_money' => $all_order_money,
+                    'merge' => CommonEnum::STATE_IS_OK,
+                    'start' => $i - 1,
+                    'end' => $i
+                ]);
+
             }
         }
 
