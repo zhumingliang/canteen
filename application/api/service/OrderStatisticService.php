@@ -542,7 +542,25 @@ class OrderStatisticService
                 }
                 $all_order_count = 0;
                 $all_order_money = 0;
+                array_push($dinner_statistic, []);
                 foreach ($dinner_statistic as $k2 => $v2) {
+                    if ($k2 + 1 == count($dinner_statistic)) {
+                        array_push($dataList, [
+                            'number' => $k + 1,
+                            'statistic' => $v['statistic'],
+                            'time_begin' => '/',
+                            'time_end' => '/',
+                            'username' => empty($v['username']) ? '' : $v['username'],
+                            'department' => empty($v['department']) ? '' : $v['department'],
+                            'dinner' => "合计",
+                            'order_count' => $all_order_count,
+                            'order_money' => $all_order_money,
+                            'merge' => CommonEnum::STATE_IS_OK,
+                            'start' => $k2 == 0 ? $i : $i - 1,
+                            'end' => $i
+                        ]);
+                        break;
+                    }
                     array_push($dataList, [
                         'number' => $k + 1,
                         'statistic' => $v['statistic'],
@@ -561,21 +579,21 @@ class OrderStatisticService
                     $all_order_money += $v2['order_money'];
                     $i++;
                 }
-                  $i = $i + 1;
-                array_push($dataList, [
-                    'number' => '',
-                    'statistic' =>'',
-                    'time_begin' =>'',
-                    'time_end' => '',
-                    'username' =>'',
-                    'department' => '',
-                    'dinner' => "合计",
-                    'order_count' => $all_order_count,
-                    'order_money' => $all_order_money,
-                    'merge' => CommonEnum::STATE_IS_FAIL,
-                    'start' => 0,
-                    'end' => 0
-                ]);
+                /*      $i = $i + 1;
+                      array_push($dataList, [
+                          'number' => '',
+                          'statistic' => '',
+                          'time_begin' => '',
+                          'time_end' => '',
+                          'username' => '',
+                          'department' => '',
+                          'dinner' => "合计",
+                          'order_count' => $all_order_count,
+                          'order_money' => $all_order_money,
+                          'merge' => CommonEnum::STATE_IS_FAIL,
+                          'start' => 0,
+                          'end' => 0
+                      ]);*/
 
             }
         }
