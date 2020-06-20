@@ -123,7 +123,7 @@ class Printer extends Controller
     public function printers($page = 1, $size = 20)
     {
         $canteenId = Request::param('canteen_id');
-        $printers = (new PrinterService())->prinaters($page, $size, $canteenId);
+        $printers = (new PrinterService())->printers($page, $size, $canteenId);
         return json(new SuccessMessageWithData(['data' => $printers]));
 
     }
