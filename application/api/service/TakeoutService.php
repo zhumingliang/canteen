@@ -30,7 +30,7 @@ class TakeoutService
                 $this->receiveOrders($orderIDArr);
                 break;
             case self::RECEIVE_PRINTER :
-                $this->receiveAndPrint($orderID, $canteenID);
+                $this->receiveAndPrint($orderIDArr, $canteenID);
                 break;
             case self::PRINTER:
                 $this->printOrders($orderIDArr, $canteenID);
