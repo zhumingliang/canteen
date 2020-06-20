@@ -234,7 +234,7 @@ class OrderT extends Model
                     $query->field('id,openid');
                 }
             ])
-            ->field('id,u_id,(monye + sub_money + delivery_fee) as money')
+            ->field('id,u_id,(money + sub_money + delivery_fee) as money')
             ->find();
         return $info;
     }
