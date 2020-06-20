@@ -32,11 +32,11 @@ class OrderT extends Model
 
     }
 
-   /* protected function getQrcodeUrlAttr($value)
-    {
-        $finalUrl = config('setting.image') . $value;
-        return $finalUrl;
-    }*/
+    /* protected function getQrcodeUrlAttr($value)
+     {
+         $finalUrl = config('setting.image') . $value;
+         return $finalUrl;
+     }*/
 
     public static function personalChoiceInfo($id)
     {
@@ -179,13 +179,34 @@ class OrderT extends Model
         return $info;
     }
 
+    public static function outsiderInfoForPrinter($id)
+    {
+        $info = self::where('id', $id)
+            ->with([
+                'foods' => function ($query) {
+                    $query->where('state', CommonEnum::STATE_IS_OK)
+                        ->field('id as detail_id ,o_id,count,name,price');
+                },
+                'dinner' => function ($query) {
+                    $query->field('id,name');
+                },
+                'address' => function ($query) {
+                    $query->field('id,province,city,area,address,name,phone,sex');
+                }
+            ])
+            ->field('id,d_id,money,sub_money,phone,outsider,company_id,confirm_time,qrcode_url,remark,count,fixed,address_id')
+            ->find()->toArray();
+        return $info;
+    }
+
+
     public static function usersStatisticInfo($orderIds)
     {
         $info = self::where(function ($query) use ($orderIds) {
             if (strpos($orderIds, ',') !== false) {
-               $query->whereIn('id',$orderIds);
-            }else{
-                $query->where('id',$orderIds);
+                $query->whereIn('id', $orderIds);
+            } else {
+                $query->where('id', $orderIds);
 
             }
         })

@@ -209,24 +209,31 @@ class Takeout extends BaseController
     }
 
     /**
-     * @api {POST} /api/v1/order/receive CMS管理端-外卖管理-接单操作
-     * @apiGroup   Official
+     * @api {POST} /api/v1/order/handel CMS管理端-外卖管理-订单操作
+     * @apiGroup   CMS
      * @apiVersion 3.0.0
-     * @apiDescription CMS管理端-外卖管理-接单操作
+     * @apiDescription CMS管理端-外卖管理-订单操作
      * @apiExample {post}  请求样例:
      *    {
-     *       "ids": "1,2,3"
+     *       "ids": "1,2,3",
+     *       "canteen_id": 1,
+     *       "type": 1,
      *     }
-     * @apiParam (请求参数说明) {string} ids  订单id列表，用逗号分隔（前端需要自行检测是否可以接单）
+     * @apiParam (请求参数说明) {string} ids  订单id列表，用逗号分隔
+     * @apiParam (请求参数说明) {int} canteen_id  饭堂id
+     * @apiParam (请求参数说明) {int} type  操作类型：1：接单；2：接单并打印；3：仅打印；4：退回订单
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
      * @apiSuccess (返回参数说明) {string} msg 信息描述
      */
-    public function receive()
+    public function handel()
     {
-        $order_id = Request::param('ids');
-        (new  TakeoutService())->receiveOrder($order_id);
+        $orderId = Request::param('ids');
+        $type = Request::param('type');
+        $canteenID = Request::param('canteen_id');
+
+        (new  TakeoutService())->handelOrder($orderId, $type,$canteenID);
         return json(new SuccessMessage());
     }
 

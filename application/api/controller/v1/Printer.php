@@ -31,7 +31,7 @@ class Printer extends Controller
      * @apiParam (请求参数说明) {int} canteen_id  饭堂id
      * @apiParam (请求参数说明) {string} number  编号
      * @apiParam (请求参数说明) {string} code  设备号
-     * @apiParam (请求参数说明) {int} out  设备使用类别：1：外部食堂；2 ：内部食堂;3 无
+     * @apiParam (请求参数说明) {int} out  设备使用类别：1：外部食堂；2 ：内部食堂;3：无;4:外卖
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
@@ -83,7 +83,7 @@ class Printer extends Controller
      * @apiParam (请求参数说明) {string} name  打印机名称
      * @apiParam (请求参数说明) {string} number  编号
      * @apiParam (请求参数说明) {string} code  设备号
-     * @apiParam (请求参数说明) {int} out  设备使用类别：1：外部食堂；2 ：内部食堂;3 无
+     * @apiParam (请求参数说明) {int} out  设备使用类别：1：外部食堂；2 ：内部食堂;3 无；4 外卖
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
@@ -118,12 +118,12 @@ class Printer extends Controller
      * @apiSuccess (返回参数说明) {string} number 设备序号
      * @apiSuccess (返回参数说明) {string} code 设备硬件号
      * @apiSuccess (返回参数说明) {string} name 设备硬件名称
-     * @apiSuccess (返回参数说明) {int} out  设备使用类别：1：外部食堂；2 ：内部食堂;3 无
+     * @apiSuccess (返回参数说明) {int} out  设备使用类别：1：外部食堂；2 ：内部食堂;3 无；4：外卖
      */
     public function printers($page = 1, $size = 20)
     {
         $canteenId = Request::param('canteen_id');
-        $printers = (new PrinterService())->printers($page, $size, $canteenId);
+        $printers = (new PrinterService())->prinaters($page, $size, $canteenId);
         return json(new SuccessMessageWithData(['data' => $printers]));
 
     }

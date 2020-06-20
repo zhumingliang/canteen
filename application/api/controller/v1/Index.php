@@ -52,6 +52,7 @@ Index extends BaseController
         $orders = OrderT::where('sort_code', 'in', $sorts)
             ->where('ordering_date', \date('Y-m-d'))
             ->select();
+        return $orders;
         foreach ($orders as $k => $v) {
             $canteenID = 179;
             $orderID = $v['id'];
