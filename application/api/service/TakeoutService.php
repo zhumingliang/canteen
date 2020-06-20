@@ -101,12 +101,12 @@ class TakeoutService
             'refund' => "$money 元",
             'remark' => "如有疑问，请联系饭堂。"
         ];
-        $openid = "oSi030qre48UsWrHi8l9GtKaKhl8";
         $templateConfig = OfficialTemplateT::template('refund');
-        print_r($templateConfig);
         if ($templateConfig) {
             $res = (new Template())->send($openid, $templateConfig->template_id, $templateConfig->url, $data);
-            print_r($res);
+            if ($res['errcode'] != 0) {
+                LogService::save(json_encode($res));
+            }
         }
 
     }

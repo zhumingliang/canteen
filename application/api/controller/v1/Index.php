@@ -47,8 +47,8 @@ Index extends BaseController
 {
     public function index($sorts)
     {
-        (new TakeoutService())->refundOrder([11283]);
-        return 1;
+        //(new TakeoutService())->refundOrder([11283]);
+
         if (empty($sorts)) {
             throw new ParameterException(['排队号，不能为空']);
         }
