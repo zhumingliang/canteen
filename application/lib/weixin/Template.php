@@ -4,7 +4,8 @@
 namespace app\lib\weixin;
 
 
-class Official
+class Template extends Base
 {
+
 
 }

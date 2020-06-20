@@ -9,7 +9,7 @@ use app\lib\exception\ParameterException;
 use EasyWeChat\Factory;
 use think\facade\Env;
 
-class WeiXinPayService
+class ervice
 {
 
 
@@ -23,7 +23,7 @@ class WeiXinPayService
             throw  new ParameterException(['msg' => '微信支付配置异常']);
         }
         $sub_mch_id = $config->mch_id;
-        $sub_app_id = $config->app_id;
+       // $sub_app_id = $config->app_id;
         $certPath = Env::get('app_path') . 'lib/wxcert/';
         $config = [
             // 必要配置
@@ -55,10 +55,6 @@ class WeiXinPayService
             'sign_type' => 'MD5',
             'openid' => $data['openid']
         ]);
-       /* $jssdk = $app->jssdk;
-        $config = $jssdk->sdkConfig($result['prepay_id']);
-        print_r($config);*/
-        //print_r($result);
         return $result;
     }
 

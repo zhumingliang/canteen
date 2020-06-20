@@ -194,7 +194,6 @@ class OrderT extends Model
                     $query->field('id,province,city,area,address,name,phone,sex');
                 }
             ])
-            ->field('id,d_id,money,sub_money,phone,outsider,company_id,confirm_time,qrcode_url,remark,count,fixed,address_id')
             ->find()->toArray();
         return $info;
     }
