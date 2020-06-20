@@ -37,7 +37,6 @@ class OfficialToken extends Token
                 UserT::update($user_info, ['id' => $u_id]);
             }
         } catch (Exception $e) {
-            LogService::save('tryErrorCode:' . $code);
             throw  new SaveException(['errorCode' => 40163, 'msg' => $e->getMessage()]);
         }
 

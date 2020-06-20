@@ -88,7 +88,7 @@ class TakeoutService
             if (!$res) {
                 throw new  UpdateException(['msg' => '更新订单失败']);
             }
-            $this->sendTemplate($order['user']['openid'],$order['money']);
+            $this->sendTemplate($order['user']['openid'], $order['money']);
         }
 
     }
@@ -101,11 +101,12 @@ class TakeoutService
             'refund' => "$money 元",
             'remark' => "如有疑问，请联系饭堂。"
         ];
-        $openid="oSi030qre48UsWrHi8l9GtKaKhl8";
+        $openid = "oSi030qre48UsWrHi8l9GtKaKhl8";
         $templateConfig = OfficialTemplateT::template('refund');
+        print_r($templateConfig);
         if ($templateConfig) {
             $res = (new Template())->send($openid, $templateConfig->template_id, $templateConfig->url, $data);
-            LogService::save(json_encode($res));
+            print_r($res);
         }
 
     }
