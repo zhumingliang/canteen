@@ -32,6 +32,12 @@ class OrderT extends Model
 
     }
 
+    public function user()
+    {
+        return $this->belongsTo('UserT', 'u_id', 'id');
+
+    }
+
     /* protected function getQrcodeUrlAttr($value)
      {
          $finalUrl = config('setting.image') . $value;
@@ -217,6 +223,19 @@ class OrderT extends Model
             ])
             ->field('id,count,money,sub_money,ordering_type,delivery_fee,wx_confirm,sort_code,remark')
             ->select();
+        return $info;
+    }
+
+    public static function infoToRefund($id)
+    {
+        $info = self::where('id', $id)
+            ->with([
+                'user' => function ($query) {
+                    $query->field('id,openid');
+                }
+            ])
+            ->field('id,u_id,(monye + sub_money + delivery_fee) as money')
+            ->find();
         return $info;
     }
 }

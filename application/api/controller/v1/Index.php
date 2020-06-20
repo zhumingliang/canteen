@@ -25,6 +25,7 @@ use app\api\service\ExcelService;
 use app\api\service\NoticeService;
 use app\api\service\OrderService;
 use app\api\service\QrcodeService;
+use app\api\service\TakeoutService;
 use app\api\service\WalletService;
 use app\api\service\WeiXinService;
 use app\lib\Date;
@@ -46,6 +47,8 @@ Index extends BaseController
 {
     public function index($sorts)
     {
+        (new TakeoutService())->refundOrder([11283]);
+        return 1;
         if (empty($sorts)) {
             throw new ParameterException(['排队号，不能为空']);
         }
