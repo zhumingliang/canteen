@@ -262,11 +262,11 @@ class Printer extends PrinterBase
         }
         $content .= '--------------------------------<BR>';
         $content .= '份数：' . $order['count'] . '<BR>';
-        $content .= '<B>基本金额：¥ ' . $order['money'] . '</B><BR>';
-        $content .= '<B>附加金额：¥ ' . $order['sub_money'] . '</B><BR>';
-        $content .= '<B>配送费：¥ ' . $order['delivery_fee'] . '</B><BR>';
-        $content .= '<B>总计：¥ ' . $money . '</B><BR>';
-        $content .= '<B>备注：¥ ' . $order['remark'] . '</B><BR>';
+        $content .= '<B>基本金额：' . $order['money'] . '</B><BR>';
+        $content .= '<B>附加金额：' . $order['sub_money'] . '</B><BR>';
+        $content .= '<B>配送费：' . $order['delivery_fee'] . '</B><BR>';
+        $content .= '<B>总计：' . $money . '</B><BR>';
+        $content .= '<B>备注 ' . $order['remark'] . '</B><BR>';
         $printRes = $this->printMsg($sn, $content, 1);
         if ($printRes['msg'] == 'ok' && $printRes['ret'] == 0) {
             return true;
