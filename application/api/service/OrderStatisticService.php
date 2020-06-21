@@ -233,6 +233,7 @@ class OrderStatisticService
             throw new ParameterException(['msg' => '该订单不为外卖订单']);
         }
         $dinner = DinnerT::get($info->d_id);
+        $info['dinner'] = $dinner->name;
         $info['hidden'] = $dinner->fixed;
         return $info;
     }
