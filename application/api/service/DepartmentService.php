@@ -217,7 +217,6 @@ class DepartmentService
                 if (empty($v[0])) {
                     continue;
                 }
-                print_r($phones);
                 //检测手机号是否已经存在
                 if (in_array($v[5], $phones)) {
                     $fail[] = "第" . ($k + 1) . "数据有问题：手机号" . $v[5] . "系统已经存在";
@@ -266,7 +265,7 @@ class DepartmentService
         $staffs = CompanyStaffT::staffs($company_id);
         $staffsPhone = [];
         foreach ($staffs as $k => $v) {
-            array_push($staffsPhone, $v['id']);
+            array_push($staffsPhone, $v['phone']);
         }
         return $staffsPhone;
     }
