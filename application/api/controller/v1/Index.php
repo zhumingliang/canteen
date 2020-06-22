@@ -55,14 +55,21 @@ Index extends BaseController
         $orders = OrderT::where('sort_code', 'in', $sorts)
             ->where('ordering_date', \date('Y-m-d'))
             ->select();
+        $res = [];
         foreach ($orders as $k => $v) {
             $canteenID = 179;
             $orderID = $v['id'];
             $outsider = 2;
             $sortCode = $v['sort_code'];
             $printRes = (new Printer())->printOrderDetail($canteenID, $orderID, $outsider, $sortCode);
+            if ($printRes) {
+                array_push($res, $v['sort_code']."补打印成功");
+            }{
+                array_push($res, $v['sort_code']."补打印失败");
+            }
+
         }
-        return json(new  SuccessMessage());
+        return json(new  SuccessMessageWithData($res));
 
 
         /* $file_name = dirname($_SERVER['SCRIPT_FILENAME']) . '/static/excel/upload/test.xlsx';
