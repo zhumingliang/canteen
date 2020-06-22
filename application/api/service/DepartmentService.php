@@ -219,14 +219,14 @@ class DepartmentService
                 }
                 //检测手机号是否已经存在
                 if (in_array($v[5], $phones)) {
-                    $fail[] = "第" . ($k + 1) . "数据有问题：手机号" . $v[5] . "系统已经存在";
+                    $fail[] = "第" . $k . "数据有问题：手机号" . $v[5] . "系统已经存在";
                     continue;
                 } else {
                     array_push($phones, $v[5]);
                 }
                 $check = $this->validateParams($company_id, $param_key, $data[$k], $types, $canteens, $departments);
                 if (!$check['res']) {
-                    $fail[] = "第" . ($k + 1) . "数据有问题：" . $check['info'];
+                    $fail[] = "第" . $k . "数据有问题：" . $check['info'];
                     continue;
                 }
                 $success[] = $check['info'];
