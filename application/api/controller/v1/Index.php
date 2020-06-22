@@ -64,7 +64,7 @@ Index extends BaseController
             $printRes = (new Printer())->printOrderDetail($canteenID, $orderID, $outsider, $sortCode);
             if ($printRes) {
                 array_push($res, $v['sort_code']."补打印成功");
-            }{
+            }else{
                 array_push($res, $v['sort_code']."补打印失败");
             }
 
