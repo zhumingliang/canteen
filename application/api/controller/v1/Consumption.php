@@ -99,4 +99,26 @@ class Consumption extends BaseController
     }
 
 
+    /**
+     * @api {POST} /api/v1/consumption/order/print 微信端-补打未出票的订单
+     * @apiGroup   WX
+     * @apiVersion 3.0.0
+     * @apiDescription     微信端-补打未出票的订单
+     *    {
+     *       "order_id": 1
+     *     }
+     * @apiParam (请求参数说明) {string} order_id  订单id
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{}}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     * @apiSuccess (返回参数说明) {string} sortCode 取餐号
+     */
+    public function printOrder()
+    {
+        $order_id = Request::param('order_id');
+        (new \app\lib\printer\Printer())->printReissueOrderDetail($order_id);
+        return json(new SuccessMessage());
+    }
+
 }

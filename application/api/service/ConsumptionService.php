@@ -483,6 +483,16 @@ class ConsumptionService
         ];
     }
 
+    private function printOrder($orderID)
+    {
+
+        $printRes = (new Printer())->printReissueOrderDetail($orderID);
+        if (!$printRes) {
+            throw new UpdateException(['msg' =>'打印失败']);
+        }
+
+    }
+
 
     public function saveRedisOrderCode($canteen_id, $dinner_id, $order_id)
     {
@@ -513,36 +523,36 @@ class ConsumptionService
                 $orderID = $data['orderID'];
                 $sortCode = $data['sortCode'];
                 $websocketCode = $data['websocketCode'];*/
-      /*  $machine = MachineT::getSortMachine($canteenID, $outsider);
-        if ($machine) {
-            $sendData = [
-                'errorCode' => 0,
-                'msg' => 'success',
-                'type' => 'sort',
-                'data' => [
-                    'orderID' => $orderID,
-                    'sortCode' => $sortCode,
-                    'websocketCode' => 111
-                ]
-            ];
-            GatewayService::sendToMachine($machine->id, json_encode($sendData));*/
+        /*  $machine = MachineT::getSortMachine($canteenID, $outsider);
+          if ($machine) {
+              $sendData = [
+                  'errorCode' => 0,
+                  'msg' => 'success',
+                  'type' => 'sort',
+                  'data' => [
+                      'orderID' => $orderID,
+                      'sortCode' => $sortCode,
+                      'websocketCode' => 111
+                  ]
+              ];
+              GatewayService::sendToMachine($machine->id, json_encode($sendData));*/
 
 
-             $websocketCode = $this->saveRedisSortCode();
-             $jobHandlerClassName = 'app\api\job\SendSort';//负责处理队列任务的类
-             $jobQueueName = "sendSortQueue";//队列名称
-             $jobData = [
-                 'canteenID' => $canteenID,
-                 'outsider' => $outsider,
-                 'orderID' => $orderID,
-                 'sortCode' => $sortCode,
-                 'websocketCode' => $websocketCode
-             ];;//当前任务的业务数据
-             $isPushed = Queue::push($jobHandlerClassName, $jobData, $jobQueueName);
-             //将该任务推送到消息队列
-             if ($isPushed == false) {
-                 throw new SaveException(['msg' => '发送webSocket推送失败']);
-             }
+        $websocketCode = $this->saveRedisSortCode();
+        $jobHandlerClassName = 'app\api\job\SendSort';//负责处理队列任务的类
+        $jobQueueName = "sendSortQueue";//队列名称
+        $jobData = [
+            'canteenID' => $canteenID,
+            'outsider' => $outsider,
+            'orderID' => $orderID,
+            'sortCode' => $sortCode,
+            'websocketCode' => $websocketCode
+        ];;//当前任务的业务数据
+        $isPushed = Queue::push($jobHandlerClassName, $jobData, $jobQueueName);
+        //将该任务推送到消息队列
+        if ($isPushed == false) {
+            throw new SaveException(['msg' => '发送webSocket推送失败']);
+        }
     }
 
     public function saveRedisSortCode()

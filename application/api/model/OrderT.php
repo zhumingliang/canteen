@@ -180,7 +180,7 @@ class OrderT extends Model
                     $query->field('id,name');
                 }
             ])
-            ->field('id,d_id,money,sub_money,phone,outsider,company_id,confirm_time,qrcode_url,remark,count,fixed')
+            ->field('id,d_id,money,sub_money,phone,outsider,company_id,confirm_time,qrcode_url,remark,count,fixed,c_id,outsider,sort_code')
             ->find()->toArray();
         return $info;
     }
