@@ -217,6 +217,7 @@ class DepartmentService
                 if (empty($v[0])) {
                     continue;
                 }
+                print_r($v);
                 //检测手机号是否已经存在
                 if (key_exists($v[5], $phones)) {
                     $fail[] = "第" . ($k + 1) . "数据有问题：手机号" . $v[5] . "系统已经存在";
