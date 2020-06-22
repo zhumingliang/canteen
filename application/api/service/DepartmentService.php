@@ -202,6 +202,7 @@ class DepartmentService
         $types = (new AdminService())->allTypes();
         $canteens = (new CanteenService())->companyCanteens($company_id);
         $departments = $this->companyDepartments($company_id);
+        $phones = $this->getCompanyStaffsPhone($company_id);
         $fail = array();
         $success = array();
         $param_key = array();
@@ -215,6 +216,13 @@ class DepartmentService
             } else if ($k > 1 && !empty($data[$k])) {
                 if (empty($v[0])) {
                     continue;
+                }
+                //检测手机号是否已经存在
+                if (key_exists($v, $phones)) {
+                    $fail[] = "第" . ($k + 1) . "数据有问题：手机号" . $v[5] . "系统已经存在";
+                    continue;
+                } else {
+                    array_push($phones, $v[5]);
                 }
                 $check = $this->validateParams($company_id, $param_key, $data[$k], $types, $canteens, $departments);
                 if (!$check['res']) {
@@ -250,6 +258,16 @@ class DepartmentService
         ];
 
 
+    }
+
+    private function getCompanyStaffsPhone($company_id)
+    {
+        $staffs = CompanyStaffT::staffs($company_id);
+        $staffsPhone = [];
+        foreach ($staffs as $k => $v) {
+            array_push($staffsPhone, $v['id']);
+        }
+        return $staffsPhone;
     }
 
     private function validateParams($company_id, $param_key, $data, $types, $canteens, $departments, $len = 7)
