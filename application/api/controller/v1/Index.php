@@ -69,7 +69,7 @@ Index extends BaseController
             }
 
         }
-        return json(new  SuccessMessageWithData($res));
+        return json(new  SuccessMessageWithData(['data'=>$res]));
 
 
         /* $file_name = dirname($_SERVER['SCRIPT_FILENAME']) . '/static/excel/upload/test.xlsx';
