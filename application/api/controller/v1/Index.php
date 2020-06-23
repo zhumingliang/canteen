@@ -63,13 +63,13 @@ Index extends BaseController
             $sortCode = $v['sort_code'];
             $printRes = (new Printer())->printOrderDetail($canteenID, $orderID, $outsider, $sortCode);
             if ($printRes) {
-                array_push($res, $v['sort_code']."补打印成功");
-            }else{
-                array_push($res, $v['sort_code']."补打印失败");
+                array_push($res, $v['sort_code'] . "补打印成功");
+            } else {
+                array_push($res, $v['sort_code'] . "补打印失败");
             }
 
         }
-        return json(new  SuccessMessageWithData(['data'=>$res]));
+        return json(new  SuccessMessageWithData(['data' => $res]));
 
 
         /* $file_name = dirname($_SERVER['SCRIPT_FILENAME']) . '/static/excel/upload/test.xlsx';
@@ -102,6 +102,13 @@ Index extends BaseController
              array_push($user_ids, $v['name']);
          }
          echo implode('|', $user_ids);*/
+    }
+
+    public function test()
+    {
+        $redis = new Redis();
+        $redis->connect('127.0.0.1', 6379, 60);
+
     }
 
 
