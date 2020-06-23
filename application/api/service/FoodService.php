@@ -88,11 +88,25 @@ class FoodService extends BaseService
         if (!$food) {
             throw  new ParameterException(['msg' => '菜品不存在']);
         }
+        //检测菜品是否上架
+        if ($this->checkFoodUp($params['id'])) {
+            throw new ParameterException(['msg'=>'菜品上架中，不能删除']);
+        }
         $food->state = CommonEnum::STATE_IS_FAIL;
         $res = $food->save();
         if (!$res) {
             throw  new UpdateException();
         }
+
+    }
+
+    private function checkFoodUp($food_id)
+    {
+        $count = FoodDayStateT::where('f_id', $food_id)
+            ->where('day', '>=', date('Y-m-d'))
+            ->where('status', CommonEnum::STATE_IS_OK)
+            ->count('id');
+        return $count;
 
     }
 
