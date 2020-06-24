@@ -1158,7 +1158,7 @@ class Order extends BaseController
         $time_begin = Request::param('time_begin');
         $time_end = Request::param('time_end');
         $company_ids = Request::param('company_ids');
-        $statistic = (new OrderStatisticService())->exportConsumptionStatistic($canteen_ids, $status, $type,
+        $statistic = (new OrderStatisticService())->exportftatistic($canteen_ids, $status, $type,
             $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_ids);
         return json(new SuccessMessageWithData(['data' => $statistic]));
 
