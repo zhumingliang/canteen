@@ -15,7 +15,7 @@ class Printer extends BaseValidate
         'name' => 'require|isNotEmpty',
         'number' => 'require|isNotEmpty',
         'code' => 'require|isNotEmpty',
-        'out' => 'require|in:1,2,3',
+        'out' => 'require|in:1,2,3,4',
 
     ];
 
