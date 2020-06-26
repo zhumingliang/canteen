@@ -880,6 +880,9 @@ class OrderService extends BaseService
         if (!$order) {
             throw new ParameterException(['msg' => '指定订餐信息不存在']);
         }
+        if ($order->type == OrderEnum::EAT_OUTSIDER && $order->receive == CommonEnum::STATE_IS_OK) {
+            throw  new  SaveException(['msg' => '订餐已被确认，不能修改订单']);
+        }
         //检测订单是否可操作
         $this->checkOrderCanHandel($order->d_id, $order->ordering_date);
         //检测订单修改数量是否合法
@@ -925,7 +928,9 @@ class OrderService extends BaseService
                  throw new ParameterException(['msg' => '订单明细为空或者数据格式错误']);
              }*/
             $order = OrderT::where('id', $id)->find();
-
+            if ($order->type == OrderEnum::EAT_OUTSIDER && $order->receive == CommonEnum::STATE_IS_OK) {
+                throw  new  SaveException(['msg' => '订餐已被确认，不能修改订单']);
+            }
             //检测订单是否可操作
             $count = $order->count;
             $this->checkOrderCanHandel($order->d_id, $order->ordering_date);
@@ -942,7 +947,8 @@ class OrderService extends BaseService
             }
 
             $check_money = $this->checkOrderUpdateMoney($id, $order->u_id, $order->c_id,
-                $order->d_id, $order->pay_way, $order->money, $order->sub_money, $order->count, $count, $detail);
+                $order->d_id, $order->pay_way, $order->money, $order->sub_money, $order->count,
+                $count, $detail);
 
             $order->pay_way = $check_money['pay_way'];
             $order->money = $check_money['new_money'];
@@ -1026,6 +1032,7 @@ class OrderService extends BaseService
         }
         $dinner = DinnerT::dinnerInfo($dinner_id);
         $fixed = $dinner->fixed;
+        $old_detail = OrderDetailT::detail($o_id);
         if (!empty($new_detail)) {
             $new_money = 0;
             foreach ($new_detail as $k => $v) {
@@ -1033,16 +1040,15 @@ class OrderService extends BaseService
                 $add_foods = $v['add_foods'];
                 $update_foods = $v['update_foods'];
                 $cancel_foods = $v['cancel_foods'];
-
-                $old_detail = OrderDetailT::orderDetail($o_id, $menu_id);
                 $check_data = $this->checkOrderDetailUpdate($update_foods, $old_detail);
                 $check_data = $this->checkOrderDetailCancel($cancel_foods, $check_data);
                 $check_data = $this->checkOrderDetailAdd($add_foods, $check_data);
                 $menu = $this->getMenuInfo($menus, $menu_id);
+                $newMenuCount = $this->getMenuCount($menu_id, $check_data);
                 if (empty($menu)) {
                     throw new ParameterException(['msg' => '菜品类别id错误']);
                 }
-                if (($menu['status'] == MenuEnum::FIXED) && ($menu['count'] < count($check_data))) {
+                if (($menu['status'] == MenuEnum::FIXED) && ($menu['count'] < $newMenuCount)) {
                     throw new SaveException(['msg' => '选菜失败,菜品类别：<' . $menu['category'] . '> 选菜数量超过最大值：' . $menu['count']]);
                 }
 
@@ -1071,6 +1077,18 @@ class OrderService extends BaseService
             'new_sub_money' => $new_sub_money,
             'pay_way' => $pay_way
         ];
+    }
+
+    private function getMenuCount($menuId, $detail)
+    {
+        $count = 0;
+        foreach ($detail as $k => $v) {
+            if ($v['menu_id'] == $menuId) {
+                $count += 1;
+            }
+        }
+        return $count;
+
     }
 
     private

@@ -130,7 +130,7 @@ class Printer extends PrinterBase
             }
         }
         $content .= '--------------------------------<BR>';
-        $content .= '份数：' . $order['count'] . '<BR>';
+        $content .= '<B>份数：' . $order['count'] . '<B><BR>';
         $content .= '<B>附加金额：' . $order['sub_money'] . '</B><BR>';
         $content .= '<B>金额：' . $money . '</B><BR>';
         $content .= '<B>备注：' . $order['remark'] . '</B><BR>';
@@ -401,7 +401,7 @@ class Printer extends PrinterBase
             }
         }
         $content .= '--------------------------------<BR>';
-        $content .= '份数：' . $order['count'] . '<BR>';
+        $content .= '<B>份数：' . $order['count'] . '<B><BR>';
         $content .= '<B>基本金额：' . $order['money'] . '</B><BR>';
         $content .= '<B>附加金额：' . $order['sub_money'] . '</B><BR>';
         $content .= '<B>配送费：' . $order['delivery_fee'] . '</B><BR>';
