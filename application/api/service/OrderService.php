@@ -949,7 +949,6 @@ class OrderService extends BaseService
             $check_money = $this->checkOrderUpdateMoney($id, $order->u_id, $order->c_id,
                 $order->d_id, $order->pay_way, $order->money, $order->sub_money, $order->count,
                 $count, $detail);
-            print_r($check_money);
 
             $order->pay_way = $check_money['pay_way'];
             $order->money = $check_money['new_money'];
@@ -962,7 +961,7 @@ class OrderService extends BaseService
             }
             //处理订单明细
             $this->prefixUpdateOrderDetail($id, $detail);
-          //  Db::commit();
+            Db::commit();
         } catch (Exception $e) {
             Db::rollback();
             LogService::save($e->getMessage());
