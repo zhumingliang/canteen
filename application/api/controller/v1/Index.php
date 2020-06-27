@@ -107,7 +107,7 @@ Index extends BaseController
 
     public function test()
     {
-      echo  (new ConsumptionService())->saveRedisOrderCode(1, 5, 3);
+      echo  (new ConsumptionService())->saveRedisOrderCode(32, 5, 3);
 
     }
 
