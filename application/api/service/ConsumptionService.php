@@ -497,12 +497,22 @@ class ConsumptionService
     public function saveRedisOrderCode($canteen_id, $dinner_id, $order_id)
     {
 
-        $day = date('Y-m-d');
+     /*   $day = date('Y-m-d');
         $hash = "$canteen_id:$dinner_id:$day";
         $code = Redis::instance()->hLan($hash);
         $newCode = $code + 1;
         Redis::instance()->hSet($hash, $order_id, $newCode);
-        return str_pad($newCode, 4, "0", STR_PAD_LEFT);;
+        return str_pad($newCode, 4, "0", STR_PAD_LEFT);;*/
+
+        $day = date('Y-m-d');
+        $key = "$canteen_id:$dinner_id:$day";
+        $code = Redis::instance()->get($key);
+        if (!$code) {
+            $code = 1;
+            Redis::instance()->set($key, $code + 1);
+        }
+        Redis::instance()->incr('name');
+        return str_pad($code, 4, "0", STR_PAD_LEFT);
 
     }
 

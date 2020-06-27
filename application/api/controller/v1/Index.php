@@ -20,6 +20,7 @@ use app\api\model\UserBalanceV;
 use app\api\service\AddressService;
 use app\api\service\CanteenService;
 use app\api\service\CompanyService;
+use app\api\service\ConsumptionService;
 use app\api\service\DepartmentService;
 use app\api\service\ExcelService;
 use app\api\service\NoticeService;
@@ -106,8 +107,7 @@ Index extends BaseController
 
     public function test()
     {
-        $redis = new Redis();
-        $redis->connect('127.0.0.1', 6379, 60);
+        (new ConsumptionService())->saveRedisOrderCode(1, 2, 3);
 
     }
 

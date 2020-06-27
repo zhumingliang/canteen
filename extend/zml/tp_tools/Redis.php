@@ -129,6 +129,16 @@ class Redis
         }
         return $setRes;
     }
+
+
+    public function incr($key)
+    {
+        $setRes = $this->redisObj[$this->sn]->incr($key);
+        if ($setRes === 'false') {
+            return false;
+        }
+        return $setRes;
+    }
     /*------------------------------------1.end string结构----------------------------------------------------*/
 
 
