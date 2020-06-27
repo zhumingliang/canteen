@@ -1045,7 +1045,7 @@ class OrderService extends BaseService
                 $check_data = $this->checkOrderDetailCancel($cancel_foods, $check_data);
                 $check_data = $this->checkOrderDetailAdd($add_foods, $check_data);
                 $menu = $this->getMenuInfo($menus, $menu_id);
-                $newMenuCount = $this->getMenuCount($menu_id, $check_data);
+                $newMenuCount = $this->getMenuCount($menu_id, $old_detail);
                 if (empty($menu)) {
                     throw new ParameterException(['msg' => '菜品类别id错误']);
                 }
