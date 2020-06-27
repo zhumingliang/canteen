@@ -1034,29 +1034,33 @@ class OrderService extends BaseService
         $dinner = DinnerT::dinnerInfo($dinner_id);
         $fixed = $dinner->fixed;
         $old_detail = OrderDetailT::detail($o_id);
+        $check_data = [];
         if (!empty($new_detail)) {
             $new_money = 0;
             foreach ($new_detail as $k => $v) {
+                if ($k == 0) {
+                    $check_data = $old_detail;
+                }
                 $menu_id = $v['menu_id'];
                 $add_foods = $v['add_foods'];
                 $update_foods = $v['update_foods'];
                 $cancel_foods = $v['cancel_foods'];
-                $check_data = $this->checkOrderDetailUpdate($update_foods, $old_detail);
+                $check_data = $this->checkOrderDetailUpdate($update_foods, $check_data);
                 $check_data = $this->checkOrderDetailCancel($cancel_foods, $check_data);
                 $check_data = $this->checkOrderDetailAdd($add_foods, $check_data);
                 $menu = $this->getMenuInfo($menus, $menu_id);
-                $newMenuCount = $this->getMenuCount($menu_id, $old_detail);
+                $newMenuCount = $this->getMenuCount($menu_id, $check_data);
                 if (empty($menu)) {
                     throw new ParameterException(['msg' => '菜品类别id错误']);
                 }
                 if (($menu['status'] == MenuEnum::FIXED) && ($menu['count'] < $newMenuCount)) {
                     throw new SaveException(['msg' => '选菜失败,菜品类别：<' . $menu['category'] . '> 选菜数量超过最大值：' . $menu['count']]);
                 }
+            }
 
-                if ($fixed == CommonEnum::STATE_IS_FAIL) {
-                    foreach ($check_data as $k3 => $v3) {
-                        $new_money += $v3['price'] * $v3['count'];
-                    }
+            if ($fixed == CommonEnum::STATE_IS_FAIL) {
+                foreach ($check_data as $k3 => $v3) {
+                    $new_money += $v3['price'] * $v3['count'];
                 }
             }
         } else {
