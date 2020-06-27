@@ -1088,7 +1088,7 @@ class OrderService extends BaseService
     {
         $count = 0;
         foreach ($detail as $k => $v) {
-            if ($v['menu_id'] == $menuId) {
+            if ($v['m_id'] == $menuId) {
                 $count += 1;
             }
         }
