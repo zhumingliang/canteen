@@ -488,7 +488,7 @@ class ConsumptionService
 
         $printRes = (new Printer())->printReissueOrderDetail($orderID);
         if (!$printRes) {
-            throw new UpdateException(['msg' =>'打印失败']);
+            throw new UpdateException(['msg' => '打印失败']);
         }
 
     }
@@ -497,19 +497,19 @@ class ConsumptionService
     public function saveRedisOrderCode($canteen_id, $dinner_id, $order_id)
     {
 
-     /*   $day = date('Y-m-d');
-        $hash = "$canteen_id:$dinner_id:$day";
-        $code = Redis::instance()->hLan($hash);
-        $newCode = $code + 1;
-        Redis::instance()->hSet($hash, $order_id, $newCode);
-        return str_pad($newCode, 4, "0", STR_PAD_LEFT);;*/
+        /*   $day = date('Y-m-d');
+           $hash = "$canteen_id:$dinner_id:$day";
+           $code = Redis::instance()->hLan($hash);
+           $newCode = $code + 1;
+           Redis::instance()->hSet($hash, $order_id, $newCode);
+           return str_pad($newCode, 4, "0", STR_PAD_LEFT);;*/
 
         $day = date('Y-m-d');
         $key = "$canteen_id:$dinner_id:$day";
         $code = Redis::instance()->get($key);
         if (!$code) {
             $code = 1;
-            Redis::instance()->set($key, $code);
+            Redis::instance()->set($key, $code, 60 * 60 * 24);
         }
         Redis::instance()->incr($key);
         return str_pad($code, 4, "0", STR_PAD_LEFT);
