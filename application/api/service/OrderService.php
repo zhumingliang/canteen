@@ -949,6 +949,7 @@ class OrderService extends BaseService
             $check_money = $this->checkOrderUpdateMoney($id, $order->u_id, $order->c_id,
                 $order->d_id, $order->pay_way, $order->money, $order->sub_money, $order->count,
                 $count, $detail);
+            print_r($check_money);
 
             $order->pay_way = $check_money['pay_way'];
             $order->money = $check_money['new_money'];
@@ -961,7 +962,7 @@ class OrderService extends BaseService
             }
             //处理订单明细
             $this->prefixUpdateOrderDetail($id, $detail);
-            Db::commit();
+          //  Db::commit();
         } catch (Exception $e) {
             Db::rollback();
             LogService::save($e->getMessage());
@@ -1047,12 +1048,12 @@ class OrderService extends BaseService
                 $cancel_foods = $v['cancel_foods'];
                 $check_data = $this->checkOrderDetailUpdate($update_foods, $check_data);
                 $check_data = $this->checkOrderDetailCancel($cancel_foods, $check_data);
-                $check_data = $this->checkOrderDetailAdd($add_foods, $check_data);
+                $check_data = $this->checkOrderDetailAdd($menu_id,$add_foods, $check_data);
                 $menu = $this->getMenuInfo($menus, $menu_id);
-                $newMenuCount = $this->getMenuCount($menu_id, $check_data);
                 if (empty($menu)) {
                     throw new ParameterException(['msg' => '菜品类别id错误']);
                 }
+                $newMenuCount = $this->getMenuCount($menu_id, $check_data);
                 if (($menu['status'] == MenuEnum::FIXED) && ($menu['count'] < $newMenuCount)) {
                     throw new SaveException(['msg' => '选菜失败,菜品类别：<' . $menu['category'] . '> 选菜数量超过最大值：' . $menu['count']]);
                 }
@@ -1132,13 +1133,14 @@ class OrderService extends BaseService
     }
 
     private
-    function checkOrderDetailAdd($add_foods, $check_data)
+    function checkOrderDetailAdd($menu_id,$add_foods, $check_data)
     {
         if (empty($add_foods)) {
             return $check_data;
         }
         foreach ($add_foods as $k => $v) {
             $data = [
+                'm_id' => $menu_id,
                 'f_id' => $v['food_id'],
                 'price' => $v['price'],
                 'count' => $v['count'],
