@@ -511,7 +511,7 @@ class ConsumptionService
             $code = 1;
             Redis::instance()->set($key, $code + 1);
         }
-        Redis::instance()->incr('name');
+        Redis::instance()->incr($key);
         return str_pad($code, 4, "0", STR_PAD_LEFT);
 
     }
