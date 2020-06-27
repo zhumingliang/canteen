@@ -1086,7 +1086,11 @@ class OrderService extends BaseService
 
     private function getMenuCount($menuId, $detail)
     {
+        LogService::save(json_encode($detail));
         $count = 0;
+        if (!count($detail)) {
+            return 0;
+        }
         foreach ($detail as $k => $v) {
             if ($v['m_id'] == $menuId) {
                 $count += 1;
