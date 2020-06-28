@@ -501,7 +501,7 @@ class Department extends BaseController
     }
 
     /**
-     * @api {GET} /api/v1/staffs CMS管理端-模糊查询企业员工
+     * @api {GET} /api/v1/staffs/search CMS管理端-模糊查询企业员工
      * @apiGroup  CMS
      * @apiVersion 3.0.0
      * @apiDescription CMS管理端-企业员工列表
