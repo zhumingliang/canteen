@@ -98,6 +98,49 @@ class OrderConsumptionV extends Model
         return $statistic;
     }
 
+
+    public static function consumptionStatisticByUser($canteen_id, $status, $department_id,
+                                                      $username, $staff_type_id, $time_begin,
+                                                      $time_end, $company_id)
+    {
+        //$time_end = addDay(1, $time_end);
+        $statistic = self::where(function ($query) use ($company_id, $canteen_id) {
+            if (!empty($canteen_id)) {
+                $query->where('canteen_id', $canteen_id);
+            } else {
+                if (strpos($company_id, ',') !== false) {
+                    $query->whereIn('company_id', $company_id);
+                } else {
+                    $query->where('company_id', $company_id);
+                }
+            }
+        })
+            ->where('consumption_date', '>=', $time_begin)
+            ->where('consumption_date', '<=', $time_end)
+            ->where(function ($query) use (
+                $status, $department_id,
+                $username, $staff_type_id
+            ) {
+                if (!empty($status)) {
+                    $query->where('status', $status);
+                }
+                if (!empty($department_id)) {
+                    $query->where('department_id', $department_id);
+                }
+                if (!empty($username)) {
+                    $query->where('username', $username);
+                }
+                if (!empty($staff_type_id)) {
+                    $query->where('staff_type_id', $staff_type_id);
+                }
+
+            })
+            ->field('sum(order_count) as order_count,sum(order_money) as order_money')
+            ->find();
+        return $statistic;
+    }
+
+
     public static function consumptionStatisticByStatus($canteen_id, $status, $department_id,
                                                         $username, $staff_type_id, $time_begin,
                                                         $time_end, $company_id)
@@ -226,11 +269,36 @@ class OrderConsumptionV extends Model
         return $statistic;
     }
 
-    public static function userDinnerStatistic($staff_id, $status,
-                                               $time_begin, $time_end)
+    public static function userDinnerStatistic($canteen_id, $status, $department_id,
+                                               $username, $staff_type_id, $time_begin,
+                                               $time_end, $company_id, $page, $size)
     {
-        return self::where('staff_id', $staff_id)
-          ->where('consumption_date', '>=', $time_begin)
+        return self::where(function ($query) use ($company_id, $canteen_id) {
+            if (!empty($canteen_id)) {
+                $query->where('canteen_id', $canteen_id);
+            } else {
+                if (strpos($company_id, ',') !== false) {
+                    $query->whereIn('company_id', $company_id);
+                } else {
+                    $query->where('company_id', $company_id);
+                }
+            }
+        })->where(function ($query) use (
+            $department_id,
+            $username, $staff_type_id
+        ) {
+            if (!empty($department_id)) {
+                $query->where('department_id', $department_id);
+            }
+            if (!empty($username)) {
+                $query->where('username', $username);
+            }
+            if (!empty($status)) {
+                $query->where('staff_type_id', $staff_type_id);
+            }
+
+        })
+            ->where('consumption_date', '>=', $time_begin)
             ->where('consumption_date', '<=', $time_end)
             ->where(function ($query2) use (
                 $status
@@ -239,9 +307,72 @@ class OrderConsumptionV extends Model
                     $query2->where('status', $status);
                 }
             })
-            ->field('staff_id,dinner_id,dinner,sum(order_count) as order_count,sum(order_money) as order_money')
-            ->group('dinner')->select();
+            ->field('staff_id,username,department,dinner_id,dinner,sum(order_count) as order_count,sum(order_money) as order_money')
+            ->group('staff_id,dinner')
+            ->select()->toArray();
     }
+
+    public static function userStatistic($canteen_id, $status, $department_id,
+                                         $username, $staff_type_id, $time_begin,
+                                         $time_end, $company_id, $page, $size)
+    {
+        return self::where(function ($query) use ($company_id, $canteen_id) {
+            if (!empty($canteen_id)) {
+                $query->where('canteen_id', $canteen_id);
+            } else {
+                if (strpos($company_id, ',') !== false) {
+                    $query->whereIn('company_id', $company_id);
+                } else {
+                    $query->where('company_id', $company_id);
+                }
+            }
+        })->where(function ($query) use (
+            $department_id,
+            $username, $staff_type_id
+        ) {
+            if (!empty($department_id)) {
+                $query->where('department_id', $department_id);
+            }
+            if (!empty($username)) {
+                $query->where('username', $username);
+            }
+            if (!empty($status)) {
+                $query->where('staff_type_id', $staff_type_id);
+            }
+
+        })
+            ->where('consumption_date', '>=', $time_begin)
+            ->where('consumption_date', '<=', $time_end)
+            ->where(function ($query2) use (
+                $status
+            ) {
+                if (!empty($status)) {
+                    $query2->where('status', $status);
+                }
+            })
+            ->field('staff_id,username, username as statistic,department')
+            ->group('staff_id')
+            ->paginate($size, false, ['page' => $page])->toArray();
+
+    }
+
+
+    /*  public static function userDinnerStatistic($staff_id, $status,
+                                                 $time_begin, $time_end)
+      {
+          return self::where('staff_id', $staff_id)
+              ->where('consumption_date', '>=', $time_begin)
+              ->where('consumption_date', '<=', $time_end)
+              ->where(function ($query2) use (
+                  $status
+              ) {
+                  if (!empty($status)) {
+                      $query2->where('status', $status);
+                  }
+              })
+              ->field('staff_id,dinner_id,dinner,sum(order_count) as order_count,sum(order_money) as order_money')
+              ->group('dinner')->select();
+      }*/
 
 
 }

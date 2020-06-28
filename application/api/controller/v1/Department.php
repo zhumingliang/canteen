@@ -501,12 +501,12 @@ class Department extends BaseController
     }
 
     /**
-     * @api {GET} /api/v1/staffs/search CMS管理端-模糊查询企业员工
+     * @api {GET} /api/v1/department/staffs/search CMS管理端-模糊查询企业员工
      * @apiGroup  CMS
      * @apiVersion 3.0.0
      * @apiDescription CMS管理端-企业员工列表
      * @apiExample {get}  请求样例:
-     * http://canteen.tonglingok.com/api/v1/staffs/search?page=1&size=10&c_id=2&d_id=4&key=张三
+     * http://canteen.tonglingok.com/api/v1/department/staffs/search?page=1&size=10&c_id=2&d_id=4&key=张三
      * @apiParam (请求参数说明) {int} page 当前页码
      * @apiParam (请求参数说明) {int} size 每页多少条数据
      * @apiParam (请求参数说明) {int} c_id 企业id

@@ -674,25 +674,69 @@ class OrderStatisticService
         ];
     }
 
+    /*   private function consumptionStatisticByUsername($canteen_id, $status, $department_id,
+                                                       $username, $staff_type_id, $time_begin,
+                                                       $time_end, $company_id, $page, $size)
+       {
+           //获取人员信息
+           $users = StaffCanteenV::getStaffsForStatistic($company_id, $canteen_id, $page, $size, $status, $department_id,
+               $username, $staff_type_id, $time_begin,
+               $time_end);
+           $data = $users['data'];
+           foreach ($data as $k => $v) {
+               $data[$k]['time_begin'] = $time_begin;
+               $data[$k]['time_end'] = $time_end;
+               $data[$k]['dinnerStatistic'] = OrderConsumptionV::userDinnerStatistic($canteen_id, $status, $department_id,
+                   $username, $staff_type_id, $time_begin,
+                   $time_end, $company_id, $page, $size);
+           }
+           $statistic = OrderConsumptionV::consumptionStatisticByUsername($canteen_id, $status, $department_id,
+               $username, $staff_type_id, $time_begin,
+               $time_end, $company_id);
+           $users['data'] = $data;
+           return [
+               'statistic' => $users,
+               'allMoney' => round($statistic['order_money'], 1),
+               'allCount' => $statistic['order_count']
+           ];
+       }
+   */
+
+
     private function consumptionStatisticByUsername($canteen_id, $status, $department_id,
                                                     $username, $staff_type_id, $time_begin,
                                                     $time_end, $company_id, $page, $size)
     {
-        //获取人员信息
-        $users = StaffCanteenV::getStaffsForStatistic($company_id, $canteen_id, $page, $size, $status, $department_id,
+
+        $users = OrderConsumptionV::userStatistic($canteen_id, $status, $department_id,
             $username, $staff_type_id, $time_begin,
-            $time_end);
+            $time_end, $company_id, $page, $size);
+
+        $statistic = OrderConsumptionV::userDinnerStatistic($canteen_id, $status, $department_id,
+            $username, $staff_type_id, $time_begin,
+            $time_end, $company_id, $page, $size);
+
+        if (!count($users)) {
+            return $users;
+        }
         $data = $users['data'];
         foreach ($data as $k => $v) {
             $data[$k]['time_begin'] = $time_begin;
             $data[$k]['time_end'] = $time_end;
-            $data[$k]['dinnerStatistic'] = OrderConsumptionV::userDinnerStatistic($v['staff_id'], $status,
-                $time_begin, $time_end);
+            $dinnerStatistic = [];
+            foreach ($statistic as $k2 => $v2) {
+                if ($v['staff_id'] == $v2['staff_id']) {
+                    array_push($dinnerStatistic, $v2);
+                    unset($statistic[$k2]);
+                }
+                $data[$k]['dinnerStatistic'] = $dinnerStatistic;
+            }
         }
+        $users['data'] = $data;
+
         $statistic = OrderConsumptionV::consumptionStatisticByUsername($canteen_id, $status, $department_id,
             $username, $staff_type_id, $time_begin,
             $time_end, $company_id);
-        $users['data'] = $data;
         return [
             'statistic' => $users,
             'allMoney' => round($statistic['order_money'], 1),
