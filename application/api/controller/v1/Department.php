@@ -499,4 +499,49 @@ class Department extends BaseController
         return json(new SuccessMessageWithData(['data' => $url]));
 
     }
+
+    /**
+     * @api {GET} /api/v1/staffs CMS管理端-模糊查询企业员工
+     * @apiGroup  CMS
+     * @apiVersion 3.0.0
+     * @apiDescription CMS管理端-企业员工列表
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/staffs/search?page=1&size=10&c_id=2&d_id=4&key=张三
+     * @apiParam (请求参数说明) {int} page 当前页码
+     * @apiParam (请求参数说明) {int} size 每页多少条数据
+     * @apiParam (请求参数说明) {int} c_id 企业id
+     * @apiParam (请求参数说明) {int} d_id 企业部门id,获取全部传入：0
+     * @apiParam (请求参数说明) {string} key 手机号或者姓名
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"total":329,"per_page":"1","current_page":1,"last_page":329,"data":[{"id":350,"t_id":3,"type":"员工","d_id":4,"department":"A部门","code":"123456","username":"里斯","phone":"18956225230","card_num":"a123","create_time":"2019-08-03 00:47:59","expiry_date":"0000-00-00 00:00:00","url":"http:\/\/canteen.tonglingok.com\/static\/qrcode\/517e9af47c57e0e789e4bd113d5b0c9b54a615ca.png","q_id":329,"canteens":[{"id":1,"staff_id":350,"canteen_id":1,"info":{"id":1,"name":"大饭堂"}}]}]}}
+     * @apiSuccess (返回参数说明) {int} total 数据总数
+     * @apiSuccess (返回参数说明) {int} per_page 每页多少条数据
+     * @apiSuccess (返回参数说明) {int} current_page 当前页码
+     * @apiSuccess (返回参数说明) {int} last_page 最后页码
+     * @apiSuccess (返回参数说明) {int} id 员工id
+     * @apiSuccess (返回参数说明) {string} type 人员类型
+     * @apiSuccess (返回参数说明) {int} t_id 人员类型id
+     * @apiSuccess (返回参数说明) {string} department 所属部门
+     * @apiSuccess (返回参数说明) {int} d_id 所属部门id
+     * @apiSuccess (返回参数说明) {string} code 员工编号
+     * @apiSuccess (返回参数说明) {string} username 姓名
+     * @apiSuccess (返回参数说明) {string} phone 手机号
+     * @apiSuccess (返回参数说明) {string} card_num 卡号
+     * @apiSuccess (返回参数说明) {string} expiry_date 二维码有效期
+     * @apiSuccess (返回参数说明) {string} url 二维码地址
+     * @apiSuccess (返回参数说明) {int} q_id 二维码id
+     * @apiSuccess (返回参数说明) {string} create_time 创建时间
+     * @apiSuccess (返回参数说明) {obj} canteens  所属饭堂
+     * @apiSuccess (返回参数说明) {obj} canteens|info  饭堂信息
+     * @apiSuccess (返回参数说明) {string} info|id  饭堂id
+     * @apiSuccess (返回参数说明) {string} info|name  饭堂名称
+     */
+    public function searchStaff($page = 1, $size = 10, $key = '')
+    {
+        $company_id = Request::param('c_id');
+        $department_id = Request::param('d_id');
+        $staff = (new DepartmentService())->searchStaff($page, $size, $company_id, $department_id, $key);
+        return json(new SuccessMessageWithData(['data' => $staff]));
+
+    }
 }

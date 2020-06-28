@@ -96,4 +96,36 @@ class CompanyStaffV extends BaseModel
             ->paginate($size, false, ['page' => $page]);
         return $list;
     }
+
+
+    public static function searchStaffs($page, $size, $company_id, $department_id, $key)
+    {
+        $list = self::where('company_id', '=', $company_id)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->where(function ($query) use ($department_id) {
+                if ($department_id) {
+                    $query->where('d_id', '=', $department_id);
+                }
+            })
+            ->where(function ($query) use ($key) {
+                if ($key) {
+                    $query->whereLike('username|phone', "%$key%");
+                }
+            })
+            ->with([
+                'canteens' => function ($query) {
+                    $query->with(['info' => function ($query2) {
+                        $query2->field('id,name');
+                    }])
+                        ->field('id,staff_id,canteen_id')
+                        ->where('state', '=', CommonEnum::STATE_IS_OK);
+                }
+            ])
+            ->hidden(['company_id', 'state'])
+            ->order('id desc')
+            ->paginate($size, false, ['page' => $page]);
+        return $list;
+
+    }
+
 }

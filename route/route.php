@@ -93,6 +93,7 @@ Route::get('api/:version/departments', 'api/:version.Department/departments');
 Route::get('api/:version/departments/official', 'api/:version.Department/officialDepartments');
 Route::get('api/:version/departments/recharge', 'api/:version.Department/departmentsForRecharge');
 Route::get('api/:version/department/staffs', 'api/:version.Department/departmentStaffs');
+Route::get('api/:version/department/staff/search', 'api/:version.Department/searchStaff');
 Route::get('api/:version/department/staffs/recharge', 'api/:version.Department/staffsForRecharge');
 Route::get('api/:version/admin/departments', 'api/:version.Department/adminDepartments');
 Route::post('api/:version/department/staff/save', 'api/:version.Department/addStaff');

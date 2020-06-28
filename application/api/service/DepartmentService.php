@@ -662,5 +662,11 @@ class DepartmentService
         return $staffs;
     }
 
+    public function searchStaff($page, $size, $company_id, $department_id, $key)
+    {
+        $staffs = CompanyStaffV::searchStaffs($page, $size, $company_id, $department_id, $key);
+        return $staffs;
+    }
+
 
 }
