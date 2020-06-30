@@ -30,6 +30,15 @@ class ExcelService
     }
 
 
+    public function saveTestExcel()
+    {
+        $file_name = dirname($_SERVER['SCRIPT_FILENAME']) . '/static/excel/upload/test.xlsx';
+        $result_excel = $this->importExcel($file_name);
+        return $result_excel;
+
+    }
+
+
     /**
      * 保存excel返回excel保存地址
      * @param $skus

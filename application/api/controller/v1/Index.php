@@ -107,8 +107,21 @@ Index extends BaseController
 
     public function test()
     {
-      echo  (new ConsumptionService())->saveRedisOrderCode(32, 5, 3);
-
+        //echo  (new ConsumptionService())->saveRedisOrderCode(32, 5, 3);
+        $data = (new ExcelService())->saveTestExcel();
+        print_r($data);
+        $dataList = [];
+        foreach ($data as $k => $v) {
+            if ($k == 1 || empty($v[0])) {
+                continue;
+            }
+            array_push($dataList, [
+                'id' => $v[0],
+                'money' => 0,
+                'sub_money' => $v[1]
+            ]);
+        }
+        (new  OrderT())->saveAll($dataList);
     }
 
 
