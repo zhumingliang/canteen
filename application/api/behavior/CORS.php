@@ -20,9 +20,18 @@ class CORS
 {
     public function appInit($params)
     {
+        $origin = isset($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : '';
 
+        $allowOrigin = array(
+            'https://cloudcanteen3.51canteen.com',
+            'http://cloudcanteen3.51canteen.cn',
+        );
+
+        if (in_array($origin, $allowOrigin)) {
+            header("Access-Control-Allow-Origin:" . $origin);
+        }
         //解决跨域
-        header('Access-Control-Allow-Origin: https://cloudcanteen3.51canteen.com, http://cloudcanteen3.51canteen.cn');
+        // header('Access-Control-Allow-Origin: ,');
         header("Access-Control-Allow-Headers: token,Origin, X-Requested-With, Content-Type, Accept");
         header('Access-Control-Allow-Methods: POST,GET');
         header('X-Content-Type-Options: nosniff');
