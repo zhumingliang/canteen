@@ -894,10 +894,14 @@ class OrderService extends BaseService
             throw new UpdateException(['msg' => '超出最大订餐数量，不能预定']);
         }
         $old_money = $order->money;
+        $old_no_meal_money = $order->no_meal_money;
+        $old_no_meal_sub_money = $order->no_meal_sub_money;
         $old_sub_money = $order->sub_money;
         $old_count = $order->count;
         $new_money = ($old_money / $old_count) * $count;
-        $new_sub_money = ($old_sub_money / $old_count) * $count;
+        $new_no_meal_money = ($old_no_meal_money / $old_count) * $count;
+        $new_sub_money = ($old_no_meal_sub_money / $old_count) * $count;
+        $new_no_meal_sub_money = ($old_sub_money / $old_count) * $count;
         //检测订单金额是否合法
         $check_res = $this->checkBalance($order->u_id, $order->c_id, ($new_money + $new_sub_money - $old_money - $old_sub_money));
         if (!$check_res) {
@@ -907,8 +911,10 @@ class OrderService extends BaseService
         $order->count = $count;
         //处理订单金额
         $order->money = $new_money;
+        $order->no_meal_money = $new_no_meal_money;
         //处理订单附加金额
         $order->sub_money = $new_sub_money;
+        $order->no_meal_sub_money = $new_no_meal_sub_money;
         //处理消费方式
         $order->pay_way = $check_res;
         $order->update_time = date('Y-m-d H:i:s');
