@@ -31,11 +31,12 @@ class WeiXinService
                 ]
             ]
         ];
+        print_r($menus);
         $res = $this->app->menu->create($menus);
         if (!$res) {
             throw new WeChatException(['msg' => '创建菜单失败']);
         }
-
+        return $res;
     }
 
     public function qRCode($company_id)
