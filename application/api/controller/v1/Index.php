@@ -11,6 +11,7 @@ use app\api\model\CompanyStaffT;
 use app\api\model\ConsumptionRecordsV;
 use app\api\model\ConsumptionStrategyT;
 use app\api\model\DinnerT;
+use app\api\model\OrderConsumptionV;
 use app\api\model\OrderT;
 use app\api\model\PayT;
 use app\api\model\RechargeCashT;
@@ -110,47 +111,45 @@ Index extends BaseController
 
     public function test()
     {
-        try {
-            Db::startTrans();
-            $data = (new ExcelService())->saveTestExcel();
-            $dataList = [];
-            foreach ($data as $k => $v) {
-                if ($k == 1 || empty($v[0])) {
-                    continue;
-                }
-                $time = explode("/", $v[2]);
-                $time = $time[2] . '-' . $time[1] . '-' . $time[0];
-                if ($k < 68) {
-                    array_push($dataList, [
-                        'id' => $v[0],
-                        'money' => 0,
-                        'ordering_date' => \date('Y-m-d', strtotime($time)),
-                        'unused_handel' => 1,
-                        'sub_money' => $v[8]
-                    ]);
-                    continue;
-                }
 
-                array_push($dataList, [
-                    'id' => $v[0],
-                    'no_meal_money' => 0,
-                    'ordering_date' => \date('Y-m-d', strtotime($v[2])),
-                    'unused_handel' => 1,
-                    'no_meal_sub_money' => $v[8]
-                ]);
+        $balance=  ConsumptionRecordsV::monthConsumptionMoneyByPhone("13555657260", "2020-06");
+        //$balance = (new OrderService())->getUserBalance(177, 94, 13794221967);
+        return json($balance);
+        /*      try {
+                  Db::startTrans();
+                  $data = (new ExcelService())->saveTestExcel();
+                  $dataList = [];
+                  foreach ($data as $k => $v) {
+                      if ($k == 1 || empty($v[0])) {
+                          continue;
+                      }
+                      $time = explode("/", $v[2]);
+                      $time = $time[2] . '-' . $time[1] . '-' . $time[0];
+                      if ($k < 68) {
+                          array_push($dataList, [
+                              'id' => $v[0],
+                              'ordering_date' => \date('Y-m-d', strtotime($time)),
+                          ]);
+                          continue;
+                      }
 
-            }
+                      array_push($dataList, [
+                          'id' => $v[0],
+                          'ordering_date' => \date('Y-m-d', strtotime($time)),
+                      ]);
 
-           $res = (new  OrderT())->saveAll($dataList);
-             if (!$res) {
-                 throw  new SaveException();
-             }
-             Db::commit();
-            return json(new SuccessMessage());
-        } catch (Exception $e) {
-            Db::rollback();
-            throw  $e;
-        }
+                  }
+
+                  $res = (new  OrderT())->saveAll($dataList);
+                  if (!$res) {
+                      throw  new SaveException();
+                  }
+                  Db::commit();
+                  return json(new SuccessMessage());
+              } catch (Exception $e) {
+                  Db::rollback();
+                  throw  $e;
+              }*/
     }
 
 }

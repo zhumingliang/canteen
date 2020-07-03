@@ -73,7 +73,8 @@ class ConsumptionRecordsV extends Model
         $time_end = $consumption_time['last'];
         $money = self::where('phone', $phone)
             ->whereIn('order_type', 'canteen,shop')
-            ->whereBetweenTime('create_time', $time_begin, $time_end)
+            ->where('ordering_date',">=", $time_begin)
+            ->where('ordering_date',"<=", $time_end)
             ->sum('money');
         return 0 - $money;
 
