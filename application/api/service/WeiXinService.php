@@ -19,8 +19,6 @@ class WeiXinService
     public function createMenu($version)
     {
 
-        $url = $version == 1 ? "https://cloudcanteen3.51canteen.com/canteen3/wxcms" :
-            "http://cloudcanteen3.51canteen.cn/wxcms/index.html";
         $url = "https://cloudcanteen3.51canteen.com/canteen3/wxcms";
         $menus = [
             [
