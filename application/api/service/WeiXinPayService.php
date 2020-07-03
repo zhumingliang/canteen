@@ -9,7 +9,7 @@ use app\lib\exception\ParameterException;
 use EasyWeChat\Factory;
 use think\facade\Env;
 
-class ervice
+class WeiXinPayService
 {
 
 

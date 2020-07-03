@@ -16,26 +16,17 @@ class WeiXinService
         $this->app = Facade::officialAccount();
     }
 
-    public function createMenu()
+    public function createMenu($version)
     {
-        $menus = [
-            [
-                "name" => "Author",
-                "sub_button" => [
-                    ["type" => "view",
-                        "name" => "获取Info",
-                        "url" => "http://canteen.tonglingok.com/api/v1/token/official"
-                    ]
-                ]
-            ]
-        ];
+        $url = $version == 1 ? "https://cloudcanteen3.51canteen.com/canteen3/wxcms" :
+            "http://cloudcanteen3.51canteen.cn/wxcms/index.html";
         $menus = [
             [
                 "name" => "云饭堂3.0",
                 "sub_button" => [
                     ["type" => "view",
                         "name" => "进入饭堂",
-                        "url" => "https://cloudcanteen3.51canteen.com/canteen3/wxcms"
+                        "url" => $url
                     ]
                 ]
             ]

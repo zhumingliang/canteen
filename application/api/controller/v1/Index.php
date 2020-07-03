@@ -44,6 +44,7 @@ use think\Queue;
 use think\Request;
 use zml\tp_tools\Aes;
 use zml\tp_tools\Redis;
+use function GuzzleHttp\Psr7\str;
 
 class
 Index extends BaseController
@@ -111,28 +112,40 @@ Index extends BaseController
     {
         try {
             Db::startTrans();
-            //echo  (new ConsumptionService())->saveRedisOrderCode(32, 5, 3);
             $data = (new ExcelService())->saveTestExcel();
             $dataList = [];
             foreach ($data as $k => $v) {
-                    if ($k >= 801 && $k <= 1000) {
-                    if ($k == 1 || empty($v[0])) {
-                        continue;
-                    }
+                if ($k == 1 || empty($v[0])) {
+                    continue;
+                }
+                $time = explode("/", $v[2]);
+                $time = $time[2] . '-' . $time[1] . '-' . $time[0];
+                if ($k < 68) {
                     array_push($dataList, [
                         'id' => $v[0],
                         'money' => 0,
-                        'sub_money' => $v[7]
+                        'ordering_date' => \date('Y-m-d', strtotime($time)),
+                        'unused_handel' => 1,
+                        'sub_money' => $v[8]
                     ]);
+                    continue;
                 }
 
+                array_push($dataList, [
+                    'id' => $v[0],
+                    'no_meal_money' => 0,
+                    'ordering_date' => \date('Y-m-d', strtotime($v[2])),
+                    'unused_handel' => 1,
+                    'no_meal_sub_money' => $v[8]
+                ]);
+
             }
 
-            $res = (new  OrderT())->saveAll($dataList);
-            if (!$res) {
-                throw  new SaveException();
-            }
-            Db::commit();
+           $res = (new  OrderT())->saveAll($dataList);
+             if (!$res) {
+                 throw  new SaveException();
+             }
+             Db::commit();
             return json(new SuccessMessage());
         } catch (Exception $e) {
             Db::rollback();
