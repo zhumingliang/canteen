@@ -15,7 +15,8 @@ class OrderUsersStatisticV extends Model
             ->where('ordering_date', $consumption_time)
             ->where(function ($query) use ($consumption_type) {
                 if ($consumption_type == 'used') {
-                    $query->where('used', CommonEnum::STATE_IS_OK);
+                    $query->where('booking', CommonEnum::STATE_IS_OK)
+                        ->where('used', CommonEnum::STATE_IS_OK);
                 } else if ($consumption_type == 'noOrdering') {
                     $query->where('booking', CommonEnum::STATE_IS_FAIL);
                 } else if ($consumption_type == 'orderingNoMeal') {

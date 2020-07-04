@@ -118,7 +118,7 @@ class Wallet extends BaseController
     }
 
     /**
-     * @api {GET} /api/v1/recharges CMS管理端-充值管理-充值记录列表
+     * @api {GET} /api/v1/wallet/recharges CMS管理端-充值管理-充值记录列表
      * @apiGroup  CMS
      * @apiVersion 3.0.0
      * @apiDescription CMS管理端-充值管理-充值记录列表

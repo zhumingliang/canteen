@@ -8,6 +8,8 @@ use think\Model;
 
 class UserBalanceV extends Model
 {
+
+
     public static function usersBalance($page, $size, $department_id, $user, $phone, $company_id)
     {
         $orderings = self::where('company_id', $company_id)

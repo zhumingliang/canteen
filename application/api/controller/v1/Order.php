@@ -556,7 +556,7 @@ class Order extends BaseController
      * @apiParam (请求参数说明) {int} size 每页多少条数据
      * @apiParam (请求参数说明) {string} dinner_id  餐次id
      * @apiParam (请求参数说明) {string} consumption_time  消费日期
-     * @apiParam (请求参数说明) {string} consumption_type  订餐统计类别：used｜已就餐；noOrdering｜未订餐就餐；orderingNoMeal｜订餐未就餐
+     * @apiParam (请求参数说明) {string} consumption_type  订餐统计类别：used｜订餐就餐；noOrdering｜未订餐就餐；orderingNoMeal｜订餐未就餐
      * @apiSuccessExample {json}返回样例:
      * {"msg":"ok","errorCode":0,"code":200,"data":{"total":1,"per_page":20,"current_page":1,"last_page":1,"data":[{"username":"张三","phone":"18956225230","count":1}]}}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
