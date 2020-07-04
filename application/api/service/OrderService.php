@@ -1053,7 +1053,7 @@ class OrderService extends BaseService
                 $cancel_foods = $v['cancel_foods'];
                 $check_data = $this->checkOrderDetailUpdate($update_foods, $check_data);
                 $check_data = $this->checkOrderDetailCancel($cancel_foods, $check_data);
-                $check_data = $this->checkOrderDetailAdd($menu_id,$add_foods, $check_data);
+                $check_data = $this->checkOrderDetailAdd($menu_id, $add_foods, $check_data);
                 $menu = $this->getMenuInfo($menus, $menu_id);
                 if (empty($menu)) {
                     throw new ParameterException(['msg' => '菜品类别id错误']);
@@ -1138,7 +1138,7 @@ class OrderService extends BaseService
     }
 
     private
-    function checkOrderDetailAdd($menu_id,$add_foods, $check_data)
+    function checkOrderDetailAdd($menu_id, $add_foods, $check_data)
     {
         if (empty($add_foods)) {
             return $check_data;
@@ -1275,8 +1275,9 @@ class OrderService extends BaseService
                     if ($v['id'] == $v2['d_id']) {
                         $all += $v2['count'];
                         if ($v2['used'] == CommonEnum::STATE_IS_OK) {
-                            $used += $v2['count'];
-                            if ($v2['booking'] == CommonEnum::STATE_IS_FAIL) {
+                            if ($v2['booking'] == CommonEnum::STATE_IS_OK) {
+                                $used += $v2['count'];
+                            } else if ($v2['booking'] == CommonEnum::STATE_IS_FAIL) {
                                 $noOrdering += $v2['count'];
                             }
                         } else if ($v2['used'] == CommonEnum::STATE_IS_FAIL) {
