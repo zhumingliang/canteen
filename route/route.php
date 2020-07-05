@@ -141,6 +141,14 @@ Route::get('api/:version/material/exportFoodMaterials', 'api/:version.Material/e
 Route::get('api/:version/material/exportMaterialReports', 'api/:version.Material/exportMaterialReports');
 Route::get('api/:version/material/exportOrderMaterials', 'api/:version.Material/exportOrderMaterials');
 
+Route::post('api/:version/reception/save', 'api/:version.Reception/save');
+Route::post('api/:version/reception/update', 'api/:version.Reception/update');
+Route::post('api/:version/reception/handel', 'api/:version.Reception/handel');
+Route::get('api/:version/reception', 'api/:version.Reception/reception');
+Route::get('api/:version/receptions/cms', 'api/:version.Reception/receptionsForCMS');
+Route::get('api/:version/receptions/official', 'api/:version.Reception/receptionsForOfficial');
+
+
 Route::rule('api/:version/weixin/server', 'api/:version.WeiXin/server');
 Route::rule('api/:version/weixin/menu/save', 'api/:version.WeiXin/createMenu');
 

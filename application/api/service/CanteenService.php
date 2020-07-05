@@ -22,6 +22,7 @@ use app\api\model\OutConfigT;
 use app\api\model\OutConfigV;
 use app\api\model\OutsiderCompanyT;
 use app\api\model\PrinterT;
+use app\api\model\ReceptionConfigT;
 use app\api\model\StaffCanteenV;
 use app\api\model\StaffV;
 use app\api\model\StrategyDetailT;
@@ -149,12 +150,28 @@ class CanteenService
                 $address = json_decode($params['address'], true);
                 $this->prefixCanteenAddress($c_id, $address, []);
             }
+            if (!empty($params['reception_config'])) {
+                $reception = json_decode($params['reception_config'], true);
+                $this->prefixReception($reception, $c_id);
+            }
             Db::commit();
         } catch (Exception $e) {
             Db::rollback();
             throw  $e;
 
         }
+    }
+
+
+    private function prefixReception($reception, $canteen_id)
+    {
+        $reception['canteen_id'] = $canteen_id;
+        $reception['state'] = CommonEnum::STATE_IS_OK;
+        $reception = ReceptionConfigT::create($reception);
+        if (!$reception) {
+            throw  new ParameterException(['msg' => "接待票参数异常"]);
+        }
+
     }
 
     private function prefixOutConfig($out_config)
@@ -762,7 +779,7 @@ class CanteenService
             throw new DeleteException();
         }
         //清除消费策略
-        ConsumptionStrategyT::update(['state' => CommonEnum::STATE_IS_FAIL], ['d_id'=>$id]);
-        StrategyDetailT::update(['state' => CommonEnum::STATE_IS_FAIL], ['dinner_id'=>$id]);
+        ConsumptionStrategyT::update(['state' => CommonEnum::STATE_IS_FAIL], ['d_id' => $id]);
+        StrategyDetailT::update(['state' => CommonEnum::STATE_IS_FAIL], ['dinner_id' => $id]);
     }
 }

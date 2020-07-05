@@ -48,7 +48,7 @@ class Canteen extends BaseController
      * @apiVersion 3.0.0
      * @apiDescription     CMS管理端-新增饭堂配置信息
      * @apiExample {post}  请求样例:
-     * {"c_id":2,"dinners":[{"name":"早餐","type":"day","type_number":10,"limit_time":"10:00","meal_time_begin":"07:00","meal_time_end":"08:00","fixed":2},{"name":"中餐","type":"day","type_number":10,"limit_time":"10:00","meal_time_bgin":"12:00","meal_time_end":"13:00","fixed":1}],"account":{"dining_mode":3,"out_dining_mode":3,"type":2,"confirm":2,"clean_type":3,"clean_day":1,"clean_time":"01:00:00","limit_money":0,"out":2},"out_config":{"in_fee":0,"out_fee":0,"address_limit":1,"remark":"备注"},"address":[{"province":"广东省","city":"江门市","area":"蓬江区","address":"人民医院A栋"}]}
+     * {"c_id":2,"dinners":[{"name":"早餐","type":"day","type_number":10,"limit_time":"10:00","meal_time_begin":"07:00","meal_time_end":"08:00","fixed":2},{"name":"中餐","type":"day","type_number":10,"limit_time":"10:00","meal_time_bgin":"12:00","meal_time_end":"13:00","fixed":1}],"account":{"dining_mode":3,"out_dining_mode":3,"type":2,"confirm":2,"clean_type":3,"clean_day":1,"clean_time":"01:00:00","limit_money":0,"out":2,"reception":2},"out_config":{"in_fee":0,"out_fee":0,"address_limit":1,"remark":"备注"},"address":[{"province":"广东省","city":"江门市","area":"蓬江区","address":"人民医院A栋"}],"reception_config":{"approval":1,"single":2,"money":"10,20"}}
      * @apiParam (请求参数说明) {int} c_id  饭堂id
      * @apiParam (请求参数说明) {string} dinners  订餐信息json字符串
      * @apiParam (请求参数说明) {string} name  餐次名称
@@ -63,6 +63,7 @@ class Canteen extends BaseController
      * @apiParam (请求参数说明) {int} out_dining_mode  外来人员个人选菜就餐方式：1｜食堂；2｜外卖；3｜全部
      * @apiParam (请求参数说明) {int} type  消费类别：1| 可透支消费；2|不可透支消费
      * @apiParam (请求参数说明) {int} confirm  是否开通微信端确认就餐功能：1｜ 是；2｜否
+     * @apiParam (请求参数说明) {int} reception  是否开通接待票：1｜ 是；2｜否
      * @apiParam (请求参数说明) {int} clean_type  系统清零方式：1|系统自动清零；2|系统自动清零；3|无
      * @apiParam (请求参数说明) {int} clean_day  每月清零具体日期
      * @apiParam (请求参数说明) {int} clean_time  每月清零具体时间
@@ -78,6 +79,10 @@ class Canteen extends BaseController
      * @apiParam (请求参数说明) {string} city  城市
      * @apiParam (请求参数说明) {string} area  区域
      * @apiParam (请求参数说明) {string} address  详细地址
+     * @apiParam (请求参数说明) {obj} reception_config  接待票配置
+     * @apiParam (请求参数说明) {int} approval  是否需要审批：1 ｜是；2｜否
+     * @apiParam (请求参数说明) {int} single  是否单个现金
+     * @apiParam (请求参数说明) {string} money  金额：多个金额时用逗号分隔：10,20
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
@@ -99,9 +104,7 @@ class Canteen extends BaseController
      * http://canteen.tonglingok.com/canteen/configuration?c_id=2
      * @apiParam (请求参数说明) {int} c_id  饭堂id
      * @apiSuccessExample {json} 系统功能模块返回样例:
-     * {"msg":"ok","errorCode":0,"code":200,"data":{"dinners":[{"id":5,"c_id":1,"name":"早餐","type":"day","create_time":"2019-07-30 02:07:17","type_number":10,"meal_time_bgin":"07:00:00","meal_time_end":"08:00:00","limit_time":"10:00:00"},{"id":6,"c_id":1,"name":"中餐","type":"day","create_time":"2019-07-30 02:07:17","type_number":10,"meal_time_bgin":"12:00:00","meal_time_end":"13:00:00","limit_time":"10:00:00"}],"account":{"id":3,"dining_mode":3,"out_dining_mode":3,"c_id":1,"type":2,"clean_type":3,"clean_day":0,"create_time":"2019-07-30 02:07:17","out":1},"out_config":{"id":1,"in_fee":0,"out_fee":0,"address_limit":1,"remark":"备注"},"address":[{"id":1,"province":"广东省","city":"江门市","area":"蓬江区","address":"人民医院A栋"}]}}
-     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
-     * @apiSuccess (返回参数说明) {String} msg 信息描述
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"dinners":[{"id":5,"c_id":1,"name":"早餐","type":"day","create_time":"2019-07-30 02:07:17","type_number":10,"meal_time_bgin":"07:00:00","meal_time_end":"08:00:00","limit_time":"10:00:00"},{"id":6,"c_id":1,"name":"中餐","type":"day","create_time":"2019-07-30 02:07:17","type_number":10,"meal_time_bgin":"12:00:00","meal_time_end":"13:00:00","limit_time":"10:00:00"}],"account":{"id":3,"dining_mode":3,"out_dining_mode":3,"c_id":1,"type":2,"clean_type":3,"clean_day":0,"create_time":"2019-07-30 02:07:17","out":1,"confirm":1,"reception":1},"out_config":{"id":1,"in_fee":0,"out_fee":0,"address_limit":1,"remark":"备注"},"reception_config":{"id":1,"approval":1,"single":2,"money":"10,20"},"address":[{"id":1,"province":"广东省","city":"江门市","area":"蓬江区","address":"人民医院A栋"}]}}     * @apiSuccess (返回参数说明) {String} msg 信息描述
      * @apiSuccess (返回参数说明) {string} dinners  订餐信息json字符串
      * @apiSuccess (返回参数说明) {string} id  餐次id
      * @apiSuccess (返回参数说明) {string} name  餐次名称
@@ -135,6 +138,11 @@ class Canteen extends BaseController
      * @apiSuccess (返回参数说明) {string} city  城市
      * @apiSuccess (返回参数说明) {string} area  区域
      * @apiSuccess (返回参数说明) {string} address  详细地址
+     * @apiSuccess (返回参数说明) {obj} reception_config  接待票配置
+     * @apiSuccess (返回参数说明) {int} id  配置id
+     * @apiSuccess (返回参数说明) {int} approval  是否需要审批：1 ｜是；2｜否
+     * @apiSuccess (返回参数说明) {int} single  是否单个现金
+     * @apiSuccess (返回参数说明) {string} money  金额：多个金额时用逗号分隔：10,20
      */
     public function configuration()
     {
@@ -149,13 +157,7 @@ class Canteen extends BaseController
      * @apiVersion 3.0.0
      * @apiDescription    CMS管理端-更新饭堂配置信息
      * @apiExample {post}  请求样例:
-     *    {
-     *       "c_id": 2,
-     *       "dinners":[{"id":1,"name":"早餐","type":"day","type_number":10,"limit_time":"10:00","meal_time_begin":"07:00","meal_time_end":"08:00"},{"name":"晚餐","type":"day","type_number":10,"limit_time":"10:00","meal_time_begin":"18:00","meal_time_end":"19:00"}],
-     *       "account":{"id":1,"type":2,"confirm":1,"dining_mode":2,"out_dining_mode":2,"clean_type":3,"clean_day":1,"clean_day":"02:00:00"},
-     *       "out_config":{"id":1,"in_fee":0,"out_fee":0,"address_limit":1,"remark":"备注","state":2},
-     *       "address":{"add":[{"id":1,"province":"广东省","city":"江门市","area":"蓬江区","address":"人民医院A栋"}],"cancel":[1,2]}
-     *     }
+     * {"c_id":2,"dinners":[{"id":1,"name":"早餐","type":"day","type_number":10,"limit_time":"10:00","meal_time_begin":"07:00","meal_time_end":"08:00"},{"name":"晚餐","type":"day","type_number":10,"limit_time":"10:00","meal_time_begin":"18:00","meal_time_end":"19:00"}],"account":{"id":1,"type":2,"confirm":1,"dining_mode":2,"out_dining_mode":2,"clean_type":3,"clean_day":"02:00:00"},"out_config":{"id":1,"in_fee":0,"out_fee":0,"address_limit":1,"remark":"备注","state":2},"address":{"add":[{"id":1,"province":"广东省","city":"江门市","area":"蓬江区","address":"人民医院A栋"}],"cancel":[1,2]},"reception_config":{"id":1,"approval":1,"single":2,"money":"10,20"}}
      * @apiParam (请求参数说明) {int} c_id  饭堂id
      * @apiParam (请求参数说明) {string} dinners  订餐信息json字符串
      * @apiParam (请求参数说明) {string} id  餐次设置id，更新操作需要传如此字段
@@ -190,6 +192,11 @@ class Canteen extends BaseController
      * @apiParam (请求参数说明) {string} area  区域
      * @apiParam (请求参数说明) {string} address  详细地址
      * @apiParam (请求参数说明) {obj} cancel  取消地址
+     * @apiParam (请求参数说明) {obj} reception_config  接待票配置
+     * @apiParam (请求参数说明) {int} id 接待票配置id
+     * @apiParam (请求参数说明) {int} approval  是否需要审批：1 ｜是；2｜否
+     * @apiParam (请求参数说明) {int} single  是否单个现金
+     * @apiParam (请求参数说明) {string} money  金额：多个金额时用逗号分隔：10,20
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
