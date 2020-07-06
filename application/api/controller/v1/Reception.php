@@ -5,6 +5,8 @@ namespace app\api\controller\v1;
 
 
 use app\api\controller\BaseController;
+use app\api\service\QrcodeService;
+use app\api\service\Token as TokenService;
 
 class Reception extends BaseController
 {
@@ -13,6 +15,12 @@ class Reception extends BaseController
      */
     public function save()
     {
+        //生成接待票就餐码
+        $code = getRandChar(8);
+        $qrcodeUrl = $this->qrCode($code);
+
+        //获取人员信息
+        $uID = TokenService::getCurrentUid();
 
     }
 
@@ -53,6 +61,18 @@ class Reception extends BaseController
      */
     public function receptionsForOfficial()
     {
+
+    }
+
+    /**
+     * 生成接待票二维码 每张二维码的code是8位数随机码
+     * @param  $code
+     * @return string
+     */
+    private function qrCode($code)
+    {
+        $url = "reception&$code";
+        return (new QrcodeService())->qr_code($url);
 
     }
 
