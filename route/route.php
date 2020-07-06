@@ -145,6 +145,7 @@ Route::post('api/:version/reception/save', 'api/:version.Reception/save');
 Route::post('api/:version/reception/update', 'api/:version.Reception/update');
 Route::post('api/:version/reception/handel', 'api/:version.Reception/handel');
 Route::get('api/:version/reception', 'api/:version.Reception/reception');
+Route::get('api/:version/reception/userInfo', 'api/:version.Reception/userInfo');
 Route::get('api/:version/receptions/cms', 'api/:version.Reception/receptionsForCMS');
 Route::get('api/:version/receptions/official', 'api/:version.Reception/receptionsForOfficial');
 

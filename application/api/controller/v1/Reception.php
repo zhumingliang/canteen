@@ -76,4 +76,12 @@ class Reception extends BaseController
 
     }
 
+    /**
+     * 获取当前用户信息
+     */
+    public function userInfo()
+    {
+
+    }
+
 }
