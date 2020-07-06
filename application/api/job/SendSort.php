@@ -6,6 +6,7 @@ namespace app\api\job;
 
 use app\api\model\MachineT;
 use app\api\model\NoticeUserT;
+use app\api\model\OrderT;
 use app\api\service\DepartmentService;
 use app\api\service\GatewayService;
 use app\api\service\LogService;
@@ -76,10 +77,12 @@ class SendSort
     private function doJob($data)
     {
         $canteenID = $data['canteenID'];
-        $outsider = $data['outsider'];
+       // $outsider = $data['outsider'];
         $orderID = $data['orderID'];
         $sortCode = $data['sortCode'];
         $websocketCode = $data['websocketCode'];
+        $order = OrderT::get($orderID);
+        $outsider = $order->outsider;
         $machine = MachineT::getSortMachine($canteenID, $outsider);
         if ($machine) {
             $sendData = [

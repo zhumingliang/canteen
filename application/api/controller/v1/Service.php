@@ -5,6 +5,8 @@ namespace app\api\controller\v1;
 
 
 use app\api\controller\BaseController;
+use app\api\service\ConsumptionService;
+use app\api\service\LogService;
 use app\api\service\NoticeService;
 use app\api\service\OrderService;
 use app\api\service\SendSMSService;
@@ -32,6 +34,8 @@ class Service extends BaseController
     public function printer()
     {
         $params = Request::param();
+        LogService::save(json_encode($params));
+        (new ConsumptionService())->sortTask($params['canteenID'], 0, $params['orderID'], $params['sortCode']);
         (new \app\lib\printer\Printer())->printOrderDetail($params['canteenID'], $params['orderID'], $params['sortCode']);
         return json(new SuccessMessage());
 
