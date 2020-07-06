@@ -8,6 +8,8 @@ use app\api\controller\BaseController;
 use app\api\service\NoticeService;
 use app\api\service\OrderService;
 use app\api\service\SendSMSService;
+use app\lib\exception\SuccessMessage;
+use think\facade\Request;
 
 class Service extends BaseController
 {
@@ -25,6 +27,14 @@ class Service extends BaseController
     public function sendNoticeHandel()
     {
         (new NoticeService())->sendNoticeHandel();
+    }
+
+    public function printer()
+    {
+        $params = Request::param();
+        (new \app\lib\printer\Printer())->printOrderDetail($params['canteenID'], $params['orderID'], $params['sortCode']);
+        return json(new SuccessMessage());
+
     }
 
 }

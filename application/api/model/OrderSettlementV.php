@@ -123,7 +123,7 @@ class OrderSettlementV extends Model
                 }
 
             })
-            ->field('used_time,department,username,phone,canteen,dinner,booking,used,type')
+            ->field('used_time,department,username,phone,canteen,dinner,booking,used,type,money,remark')
             ->order('order_id DESC')
             ->select()->toArray();
         return $list;

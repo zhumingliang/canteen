@@ -472,7 +472,7 @@ class ConsumptionService
         //推送消息给显示器
         $this->sortTask($canteenID, $outsider, $orderID, $sortCode);
         //启动打印机打印信息
-        $printRes = (new Printer())->printOrderDetail($canteenID, $orderID, $outsider, $sortCode);
+        $printRes = (new Printer())->printOrderDetail($canteenID, $orderID, $sortCode);
         if ($printRes) {
             $updateData = ['print' => CommonEnum::STATE_IS_OK];
         }
