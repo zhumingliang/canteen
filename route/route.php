@@ -274,9 +274,7 @@ Route::get('api/:version/wallet/pay/getPreOrder', 'api/:version.Wallet/getPreOrd
 Route::rule('api/:version/wallet/WXNotifyUrl', 'api/:version.Wallet/WXNotifyUrl');
 
 
-Route::rule('api/:version/service/orderStateHandel', 'api/:version.Service/orderStateHandel');
-Route::rule('api/:version/service/sendMsgHandel', 'api/:version.Service/sendMsgHandel');
-Route::rule('api/:version/service/noticeHandel', 'api/:version.Service/sendNoticeHandel');
+Route::rule('api/:version/service/printer', 'api/:version.Service/printer');
 
 Route::post('api/:version/outsider/save', 'api/:version.Outsider/saveCanteen');
 Route::get('api/:version/outsiders', 'api/:version.Outsider/outsiders');

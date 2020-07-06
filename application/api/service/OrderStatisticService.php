@@ -114,7 +114,7 @@ class OrderStatisticService
             $name, $phone, $canteen_id, $department_id, $dinner_id,
             $consumption_type, $time_begin, $time_end, $company_ids);
         $records = $this->prefixExportOrderSettlement($records);
-        $header = ['序号', '消费时间', '部门', '姓名', '手机号', '消费地点', '消费类型', '餐次'];
+        $header = ['序号', '消费时间', '部门', '姓名', '手机号', '消费地点', '消费类型', '餐次','金额','备注'];
         $file_name = "消费明细报表（" . $time_begin . "-" . $time_end . "）";
         $url = (new ExcelService())->makeExcel($header, $records, $file_name);
         return [
@@ -147,6 +147,8 @@ class OrderStatisticService
                     'canteen' => $v['canteen'],
                     'consumption_type' => $consumption_type,
                     'dinner' => $v['dinner'],
+                    'money'=>$v['money'],
+                    'remark'=>$v['remark']
                 ]);
             }
         }

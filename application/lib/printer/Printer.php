@@ -14,8 +14,10 @@ use zml\tp_tools\Redis;
 
 class Printer extends PrinterBase
 {
-    public function printOrderDetail($canteenID, $orderID, $outsider, $sortCode)
+    public function printOrderDetail($canteenID, $orderID, $sortCode)
     {
+        $order = OrderT::infoForPrinter($orderID);
+        $outsider = $order['outsider'];
         //获取打印机信息
         $printer = PrinterT::getPrinter($canteenID, $outsider);
         if (!$printer) {
@@ -27,8 +29,8 @@ class Printer extends PrinterBase
         /* if (strpos($printerStatus['data'], '离线') !== false || strpos($printerStatus['data'], '不正常') !== false) {
              return false;
          }*/
+
         $canteenName = $outsider == 1 ? "外部食堂" : "内部食堂";
-        $order = OrderT::infoForPrinter($orderID);
         $name = (new  UserService())->getUserName($order['company_id'], $order['phone'], $outsider);
         $arr = $order['foods'];
         $A = 14;
