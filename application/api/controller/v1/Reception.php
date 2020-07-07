@@ -84,6 +84,9 @@ class Reception extends BaseController
 
     }
 
+    /**
+     * 获取接待票设置金额
+     */
     public function getReceptionMoney()
     {
 
