@@ -148,6 +148,7 @@ Route::get('api/:version/reception', 'api/:version.Reception/reception');
 Route::get('api/:version/reception/userInfo', 'api/:version.Reception/userInfo');
 Route::get('api/:version/receptions/cms', 'api/:version.Reception/receptionsForCMS');
 Route::get('api/:version/receptions/official', 'api/:version.Reception/receptionsForOfficial');
+Route::get('api/:version/reception/money', 'api/:version.Reception/getReceptionMoney');
 
 
 Route::rule('api/:version/weixin/server', 'api/:version.WeiXin/server');

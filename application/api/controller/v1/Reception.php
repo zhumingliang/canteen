@@ -84,4 +84,8 @@ class Reception extends BaseController
 
     }
 
+    public function getReceptionMoney()
+    {
+
+    }
 }
