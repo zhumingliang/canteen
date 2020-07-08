@@ -1256,7 +1256,7 @@ class OrderService extends BaseService
     }
 
     public
-    function managerOrders($canteen_id, $consumption_time)
+    function managerOrders($canteen_id, $consumption_time,$key)
     {
         //获取饭堂餐次信息
         $dinner = (new CanteenService())->getDinnerNames($canteen_id);
@@ -1264,7 +1264,7 @@ class OrderService extends BaseService
             throw new ParameterException(['msg' => '参数异常，该饭堂未设置餐次信息']);
         }
         //获取饭堂订餐信息
-        $orderInfo = OrderT::statisticToOfficial($canteen_id, $consumption_time);
+        $orderInfo = OrderT::statisticToOfficial($canteen_id, $consumption_time,$key);
         foreach ($dinner as $k => $v) {
             $all = 0;
             $used = 0;
@@ -1315,9 +1315,9 @@ class OrderService extends BaseService
     }
 
     public
-    function orderUsersStatistic($dinner_id, $consumption_time, $consumption_type, $page, $size)
+    function orderUsersStatistic($dinner_id, $consumption_time, $consumption_type, $key,$page, $size)
     {
-        $statistic = OrderUsersStatisticV::orderUsers($dinner_id, $consumption_time, $consumption_type, $page, $size);
+        $statistic = OrderUsersStatisticV::orderUsers($dinner_id, $consumption_time, $consumption_type,$key, $page, $size);
         return $statistic;
     }
 

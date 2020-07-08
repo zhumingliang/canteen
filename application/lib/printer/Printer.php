@@ -40,6 +40,7 @@ class Printer extends PrinterBase
         $money = $order['money'] + $order['sub_money'];
         $fixed = $order['fixed'];
         $content = '<CB>' . $canteenName . '｜' . $sortCode . '</CB><BR>';
+        $content .= '订单号：' . $order['order_num'] . '<BR>';
         $content .= '确认时间：' . $order['confirm_time'] . '<BR>';
         $content .= '餐次：' . $order['dinner']['name'] . '<BR>';
         $content .= '姓名：' . $name . '<BR>';
@@ -161,14 +162,13 @@ class Printer extends PrinterBase
         //获取打印机信息
         $printer = PrinterT::getPrinter($canteen_id, $outsider);
         if (!$printer) {
-            return false;
+            throw new  ParameterException(['msg' =>"打印机不存在"]);
         }
         $sn = $printer->code;
         $printerStatus = $this->queryPrinterStatus($sn);
-        // print_r($printerStatus);
-        /* if (strpos($printerStatus['data'], '离线') !== false || strpos($printerStatus['data'], '不正常') !== false) {
-             return false;
-         }*/
+        if (strpos($printerStatus['data'], '离线') !== false || strpos($printerStatus['data'], '不正常') !== false) {
+            throw new  ParameterException(['msg' =>"打印机状态异常"]);
+        }
         $canteenName = $outsider == 1 ? "外部食堂" : "内部食堂";
         $name = (new  UserService())->getUserName($order['company_id'], $order['phone'], $outsider);
         $arr = $order['foods'];
@@ -179,6 +179,7 @@ class Printer extends PrinterBase
         $money = $order['money'] + $order['sub_money'];
         $fixed = $order['fixed'];
         $content = '<CB>' . $canteenName . '｜' . $sortCode . '</CB><BR>';
+        $content .= '订单号：' . $order['order_num'] . '<BR>';
         $content .= '确认时间：' . $order['confirm_time'] . '<BR>';
         $content .= '餐次：' . $order['dinner']['name'] . '<BR>';
         $content .= '姓名：' . $name . '<BR>';
@@ -310,6 +311,7 @@ class Printer extends PrinterBase
         $money = $order['money'] + $order['sub_money'] + $order['delivery_fee'];
         $fixed = $order['fixed'];
         $content = '<CB>' . $canteenName . '｜' . $orderID . '</CB><BR>';
+        $content .= '订单号：' . $order['order_num'] . '<BR>';
         $content .= '餐次日期：' . $order['ordering_date'] . '<BR>';
         $content .= '餐次：' . $order['dinner']['name'] . '<BR>';
         $content .= '姓名：' . $name . '<BR>';

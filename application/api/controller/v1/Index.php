@@ -111,7 +111,6 @@ Index extends BaseController
 
     public function test()
     {
-
         $balance=  ConsumptionRecordsV::monthConsumptionMoneyByPhone("13555657260", "2020-06");
         //$balance = (new OrderService())->getUserBalance(177, 94, 13794221967);
         return json($balance);
