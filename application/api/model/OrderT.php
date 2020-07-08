@@ -38,6 +38,7 @@ class OrderT extends Model
 
     }
 
+
     /* protected function getQrcodeUrlAttr($value)
      {
          $finalUrl = config('setting.image') . $value;
@@ -93,7 +94,7 @@ class OrderT extends Model
         return $info;
     }
 
-    public static function statisticToOfficial($canteen_id, $consumption_time)
+    public static function statisticToOfficial($canteen_id, $consumption_time,$key)
     {
         $statistic = self::where('c_id', $canteen_id)
             ->where('state', CommonEnum::STATE_IS_OK)
@@ -180,7 +181,7 @@ class OrderT extends Model
                     $query->field('id,name');
                 }
             ])
-            ->field('id,d_id,money,sub_money,phone,outsider,company_id,confirm_time,qrcode_url,remark,count,fixed,c_id,outsider,sort_code')
+            ->field('id,d_id,order_num,money,sub_money,phone,outsider,company_id,confirm_time,qrcode_url,remark,count,fixed,c_id,outsider,sort_code')
             ->find()->toArray();
         return $info;
     }
@@ -237,5 +238,35 @@ class OrderT extends Model
             ->field('id,u_id,pay_way,(money + sub_money + delivery_fee) as money')
             ->find();
         return $info;
+    }
+
+
+    public static function orderUsers($dinner_id, $consumption_time, $consumption_type, $page, $size)
+    {
+        $users = self::where('d_id', $dinner_id)
+            ->where('ordering_date', $consumption_time)
+            ->where(function ($query) use ($consumption_type) {
+                if ($consumption_type == 'used') {
+                    $query->where('booking', CommonEnum::STATE_IS_OK)
+                        ->where('used', CommonEnum::STATE_IS_OK);
+                } else if ($consumption_type == 'noOrdering') {
+                    $query->where('booking', CommonEnum::STATE_IS_FAIL);
+                } else if ($consumption_type == 'orderingNoMeal') {
+                    $query->where('used', CommonEnum::STATE_IS_FAIL);
+                }
+            })
+            ->with([
+                'staff' => function ($query) {
+                    $query->where('state', CommonEnum::STATE_IS_OK)
+                        ->field('id ,username');
+                },
+                'foods' => function ($query) {
+                    $query->where('state', CommonEnum::STATE_IS_OK)
+                        ->field('id as detail_id ,o_id,count,name,price');
+                }
+            ])
+            ->field('id,order_num,staff_id,phone,count,money,sub_money,delivery_fee,sort_code')
+            ->paginate($size, false, ['page' => $page]);
+        return $users;
     }
 }

@@ -5,11 +5,19 @@ namespace app\api\model;
 
 
 use app\lib\enum\CommonEnum;
+use app\lib\enum\PayEnum;
 use think\Model;
 
 class OrderUsersStatisticV extends Model
 {
-    public static function orderUsers($dinner_id, $consumption_time, $consumption_type, $page, $size)
+
+
+    public function foods()
+    {
+        return $this->hasMany('OrderDetailT', 'o_id', 'id');
+    }
+
+    public static function orderUsers($dinner_id, $consumption_time, $consumption_type, $key, $page, $size)
     {
         $users = self::where('dinner_id', $dinner_id)
             ->where('ordering_date', $consumption_time)
@@ -23,11 +31,38 @@ class OrderUsersStatisticV extends Model
                     $query->where('used', CommonEnum::STATE_IS_FAIL);
                 }
             })
-            ->field('username,phone,sum(count) as count,group_concat(order_id) as order_id')
-            ->group('u_id')
+            ->where(function ($query) use ($key) {
+                if ($key) {
+                    $query->where('username|order_num|phone|sort_code', 'like', "%$key%");
+                }
+            })
+            ->with([
+                'foods' => function ($query) {
+                    $query->where('state', CommonEnum::STATE_IS_OK)
+                        ->field('id as detail_id ,o_id,count,name,price');
+                }
+            ])
+            ->field('id,username,order_num,phone,count,money,sub_money,delivery_fee,sort_code')
             ->paginate($size, false, ['page' => $page]);
         return $users;
-
     }
+
+    public static function statisticToOfficial($canteen_id, $consumption_time, $key)
+    {
+        $statistic = self::where('c_id', $canteen_id)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->where('pay', PayEnum::PAY_SUCCESS)
+            ->where('ordering_date', $consumption_time)
+            ->where(function ($query) use ($key) {
+                if ($key) {
+                    $query->where('username|order_num|phone|sort_code', 'like', "%$key%");
+                }
+            })
+            ->field('d_id,used,booking,sum(count) as count')
+            ->group('d_id,used,booking')
+            ->select()->toArray();
+        return $statistic;
+    }
+
 
 }
