@@ -226,7 +226,7 @@ class DepartmentService
                 }
                 $check = $this->validateParams($company_id, $param_key, $data[$k], $types, $canteens, $departments);
                 if (!$check['res']) {
-                    $fail[] = "第" . $k . "数据有问题：" . $check['info'];
+                    $fail[] = "第" . $k . "数据有问题：" . $check['info']['msg'];
                     continue;
                 }
                 $success[] = $check['info'];
