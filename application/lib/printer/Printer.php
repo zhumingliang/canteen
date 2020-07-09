@@ -272,13 +272,15 @@ class Printer extends PrinterBase
             }
         }
         $content .= '--------------------------------<BR>';
-        $content .= '份数：' . $order['count'] . '<BR>';
+        $content .= '<B>份数：' . $order['count'] . '</B><BR>';
         $content .= '<B>附加金额：' . $order['sub_money'] . '</B><BR>';
         $content .= '<B>金额：' . $money . '</B><BR>';
         $content .= '<B>备注：' . $order['remark'] . '</B><BR>';
-        $content .= '二维码叫号/确认<BR>';
-        $content .= '（第一次扫码为叫号，第二次扫码为完成取餐）<BR>';;
-        $content .= '<QR>' . $order['qrcode_url'] . '</QR>';
+        if ( $order['qrcode_url']){
+            $content .= '二维码叫号/确认<BR>';
+            $content .= '（第一次扫码为叫号，第二次扫码为完成取餐）<BR>';;
+            $content .= '<QR>' . $order['qrcode_url'] . '</QR>';
+        }
         //把二维码字符串用标签套上即可自动生成二维码
 
         $printRes = $this->printMsg($sn, $content, 1);
