@@ -50,7 +50,6 @@ class OrderUsersStatisticV extends Model
     public static function statisticToOfficial($canteen_id, $consumption_time, $key)
     {
         $statistic = self::where('c_id', $canteen_id)
-            ->where('state', CommonEnum::STATE_IS_OK)
             ->where('pay', PayEnum::PAY_SUCCESS)
             ->where('ordering_date', $consumption_time)
             ->where(function ($query) use ($key) {
@@ -58,8 +57,8 @@ class OrderUsersStatisticV extends Model
                     $query->where('username|order_num|phone|sort_code', 'like', "%$key%");
                 }
             })
-            ->field('d_id,used,booking,sum(count) as count')
-            ->group('d_id,used,booking')
+            ->field('dinner_id as d_id,used,booking,sum(count) as count')
+            ->group('dinner_id,used,booking')
             ->select()->toArray();
         return $statistic;
     }
