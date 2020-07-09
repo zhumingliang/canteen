@@ -32,7 +32,7 @@ class ExcelService
 
     public function saveTestExcel()
     {
-        $file_name = dirname($_SERVER['SCRIPT_FILENAME']) . '/static/excel/upload/test.csv';
+        $file_name = dirname($_SERVER['SCRIPT_FILENAME']) . '/static/excel/upload/test.xls';
         $result_excel = $this->importExcel($file_name);
         return $result_excel;
 

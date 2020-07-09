@@ -111,41 +111,45 @@ Index extends BaseController
 
     public function test()
     {
+        $data = (new ExcelService())->saveTestExcel();
+       //foreach ()
 
-        try {
-            Db::startTrans();
-            $data = (new ExcelService())->saveTestExcel();
-            $dataList = [];
-            foreach ($data as $k => $v) {
-                if ($k == 1 || empty($v[0])) {
-                    continue;
-                }
-                if ($k < 15) {
-                    array_push($dataList, [
-                        'id' => $v[0],
-                        'money' => $v[11],
-                        'sub_money' => $v[12],
-                    ]);
-                } else {
-                    array_push($dataList, [
-                        'id' => $v[0],
-                        'no_meal_money' => $v[11],
-                        'no_meal_sub_money' => $v[12],
-                    ]);
-                }
 
-            }
+        /*
+                try {
+                    Db::startTrans();
+                    $data = (new ExcelService())->saveTestExcel();
+                    $dataList = [];
+                    foreach ($data as $k => $v) {
+                        if ($k == 1 || empty($v[0])) {
+                            continue;
+                        }
+                        if ($k < 15) {
+                            array_push($dataList, [
+                                'id' => $v[0],
+                                'money' => $v[11],
+                                'sub_money' => $v[12],
+                            ]);
+                        } else {
+                            array_push($dataList, [
+                                'id' => $v[0],
+                                'no_meal_money' => $v[11],
+                                'no_meal_sub_money' => $v[12],
+                            ]);
+                        }
 
-            $res = (new  OrderT())->saveAll($dataList);
-            if (!$res) {
-                throw  new SaveException();
-            }
-             Db::commit();
-            return json(new SuccessMessage());
-        } catch (Exception $e) {
-            Db::rollback();
-            throw  $e;
-        }
+                    }
+
+                    $res = (new  OrderT())->saveAll($dataList);
+                    if (!$res) {
+                        throw  new SaveException();
+                    }
+                     Db::commit();
+                    return json(new SuccessMessage());
+                } catch (Exception $e) {
+                    Db::rollback();
+                    throw  $e;
+                }*/
     }
 
 }
