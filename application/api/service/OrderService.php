@@ -1264,7 +1264,7 @@ class OrderService extends BaseService
             throw new ParameterException(['msg' => '参数异常，该饭堂未设置餐次信息']);
         }
         //获取饭堂订餐信息
-        $orderInfo = OrderT::statisticToOfficial($canteen_id, $consumption_time,$key);
+        $orderInfo = OrderUsersStatisticV::statisticToOfficial($canteen_id, $consumption_time,$key);
         foreach ($dinner as $k => $v) {
             $all = 0;
             $used = 0;
