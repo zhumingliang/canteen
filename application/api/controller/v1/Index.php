@@ -111,44 +111,45 @@ Index extends BaseController
 
     public function test()
     {
-        $balance=  ConsumptionRecordsV::monthConsumptionMoneyByPhone("13555657260", "2020-06");
-        //$balance = (new OrderService())->getUserBalance(177, 94, 13794221967);
-        return json($balance);
-        /*      try {
-                  Db::startTrans();
-                  $data = (new ExcelService())->saveTestExcel();
-                  $dataList = [];
-                  foreach ($data as $k => $v) {
-                      if ($k == 1 || empty($v[0])) {
-                          continue;
-                      }
-                      $time = explode("/", $v[2]);
-                      $time = $time[2] . '-' . $time[1] . '-' . $time[0];
-                      if ($k < 68) {
-                          array_push($dataList, [
-                              'id' => $v[0],
-                              'ordering_date' => \date('Y-m-d', strtotime($time)),
-                          ]);
-                          continue;
-                      }
+        $data = (new ExcelService())->saveTestExcel();
+       //foreach ()
 
-                      array_push($dataList, [
-                          'id' => $v[0],
-                          'ordering_date' => \date('Y-m-d', strtotime($time)),
-                      ]);
 
-                  }
+        /*
+                try {
+                    Db::startTrans();
+                    $data = (new ExcelService())->saveTestExcel();
+                    $dataList = [];
+                    foreach ($data as $k => $v) {
+                        if ($k == 1 || empty($v[0])) {
+                            continue;
+                        }
+                        if ($k < 15) {
+                            array_push($dataList, [
+                                'id' => $v[0],
+                                'money' => $v[11],
+                                'sub_money' => $v[12],
+                            ]);
+                        } else {
+                            array_push($dataList, [
+                                'id' => $v[0],
+                                'no_meal_money' => $v[11],
+                                'no_meal_sub_money' => $v[12],
+                            ]);
+                        }
 
-                  $res = (new  OrderT())->saveAll($dataList);
-                  if (!$res) {
-                      throw  new SaveException();
-                  }
-                  Db::commit();
-                  return json(new SuccessMessage());
-              } catch (Exception $e) {
-                  Db::rollback();
-                  throw  $e;
-              }*/
+                    }
+
+                    $res = (new  OrderT())->saveAll($dataList);
+                    if (!$res) {
+                        throw  new SaveException();
+                    }
+                     Db::commit();
+                    return json(new SuccessMessage());
+                } catch (Exception $e) {
+                    Db::rollback();
+                    throw  $e;
+                }*/
     }
 
 }

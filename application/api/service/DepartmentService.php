@@ -226,7 +226,7 @@ class DepartmentService
                 }
                 $check = $this->validateParams($company_id, $param_key, $data[$k], $types, $canteens, $departments);
                 if (!$check['res']) {
-                    $fail[] = "第" . $k . "数据有问题：" . $check['info'];
+                    $fail[] = "第" . $k . "数据有问题：" . $check['info']['msg'];
                     continue;
                 }
                 $success[] = $check['info'];
@@ -288,27 +288,16 @@ class DepartmentService
                 break;
             }
         }
-        $canteen = $data[0];
-        $department = $data[1];
-        $staffType = $data[2];
-        $code = $data[3];
-        $name = $data[4];
-        $phone = $data[5];
-        $card_num = $data[6];
-        $state = $data[7] == "启用" ? 1 : 2;
+        $canteen = trim($data[0]);
+        $department = trim($data[1]);
+        $staffType = trim($data[2]);
+        $code = trim($data[3]);
+        $name = trim($data[4]);
+        $phone = trim($data[5]);
+        $card_num = trim($data[6]);
+        $state = trim($data[7]) == "启用" ? 1 : 2;
         $canteen_ids = [];
-        //判断人员类型是否存在
-        $t_id = $this->checkParamExits($types, $staffType);
-        if (!$t_id) {
-            $fail = [
-                'name' => $name,
-                'msg' => '系统中不存在该人员类型：' . $staffType
-            ];
-            return [
-                'res' => false,
-                'info' => $fail
-            ];
-        }
+
         //判断饭堂是否存在
         $canteen_arr = explode('|', $canteen);
         if (empty($canteen_arr)) {
@@ -338,6 +327,18 @@ class DepartmentService
             array_push($canteen_ids, $c_id);
         }
 
+        //判断人员类型是否存在
+        $t_id = $this->checkParamExits($types, $staffType);
+        if (!$t_id) {
+            $fail = [
+                'name' => $name,
+                'msg' => '系统中不存在该人员类型：' . $staffType
+            ];
+            return [
+                'res' => false,
+                'info' => $fail
+            ];
+        }
         //检测部门是否存在
         $d_id = $this->checkParamExits($departments, $department);
         if (!$d_id) {
