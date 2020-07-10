@@ -111,9 +111,38 @@ Index extends BaseController
 
     public function test()
     {
-        $data = (new ExcelService())->saveTestExcel();
-       //foreach ()
 
+        /* $company_id = 97;
+         $data = (new ExcelService())->saveTestExcel();
+         $fail = [];
+         foreach ($data as $k => $v) {
+             if ($k == 1 || empty($v[0])) {
+                 continue;
+             }
+                if ($k >200 && $k <= 300) {
+                //if ( $k <= 100) {
+                    $orderNum = $v[1];
+                    $phone = $v[20];
+                    $staff = CompanyStaffT::where('company_id', $company_id)
+                        ->where('state',CommonEnum::STATE_IS_OK)
+                        ->where('phone', $phone)
+                        ->find();
+                    if (!$staff) {
+                        array_push($fail, [
+                            'ordernumber' => $orderNum,
+                            'phone' => $phone
+                        ]);
+                    }
+                    PayT::update([
+                        'phone' => $phone,
+                        'username' => $staff->username,
+                        'staff_id' => $staff->id
+                    ], ['order_num' => $orderNum, 'company_id' => $company_id]);
+                }
+
+         }
+
+         return json($fail);*/
 
         /*
                 try {

@@ -40,7 +40,7 @@ class Printer extends PrinterBase
         $money = $order['money'] + $order['sub_money'];
         $fixed = $order['fixed'];
         $content = '<CB>' . $canteenName . '｜' . $sortCode . '</CB><BR>';
-        $content .= '订单号：' . $order['order_num'] . '<BR>';
+        $content .= '订单号：' . $orderID . '<BR>';
         $content .= '确认时间：' . $order['confirm_time'] . '<BR>';
         $content .= '餐次：' . $order['dinner']['name'] . '<BR>';
         $content .= '姓名：' . $name . '<BR>';
@@ -179,7 +179,7 @@ class Printer extends PrinterBase
         $money = $order['money'] + $order['sub_money'];
         $fixed = $order['fixed'];
         $content = '<CB>' . $canteenName . '｜' . $sortCode . '</CB><BR>';
-        $content .= '订单号：' . $order['order_num'] . '<BR>';
+        $content .= '订单号：' . $orderID . '<BR>';
         $content .= '确认时间：' . $order['confirm_time'] . '<BR>';
         $content .= '餐次：' . $order['dinner']['name'] . '<BR>';
         $content .= '姓名：' . $name . '<BR>';
@@ -313,7 +313,7 @@ class Printer extends PrinterBase
         $money = $order['money'] + $order['sub_money'] + $order['delivery_fee'];
         $fixed = $order['fixed'];
         $content = '<CB>' . $canteenName . '｜' . $orderID . '</CB><BR>';
-        $content .= '订单号：' . $order['order_num'] . '<BR>';
+        $content .= '订单号：' . $orderID . '<BR>';
         $content .= '餐次日期：' . $order['ordering_date'] . '<BR>';
         $content .= '餐次：' . $order['dinner']['name'] . '<BR>';
         $content .= '姓名：' . $name . '<BR>';
