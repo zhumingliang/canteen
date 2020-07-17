@@ -30,15 +30,15 @@ class Food extends BaseValidate
     ];
 
     protected $scene = [
-        'save' => ['f_type', 'c_id', 'm_id', 'name', 'price', 'chef', 'des', 'img_url'],
+        'save' => ['f_type', 'c_id', 'm_id', 'name', 'chef', 'des', 'img_url'],
         'foods' => ['f_type'],
         'handel' => ['id'],
         'update' => ['id'],
         'food' => ['id'],
-        'foodsForOfficialManager' => ['food_type','menu_id','day','canteen_id'],
-        'handelFoodsDayStatus' => ['food_id','status','default','day','canteen_id'],
+        'foodsForOfficialManager' => ['food_type', 'menu_id', 'day', 'canteen_id'],
+        'handelFoodsDayStatus' => ['food_id', 'status', 'default', 'day', 'canteen_id'],
         'foodsForOfficialPersonChoice' => ['dinner_id'],
-        'saveComment' => ['food_id','taste','service'],
+        'saveComment' => ['food_id', 'taste', 'service'],
         'infoToComment' => ['food_id'],
     ];
 }
