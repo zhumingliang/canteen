@@ -775,7 +775,7 @@ class OrderService extends BaseService
 
     }
 
-    private
+    public
     function checkOrderCanHandel($d_id, $ordering_date)
     {
         //获取餐次设置
@@ -813,7 +813,6 @@ class OrderService extends BaseService
         }
         return true;
     }
-
 
     private
     function checkOrderCanHandelToDetail($d_id, $ordering_date, $order_type)

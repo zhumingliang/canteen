@@ -116,7 +116,8 @@ class MachineToken extends Token
             'name' => $machine->name,
             'code' => $machine->code,
             'number' => $machine->number,
-            'type' => $machine->machine_type
+            'type' => $machine->machine_type,
+            'sort_code'=>$machine->sort_code
         ];
         return $cachedValue;
     }

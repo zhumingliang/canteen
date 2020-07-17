@@ -21,6 +21,7 @@ use http\Params;
 use think\Db;
 use think\Exception;
 use think\Request;
+use function GuzzleHttp\Promise\each_limit;
 use function GuzzleHttp\Psr7\str;
 
 class DepartmentService
@@ -220,7 +221,10 @@ class DepartmentService
                 //检测手机号是否已经存在
                 if (in_array($v[5], $phones)) {
                     $fail[] = "第" . $k . "数据有问题：手机号" . $v[5] . "系统已经存在";
-                    continue;
+                    break;
+                } else if (!$this->isMobile(in_array($v[5]))) {
+                    $fail[] = "第" . $k . "数据有问题：手机号格式错误";
+                    break;
                 } else {
                     array_push($phones, $v[5]);
                 }
@@ -260,6 +264,17 @@ class DepartmentService
 
     }
 
+    private function isMobile($value)
+    {
+        $rule = '^1[0-9][0-9]\d{8}$^';
+        $result = preg_match($rule, $value);
+        if ($result) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     private function getCompanyStaffsPhone($company_id)
     {
         $staffs = CompanyStaffT::staffs($company_id);
@@ -272,6 +287,7 @@ class DepartmentService
 
     private function validateParams($company_id, $param_key, $data, $types, $canteens, $departments, $len = 7)
     {
+        $state = ['启用', '停用'];
         foreach ($data as $k => $v) {
             if ($k >= $len) {
                 break;
@@ -288,6 +304,7 @@ class DepartmentService
                 break;
             }
         }
+
         $canteen = trim($data[0]);
         $department = trim($data[1]);
         $staffType = trim($data[2]);
@@ -295,9 +312,19 @@ class DepartmentService
         $name = trim($data[4]);
         $phone = trim($data[5]);
         $card_num = trim($data[6]);
-        $state = trim($data[7]) == "启用" ? 1 : 2;
         $canteen_ids = [];
 
+        if (!in_array($data[7], $state)) {
+            $fail = [
+                'name' => $name,
+                'msg' => '状态错误'
+            ];
+            return [
+                'res' => false,
+                'info' => $fail
+            ];
+        }
+        $state = trim($data[7]) == "启用" ? 1 : 2;
         //判断饭堂是否存在
         $canteen_arr = explode('|', $canteen);
         if (empty($canteen_arr)) {
