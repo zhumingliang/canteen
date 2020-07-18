@@ -4,6 +4,7 @@
 namespace app\api\service;
 
 
+use app\api\model\JobLogT;
 use app\api\model\LogT;
 
 class LogService
@@ -14,6 +15,14 @@ class LogService
             'content' => $msg
         ]);
 
+    }
+
+    public static function saveJob($msg, $data = '')
+    {
+        JobLogT::create([
+            'content' => $msg,
+            'data' => $data
+        ]);
     }
 
 }

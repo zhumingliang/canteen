@@ -35,11 +35,12 @@ class SendSort
         $isJobDone = $this->doJob($data);
         if ($isJobDone) {
             // 如果任务执行成功，删除任务
+            LogService::saveJob("<warn>饭堂排队队列执行成功" . "</warn>\n");
             $job->delete();
         } else {
             if ($job->attempts() > 10) {
                 //通过这个方法可以检查这个任务已经重试了几次了
-                LogService::save("<warn>饭堂排队队列已经重试超过3次，现在已经删除该任务" . "</warn>\n");
+                LogService::saveJob("<warn>饭堂排队队列已经重试超过10次，现在已经删除该任务" . "</warn>\n");
                 $job->delete();
             } else {
                 $job->release(30); //重发任务
@@ -54,7 +55,7 @@ class SendSort
     public function failed($data)
     {
         //可以发送邮件给相应的负责人员
-        LogService::save("失败:" . json_encode($data));
+        LogService::saveJob("发送排序失败:" . json_encode($data));
     }
 
     /**
@@ -76,28 +77,33 @@ class SendSort
      */
     private function doJob($data)
     {
-        $canteenID = $data['canteenID'];
-       // $outsider = $data['outsider'];
-        $orderID = $data['orderID'];
-        $sortCode = $data['sortCode'];
-        $websocketCode = $data['websocketCode'];
-        $order = OrderT::get($orderID);
-        $outsider = $order->outsider;
-        $machine = MachineT::getSortMachine($canteenID, $outsider);
-        if ($machine) {
-            $sendData = [
-                'errorCode' => 0,
-                'msg' => 'success',
-                'type' => 'sort',
-                'data' => [
-                    'orderID' => $orderID,
-                    'sortCode' => $sortCode,
-                    'websocketCode' => $websocketCode
-                ]
-            ];
-            GatewayService::sendToMachine($machine->id, json_encode($sendData));
+        try {
+            $canteenID = $data['canteenID'];
+            // $outsider = $data['outsider'];
+            $orderID = $data['orderID'];
+            $sortCode = $data['sortCode'];
+            $websocketCode = $data['websocketCode'];
+            $order = OrderT::get($orderID);
+            $outsider = $order->outsider;
+            $machine = MachineT::getSortMachine($canteenID, $outsider);
+            if ($machine) {
+                $sendData = [
+                    'errorCode' => 0,
+                    'msg' => 'success',
+                    'type' => 'sort',
+                    'data' => [
+                        'orderID' => $orderID,
+                        'sortCode' => $sortCode,
+                        'websocketCode' => $websocketCode
+                    ]
+                ];
+                GatewayService::sendToMachine($machine->id, json_encode($sendData));
 
+            }
+        } catch (Exception $e) {
+            LogService::saveJob("发送排序失败：error:" . $e->getMessage(), json_encode($data));
         }
+
     }
 
 

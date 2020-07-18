@@ -31,15 +31,15 @@ class SendNotice
         $isJobDone = $this->doJob($data);
         if ($isJobDone) {
             // 如果任务执行成功，删除任务
+            LogService::saveJob("<warn>公告队列任务执行成功！" . "</warn>\n", json_encode($data));
             $job->delete();
         } else {
-            LogService::save("<warn>任务执行失败！" . "</warn>\n");
+            LogService::saveJob("<warn>公告队列任务执行失败！" . "</warn>\n", json_encode($data));
             if ($job->attempts() > 3) {
                 //通过这个方法可以检查这个任务已经重试了几次了
-                LogService::save("<warn>公告队列已经重试超过3次，现在已经删除该任务" . "</warn>\n");
+                LogService::saveJob("<warn>公告队列已经重试超过3次，现在已经删除该任务" . "</warn>\n");
                 $job->delete();
             } else {
-                LogService::save("<info>公告执行该任务!第" . $job->attempts() . "次</info>\n");
                 $job->release(3); //重发任务
             }
         }
@@ -106,13 +106,14 @@ class SendNotice
             if (count($data_list)) {
                 $res = (new NoticeUserT())->saveAll($data_list);
                 if (!$res) {
-                    LogService::save('sendNotice:失败');
+                    LogService::saveJob('sendNotice:失败', json_encode($data));
                 }
             }
 
             Db::commit();
             return true;
         } catch (Exception $e) {
+            LogService::saveJob('sendNotice:失败' . $e->getMessage(), json_encode($data));
             Db::rollback();
             return false;
         }
