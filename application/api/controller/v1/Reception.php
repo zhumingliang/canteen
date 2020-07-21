@@ -37,7 +37,7 @@ class Reception extends BaseController
     public function save()
     {
         //获取微信用户id
-        $userID = TokenService::getCurrentUid('user_id');
+        $userID = TokenService::getCurrentUid();
         //$userID = '86';
         //接收前端传来信息
         $staffID = Request::param('staff_id');
@@ -177,7 +177,7 @@ class Reception extends BaseController
             if (count($dtResult) > 0) {
                 $receptionUrl = $dtResult[0]["url"];
                 $receptionUrl = 'http://' . $_SERVER['HTTP_HOST'] . $receptionUrl;
-                $data = ['url'=>$receptionUrl];
+                $data = ['url' => $receptionUrl];
                 return json(new SuccessMessageWithData(['data' => $data]));
             }
         }
@@ -282,7 +282,7 @@ class Reception extends BaseController
         $count = DB::query($count);
         $total = count($count);
 
-        $data=['total' => $total,'per_page' => 5,'current_page' => $page,'data'=>$dtResult];
+        $data = ['total' => $total, 'per_page' => 5, 'current_page' => $page, 'data' => $dtResult];
         return json(new SuccessMessageWithData(['data' => $data]));
     }
 
@@ -344,7 +344,7 @@ class Reception extends BaseController
         $count = DB::query($count);
         $total = count($count);
 
-        $data=['total' => $total,'per_page' => 5,'current_page' => $page,'data'=>$dtResult];
+        $data = ['total' => $total, 'per_page' => 5, 'current_page' => $page, 'data' => $dtResult];
         return json(new SuccessMessageWithData(['data' => $data]));
     }
 
@@ -353,7 +353,7 @@ class Reception extends BaseController
      */
     public function receptionsForOfficial($page = 1, $size = 5)
     {
-        $user_id = TokenService::getCurrentTokenVar('user_id');
+        $user_id = TokenService::getCurrentUid();
         //$user_id = '43';
         $canteen_id = Request::param('canteen_id');
         $whereStr = '';
@@ -378,7 +378,7 @@ class Reception extends BaseController
         $count = DB::query($count);
         $total = count($count);
 
-        $data=['total' => $total,'per_page' => 5,'current_page' => $page,'data'=>$dtResult];
+        $data = ['total' => $total, 'per_page' => 5, 'current_page' => $page, 'data' => $dtResult];
         return json(new SuccessMessageWithData(['data' => $data]));
     }
 
@@ -387,7 +387,7 @@ class Reception extends BaseController
      */
     public function applySubmitted($page = 1, $size = 5)
     {
-        $user_id = TokenService::getCurrentTokenVar('user_id');
+        $user_id = TokenService::getCurrentUid();
         //$user_id = '43';
         if (empty($user_id)) {
             throw  new  AuthException(['msg' => '用户id不能为空']);
@@ -398,7 +398,7 @@ class Reception extends BaseController
         $count = DB::query($count);
         $total = count($count);
 
-        $data=['total' => $total,'per_page' => 5,'current_page' => $page,'data'=>$dtResult];
+        $data = ['total' => $total, 'per_page' => 5, 'current_page' => $page, 'data' => $dtResult];
         return json(new SuccessMessageWithData(['data' => $data]));
     }
 
