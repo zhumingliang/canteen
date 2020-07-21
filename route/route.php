@@ -142,12 +142,17 @@ Route::get('api/:version/material/exportMaterialReports', 'api/:version.Material
 Route::get('api/:version/material/exportOrderMaterials', 'api/:version.Material/exportOrderMaterials');
 
 Route::post('api/:version/reception/save', 'api/:version.Reception/save');
-Route::post('api/:version/reception/update', 'api/:version.Reception/update');
 Route::post('api/:version/reception/handel', 'api/:version.Reception/handel');
-Route::get('api/:version/reception', 'api/:version.Reception/reception');
-Route::get('api/:version/receptions/cms', 'api/:version.Reception/receptionsForCMS');
-Route::get('api/:version/receptions/official', 'api/:version.Reception/receptionsForOfficial');
-
+Route::get('api/:version/reception/getReceptionDetails', 'api/:version.Reception/getReceptionDetails');
+Route::get('api/:version/reception/userInfo', 'api/:version.Reception/userInfo');
+Route::get('api/:version/reception/receptionsForOfficial', 'api/:version.Reception/receptionsForOfficial');
+Route::get('api/:version/reception/receptionsForCMS', 'api/:version.Reception/receptionsForCMS');
+Route::post('api/:version/reception/getReceptionMoney', 'api/:version.Reception/getReceptionMoney');
+Route::get('api/:version/reception/receptionsForApply', 'api/:version.Reception/receptionsForApply');
+Route::get('api/:version/reception/receptionsForCMSOutput', 'api/:version.Reception/receptionsForCMSOutput');
+Route::get('api/:version/reception/receptionsForApplyOutput', 'api/:version.Reception/receptionsForApplyOutput');
+Route::get('api/:version/reception/applySubmitted', 'api/:version.Reception/applySubmitted');
+Route::get('api/:version/reception/applyDetails', 'api/:version.Reception/applyDetails');
 
 Route::rule('api/:version/weixin/server', 'api/:version.WeiXin/server');
 Route::rule('api/:version/weixin/menu/save', 'api/:version.WeiXin/createMenu');
