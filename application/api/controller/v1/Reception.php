@@ -163,7 +163,6 @@ class Reception extends BaseController
         $ordering_date = Request::param('ordering_date');
         $dinner_id = Request::param('dinner_id');
         $receptionUrl = '';
-        $result = [];
         $date = date('Y-m-d H:i:s');
         if ($type == "cancelReception") {
             $sql = "update canteen_reception_qrcode_t set status = 3,update_time = '" . $date . "' where code_number =" . $reception_code;
@@ -241,7 +240,7 @@ class Reception extends BaseController
         $whereStr = '';
 
         if (!empty($company_id)) {
-            if ($company_id !== "All") {
+            if ($company_id !== "ALL") {
                 $whereStr .= 'and t5.id = ' . $company_id . ' ';
             }
         }
@@ -252,12 +251,12 @@ class Reception extends BaseController
             $whereStr .= 'and t1.ordering_date = ' . "'$ordering_date'" . ' ';
         }
         if (!empty($dinner_id)) {
-            if ($dinner_id !== "All") {
+            if ($dinner_id !== "ALL") {
                 $whereStr .= 'and t2.id = ' . $dinner_id . ' ';
             }
         }
         if (!empty($department_id)) {
-            if ($department_id !== "All") {
+            if ($department_id !== "ALL") {
                 $whereStr .= 'and t4.id = ' . $department_id . ' ';
             }
         }
@@ -268,7 +267,7 @@ class Reception extends BaseController
             $whereStr .= 'and t1.code_number = ' . "'$apply_code'" . ' ';
         }
         if (!empty($apply_state)) {
-            if ($apply_state !== "All") {
+            if ($apply_state !== "ALL") {
                 $whereStr .= 'and t1.status = ' . $apply_state . ' ';
             }
         }
@@ -281,7 +280,7 @@ class Reception extends BaseController
         }
         $dtResult = Db::query($sql, [($page - 1) * $size, $size]);
         $count = DB::query($count);
-        $total = $count[0]['count'];
+        $total = count($count);
 
         $data=['total' => $total,'per_page' => 5,'current_page' => $page,'data'=>$dtResult];
         return json(new SuccessMessageWithData(['data' => $data]));
@@ -301,12 +300,12 @@ class Reception extends BaseController
         $reception_state = Request::param('reception_state');
         $whereStr = '';
         if (!empty($company_id)) {
-            if ($company_id !== "All") {
+            if ($company_id !== "ALL") {
                 $whereStr .= 'and t7.id = ' . $company_id . ' ';
             }
         }
         if (!empty($canteen_id)) {
-            if ($canteen_id !== "All") {
+            if ($canteen_id !== "ALL") {
                 $whereStr .= 'and t3.id = ' . $canteen_id . ' ';
             }
         }
@@ -314,12 +313,12 @@ class Reception extends BaseController
             $whereStr .= 'and t2.ordering_date = ' . "'$ordering_date'" . ' ';
         }
         if (!empty($dinner_id)) {
-            if ($dinner_id !== "All") {
+            if ($dinner_id !== "ALL") {
                 $whereStr .= 'and t4.id = ' . $dinner_id . ' ';
             }
         }
         if (!empty($department_id)) {
-            if ($department_id !== "All") {
+            if ($department_id !== "ALL") {
                 $whereStr .= 'and t6.id = ' . $department_id . ' ';
             }
         }
@@ -330,7 +329,7 @@ class Reception extends BaseController
             $whereStr .= 'and t1.code_number = ' . "'$reception_code'" . ' ';
         }
         if (!empty($reception_state)) {
-            if ($reception_state !== "All") {
+            if ($reception_state !== "ALL") {
                 $whereStr .= 'and t1.status = ' . $reception_state . ' ';
             }
         }
@@ -343,7 +342,7 @@ class Reception extends BaseController
         }
         $dtResult = Db::query($sql, [($page - 1) * $size, $size]);
         $count = DB::query($count);
-        $total = $count[0]['count'];
+        $total = count($count);
 
         $data=['total' => $total,'per_page' => 5,'current_page' => $page,'data'=>$dtResult];
         return json(new SuccessMessageWithData(['data' => $data]));
@@ -364,7 +363,7 @@ class Reception extends BaseController
             $whereStr .= 'and t2.user_id = ' . $user_id . ' ';
         }
         if (!empty($canteen_id)) {
-            if ($canteen_id !== "All") {
+            if ($canteen_id !== "ALL") {
                 $whereStr .= 'and t3.id = ' . $canteen_id . ' ';
             }
         }
@@ -377,7 +376,7 @@ class Reception extends BaseController
         }
         $dtResult = Db::query($sql, [($page - 1) * $size, $size]);
         $count = DB::query($count);
-        $total = $count[0]['count'];
+        $total = count($count);
 
         $data=['total' => $total,'per_page' => 5,'current_page' => $page,'data'=>$dtResult];
         return json(new SuccessMessageWithData(['data' => $data]));
@@ -397,7 +396,7 @@ class Reception extends BaseController
         $count = "select count(*) as count from canteen_reception_t t1 left join canteen_dinner_t t2 ON t1.dinner_id = t2.id left join canteen_company_staff_t t3 ON t1.staff_id = t3.id where 1 = 1 and t3.state = 1 and t1.user_id = " . $user_id . " order by t1.create_time desc";
         $dtResult = Db::query($sql, [($page - 1) * $size, $size]);
         $count = DB::query($count);
-        $total = $count[0]['count'];
+        $total = count($count);
 
         $data=['total' => $total,'per_page' => 5,'current_page' => $page,'data'=>$dtResult];
         return json(new SuccessMessageWithData(['data' => $data]));
@@ -410,7 +409,7 @@ class Reception extends BaseController
     {
         $apply_code = Request::param('apply_code');
         if (empty($apply_code)) {
-            throw new SaveException(['msg' => '申请编号不能为空']);
+            throw new AuthException(['msg' => '申请编号不能为空']);
         } else {
             $sql = "select t1.code_number as apply_code,t1.create_time as apply_time,t1.ordering_date,t2.name as dinner_name, t4.name as department_name,t3.username as apply_name,t1.count,t1.money,t1.remark,(case when t1.status = 1 then '审核中' when t1.status = 2 then '已生效' when t1.status = 3 then '审核不通过' when t1.status = 4 then '已撤销' end) as apply_state, (case when t1.status = 4 then t1.cancel_time else t1.update_time end) as approval_time,t1.content as approval_opinions,GROUP_CONCAT(t7.code_number ) as reception_code from canteen_reception_t t1 left join canteen_dinner_t t2 ON t1.dinner_id = t2.id left join canteen_company_staff_t t3 ON t1.staff_id = t3.id left join canteen_company_department_t t4 ON t3.d_id = t4.id left join canteen_company_t t5 ON t3.company_id = t5.id left join canteen_canteen_t t6 ON t1.canteen_id = t6.id left join canteen_reception_qrcode_t t7 on t1.id = t7.re_id where t1.code_number = " . "'$apply_code'" . " group by  t1.code_number,t1.create_time,t1.ordering_date,t2.name,t4.name,t3.username,t1.count,t1.money,t1.remark,t1.status, t1.update_time,t1.cancel_time,t1.content";
             $dtResult = Db::query($sql);
@@ -479,12 +478,12 @@ class Reception extends BaseController
         $reception_state = Request::param('reception_state');
         $whereStr = '';
         if (!empty($company_id)) {
-            if ($company_id !== "All") {
+            if ($company_id !== "ALL") {
                 $whereStr .= 'and t7.id =' . $company_id . ' ';
             }
         }
         if (!empty($canteen_id)) {
-            if ($canteen_id !== "All") {
+            if ($canteen_id !== "ALL") {
                 $whereStr .= 'and t3.id =' . $canteen_id . ' ';
             }
         }
@@ -492,12 +491,12 @@ class Reception extends BaseController
             $whereStr .= 'and t2.ordering_date =' . "'$ordering_date'" . ' ';
         }
         if (!empty($dinner_id)) {
-            if ($dinner_id !== "All") {
+            if ($dinner_id !== "ALL") {
                 $whereStr .= 'and t4.id =' . $dinner_id . ' ';
             }
         }
         if (!empty($department_id)) {
-            if ($department_id !== "All") {
+            if ($department_id !== "ALL") {
                 $whereStr .= 'and t6.id =' . $department_id . ' ';
             }
         }
@@ -508,7 +507,7 @@ class Reception extends BaseController
             $whereStr .= 'and t1.code_number =' . "'$reception_code'" . ' ';
         }
         if (!empty($reception_state)) {
-            if ($reception_state !== "All") {
+            if ($reception_state !== "ALL") {
                 $whereStr .= 'and t1.status =' . $reception_state . ' ';
             }
         }
@@ -543,7 +542,7 @@ class Reception extends BaseController
         $whereStr = '';
 
         if (!empty($company_id)) {
-            if ($company_id !== "All") {
+            if ($company_id !== "ALL") {
                 $whereStr .= 'and t5.id = ' . $company_id . ' ';
             }
         }
@@ -554,12 +553,12 @@ class Reception extends BaseController
             $whereStr .= 'and t1.ordering_date = ' . "'$ordering_date'" . ' ';
         }
         if (!empty($dinner_id)) {
-            if ($dinner_id !== "All") {
+            if ($dinner_id !== "ALL") {
                 $whereStr .= 'and t2.id = ' . $dinner_id . ' ';
             }
         }
         if (!empty($department_id)) {
-            if ($department_id !== "All") {
+            if ($department_id !== "ALL") {
                 $whereStr .= 'and t4.id = ' . $department_id . ' ';
             }
         }
@@ -570,7 +569,7 @@ class Reception extends BaseController
             $whereStr .= 'and t1.code_number = ' . "'$apply_code'" . ' ';
         }
         if (!empty($apply_state)) {
-            if ($apply_state !== "All") {
+            if ($apply_state !== "ALL") {
                 $whereStr .= 'and t1.status = ' . $apply_state . ' ';
             }
         }
