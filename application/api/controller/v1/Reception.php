@@ -12,9 +12,6 @@ use app\api\service\QrcodeService;
 use app\api\service\Token;
 use app\api\service\Token as TokenService;
 use app\lib\enum\CommonEnum;
-use app\lib\exception\DeleteException;
-use app\lib\exception\SaveException;
-use app\lib\exception\UpdateException;
 use think\Container;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\ModelNotFoundException;
@@ -151,13 +148,7 @@ class Reception extends BaseController
 
             }
         }
-
-        $result = [
-            'code' => '200',
-            'msg' => '申请成功',
-            'data' => $dtResult
-        ];
-        return json($result);
+        return json(new SuccessMessageWithData(['data' => $dtResult]));
     }
 
     /**
@@ -178,10 +169,7 @@ class Reception extends BaseController
             $sql = "update canteen_reception_qrcode_t set status = 3,update_time = '" . $date . "' where code_number =" . $reception_code;
             $affRows = Db::execute($sql);
             if ($affRows > 0) {
-                $result = [
-                    'code' => '200',
-                    'msg' => '取消接待票成功'
-                ];
+                return json(new SuccessMessage());
             }
         }
         if ($type == "getQrcode") {
@@ -189,33 +177,23 @@ class Reception extends BaseController
             $dtResult = Db::query($sql);
             if (count($dtResult) > 0) {
                 $receptionUrl = $dtResult[0]["url"];
-                $url = 'http://' . $_SERVER['HTTP_HOST'];
-                $receptionUrl = $url . $receptionUrl;
-                $result = [
-                    'code' => '200',
-                    'msg' => 'ok',
-                    'url' => $receptionUrl
-                ];
+                $receptionUrl = 'http://' . $_SERVER['HTTP_HOST'] . $receptionUrl;
+                $data = ['url'=>$receptionUrl];
+                return json(new SuccessMessageWithData(['data' => $data]));
             }
         }
         if ($type == "cancelApply") {
             $sql = "update canteen_reception_t set status = 4,update_time = '" . $date . "',cancel_time = '" . $date . "' where code_number = " . $apply_code;
             $affRows = Db::execute($sql);
             if ($affRows > 0) {
-                $result = [
-                    'code' => '200',
-                    'msg' => '取消申请成功'
-                ];
+                return json(new SuccessMessage());
             }
         }
         if ($type == "refuseApply") {
             $sql = "update canteen_reception_t set status = 3,update_time = '" . $date . "',content = '" . $content . "' where code_number = " . $apply_code;
             $affRows = Db::execute($sql);
             if ($affRows > 0) {
-                $result = [
-                    'code' => '200',
-                    'msg' => '拒绝申请成功'
-                ];
+                return json(new SuccessMessage());
             }
         }
         if ($type == "agreeApply") {
@@ -224,19 +202,12 @@ class Reception extends BaseController
                 $sql = "update canteen_reception_t set status = 2,update_time = '" . $date . "',content = '" . $content . "' where code_number = " . $apply_code;
                 $affRows = Db::execute($sql);
                 if ($affRows > 0) {
-                    $result = [
-                        'code' => '200',
-                        'msg' => '审核成功'
-                    ];
+                    return json(new SuccessMessage());
                 }
             } else {
-                $result = [
-                    'code' => '200',
-                    'msg' => '订餐操作时间已截止,无法审核'
-                ];
+                throw  new UpdateException(['msg' => '订餐时间已截止']);
             }
         }
-        return json($result);
     }
 
     /**
@@ -245,23 +216,13 @@ class Reception extends BaseController
     public function getReceptionDetails()
     {
         $apply_code = Request::param('apply_code');
-        if (!empty($apply_code)) {
+        if (empty($apply_code)) {
+            throw  new  AuthException(['msg' => '申请编号不能为空']);
+        } else {
             $sql = "select t1.code_number as apply_code,t1.create_time as apply_time,t1.ordering_date,t2.name as dinner_name, t4.name as department_name,t3.username as apply_name,t1.count,t1.money,(t1.count*t1.money) as sum,t1.remark,(case when t1.status = 1 then '审核中' when t1.status = 2 then '已生效' when t1.status = 3 then '审核不通过' when t1.status = 4 then '已撤销' end) as apply_state, (case when t1.status = 4 then t1.cancel_time else t1.update_time end) as approval_time,t1.content as approval_opinions,GROUP_CONCAT(t7.code_number ) as reception_code from canteen_reception_t t1 left join canteen_dinner_t t2 ON t1.dinner_id = t2.id left join canteen_company_staff_t t3 ON t1.staff_id = t3.id left join canteen_company_department_t t4 ON t3.d_id = t4.id left join canteen_company_t t5 ON t3.company_id = t5.id left join canteen_canteen_t t6 ON t1.canteen_id = t6.id left join canteen_reception_qrcode_t t7 on t1.id = t7.re_id where t1.code_number = " . "'$apply_code'" . " group by  t1.code_number,t1.create_time,t1.ordering_date,t2.name,t4.name,t3.username,t1.count,t1.money,t1.remark,t1.status, t1.update_time,t1.cancel_time,t1.content";
             $dtResult = Db::query($sql);
-            $result = [
-                'code' => '200',
-                'msg' => 'ok',
-                'data' => $dtResult
-            ];
-        } else {
-            $result = [
-                'code' => '200',
-                'msg' => '查询失败，申请编号不能为空',
-                'data' => ''
-            ];
-        };
-
-        return json($result);
+            return json(new SuccessMessageWithData(['data' => $dtResult]));
+        }
     }
 
     /**
@@ -321,15 +282,9 @@ class Reception extends BaseController
         $dtResult = Db::query($sql, [($page - 1) * $size, $size]);
         $count = DB::query($count);
         $total = $count[0]['count'];
-        $result = [
-            'code' => '200',
-            'msg' => 'ok',
-            'total' => $total,
-            'per_page' => 10,
-            'current_page' => $page,
-            'data' => $dtResult
-        ];
-        return json($result);
+
+        $data=['total' => $total,'per_page' => 5,'current_page' => $page,'data'=>$dtResult];
+        return json(new SuccessMessageWithData(['data' => $data]));
     }
 
     /**
@@ -389,15 +344,9 @@ class Reception extends BaseController
         $dtResult = Db::query($sql, [($page - 1) * $size, $size]);
         $count = DB::query($count);
         $total = $count[0]['count'];
-        $result = [
-            'code' => '200',
-            'msg' => 'ok',
-            'total' => $total,
-            'per_page' => 10,
-            'current_page' => $page,
-            'data' => $dtResult
-        ];
-        return json($result);
+
+        $data=['total' => $total,'per_page' => 5,'current_page' => $page,'data'=>$dtResult];
+        return json(new SuccessMessageWithData(['data' => $data]));
     }
 
     /**
@@ -429,15 +378,9 @@ class Reception extends BaseController
         $dtResult = Db::query($sql, [($page - 1) * $size, $size]);
         $count = DB::query($count);
         $total = $count[0]['count'];
-        $result = [
-            'code' => '200',
-            'msg' => 'ok',
-            'total' => $total,
-            'per_page' => 5,
-            'current_page' => $page,
-            'data' => $dtResult
-        ];
-        return json($result);
+
+        $data=['total' => $total,'per_page' => 5,'current_page' => $page,'data'=>$dtResult];
+        return json(new SuccessMessageWithData(['data' => $data]));
     }
 
     /**
@@ -450,21 +393,14 @@ class Reception extends BaseController
         if (empty($user_id)) {
             throw  new  AuthException(['msg' => '用户id不能为空']);
         }
-
         $sql = "select t1.code_number as apply_code,t1.create_time as apply_time,t1.ordering_date,t2.name as dinner_name,t3.username as apply_name,t1.count,(case when t1.status = 1 then '审核中' when t1.status = 2 then '已生效' when t1.status = 3 then '审核不通过' when t1.status = 4 then '已撤销' end) as apply_state from canteen_reception_t t1 left join canteen_dinner_t t2 ON t1.dinner_id = t2.id left join canteen_company_staff_t t3 ON t1.staff_id = t3.id where 1 = 1 and t3.state = 1 and t1.user_id = " . $user_id . " order by t1.create_time desc limit ?,?";
         $count = "select count(*) as count from canteen_reception_t t1 left join canteen_dinner_t t2 ON t1.dinner_id = t2.id left join canteen_company_staff_t t3 ON t1.staff_id = t3.id where 1 = 1 and t3.state = 1 and t1.user_id = " . $user_id . " order by t1.create_time desc";
         $dtResult = Db::query($sql, [($page - 1) * $size, $size]);
         $count = DB::query($count);
         $total = $count[0]['count'];
-        $result = [
-            'code' => '200',
-            'msg' => 'ok',
-            'total' => $total,
-            'per_page' => 5,
-            'current_page' => $page,
-            'data' => $dtResult
-        ];
-        return json($result);
+
+        $data=['total' => $total,'per_page' => 5,'current_page' => $page,'data'=>$dtResult];
+        return json(new SuccessMessageWithData(['data' => $data]));
     }
 
     /**
@@ -473,23 +409,13 @@ class Reception extends BaseController
     public function applyDetails()
     {
         $apply_code = Request::param('apply_code');
-        if (!empty($apply_code)) {
+        if (empty($apply_code)) {
+            throw new SaveException(['msg' => '申请编号不能为空']);
+        } else {
             $sql = "select t1.code_number as apply_code,t1.create_time as apply_time,t1.ordering_date,t2.name as dinner_name, t4.name as department_name,t3.username as apply_name,t1.count,t1.money,t1.remark,(case when t1.status = 1 then '审核中' when t1.status = 2 then '已生效' when t1.status = 3 then '审核不通过' when t1.status = 4 then '已撤销' end) as apply_state, (case when t1.status = 4 then t1.cancel_time else t1.update_time end) as approval_time,t1.content as approval_opinions,GROUP_CONCAT(t7.code_number ) as reception_code from canteen_reception_t t1 left join canteen_dinner_t t2 ON t1.dinner_id = t2.id left join canteen_company_staff_t t3 ON t1.staff_id = t3.id left join canteen_company_department_t t4 ON t3.d_id = t4.id left join canteen_company_t t5 ON t3.company_id = t5.id left join canteen_canteen_t t6 ON t1.canteen_id = t6.id left join canteen_reception_qrcode_t t7 on t1.id = t7.re_id where t1.code_number = " . "'$apply_code'" . " group by  t1.code_number,t1.create_time,t1.ordering_date,t2.name,t4.name,t3.username,t1.count,t1.money,t1.remark,t1.status, t1.update_time,t1.cancel_time,t1.content";
             $dtResult = Db::query($sql);
-            $result = [
-                'code' => '200',
-                'msg' => 'ok',
-                'data' => $dtResult
-            ];
-        } else {
-            $result = [
-                'code' => '200',
-                'msg' => '查询失败，申请编号不能为空',
-                'data' => ''
-            ];
-        };
-
-        return json($result);
+            return json(new SuccessMessageWithData(['data' => $dtResult]));
+        }
     }
 
     /**
@@ -515,8 +441,8 @@ class Reception extends BaseController
             ->where('c_id', $company_id)
             ->find();
         $deptmentName = $dept['name'];
-
-        return json(new SuccessMessageWithData(['data' => ['staff_id' => $staff_id, 'username' => $username, 'deptmentName' => $deptmentName]]));
+        $data = ['staff_id' => $staff_id, 'username' => $username, 'deptmentName' => $deptmentName];
+        return json(new SuccessMessageWithData(['data' => $data]));
     }
 
     /**
@@ -528,14 +454,15 @@ class Reception extends BaseController
         if (empty($canteen_id)) {
             throw  new  AuthException(['msg' => '饭堂不存在']);
         }
-        $receptionMoney = db('canteen_reception_config_t')->where('canteen_id', $canteen_id)
+        $receptionMoney = db('reception_config_t')->where('canteen_id', $canteen_id)
             ->where('state', CommonEnum::STATE_IS_OK)
             ->find();
         $money = $receptionMoney['money'];
         if (empty($money)) {
             throw  new  AuthException(['msg' => '该饭堂未配置接待票金额']);
         }
-        return json(new SuccessMessageWithData(['data' => ['money' => $money]]));
+        $data = ['money' => $money];
+        return json(new SuccessMessageWithData(['data' => $data]));
     }
 
     /**
@@ -595,7 +522,9 @@ class Reception extends BaseController
         $header = ['申请编号', '接待票编号', '饭堂', '餐次日期', '餐次', '部门', '使用人', '金额', '状态', '消费时间/取消时间'];
         $file_name = "接待票统计表";
         $url = (new ExcelService())->makeExcel($header, $records, $file_name);
-        return json(new SuccessMessageWithData(['data' => 'http://' . $_SERVER['HTTP_HOST'] . $url]));
+        $data = ['url' => 'http://' . $_SERVER['HTTP_HOST'] . $url];
+        return json(new SuccessMessageWithData(['data' => $data]));
+
     }
 
     /**
@@ -655,7 +584,8 @@ class Reception extends BaseController
         $header = ['申请编号', '申请时间', '餐次日期', '餐次', '部门', '申请人', '数量', '金额', '合计', '申请原因', '状态'];
         $file_name = "接待票申请表";
         $url = (new ExcelService())->makeExcel($header, $records, $file_name);
-        return json(new SuccessMessageWithData(['data' => 'http://' . $_SERVER['HTTP_HOST'] . $url]));
+        $data = ['url' => 'http://' . $_SERVER['HTTP_HOST'] . $url];
+        return json(new SuccessMessageWithData(['data' => $data]));
     }
 
     /**
@@ -684,27 +614,6 @@ class Reception extends BaseController
             $list[] = $num;
         }
         return $list;
-    }
-
-    public function returnDemo()
-    {
-
-
-        //遇到异常直接throw 不需要return
-        $msg = "错误描述";
-        throw  new UpdateException(['msg' => $msg]);
-        throw new DeleteException(['msg' => $msg]);
-        throw new SaveException(['msg' => $msg]);
-
-
-        //操作正确返回无数据
-        return json(new SuccessMessage());
-
-        //需要返回的数据
-        $data = [];
-        return json(new SuccessMessageWithData(['data' => $data]));
-
-
     }
 
 }
