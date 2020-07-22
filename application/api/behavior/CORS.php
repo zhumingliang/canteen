@@ -25,6 +25,7 @@ class CORS
         $allowOrigin = array(
             'https://cloudcanteen3.51canteen.com',
             'http://cloudcanteen3.51canteen.cn',
+            'http://test-www.51canteen.cn'
         );
 
         if (in_array($origin, $allowOrigin)) {
