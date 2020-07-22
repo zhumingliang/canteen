@@ -154,6 +154,8 @@ class CanteenService
                 $reception = json_decode($params['reception_config'], true);
                 $this->prefixReception($reception, $c_id);
             }
+
+
             Db::commit();
         } catch (Exception $e) {
             Db::rollback();
@@ -186,6 +188,21 @@ class CanteenService
         }
 
     }
+
+    private function prefixReceptionConfig($reception_config, $canteen_id)
+    {
+        if (key_exists('id', $reception_config)) {
+            $outConfig = ReceptionConfigT::update($reception_config);
+        } else {
+            $reception_config['canteen_id'] = $canteen_id;
+            $outConfig = ReceptionConfigT::create($reception_config);
+        }
+        if (!$outConfig) {
+            throw new SaveException(['msg' => '处理接待票配置失败']);
+        }
+
+    }
+
 
     private function prefixCanteenAddress($canteen_id, $address, $cancel)
     {
@@ -360,6 +377,12 @@ class CanteenService
                     $cancel = $address['cancel'];
                 }
                 $this->prefixCanteenAddress($c_id, $add, $cancel);
+            }
+
+
+            if (!empty($params['reception_config'])) {
+                $reception = json_decode($params['reception_config'], true);
+                $this->prefixReceptionConfig($reception, $c_id);
             }
             Db::commit();
         } catch (Exception$e) {
