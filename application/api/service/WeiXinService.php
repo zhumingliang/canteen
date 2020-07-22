@@ -19,7 +19,11 @@ class WeiXinService
     public function createMenu($version)
     {
 
-        $url = "https://cloudcanteen3.51canteen.com/canteen3/wxcms";
+        if ($version == "dev") {
+            $url = "http://test-www.51canteen.cn/wxcms";
+        } else {
+            $url = "https://cloudcanteen3.51canteen.com/canteen3/wxcms";
+        }
         $menus = [
             [
                 "name" => "云饭堂3.0",
@@ -31,7 +35,6 @@ class WeiXinService
                 ]
             ]
         ];
-        print_r($menus);
         $res = $this->app->menu->create($menus);
         if (!$res) {
             throw new WeChatException(['msg' => '创建菜单失败']);

@@ -27,7 +27,7 @@ class WeiXin extends BaseController
         $app->server->serve()->send();
     }
 
-    public function createMenu($version = 1)
+    public function createMenu($version = "dev")
     {
         (new WeiXinService())->createMenu($version);
 
