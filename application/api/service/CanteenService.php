@@ -280,7 +280,8 @@ class CanteenService
             'dinners' => DinnerT::dinners($c_id),
             'account' => CanteenAccountT::account($c_id),
             'out_config' => OutConfigT::config($c_id),
-            'address' => CanteenAddressT::address($c_id)
+            'address' => CanteenAddressT::address($c_id),
+            'reception_config' => ReceptionConfigT::config($c_id)
         ];
 
     }
