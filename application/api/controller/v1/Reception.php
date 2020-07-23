@@ -396,8 +396,6 @@ class Reception extends BaseController
         $count = "select count(*) as count from canteen_reception_t t1 left join canteen_dinner_t t2 ON t1.dinner_id = t2.id left join canteen_company_staff_t t3 ON t1.staff_id = t3.id left join canteen_canteen_t t4 on t1.canteen_id = t4.id where 1 = 1 and t3.state = 1 and t1.user_id = " . $user_id . " order by t1.create_time desc";
         $dtResult = Db::query($sql, [($page - 1) * $size, $size]);
         $count = DB::query($count);
-        print_r($count);
-        echo (count($count));
         $total = count($count);
 
         $data=['total' => $total,'per_page' => 5,'current_page' => $page,'data'=>$dtResult];
