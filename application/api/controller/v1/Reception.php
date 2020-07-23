@@ -273,16 +273,17 @@ class Reception extends BaseController
         }
         if ($whereStr !== '') {
             $sql = "select t1.code_number as apply_code,t1.create_time as apply_time,t1.ordering_date,t1.dinner_id,t2.name as dinner_name, t4.name as department_name,t3.username as apply_name,t1.count,t1.money,sum(t1.count*t1.money) as sum,t1.remark,(case when t1.status = 1 then '审核中' when t1.status = 2 then '已生效' when t1.status = 3 then '审核不通过' when t1.status = 4 then '已撤销' end) as apply_state from canteen_reception_t t1 left join canteen_dinner_t t2 ON t1.dinner_id = t2.id left join canteen_company_staff_t t3 ON t1.staff_id = t3.id left join canteen_company_department_t t4 ON t3.d_id = t4.id left join canteen_company_t t5 ON t3.company_id = t5.id left join canteen_canteen_t t6 ON t1.canteen_id = t6.id where 1 = 1 and t3.state = 1 " . $whereStr . " group by  t1.code_number,t1.create_time,t1.ordering_date,t1.dinner_id,t2.name,t4.name,t3.username,t1.count,t1.money,t1.remark,t1.status order by t1.create_time desc limit ?,?";
-            $count = "select count(*) as count from canteen_reception_t t1 left join canteen_dinner_t t2 ON t1.dinner_id = t2.id left join canteen_company_staff_t t3 ON t1.staff_id = t3.id left join canteen_company_department_t t4 ON t3.d_id = t4.id left join canteen_company_t t5 ON t3.company_id = t5.id left join canteen_canteen_t t6 ON t1.canteen_id = t6.id where 1 = 1 and t3.state = 1 " . $whereStr . " group by  t1.code_number,t1.create_time,t1.ordering_date,t2.name,t4.name,t3.username,t1.count,t1.money,t1.remark,t1.status";
+            $count = "select count(*) as count from canteen_reception_t t1 left join canteen_dinner_t t2 ON t1.dinner_id = t2.id left join canteen_company_staff_t t3 ON t1.staff_id = t3.id left join canteen_company_department_t t4 ON t3.d_id = t4.id left join canteen_company_t t5 ON t3.company_id = t5.id left join canteen_canteen_t t6 ON t1.canteen_id = t6.id where 1 = 1 and t3.state = 1 " . $whereStr;
         } else {
             $sql = "select t1.code_number as apply_code,t1.create_time as apply_time,t1.ordering_date,t1.dinner_id,t2.name as dinner_name, t4.name as department_name,t3.username as apply_name,t1.count,t1.money,sum(t1.count*t1.money) as sum,t1.remark,(case when t1.status = 1 then '审核中' when t1.status = 2 then '已生效' when t1.status = 3 then '审核不通过' when t1.status = 4 then '已撤销' end) as apply_state from canteen_reception_t t1 left join canteen_dinner_t t2 ON t1.dinner_id = t2.id left join canteen_company_staff_t t3 ON t1.staff_id = t3.id left join canteen_company_department_t t4 ON t3.d_id = t4.id left join canteen_company_t t5 ON t3.company_id = t5.id left join canteen_canteen_t t6 ON t1.canteen_id = t6.id where 1 = 1 and t3.state = 1 group by  t1.code_number,t1.create_time,t1.ordering_date,t1.dinner_id,t2.name,t4.name,t3.username,t1.count,t1.money,t1.remark,t1.status order by t1.create_time desc limit ?,?";
-            $count = "select count(*) as count from canteen_reception_t t1 left join canteen_dinner_t t2 ON t1.dinner_id = t2.id left join canteen_company_staff_t t3 ON t1.staff_id = t3.id left join canteen_company_department_t t4 ON t3.d_id = t4.id left join canteen_company_t t5 ON t3.company_id = t5.id left join canteen_canteen_t t6 ON t1.canteen_id = t6.id where 1 = 1 and t3.state = 1 group by  t1.code_number,t1.create_time,t1.ordering_date,t2.name,t4.name,t3.username,t1.count,t1.money,t1.remark,t1.status";
+            $count = "select count(*) as count from canteen_reception_t t1 left join canteen_dinner_t t2 ON t1.dinner_id = t2.id left join canteen_company_staff_t t3 ON t1.staff_id = t3.id left join canteen_company_department_t t4 ON t3.d_id = t4.id left join canteen_company_t t5 ON t3.company_id = t5.id left join canteen_canteen_t t6 ON t1.canteen_id = t6.id where 1 = 1 and t3.state = 1 ";
         }
         $dtResult = Db::query($sql, [($page - 1) * $size, $size]);
         $count = DB::query($count);
-        $total = count($count);
 
-        $data=['total' => $total,'per_page' => 5,'current_page' => $page,'data'=>$dtResult];
+        $total = $count[0]['count'];
+
+        $data=['total' => $total,'per_page' => $size,'current_page' => $page,'data'=>$dtResult];
         return json(new SuccessMessageWithData(['data' => $data]));
     }
 
@@ -342,9 +343,9 @@ class Reception extends BaseController
         }
         $dtResult = Db::query($sql, [($page - 1) * $size, $size]);
         $count = DB::query($count);
-        $total = count($count);
+        $total = $count[0]['count'];
 
-        $data=['total' => $total,'per_page' => 5,'current_page' => $page,'data'=>$dtResult];
+        $data=['total' => $total,'per_page' => $size,'current_page' => $page,'data'=>$dtResult];
         return json(new SuccessMessageWithData(['data' => $data]));
     }
 
@@ -376,9 +377,9 @@ class Reception extends BaseController
         }
         $dtResult = Db::query($sql, [($page - 1) * $size, $size]);
         $count = DB::query($count);
-        $total = count($count);
+        $total = $count[0]['count'];
 
-        $data=['total' => $total,'per_page' => 5,'current_page' => $page,'data'=>$dtResult];
+        $data=['total' => $total,'per_page' => $size,'current_page' => $page,'data'=>$dtResult];
         return json(new SuccessMessageWithData(['data' => $data]));
     }
 
@@ -396,9 +397,9 @@ class Reception extends BaseController
         $count = "select count(*) as count from canteen_reception_t t1 left join canteen_dinner_t t2 ON t1.dinner_id = t2.id left join canteen_company_staff_t t3 ON t1.staff_id = t3.id left join canteen_canteen_t t4 on t1.canteen_id = t4.id where 1 = 1 and t3.state = 1 and t1.user_id = " . $user_id . " order by t1.create_time desc";
         $dtResult = Db::query($sql, [($page - 1) * $size, $size]);
         $count = DB::query($count);
-        $total = count($count);
+        $total = $count[0]['count'];
 
-        $data=['total' => $total,'per_page' => 5,'current_page' => $page,'data'=>$dtResult];
+        $data=['total' => $total,'per_page' => $size,'current_page' => $page,'data'=>$dtResult];
         return json(new SuccessMessageWithData(['data' => $data]));
     }
 
