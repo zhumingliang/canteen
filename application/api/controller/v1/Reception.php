@@ -49,104 +49,99 @@ class Reception extends BaseController
         $remark = Request::param('remark');
         $date = date('Ymd');
         $array = array();
-        $sql = "select approval,state from  canteen_reception_config_t where canteen_id = " . $canteenID;
+        $sql = "select approval,state from  canteen_reception_config_t where state = 1 and canteen_id = " . $canteenID;
         $dtResult = Db::query($sql);
-        $state = $dtResult[0]['state'];
         $approval = $dtResult[0]['approval'];
-        if ($state !== 1) {
-            throw  new  AuthException(['msg' => '该饭堂未启用接待票功能']);
+        if ($approval == 1) {
+            $status = 1;
         } else {
-            if ($approval == 1) {
-                $status = 1;
+            $status = 2;
+        }
+        $nowdate = date('Y-m-d H:i:s');
+        $sql = "SELECT code_number FROM `canteen_reception_t` where substring(code_number,1,8) = " . $date . " order by code_number desc limit 1";
+        $dtResult = Db::query($sql);
+        if (count($dtResult) > 0) {
+            $lastFourNum = substr($dtResult[0]["code_number"], -4);
+            $deleteZero = preg_replace('/[0]*/', '', $lastFourNum, 1);
+            $array = $this->codeIncreasing($deleteZero, 4, $deleteZero + 1);
+            $apply_code = $date . $array[0];
+            $sql = "insert into canteen_reception_t (staff_id,user_id,canteen_id,ordering_date,count,dinner_id,remark,status,create_time,update_time,money,code_number,content) values($staffID,$userID,$canteenID,'" . $orderDate . "',$count,$dinnerID,'" . $remark . "',$status,'" . $nowdate . "','" . $nowdate . "',$money,'" . $apply_code . "','')";
+            $affRows = Db::execute($sql);
+            if ($affRows > 0) {
+                $sql = "SELECT id FROM `canteen_reception_t` where code_number = " . $apply_code;
+                $dtResult = Db::query($sql);
+                $re_id = $dtResult[0]['id'];
+                if ($count > 1) {
+                    $array = $this->codeIncreasing(0, 2, $count + 1);
+                    for ($x = 0; $x < $count; $x++) {
+                        $code = getRandChar(8);
+                        $qrcodeUrl = $this->qrCode($code);
+                        $reception_code = $apply_code . $array[$x];
+                        $sql = "insert into canteen_reception_qrcode_t (re_id,url,code,create_time,update_time,code_number) values($re_id,'" . $qrcodeUrl . "','" . $code . "','" . $nowdate . "','" . $nowdate . "','" . $reception_code . "')";
+                        $affRows = Db::execute($sql);
+                    }
+                    if ($affRows > 0) {
+                        $sql = "select t1.code_number as apply_code,t1.create_time as apply_time,t1.ordering_date,t2.name as dinner_name, t4.name as department_name,t3.username as apply_name,t1.count,t1.money,t1.remark,(case when t1.status = 1 then '审核中' when t1.status = 2 then '已生效' when t1.status = 3 then '审核不通过' when t1.status = 4 then '已撤销' end) as apply_state, (case when t1.status = 4 then t1.cancel_time else t1.update_time end) as approval_time,t1.content as approval_opinions,GROUP_CONCAT(t7.code_number ) as reception_code from canteen_reception_t t1 left join canteen_dinner_t t2 ON t1.dinner_id = t2.id left join canteen_company_staff_t t3 ON t1.staff_id = t3.id left join canteen_company_department_t t4 ON t3.d_id = t4.id left join canteen_company_t t5 ON t3.company_id = t5.id left join canteen_canteen_t t6 ON t1.canteen_id = t6.id left join canteen_reception_qrcode_t t7 on t1.id = t7.re_id where t1.code_number = " . $apply_code . " group by  t1.code_number,t1.create_time,t1.ordering_date,t2.name,t4.name,t3.username,t1.count,t1.money,t1.remark,t1.status, t1.update_time,t1.cancel_time,t1.content";
+                        $dtResult = Db::query($sql);
+                    } else {
+                        throw  new  AuthException(['msg' => '操作失败']);
+                    }
+                } else {
+                    $code = getRandChar(8);
+                    $qrcodeUrl = $this->qrCode($code);
+                    $reception_code = $apply_code . "01";
+                    $sql = "insert into canteen_reception_qrcode_t (re_id,url,code,create_time,update_time,code_number) values($re_id,'" . $qrcodeUrl . "','" . $code . "','" . $nowdate . "','" . $nowdate . "','" . $reception_code . "')";
+                    $affRows = Db::execute($sql);
+                    if ($affRows > 0) {
+                        $sql = "select t1.code_number as apply_code,t1.create_time as apply_time,t1.ordering_date,t2.name as dinner_name, t4.name as department_name,t3.username as apply_name,t1.count,t1.money,t1.remark,(case when t1.status = 1 then '审核中' when t1.status = 2 then '已生效' when t1.status = 3 then '审核不通过' when t1.status = 4 then '已撤销' end) as apply_state, (case when t1.status = 4 then t1.cancel_time else t1.update_time end) as approval_time,t1.content as approval_opinions,GROUP_CONCAT(t7.code_number ) as reception_code from canteen_reception_t t1 left join canteen_dinner_t t2 ON t1.dinner_id = t2.id left join canteen_company_staff_t t3 ON t1.staff_id = t3.id left join canteen_company_department_t t4 ON t3.d_id = t4.id left join canteen_company_t t5 ON t3.company_id = t5.id left join canteen_canteen_t t6 ON t1.canteen_id = t6.id left join canteen_reception_qrcode_t t7 on t1.id = t7.re_id where t1.code_number = " . $apply_code . " group by  t1.code_number,t1.create_time,t1.ordering_date,t2.name,t4.name,t3.username,t1.count,t1.money,t1.remark,t1.status, t1.update_time,t1.cancel_time,t1.content";
+                        $dtResult = Db::query($sql);
+                    } else {
+                        throw  new  AuthException(['msg' => '操作失败']);
+                    }
+                }
             } else {
-                $status = 2;
+                throw  new  AuthException(['msg' => '操作失败']);
             }
-            $nowdate = date('Y-m-d H:i:s');
-            $sql = "SELECT code_number FROM `canteen_reception_t` where substring(code_number,1,8) = " . $date . " order by code_number desc limit 1";
-            $dtResult = Db::query($sql);
-            if (count($dtResult) > 0) {
-                $lastFourNum = substr($dtResult[0]["code_number"], -4);
-                $deleteZero = preg_replace('/[0]*/', '', $lastFourNum, 1);
-                $array = $this->codeIncreasing($deleteZero, 4, $deleteZero + 1);
-                $apply_code = $date . $array[0];
-                $sql = "insert into canteen_reception_t (staff_id,user_id,canteen_id,ordering_date,count,dinner_id,remark,status,create_time,update_time,money,code_number,content) values($staffID,$userID,$canteenID,'" . $orderDate . "',$count,$dinnerID,'" . $remark . "',$status,'" . $nowdate . "','" . $nowdate . "',$money,'" . $apply_code . "','')";
-                $affRows = Db::execute($sql);
-                if ($affRows > 0) {
-                    $sql = "SELECT id FROM `canteen_reception_t` where code_number = " . $apply_code;
-                    $dtResult = Db::query($sql);
-                    $re_id = $dtResult[0]['id'];
-                    if ($count > 1) {
-                        $array = $this->codeIncreasing(0, 2, $count + 1);
-                        for ($x = 0; $x < $count; $x++) {
-                            $code = getRandChar(8);
-                            $qrcodeUrl = $this->qrCode($code);
-                            $reception_code = $apply_code . $array[$x];
-                            $sql = "insert into canteen_reception_qrcode_t (re_id,url,code,create_time,update_time,code_number) values($re_id,'" . $qrcodeUrl . "','" . $code . "','" . $nowdate . "','" . $nowdate . "','" . $reception_code . "')";
-                            $affRows = Db::execute($sql);
-                        }
-                        if ($affRows > 0) {
-                            $sql = "select t1.code_number as apply_code,t1.create_time as apply_time,t1.ordering_date,t2.name as dinner_name, t4.name as department_name,t3.username as apply_name,t1.count,t1.money,t1.remark,(case when t1.status = 1 then '审核中' when t1.status = 2 then '已生效' when t1.status = 3 then '审核不通过' when t1.status = 4 then '已撤销' end) as apply_state, (case when t1.status = 4 then t1.cancel_time else t1.update_time end) as approval_time,t1.content as approval_opinions,GROUP_CONCAT(t7.code_number ) as reception_code from canteen_reception_t t1 left join canteen_dinner_t t2 ON t1.dinner_id = t2.id left join canteen_company_staff_t t3 ON t1.staff_id = t3.id left join canteen_company_department_t t4 ON t3.d_id = t4.id left join canteen_company_t t5 ON t3.company_id = t5.id left join canteen_canteen_t t6 ON t1.canteen_id = t6.id left join canteen_reception_qrcode_t t7 on t1.id = t7.re_id where t1.code_number = " . $apply_code . " group by  t1.code_number,t1.create_time,t1.ordering_date,t2.name,t4.name,t3.username,t1.count,t1.money,t1.remark,t1.status, t1.update_time,t1.cancel_time,t1.content";
-                            $dtResult = Db::query($sql);
-                        } else {
-                            throw  new  AuthException(['msg' => '操作失败']);
-                        }
-                    } else {
+        } else {
+            $apply_code = $date . '0001';
+            $sql = "insert into canteen_reception_t (staff_id,user_id,canteen_id,ordering_date,count,dinner_id,remark,status,create_time,update_time,money,code_number,content) values($staffID,$userID,$canteenID,'" . $orderDate . "',$count,$dinnerID,'" . $remark . "',$status,'" . $nowdate . "','" . $nowdate . "',$money,'" . $apply_code . "','')";
+            $affRows = Db::execute($sql);
+            if ($affRows > 0) {
+                $sql = "SELECT id FROM `canteen_reception_t` where code_number = " . $apply_code;
+                $dtResult = Db::query($sql);
+                $re_id = $dtResult[0]['id'];
+                if ($count > 1) {
+                    $array = $this->codeIncreasing(0, 2, $count);
+                    for ($x = 0; $x < $count; $x++) {
                         $code = getRandChar(8);
                         $qrcodeUrl = $this->qrCode($code);
-                        $reception_code = $apply_code . "01";
+                        $reception_code = $apply_code . $array[$x];
                         $sql = "insert into canteen_reception_qrcode_t (re_id,url,code,create_time,update_time,code_number) values($re_id,'" . $qrcodeUrl . "','" . $code . "','" . $nowdate . "','" . $nowdate . "','" . $reception_code . "')";
                         $affRows = Db::execute($sql);
-                        if ($affRows > 0) {
-                            $sql = "select t1.code_number as apply_code,t1.create_time as apply_time,t1.ordering_date,t2.name as dinner_name, t4.name as department_name,t3.username as apply_name,t1.count,t1.money,t1.remark,(case when t1.status = 1 then '审核中' when t1.status = 2 then '已生效' when t1.status = 3 then '审核不通过' when t1.status = 4 then '已撤销' end) as apply_state, (case when t1.status = 4 then t1.cancel_time else t1.update_time end) as approval_time,t1.content as approval_opinions,GROUP_CONCAT(t7.code_number ) as reception_code from canteen_reception_t t1 left join canteen_dinner_t t2 ON t1.dinner_id = t2.id left join canteen_company_staff_t t3 ON t1.staff_id = t3.id left join canteen_company_department_t t4 ON t3.d_id = t4.id left join canteen_company_t t5 ON t3.company_id = t5.id left join canteen_canteen_t t6 ON t1.canteen_id = t6.id left join canteen_reception_qrcode_t t7 on t1.id = t7.re_id where t1.code_number = " . $apply_code . " group by  t1.code_number,t1.create_time,t1.ordering_date,t2.name,t4.name,t3.username,t1.count,t1.money,t1.remark,t1.status, t1.update_time,t1.cancel_time,t1.content";
-                            $dtResult = Db::query($sql);
-                        } else {
-                            throw  new  AuthException(['msg' => '操作失败']);
-                        }
+                    }
+                    if ($affRows > 0) {
+                        $sql = "select t1.code_number as apply_code,t1.create_time as apply_time,t1.ordering_date,t2.name as dinner_name, t4.name as department_name,t3.username as apply_name,t1.count,t1.money,t1.remark,(case when t1.status = 1 then '审核中' when t1.status = 2 then '已生效' when t1.status = 3 then '审核不通过' when t1.status = 4 then '已撤销' end) as apply_state, (case when t1.status = 4 then t1.cancel_time else t1.update_time end) as approval_time,t1.content as approval_opinions,GROUP_CONCAT(t7.code_number ) as reception_code from canteen_reception_t t1 left join canteen_dinner_t t2 ON t1.dinner_id = t2.id left join canteen_company_staff_t t3 ON t1.staff_id = t3.id left join canteen_company_department_t t4 ON t3.d_id = t4.id left join canteen_company_t t5 ON t3.company_id = t5.id left join canteen_canteen_t t6 ON t1.canteen_id = t6.id left join canteen_reception_qrcode_t t7 on t1.id = t7.re_id where t1.code_number = " . $apply_code . " group by  t1.code_number,t1.create_time,t1.ordering_date,t2.name,t4.name,t3.username,t1.count,t1.money,t1.remark,t1.status, t1.update_time,t1.cancel_time,t1.content";
+                        $dtResult = Db::query($sql);
+                    } else {
+                        throw  new  AuthException(['msg' => '操作失败']);
                     }
                 } else {
-                    throw  new  AuthException(['msg' => '操作失败']);
+                    $code = getRandChar(8);
+                    $qrcodeUrl = $this->qrCode($code);
+                    $reception_code = $apply_code . "01";
+                    $sql = "insert into canteen_reception_qrcode_t (re_id,url,code,create_time,update_time,code_number) values($re_id,'" . $qrcodeUrl . "','" . $code . "','" . $nowdate . "','" . $nowdate . "','" . $reception_code . "')";
+                    $affRows = Db::execute($sql);
+                    if ($affRows > 0) {
+                        $sql = "select t1.code_number as apply_code,t1.create_time as apply_time,t1.ordering_date,t2.name as dinner_name, t4.name as department_name,t3.username as apply_name,t1.count,t1.money,t1.remark,(case when t1.status = 1 then '审核中' when t1.status = 2 then '已生效' when t1.status = 3 then '审核不通过' when t1.status = 4 then '已撤销' end) as apply_state, (case when t1.status = 4 then t1.cancel_time else t1.update_time end) as approval_time,t1.content as approval_opinions,GROUP_CONCAT(t7.code_number ) as reception_code from canteen_reception_t t1 left join canteen_dinner_t t2 ON t1.dinner_id = t2.id left join canteen_company_staff_t t3 ON t1.staff_id = t3.id left join canteen_company_department_t t4 ON t3.d_id = t4.id left join canteen_company_t t5 ON t3.company_id = t5.id left join canteen_canteen_t t6 ON t1.canteen_id = t6.id left join canteen_reception_qrcode_t t7 on t1.id = t7.re_id where t1.code_number = " . $apply_code . " group by  t1.code_number,t1.create_time,t1.ordering_date,t2.name,t4.name,t3.username,t1.count,t1.money,t1.remark,t1.status, t1.update_time,t1.cancel_time,t1.content";
+                        $dtResult = Db::query($sql);
+                    } else {
+                        throw  new  AuthException(['msg' => '操作失败']);
+                    }
                 }
             } else {
-                $apply_code = $date . '0001';
-                $sql = "insert into canteen_reception_t (staff_id,user_id,canteen_id,ordering_date,count,dinner_id,remark,status,create_time,update_time,money,code_number,content) values($staffID,$userID,$canteenID,'" . $orderDate . "',$count,$dinnerID,'" . $remark . "',$status,'" . $nowdate . "','" . $nowdate . "',$money,'" . $apply_code . "','')";
-                $affRows = Db::execute($sql);
-                if ($affRows > 0) {
-                    $sql = "SELECT id FROM `canteen_reception_t` where code_number = " . $apply_code;
-                    $dtResult = Db::query($sql);
-                    $re_id = $dtResult[0]['id'];
-                    if ($count > 1) {
-                        $array = $this->codeIncreasing(0, 2, $count);
-                        for ($x = 0; $x < $count; $x++) {
-                            $code = getRandChar(8);
-                            $qrcodeUrl = $this->qrCode($code);
-                            $reception_code = $apply_code . $array[$x];
-                            $sql = "insert into canteen_reception_qrcode_t (re_id,url,code,create_time,update_time,code_number) values($re_id,'" . $qrcodeUrl . "','" . $code . "','" . $nowdate . "','" . $nowdate . "','" . $reception_code . "')";
-                            $affRows = Db::execute($sql);
-                        }
-                        if ($affRows > 0) {
-                            $sql = "select t1.code_number as apply_code,t1.create_time as apply_time,t1.ordering_date,t2.name as dinner_name, t4.name as department_name,t3.username as apply_name,t1.count,t1.money,t1.remark,(case when t1.status = 1 then '审核中' when t1.status = 2 then '已生效' when t1.status = 3 then '审核不通过' when t1.status = 4 then '已撤销' end) as apply_state, (case when t1.status = 4 then t1.cancel_time else t1.update_time end) as approval_time,t1.content as approval_opinions,GROUP_CONCAT(t7.code_number ) as reception_code from canteen_reception_t t1 left join canteen_dinner_t t2 ON t1.dinner_id = t2.id left join canteen_company_staff_t t3 ON t1.staff_id = t3.id left join canteen_company_department_t t4 ON t3.d_id = t4.id left join canteen_company_t t5 ON t3.company_id = t5.id left join canteen_canteen_t t6 ON t1.canteen_id = t6.id left join canteen_reception_qrcode_t t7 on t1.id = t7.re_id where t1.code_number = " . $apply_code . " group by  t1.code_number,t1.create_time,t1.ordering_date,t2.name,t4.name,t3.username,t1.count,t1.money,t1.remark,t1.status, t1.update_time,t1.cancel_time,t1.content";
-                            $dtResult = Db::query($sql);
-                        } else {
-                            throw  new  AuthException(['msg' => '操作失败']);
-                        }
-                    } else {
-                        $code = getRandChar(8);
-                        $qrcodeUrl = $this->qrCode($code);
-                        $reception_code = $apply_code . "01";
-                        $sql = "insert into canteen_reception_qrcode_t (re_id,url,code,create_time,update_time,code_number) values($re_id,'" . $qrcodeUrl . "','" . $code . "','" . $nowdate . "','" . $nowdate . "','" . $reception_code . "')";
-                        $affRows = Db::execute($sql);
-                        if ($affRows > 0) {
-                            $sql = "select t1.code_number as apply_code,t1.create_time as apply_time,t1.ordering_date,t2.name as dinner_name, t4.name as department_name,t3.username as apply_name,t1.count,t1.money,t1.remark,(case when t1.status = 1 then '审核中' when t1.status = 2 then '已生效' when t1.status = 3 then '审核不通过' when t1.status = 4 then '已撤销' end) as apply_state, (case when t1.status = 4 then t1.cancel_time else t1.update_time end) as approval_time,t1.content as approval_opinions,GROUP_CONCAT(t7.code_number ) as reception_code from canteen_reception_t t1 left join canteen_dinner_t t2 ON t1.dinner_id = t2.id left join canteen_company_staff_t t3 ON t1.staff_id = t3.id left join canteen_company_department_t t4 ON t3.d_id = t4.id left join canteen_company_t t5 ON t3.company_id = t5.id left join canteen_canteen_t t6 ON t1.canteen_id = t6.id left join canteen_reception_qrcode_t t7 on t1.id = t7.re_id where t1.code_number = " . $apply_code . " group by  t1.code_number,t1.create_time,t1.ordering_date,t2.name,t4.name,t3.username,t1.count,t1.money,t1.remark,t1.status, t1.update_time,t1.cancel_time,t1.content";
-                            $dtResult = Db::query($sql);
-                        } else {
-                            throw  new  AuthException(['msg' => '操作失败']);
-                        }
-                    }
-                } else {
-                    throw  new  AuthException(['msg' => '操作失败']);
-                }
+                throw  new  AuthException(['msg' => '操作失败']);
+            }
 
-            }
         }
         return json(new SuccessMessageWithData(['data' => $dtResult]));
     }
