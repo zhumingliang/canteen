@@ -36,6 +36,7 @@ use app\lib\exception\AuthException;
 use app\lib\exception\ParameterException;
 use app\lib\exception\SaveException;
 use app\lib\exception\UpdateException;
+use app\lib\Num;
 use think\Db;
 use think\Exception;
 
@@ -534,7 +535,7 @@ class OrderService extends BaseService
     public function checkEatingOutsider($type, $address_id)
     {
 
-        if ($type == OrderEnum::EAT_OUTSIDER && is_numeric($address_id) && is_int($address_id + 0) && ($address_id + 0) > 0) {
+        if ($type == OrderEnum::EAT_OUTSIDER && (!Num::isPositiveInteger($address_id))) {
             throw new ParameterException(['msg' => '外卖订单，没有选择地址']);
         }
     }
