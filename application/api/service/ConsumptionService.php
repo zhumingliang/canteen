@@ -506,12 +506,7 @@ class ConsumptionService
 
         $day = date('Y-m-d');
         $key = "$canteen_id:$dinner_id:$day";
-        $code = Redis::instance()->get($key);
-        if (!$code) {
-            $code = 1;
-            Redis::instance()->set($key, $code, 60 * 60 * 24);
-        }
-        Redis::instance()->incr($key);
+        $code = Redis::instance()->incr($key);
         return str_pad($code, 4, "0", STR_PAD_LEFT);
 
     }
