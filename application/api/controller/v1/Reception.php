@@ -259,7 +259,7 @@ class Reception extends BaseController
             $whereStr .= 'and t3.username like' . '"%' . $apply_name . '%"' . ' ';
         }
         if (strlen($apply_code)) {
-            $whereStr .= 'and t1.code_number = ' . "'$apply_code'" . ' ';
+            $whereStr .= 'and t1.code_number like' . '"%' . $apply_code . '%"' . ' ';
         }
         if (!empty($apply_state)) {
             if ($apply_state !== "ALL") {
@@ -322,7 +322,7 @@ class Reception extends BaseController
             $whereStr .= 'and t5.username like' . '"%' . $apply_name . '%"' . ' ';
         }
         if (strlen($reception_code)) {
-            $whereStr .= 'and t1.code_number = ' . "'$reception_code'" . ' ';
+            $whereStr .= 'and t1.code_number like' . '"%' . $reception_code . '%"' . ' ';
         }
         if (!empty($reception_state)) {
             if ($reception_state !== "ALL") {
@@ -330,10 +330,10 @@ class Reception extends BaseController
             }
         }
         if ($whereStr !== '') {
-            $sql = "select t2.code_number as apply_code,t1.code_number as reception_code,t3.name as canteen_name,t2.ordering_date, t4.name as dinner_name,t6.name as department_name,t5.username as apply_name,t2.money,(case when t1.`status` = 1 then '已使用' when t1.`status` = 2 then '未使用' when t1.`status` = 3 then '已取消' when t1.`status` = 4 then '已过期' end) as reception_state,COALESCE(t1.used_time,'') as used_time from canteen_reception_qrcode_t t1 left join canteen_reception_t t2 on t1.re_id = t2.id left join canteen_canteen_t t3 on t2.canteen_id = t3.id left join canteen_dinner_t t4 on t2.dinner_id = t4.id left join canteen_company_staff_t t5 on t2.staff_id = t5.id left join canteen_company_department_t t6 on t5.d_id = t6.id left join canteen_company_t t7 on t5.company_id = t7.id where 1 = 1 and t5.state = 1 " . $whereStr . "order by t1.id desc limit ?,?";
+            $sql = "select t2.code_number as apply_code,t1.code_number as reception_code,t3.name as canteen_name,t2.ordering_date, t4.name as dinner_name,t6.name as department_name,t5.username as apply_name,t2.money,(case when t1.`status` = 1 then '已使用' when t1.`status` = 2 then '未使用' when t1.`status` = 3 then '已取消' when t1.`status` = 4 then '已过期' end) as reception_state,(case when t1.status = 3 or t1.status = 4 then t1.update_time else COALESCE(t1.used_time,'') end) as used_time from canteen_reception_qrcode_t t1 left join canteen_reception_t t2 on t1.re_id = t2.id left join canteen_canteen_t t3 on t2.canteen_id = t3.id left join canteen_dinner_t t4 on t2.dinner_id = t4.id left join canteen_company_staff_t t5 on t2.staff_id = t5.id left join canteen_company_department_t t6 on t5.d_id = t6.id left join canteen_company_t t7 on t5.company_id = t7.id where 1 = 1 and t5.state = 1 " . $whereStr . "order by t1.id desc limit ?,?";
             $count = "select count(*) as count from canteen_reception_qrcode_t t1 left join canteen_reception_t t2 on t1.re_id = t2.id left join canteen_canteen_t t3 on t2.canteen_id = t3.id left join canteen_dinner_t t4 on t2.dinner_id = t4.id left join canteen_company_staff_t t5 on t2.staff_id = t5.id left join canteen_company_department_t t6 on t5.d_id = t6.id left join canteen_company_t t7 on t5.company_id = t7.id where 1 = 1 and t5.state = 1 " . $whereStr;
         } else {
-            $sql = "select t2.code_number as apply_code,t1.code_number as reception_code,t3.name as canteen_name,t2.ordering_date, t4.name as dinner_name,t6.name as department_name,t5.username as apply_name,t2.money,(case when t1.`status` = 1 then '已使用' when t1.`status` = 2 then '未使用' when t1.`status` = 3 then '已取消' when t1.`status` = 4 then '已过期' end) as reception_state,COALESCE(t1.used_time,'') as used_time from canteen_reception_qrcode_t t1 left join canteen_reception_t t2 on t1.re_id = t2.id left join canteen_canteen_t t3 on t2.canteen_id = t3.id left join canteen_dinner_t t4 on t2.dinner_id = t4.id left join canteen_company_staff_t t5 on t2.staff_id = t5.id left join canteen_company_department_t t6 on t5.d_id = t6.id left join canteen_company_t t7 on t5.company_id = t7.id where 1 = 1 and t5.state = 1 order by t1.id desc limit ?,?";
+            $sql = "select t2.code_number as apply_code,t1.code_number as reception_code,t3.name as canteen_name,t2.ordering_date, t4.name as dinner_name,t6.name as department_name,t5.username as apply_name,t2.money,(case when t1.`status` = 1 then '已使用' when t1.`status` = 2 then '未使用' when t1.`status` = 3 then '已取消' when t1.`status` = 4 then '已过期' end) as reception_state,(case when t1.status = 3 or t1.status = 4 then t1.update_time else COALESCE(t1.used_time,'') end) as used_time from canteen_reception_qrcode_t t1 left join canteen_reception_t t2 on t1.re_id = t2.id left join canteen_canteen_t t3 on t2.canteen_id = t3.id left join canteen_dinner_t t4 on t2.dinner_id = t4.id left join canteen_company_staff_t t5 on t2.staff_id = t5.id left join canteen_company_department_t t6 on t5.d_id = t6.id left join canteen_company_t t7 on t5.company_id = t7.id where 1 = 1 and t5.state = 1 order by t1.id desc limit ?,?";
             $count = "select count(*) as count from canteen_reception_qrcode_t t1 left join canteen_reception_t t2 on t1.re_id = t2.id left join canteen_canteen_t t3 on t2.canteen_id = t3.id left join canteen_dinner_t t4 on t2.dinner_id = t4.id left join canteen_company_staff_t t5 on t2.staff_id = t5.id left join canteen_company_department_t t6 on t5.d_id = t6.id left join canteen_company_t t7 on t5.company_id = t7.id where 1 = 1 and t5.state = 1";
         }
         $dtResult = Db::query($sql, [($page - 1) * $size, $size]);
@@ -364,10 +364,10 @@ class Reception extends BaseController
             }
         }
         if ($whereStr !== "") {
-            $sql = "select t2.ordering_date,t1.code_number as reception_code,t3.name as canteen_name,t4.name as dinner_name,t2.money,(case when t1.`status` = 1 then '已使用' when t1.`status` = 2 then '未使用' when t1.`status` = 3 then '已取消' when t1.`status` = 4 then '已过期' end) as reception_state,(case when t1.status = 4 then t1.update_time else t1.used_time end) as used_time from canteen_reception_qrcode_t t1 left join canteen_reception_t t2 on t1.re_id=t2.id left join canteen_canteen_t t3 on t2.canteen_id=t3.id left join canteen_dinner_t t4 on t2.dinner_id=t4.id left join canteen_company_staff_t t5 on t2.staff_id=t5.id where 1 = 1 and t5.state=1 " . $whereStr . " order by t1.id desc limit ?,?";
+            $sql = "select t2.ordering_date,t1.code_number as reception_code,t3.name as canteen_name,t4.name as dinner_name,t2.money,(case when t1.`status` = 1 then '已使用' when t1.`status` = 2 then '未使用' when t1.`status` = 3 then '已取消' when t1.`status` = 4 then '已过期' end) as reception_state,(case when t1.status = 3 or t1.status = 4 then t1.update_time else COALESCE(t1.used_time,'') end) as used_time from canteen_reception_qrcode_t t1 left join canteen_reception_t t2 on t1.re_id=t2.id left join canteen_canteen_t t3 on t2.canteen_id=t3.id left join canteen_dinner_t t4 on t2.dinner_id=t4.id left join canteen_company_staff_t t5 on t2.staff_id=t5.id where 1 = 1 and t5.state=1 " . $whereStr . " order by t1.id desc limit ?,?";
             $count = "select count(*) as count from canteen_reception_qrcode_t t1 left join canteen_reception_t t2 on t1.re_id=t2.id left join canteen_canteen_t t3 on t2.canteen_id=t3.id left join canteen_dinner_t t4 on t2.dinner_id=t4.id left join canteen_company_staff_t t5 on t2.staff_id=t5.id where 1 = 1 and t5.state=1 " . $whereStr;
         } else {
-            $sql = "select t2.ordering_date,t1.code_number as reception_code,t3.name as canteen_name,t4.name as dinner_name,t2.money,(case when t1.`status` = 1 then '已使用' when t1.`status` = 2 then '未使用' when t1.`status` = 3 then '已取消' when t1.`status` = 4 then '已过期' end) as reception_state,(case when t1.status = 4 then t1.update_time else t1.used_time end) as used_time from canteen_reception_qrcode_t t1 left join canteen_reception_t t2 on t1.re_id=t2.id left join canteen_canteen_t t3 on t2.canteen_id=t3.id left join canteen_dinner_t t4 on t2.dinner_id=t4.id left join canteen_company_staff_t t5 on t2.staff_id=t5.id where 1 = 1 and t5.state=1 and t2.user_id = " . $user_id . " order by t1.id desc limit ?,?";
+            $sql = "select t2.ordering_date,t1.code_number as reception_code,t3.name as canteen_name,t4.name as dinner_name,t2.money,(case when t1.`status` = 1 then '已使用' when t1.`status` = 2 then '未使用' when t1.`status` = 3 then '已取消' when t1.`status` = 4 then '已过期' end) as reception_state,(case when t1.status = 3 or t1.status = 4 then t1.update_time else COALESCE(t1.used_time,'') end) as used_time from canteen_reception_qrcode_t t1 left join canteen_reception_t t2 on t1.re_id=t2.id left join canteen_canteen_t t3 on t2.canteen_id=t3.id left join canteen_dinner_t t4 on t2.dinner_id=t4.id left join canteen_company_staff_t t5 on t2.staff_id=t5.id where 1 = 1 and t5.state=1 and t2.user_id = " . $user_id . " order by t1.id desc limit ?,?";
             $count = "select count(*) as count from canteen_reception_qrcode_t t1 left join canteen_reception_t t2 on t1.re_id=t2.id left join canteen_canteen_t t3 on t2.canteen_id=t3.id left join canteen_dinner_t t4 on t2.dinner_id=t4.id left join canteen_company_staff_t t5 on t2.staff_id=t5.id where 1 = 1 and t5.state=1 and t2.user_id = " . $user_id;
         }
         $dtResult = Db::query($sql, [($page - 1) * $size, $size]);
@@ -500,7 +500,7 @@ class Reception extends BaseController
             $whereStr .= 'and t5.username like' . '"%' . $apply_name . '%"' . ' ';
         }
         if (strlen($reception_code)) {
-            $whereStr .= 'and t1.code_number =' . "'$reception_code'" . ' ';
+            $whereStr .= 'and t1.code_number like' . '"%' . $reception_code . '%"' . ' ';
         }
         if (!empty($reception_state)) {
             if ($reception_state !== "ALL") {
@@ -508,9 +508,9 @@ class Reception extends BaseController
             }
         }
         if ($whereStr !== '') {
-            $sql = "select CONCAT(\"\t\", t2.code_number) as apply_code,CONCAT(\"\t\", t1.code_number) as reception_code,t3.name as canteen_name,t2.ordering_date,t4.name as dinner_name,t6.name as department_name,t5.username as apply_name,t2.money,(case when t1.`status` = 1 then '已使用' when t1.`status` = 2 then '未使用' when t1.`status` = 3 then '已取消' when t1.`status` = 4 then '已过期' end) as reception_state,COALESCE(t1.used_time,'') as used_time from canteen_reception_qrcode_t t1 left join canteen_reception_t t2 on t1.re_id = t2.id left join canteen_canteen_t t3 on t2.canteen_id = t3.id left join canteen_dinner_t t4 on t2.dinner_id=t4.id left join canteen_company_staff_t t5 on t2.staff_id = t5.id left join canteen_company_department_t t6 on t5.d_id = t6.id left join canteen_company_t t7 on t5.company_id = t7.id where 1=1 and t5.state=1 " . $whereStr . " order by t1.id desc ";
+            $sql = "select CONCAT(\"\t\", t2.code_number) as apply_code,CONCAT(\"\t\", t1.code_number) as reception_code,t3.name as canteen_name,t2.ordering_date,t4.name as dinner_name,t6.name as department_name,t5.username as apply_name,t2.money,(case when t1.`status` = 1 then '已使用' when t1.`status` = 2 then '未使用' when t1.`status` = 3 then '已取消' when t1.`status` = 4 then '已过期' end) as reception_state,(case when t1.status = 3 or t1.status = 4 then t1.update_time else COALESCE(t1.used_time,'') end) as used_time from canteen_reception_qrcode_t t1 left join canteen_reception_t t2 on t1.re_id = t2.id left join canteen_canteen_t t3 on t2.canteen_id = t3.id left join canteen_dinner_t t4 on t2.dinner_id=t4.id left join canteen_company_staff_t t5 on t2.staff_id = t5.id left join canteen_company_department_t t6 on t5.d_id = t6.id left join canteen_company_t t7 on t5.company_id = t7.id where 1=1 and t5.state=1 " . $whereStr . " order by t1.id desc ";
         } else {
-            $sql = "select CONCAT(\"\t\", t2.code_number) as apply_code,CONCAT(\"\t\", t1.code_number) as reception_code,t3.name as canteen_name,t2.ordering_date,t4.name as dinner_name,t6.name as department_name,t5.username as apply_name,t2.money,(case when t1.`status` = 1 then '已使用' when t1.`status` = 2 then '未使用' when t1.`status` = 3 then '已取消' when t1.`status` = 4 then '已过期' end) as reception_state,COALESCE(t1.used_time,'') as used_time from canteen_reception_qrcode_t t1 left join canteen_reception_t t2 on t1.re_id = t2.id left join canteen_canteen_t t3 on t2.canteen_id = t3.id left join canteen_dinner_t t4 on t2.dinner_id = t4.id left join canteen_company_staff_t t5 on t2.staff_id = t5.id left join canteen_company_department_t t6 on t5.d_id = t6.id left join canteen_company_t t7 on t5.company_id = t7.id where 1=1 and t5.state =1 order by t1.id desc ";
+            $sql = "select CONCAT(\"\t\", t2.code_number) as apply_code,CONCAT(\"\t\", t1.code_number) as reception_code,t3.name as canteen_name,t2.ordering_date,t4.name as dinner_name,t6.name as department_name,t5.username as apply_name,t2.money,(case when t1.`status` = 1 then '已使用' when t1.`status` = 2 then '未使用' when t1.`status` = 3 then '已取消' when t1.`status` = 4 then '已过期' end) as reception_state,(case when t1.status = 3 or t1.status = 4 then t1.update_time else COALESCE(t1.used_time,'') end) as used_time from canteen_reception_qrcode_t t1 left join canteen_reception_t t2 on t1.re_id = t2.id left join canteen_canteen_t t3 on t2.canteen_id = t3.id left join canteen_dinner_t t4 on t2.dinner_id = t4.id left join canteen_company_staff_t t5 on t2.staff_id = t5.id left join canteen_company_department_t t6 on t5.d_id = t6.id left join canteen_company_t t7 on t5.company_id = t7.id where 1=1 and t5.state =1 order by t1.id desc ";
         }
         $records = Db::query($sql);
 
@@ -562,7 +562,7 @@ class Reception extends BaseController
             $whereStr .= 'and t3.username like' . '"%' . $apply_name . '%"' . ' ';
         }
         if (strlen($apply_code)) {
-            $whereStr .= 'and t1.code_number = ' . "'$apply_code'" . ' ';
+            $whereStr .= 'and t1.code_number like' . '"%' . $apply_code . '%"' . ' ';
         }
         if (!empty($apply_state)) {
             if ($apply_state !== "ALL") {
