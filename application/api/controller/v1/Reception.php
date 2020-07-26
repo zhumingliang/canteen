@@ -174,7 +174,7 @@ class Reception extends BaseController
             if (count($dtResult) > 0) {
                 $receptionUrl = $dtResult[0]["url"];
                 $receptionUrl = 'http://' . $_SERVER['HTTP_HOST'] . $receptionUrl;
-                $data = ['url'=>$receptionUrl];
+                $data = ['url' => $receptionUrl];
                 return json(new SuccessMessageWithData(['data' => $data]));
             }
         }
@@ -280,7 +280,7 @@ class Reception extends BaseController
 
         $total = $count[0]['count'];
 
-        $data=['total' => $total,'per_page' => $size,'current_page' => $page,'data'=>$dtResult];
+        $data = ['total' => $total, 'per_page' => $size, 'current_page' => $page, 'data' => $dtResult];
         return json(new SuccessMessageWithData(['data' => $data]));
     }
 
@@ -297,6 +297,15 @@ class Reception extends BaseController
         $company_id = Request::param('company_id');
         $reception_state = Request::param('reception_state');
         $whereStr = '';
+        $dtResult = Db::query("select t1.code_number,t2.ordering_date from canteen_reception_qrcode_t t1 left join canteen_reception_t t2 on t1.re_id = t2.id where t1.`status` = 2 and t2.ordering_date < date_format(NOW(),'%Y-%m-%d')");
+        $count = count($dtResult);
+        $nowdate = date('Y-m-d H:i:s');
+        if ($count > 0) {
+            for ($x = 0; $x < $count; $x++) {
+                $code = $dtResult[$x]['code_number'];
+                $affRows = Db::execute("update canteen_reception_qrcode_t set status = 4,update_time = " . "'$nowdate'" . " where code_number = " . "'$code'");
+            }
+        }
         if (!empty($company_id)) {
             if ($company_id !== "ALL") {
                 $whereStr .= 'and t7.id = ' . $company_id . ' ';
@@ -332,17 +341,17 @@ class Reception extends BaseController
             }
         }
         if ($whereStr !== '') {
-            $sql = "select t2.code_number as apply_code,t1.code_number as reception_code,t3.name as canteen_name,t2.ordering_date, t4.name as dinner_name,t6.name as department_name,t5.username as apply_name,t2.money,(case when t1.`status` = 1 then '已使用' when t1.`status` = 2 then '未使用' when t1.`status` = 3 then '已取消' when t1.`status` = 4 then '已过期' end) as reception_state,(case when t1.status = 3 or t1.status = 4 then t1.update_time else COALESCE(t1.used_time,'') end) as used_time from canteen_reception_qrcode_t t1 left join canteen_reception_t t2 on t1.re_id = t2.id left join canteen_canteen_t t3 on t2.canteen_id = t3.id left join canteen_dinner_t t4 on t2.dinner_id = t4.id left join canteen_company_staff_t t5 on t2.staff_id = t5.id left join canteen_company_department_t t6 on t5.d_id = t6.id left join canteen_company_t t7 on t5.company_id = t7.id where 1 = 1 and t5.state = 1 " . $whereStr . "order by t1.id desc limit ?,?";
-            $count = "select count(*) as count from canteen_reception_qrcode_t t1 left join canteen_reception_t t2 on t1.re_id = t2.id left join canteen_canteen_t t3 on t2.canteen_id = t3.id left join canteen_dinner_t t4 on t2.dinner_id = t4.id left join canteen_company_staff_t t5 on t2.staff_id = t5.id left join canteen_company_department_t t6 on t5.d_id = t6.id left join canteen_company_t t7 on t5.company_id = t7.id where 1 = 1 and t5.state = 1 " . $whereStr;
+            $sql = "select t2.code_number as apply_code,t1.code_number as reception_code,t3.name as canteen_name,t2.ordering_date, t4.name as dinner_name,t6.name as department_name,t5.username as apply_name,t2.money,(case when t1.`status` = 1 then '已使用' when t1.`status` = 2 then '未使用' when t1.`status` = 3 then '已取消' when t1.`status` = 4 then '已过期' end) as reception_state,(case when t1.status = 3 then t1.update_time else COALESCE(t1.used_time,'') end) as used_time from canteen_reception_qrcode_t t1 left join canteen_reception_t t2 on t1.re_id = t2.id left join canteen_canteen_t t3 on t2.canteen_id = t3.id left join canteen_dinner_t t4 on t2.dinner_id = t4.id left join canteen_company_staff_t t5 on t2.staff_id = t5.id left join canteen_company_department_t t6 on t5.d_id = t6.id left join canteen_company_t t7 on t5.company_id = t7.id where 1 = 1 and t5.state = 1 " . $whereStr . "order by t2.ordering_date desc limit ?,?";
+            $count = "select count(*) as count,COALESCE(sum(t2.money),0) as sum from canteen_reception_qrcode_t t1 left join canteen_reception_t t2 on t1.re_id = t2.id left join canteen_canteen_t t3 on t2.canteen_id = t3.id left join canteen_dinner_t t4 on t2.dinner_id = t4.id left join canteen_company_staff_t t5 on t2.staff_id = t5.id left join canteen_company_department_t t6 on t5.d_id = t6.id left join canteen_company_t t7 on t5.company_id = t7.id where 1 = 1 and t5.state = 1 " . $whereStr;
         } else {
-            $sql = "select t2.code_number as apply_code,t1.code_number as reception_code,t3.name as canteen_name,t2.ordering_date, t4.name as dinner_name,t6.name as department_name,t5.username as apply_name,t2.money,(case when t1.`status` = 1 then '已使用' when t1.`status` = 2 then '未使用' when t1.`status` = 3 then '已取消' when t1.`status` = 4 then '已过期' end) as reception_state,(case when t1.status = 3 or t1.status = 4 then t1.update_time else COALESCE(t1.used_time,'') end) as used_time from canteen_reception_qrcode_t t1 left join canteen_reception_t t2 on t1.re_id = t2.id left join canteen_canteen_t t3 on t2.canteen_id = t3.id left join canteen_dinner_t t4 on t2.dinner_id = t4.id left join canteen_company_staff_t t5 on t2.staff_id = t5.id left join canteen_company_department_t t6 on t5.d_id = t6.id left join canteen_company_t t7 on t5.company_id = t7.id where 1 = 1 and t5.state = 1 order by t1.id desc limit ?,?";
-            $count = "select count(*) as count from canteen_reception_qrcode_t t1 left join canteen_reception_t t2 on t1.re_id = t2.id left join canteen_canteen_t t3 on t2.canteen_id = t3.id left join canteen_dinner_t t4 on t2.dinner_id = t4.id left join canteen_company_staff_t t5 on t2.staff_id = t5.id left join canteen_company_department_t t6 on t5.d_id = t6.id left join canteen_company_t t7 on t5.company_id = t7.id where 1 = 1 and t5.state = 1";
+            $sql = "select t2.code_number as apply_code,t1.code_number as reception_code,t3.name as canteen_name,t2.ordering_date, t4.name as dinner_name,t6.name as department_name,t5.username as apply_name,t2.money,(case when t1.`status` = 1 then '已使用' when t1.`status` = 2 then '未使用' when t1.`status` = 3 then '已取消' when t1.`status` = 4 then '已过期' end) as reception_state,(case when t1.status = 3 then t1.update_time else COALESCE(t1.used_time,'') end) as used_time from canteen_reception_qrcode_t t1 left join canteen_reception_t t2 on t1.re_id = t2.id left join canteen_canteen_t t3 on t2.canteen_id = t3.id left join canteen_dinner_t t4 on t2.dinner_id = t4.id left join canteen_company_staff_t t5 on t2.staff_id = t5.id left join canteen_company_department_t t6 on t5.d_id = t6.id left join canteen_company_t t7 on t5.company_id = t7.id where 1 = 1 and t5.state = 1 order by t2.ordering_date desc limit ?,?";
+            $count = "select count(*) as count,COALESCE(sum(t2.money),0) as sum from canteen_reception_qrcode_t t1 left join canteen_reception_t t2 on t1.re_id = t2.id left join canteen_canteen_t t3 on t2.canteen_id = t3.id left join canteen_dinner_t t4 on t2.dinner_id = t4.id left join canteen_company_staff_t t5 on t2.staff_id = t5.id left join canteen_company_department_t t6 on t5.d_id = t6.id left join canteen_company_t t7 on t5.company_id = t7.id where 1 = 1 and t5.state = 1";
         }
         $dtResult = Db::query($sql, [($page - 1) * $size, $size]);
         $count = DB::query($count);
         $total = $count[0]['count'];
-
-        $data=['total' => $total,'per_page' => $size,'current_page' => $page,'data'=>$dtResult];
+        $sum = $count[0]['sum'];
+        $data = ['total' => $total,'sum' =>$sum, 'per_page' => $size, 'current_page' => $page, 'data' => $dtResult];
         return json(new SuccessMessageWithData(['data' => $data]));
     }
 
@@ -354,7 +363,17 @@ class Reception extends BaseController
         $user_id = TokenService::getCurrentUid();
         //$user_id = '43';
         $canteen_id = Request::param('canteen_id');
+        $ordering_date = Request::param('ordering_date');
         $whereStr = '';
+        $dtResult = Db::query("select t1.code_number,t2.ordering_date from canteen_reception_qrcode_t t1 left join canteen_reception_t t2 on t1.re_id = t2.id where t1.`status` = 2 and t2.ordering_date < date_format(NOW(),'%Y-%m-%d')");
+        $count = count($dtResult);
+        $nowdate = date('Y-m-d H:i:s');
+        if ($count > 0) {
+            for ($x = 0; $x < $count; $x++) {
+                $code = $dtResult[$x]['code_number'];
+                $affRows = Db::execute("update canteen_reception_qrcode_t set status = 4,update_time = " . "'$nowdate'" . " where code_number = " . "'$code'");
+            }
+        }
         if (empty($user_id)) {
             throw  new  AuthException(['msg' => '用户id不能为空']);
         } else {
@@ -365,18 +384,22 @@ class Reception extends BaseController
                 $whereStr .= 'and t3.id = ' . $canteen_id . ' ';
             }
         }
+        if(strlen($ordering_date))
+        {
+            $whereStr .= 'and t2.ordering_date = ' . "'$ordering_date'" . ' ';
+        }
         if ($whereStr !== "") {
-            $sql = "select t2.ordering_date,t1.code_number as reception_code,t3.name as canteen_name,t4.name as dinner_name,t2.money,(case when t1.`status` = 1 then '已使用' when t1.`status` = 2 then '未使用' when t1.`status` = 3 then '已取消' when t1.`status` = 4 then '已过期' end) as reception_state,(case when t1.status = 3 or t1.status = 4 then t1.update_time else COALESCE(t1.used_time,'') end) as used_time from canteen_reception_qrcode_t t1 left join canteen_reception_t t2 on t1.re_id=t2.id left join canteen_canteen_t t3 on t2.canteen_id=t3.id left join canteen_dinner_t t4 on t2.dinner_id=t4.id left join canteen_company_staff_t t5 on t2.staff_id=t5.id where 1 = 1 and t5.state=1 " . $whereStr . " order by t1.id desc limit ?,?";
+            $sql = "select t2.ordering_date,t1.code_number as reception_code,t3.name as canteen_name,t4.name as dinner_name,t2.money,(case when t1.`status` = 1 then '已使用' when t1.`status` = 2 then '未使用' when t1.`status` = 3 then '已取消' when t1.`status` = 4 then '已过期' end) as reception_state,(case when t1.status = 3 then t1.update_time else COALESCE(t1.used_time,'') end) as used_time from canteen_reception_qrcode_t t1 left join canteen_reception_t t2 on t1.re_id=t2.id left join canteen_canteen_t t3 on t2.canteen_id=t3.id left join canteen_dinner_t t4 on t2.dinner_id=t4.id left join canteen_company_staff_t t5 on t2.staff_id=t5.id where 1 = 1 and t5.state=1 " . $whereStr . " order by field(t1.`status`,2,1,3,4),t2.ordering_date desc limit ?,?";
             $count = "select count(*) as count from canteen_reception_qrcode_t t1 left join canteen_reception_t t2 on t1.re_id=t2.id left join canteen_canteen_t t3 on t2.canteen_id=t3.id left join canteen_dinner_t t4 on t2.dinner_id=t4.id left join canteen_company_staff_t t5 on t2.staff_id=t5.id where 1 = 1 and t5.state=1 " . $whereStr;
         } else {
-            $sql = "select t2.ordering_date,t1.code_number as reception_code,t3.name as canteen_name,t4.name as dinner_name,t2.money,(case when t1.`status` = 1 then '已使用' when t1.`status` = 2 then '未使用' when t1.`status` = 3 then '已取消' when t1.`status` = 4 then '已过期' end) as reception_state,(case when t1.status = 3 or t1.status = 4 then t1.update_time else COALESCE(t1.used_time,'') end) as used_time from canteen_reception_qrcode_t t1 left join canteen_reception_t t2 on t1.re_id=t2.id left join canteen_canteen_t t3 on t2.canteen_id=t3.id left join canteen_dinner_t t4 on t2.dinner_id=t4.id left join canteen_company_staff_t t5 on t2.staff_id=t5.id where 1 = 1 and t5.state=1 and t2.user_id = " . $user_id . " order by t1.id desc limit ?,?";
+            $sql = "select t2.ordering_date,t1.code_number as reception_code,t3.name as canteen_name,t4.name as dinner_name,t2.money,(case when t1.`status` = 1 then '已使用' when t1.`status` = 2 then '未使用' when t1.`status` = 3 then '已取消' when t1.`status` = 4 then '已过期' end) as reception_state,(case when t1.status = 3 then t1.update_time else COALESCE(t1.used_time,'') end) as used_time from canteen_reception_qrcode_t t1 left join canteen_reception_t t2 on t1.re_id=t2.id left join canteen_canteen_t t3 on t2.canteen_id=t3.id left join canteen_dinner_t t4 on t2.dinner_id=t4.id left join canteen_company_staff_t t5 on t2.staff_id=t5.id where 1 = 1 and t5.state=1 and t2.user_id = " . $user_id . " order by field(t1.`status`,2,1,3,4),t2.ordering_date desc limit ?,?";
             $count = "select count(*) as count from canteen_reception_qrcode_t t1 left join canteen_reception_t t2 on t1.re_id=t2.id left join canteen_canteen_t t3 on t2.canteen_id=t3.id left join canteen_dinner_t t4 on t2.dinner_id=t4.id left join canteen_company_staff_t t5 on t2.staff_id=t5.id where 1 = 1 and t5.state=1 and t2.user_id = " . $user_id;
         }
         $dtResult = Db::query($sql, [($page - 1) * $size, $size]);
         $count = DB::query($count);
         $total = $count[0]['count'];
 
-        $data=['total' => $total,'per_page' => $size,'current_page' => $page,'data'=>$dtResult];
+        $data = ['total' => $total, 'per_page' => $size, 'current_page' => $page, 'data' => $dtResult];
         return json(new SuccessMessageWithData(['data' => $data]));
     }
 
@@ -386,17 +409,23 @@ class Reception extends BaseController
     public function applySubmitted($page = 1, $size = 5)
     {
         $user_id = TokenService::getCurrentUid();
-        //$user_id = '433';
-        if (empty($user_id)) {
-            throw  new  AuthException(['msg' => '用户id不能为空']);
+        //$user_id = '43';
+        $ordering_date = Request::param('ordering_date');
+        $whereStr = '';
+        if (!empty($user_id)) {
+            $whereStr .= 'and t1.user_id = ' . $user_id . ' ';
         }
-        $sql = "select t1.code_number as apply_code,t1.create_time as apply_time,t1.ordering_date,t4.name as canteen_name,t2.name as dinner_name,t3.username as apply_name,t1.count,(case when t1.status = 1 then '审核中' when t1.status = 2 then '已生效' when t1.status = 3 then '审核不通过' when t1.status = 4 then '已撤销' end) as apply_state from canteen_reception_t t1 left join canteen_dinner_t t2 ON t1.dinner_id = t2.id left join canteen_company_staff_t t3 ON t1.staff_id = t3.id left join canteen_canteen_t t4 on t1.canteen_id = t4.id where 1 = 1 and t3.state = 1 and t1.user_id = " . $user_id . " order by t1.create_time desc limit ?,?";
-        $count = "select count(*) as count from canteen_reception_t t1 left join canteen_dinner_t t2 ON t1.dinner_id = t2.id left join canteen_company_staff_t t3 ON t1.staff_id = t3.id left join canteen_canteen_t t4 on t1.canteen_id = t4.id where 1 = 1 and t3.state = 1 and t1.user_id = " . $user_id . " order by t1.create_time desc";
+        if(strlen($ordering_date))
+        {
+            $whereStr .= 'and t1.ordering_date = ' . "'$ordering_date'" . ' ';
+        }
+        $sql = "select t1.code_number as apply_code,t1.create_time as apply_time,t1.ordering_date,t4.name as canteen_name,t2.name as dinner_name,t3.username as apply_name,t1.count,(case when t1.status = 1 then '审核中' when t1.status = 2 then '已生效' when t1.status = 3 then '审核不通过' when t1.status = 4 then '已撤销' end) as apply_state from canteen_reception_t t1 left join canteen_dinner_t t2 ON t1.dinner_id = t2.id left join canteen_company_staff_t t3 ON t1.staff_id = t3.id left join canteen_canteen_t t4 on t1.canteen_id = t4.id where 1 = 1 and t3.state = 1 " .$whereStr. "order by t1.create_time desc limit ?,?";
+        $count = "select count(*) as count from canteen_reception_t t1 left join canteen_dinner_t t2 ON t1.dinner_id = t2.id left join canteen_company_staff_t t3 ON t1.staff_id = t3.id left join canteen_canteen_t t4 on t1.canteen_id = t4.id where 1 = 1 and t3.state = 1 " . $whereStr . " order by t1.create_time desc";
         $dtResult = Db::query($sql, [($page - 1) * $size, $size]);
         $count = DB::query($count);
         $total = $count[0]['count'];
 
-        $data=['total' => $total,'per_page' => $size,'current_page' => $page,'data'=>$dtResult];
+        $data = ['total' => $total, 'per_page' => $size, 'current_page' => $page, 'data' => $dtResult];
         return json(new SuccessMessageWithData(['data' => $data]));
     }
 
