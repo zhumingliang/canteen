@@ -47,6 +47,8 @@ class Reception extends BaseController
         $count = Request::param('count');
         $money = Request::param('money');
         $remark = Request::param('remark');
+        $username = Request::param('username');
+        $department = Request::param('department');
         $date = date('Ymd');
         $array = array();
         $sql = "select approval,state from  canteen_reception_config_t where state = 1 and canteen_id = " . $canteenID;
@@ -65,7 +67,7 @@ class Reception extends BaseController
             $deleteZero = preg_replace('/[0]*/', '', $lastFourNum, 1);
             $array = $this->codeIncreasing($deleteZero, 4, $deleteZero + 1);
             $apply_code = $date . $array[0];
-            $sql = "insert into canteen_reception_t (staff_id,user_id,canteen_id,ordering_date,count,dinner_id,remark,status,create_time,update_time,money,code_number,content) values($staffID,$userID,$canteenID,'" . $orderDate . "',$count,$dinnerID,'" . $remark . "',$status,'" . $nowdate . "','" . $nowdate . "',$money,'" . $apply_code . "','')";
+            $sql = "insert into canteen_reception_t (staff_id,user_id,canteen_id,ordering_date,count,dinner_id,remark,status,create_time,update_time,money,code_number,content,username,department) values($staffID,$userID,$canteenID,'" . $orderDate . "',$count,$dinnerID,'" . $remark . "',$status,'" . $nowdate . "','" . $nowdate . "',$money,'" . $apply_code . "','','" . $username . "','" . $department . "')";
             $affRows = Db::execute($sql);
             if ($affRows > 0) {
                 $sql = "SELECT id FROM `canteen_reception_t` where code_number = " . $apply_code;
@@ -104,7 +106,7 @@ class Reception extends BaseController
             }
         } else {
             $apply_code = $date . '0001';
-            $sql = "insert into canteen_reception_t (staff_id,user_id,canteen_id,ordering_date,count,dinner_id,remark,status,create_time,update_time,money,code_number,content) values($staffID,$userID,$canteenID,'" . $orderDate . "',$count,$dinnerID,'" . $remark . "',$status,'" . $nowdate . "','" . $nowdate . "',$money,'" . $apply_code . "','')";
+            $sql = "insert into canteen_reception_t (staff_id,user_id,canteen_id,ordering_date,count,dinner_id,remark,status,create_time,update_time,money,code_number,content,username,department) values($staffID,$userID,$canteenID,'" . $orderDate . "',$count,$dinnerID,'" . $remark . "',$status,'" . $nowdate . "','" . $nowdate . "',$money,'" . $apply_code . "','','" . $username . "','" . $department . "')";
             $affRows = Db::execute($sql);
             if ($affRows > 0) {
                 $sql = "SELECT id FROM `canteen_reception_t` where code_number = " . $apply_code;
