@@ -26,6 +26,11 @@ class OrderT extends Model
         return $this->belongsTo('DinnerT', 'd_id', 'id');
     }
 
+    public function canteen()
+    {
+        return $this->belongsTo('CanteenT', 'c_id', 'id');
+    }
+
     public function address()
     {
         return $this->belongsTo('UserAddressT', 'address_id', 'id');
@@ -94,7 +99,7 @@ class OrderT extends Model
         return $info;
     }
 
-    public static function statisticToOfficial($canteen_id, $consumption_time,$key)
+    public static function statisticToOfficial($canteen_id, $consumption_time, $key)
     {
         $statistic = self::where('c_id', $canteen_id)
             ->where('state', CommonEnum::STATE_IS_OK)
@@ -236,6 +241,25 @@ class OrderT extends Model
                 }
             ])
             ->field('id,u_id,pay_way,(money + sub_money + delivery_fee) as money')
+            ->find();
+        return $info;
+    }
+
+    public static function infoToReceive($id)
+    {
+        $info = self::where('id', $id)
+            ->with([
+                'user' => function ($query) {
+                    $query->field('id,openid');
+                },
+                'canteen' => function ($query) {
+                    $query->field('id,name');
+                },
+                'dinner' => function ($query) {
+                    $query->field('id,name');
+                }
+            ])
+            ->field('id,u_id,d_id,c_id,ordering_date')
             ->find();
         return $info;
     }

@@ -58,6 +58,13 @@ class TakeoutService
         if (!$res) {
             throw new  UpdateException(['msg' => '更新订单失败']);
         }
+        //批量发送模板
+        foreach ($orderIDArr as $k => $v) {
+            $order = OrderT::infoToReceive($v);
+            if ($order){
+                $this->sendReceiveTemplate($order['user']['openid'],$order['ordering_date'],$order['dinner']['name'],$order['canteen']['name']);
+            }
+        }
     }
 
     private function receiveAndPrint($orderIDArr, $canteenID)
@@ -88,12 +95,12 @@ class TakeoutService
             if (!$res) {
                 throw new  UpdateException(['msg' => '更新订单失败']);
             }
-            $this->sendTemplate($order['user']['openid'], $order['money']);
+            $this->sendRefundTemplate($order['user']['openid'], $order['money']);
         }
 
     }
 
-    private function sendTemplate($openid, $money)
+    private function sendRefundTemplate($openid, $money)
     {
         $data = [
             'first' => "退款通知：您的外卖订单已被饭堂退回，订单金额会尽快退回。",
@@ -108,6 +115,23 @@ class TakeoutService
                 LogService::save(json_encode($res));
             }
         }
+    }
 
+    private function sendReceiveTemplate($openid, $ordering_date, $dinner, $canteen)
+    {
+        $data = [
+            'first' => "您的配送订单已被食堂接单，请等候送达。",
+            'keyword1' => $ordering_date,
+            'keyword2' => $dinner,
+            'keyword3' => $canteen,
+            'remark' => "如有疑问，请联系食堂负责人。"
+        ];
+        $templateConfig = OfficialTemplateT::template('receive');
+        if ($templateConfig) {
+            $res = (new Template())->send($openid, $templateConfig->template_id, $templateConfig->url, $data);
+            if ($res['errcode'] != 0) {
+                LogService::save(json_encode($res));
+            }
+        }
     }
 }
