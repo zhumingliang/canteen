@@ -16,10 +16,15 @@ class WeiXinService
         $this->app = Facade::officialAccount();
     }
 
-    public function createMenu($version)
+    public function createMenu($type)
     {
 
-        $url = "https://cloudcanteen3.51canteen.com/canteen3/wxcms";
+        if ($type == "dev") {
+            $url = "http://test-www.51canteen.cn/wxcms";
+        } else {
+            $url = "https://cloudcanteen3.51canteen.com/canteen3/wxcms";
+        }
+
         $menus = [
             [
                 "name" => "云饭堂3.0",

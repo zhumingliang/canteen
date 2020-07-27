@@ -111,6 +111,8 @@ Index extends BaseController
 
     public function test()
     {
+        echo  Redis::instance()->incr('aqws');
+
         /* $company_id = 97;
          $data = (new ExcelService())->saveTestExcel();
          $fail = [];
