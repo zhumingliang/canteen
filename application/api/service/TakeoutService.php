@@ -61,8 +61,8 @@ class TakeoutService
         //批量发送模板
         foreach ($orderIDArr as $k => $v) {
             $order = OrderT::infoToReceive($v);
-            if ($order){
-                $this->sendReceiveTemplate($order['user']['openid'],$order['ordering_date'],$order['dinner']['name'],$order['canteen']['name']);
+            if ($order) {
+                $this->sendReceiveTemplate($order['user']['openid'], $order['ordering_date'], $order['dinner']['name'], $order['canteen']['name']);
             }
         }
     }
