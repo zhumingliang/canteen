@@ -174,6 +174,7 @@ Route::get('api/:version/order/online/info', 'api/:version.Order/infoForOnline')
 Route::get('api/:version/order/personChoice/info', 'api/:version.Order/infoForPersonChoiceOnline');
 Route::get('api/:version/order/personalChoice/info', 'api/:version.Order/personalChoiceInfo');
 Route::post('api/:version/order/cancel', 'api/:version.Order/orderCancel');
+Route::post('api/:version/order/cancel/manager', 'api/:version.Order/managerOrderCancel');
 Route::post('api/:version/order/changeCount', 'api/:version.Order/changeOrderCount');
 Route::post('api/:version/order/changeFoods', 'api/:version.Order/changeOrderFoods');
 Route::post('api/:version/order/changeAddress', 'api/:version.Order/changeOrderAddress');

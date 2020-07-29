@@ -15,13 +15,33 @@ class OrderStatisticV extends Model
         return $status[$value];
     }
 
+    public function getStatusAttr($value, $data)
+    {
+        if ($data['state'] != CommonEnum::STATE_IS_FAIL) {
+            return 2;//已取消
+        } else {
+            $expiryDate = $data['ordering_date'] . ' ' . $data['meal_time_end'];
+            if (time() > strtotime($expiryDate)) {
+                return 3;//已结算
+            } else {
+                if ($data['used'] == CommonEnum::STATE_IS_FAIL) {
+                    return 1;//可取消
+                } else {
+                    return 3;
+                }
+            }
+        }
+
+    }
+
     public function foods()
     {
         return $this->hasMany('OrderDetailT', 'o_id', 'order_id');
     }
+
     public static function statistic($time_begin, $time_end, $company_ids, $canteen_id, $page, $size)
     {
-       // $time_end = addDay(1, $time_end);
+        // $time_end = addDay(1, $time_end);
         $list = self::whereBetweenTime('ordering_date', $time_begin, $time_end)
             ->where(function ($query) use ($company_ids, $canteen_id) {
                 if (empty($canteen_id)) {
@@ -36,6 +56,7 @@ class OrderStatisticV extends Model
             })
             ->field('ordering_date,company,canteen,dinner,sum(count) as count')
             ->order('ordering_date DESC')
+            ->where('state', CommonEnum::STATE_IS_OK)
             ->group('dinner_id')
             ->paginate($size, false, ['page' => $page]);
         return $list;
@@ -58,6 +79,7 @@ class OrderStatisticV extends Model
                 }
             })
             ->field('ordering_date,company,canteen,dinner,sum(count) as count')
+            ->where('state', CommonEnum::STATE_IS_OK)
             ->order('ordering_date DESC')
             ->group('dinner_id')
             ->select()->toArray();
@@ -103,7 +125,7 @@ class OrderStatisticV extends Model
                     $query->where('type', $type);
                 }
             })
-            ->field('order_id,ordering_date,username,canteen,department,dinner,type,ordering_type')
+            ->field('order_id,ordering_date,username,canteen,department,dinner,type,ordering_type,state,meal_time_begin,meal_time_end,used,1 as status')
             ->order('order_id DESC')
             ->paginate($size, false, ['page' => $page]);
         return $list;
@@ -113,7 +135,7 @@ class OrderStatisticV extends Model
     public static function exportDetail($company_ids, $time_begin,
                                         $time_end, $name,
                                         $phone, $canteen_id, $department_id,
-                                        $dinner_id,$type)
+                                        $dinner_id, $type)
     {
         $time_end = addDay(1, $time_end);
         $list = self::whereBetweenTime('ordering_date', $time_begin, $time_end)
