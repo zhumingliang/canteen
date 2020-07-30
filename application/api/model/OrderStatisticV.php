@@ -17,7 +17,7 @@ class OrderStatisticV extends Model
 
     public function getStatusAttr($value, $data)
     {
-        if ($data['state'] != CommonEnum::STATE_IS_FAIL) {
+        if ($data['state'] != CommonEnum::STATE_IS_OK) {
             return 2;//已取消
         } else {
             $expiryDate = $data['ordering_date'] . ' ' . $data['meal_time_end'];
