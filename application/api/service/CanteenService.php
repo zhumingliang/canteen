@@ -397,6 +397,7 @@ class CanteenService
             $company_id = Token::getCurrentTokenVar('company_id');
         }
         $canteens = CanteenT::where('c_id', $company_id)
+            ->where('state', CommonEnum::STATE_IS_OK)
             ->field('id,name')->select()->toArray();
         return $canteens;
     }
