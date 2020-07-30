@@ -765,8 +765,7 @@ class OrderService extends BaseService
                 //撤回订单
                 $this->refundWxOrder($v);
             }
-            $order->state = OrderEnum::STATUS_CANCEL;
-            $res = $order->save();
+            $res = OrderT::update(['state' => OrderEnum::STATUS_CANCEL],['id'=>$v]);
             if (!$res) {
                 throw new UpdateException();
             }
