@@ -222,7 +222,7 @@ class DepartmentService
                 if (in_array($v[5], $phones)) {
                     $fail[] = "第" . $k . "数据有问题：手机号" . $v[5] . "系统已经存在";
                     break;
-                } else if (!$this->isMobile(in_array($v[5]))) {
+                } else if (!$this->isMobile($v[5])) {
                     $fail[] = "第" . $k . "数据有问题：手机号格式错误";
                     break;
                 } else {

@@ -226,6 +226,29 @@ class Order extends BaseController
     }
 
     /**
+     * @api {POST} /api/v1/order/cancel/manager 订餐明细-取消订餐
+     * @apiGroup   PC
+     * @apiVersion 3.0.0
+     * @apiDescription 订餐明细-取消订餐
+     * @apiExample {post}  请求样例:
+     *    {
+     *       "ids": 1
+     *     }
+     * @apiParam (请求参数说明) {string} ids 取消订单 id，批量取消订单用逗号隔开：1,2,3
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     */
+    public function managerOrderCancel()
+    {
+        $ids = Request::param('ids');
+        (new OrderService())->orderCancelManager($ids);
+        return json(new SuccessMessage());
+    }
+
+
+    /**
      * @api {POST} /api/v1/order/changeCount 微信端---线上订餐---修改订单预定数量
      * @apiGroup   Official
      * @apiVersion 3.0.0
@@ -503,7 +526,7 @@ class Order extends BaseController
         $canteen_id = Request::param('canteen_id');
         $consumption_time = Request::param('consumption_time');
         $key = Request::param('key');
-        $orders = (new OrderService())->managerOrders($canteen_id, $consumption_time,$key);
+        $orders = (new OrderService())->managerOrders($canteen_id, $consumption_time, $key);
         return json(new SuccessMessageWithData(['data' => $orders]));
 
     }
@@ -732,8 +755,7 @@ class Order extends BaseController
      * @apiParam (请求参数说明) {string} name  姓名查询
      * @apiParam (请求参数说明) {int} type  订餐类型：1｜饭堂就餐；2｜外卖；3｜全部
      * @apiSuccessExample {json}返回样例:
-     * {"msg":"ok","errorCode":0,"code":200,"data":{"total":1,"per_page":20,"current_page":1,"last_page":1,"data":[{"ordering_date":"2019-09-07","company":"一级企业","canteen":"饭堂1","dinner":"中餐","count":1}]}}
-     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"total":4255,"per_page":"1","current_page":1,"last_page":4255,"data":[{"order_id":37812,"ordering_date":"2020-07-28","username":"林佩熔","canteen":"饭堂","department":"整形外科","dinner":"晚餐","type":"食堂","ordering_type":"personal_choice","state":1,"meal_time_begin":"16:05:00","meal_time_end":"19:20:00","status":3}]}}     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
      * @apiSuccess (返回参数说明) {String} msg 信息描述
      * @apiSuccess (返回参数说明) {int} total 数据总数
      * @apiSuccess (返回参数说明) {int} per_page 每页多少条数据
@@ -741,11 +763,13 @@ class Order extends BaseController
      * @apiSuccess (返回参数说明) {int} last_page 最后页码
      * @apiSuccess (返回参数说明) {int} order_id 订单id
      * @apiSuccess (返回参数说明) {string} ordering_date 订餐日期
+     * @apiSuccess (返回参数说明) {string} meal_time_end 就餐截止时间（选中取消操作时，判断一下ordering_date+meal_time_end 是否小于当前时间）
      * @apiSuccess (返回参数说明) {string} canteen 消费地点
      * @apiSuccess (返回参数说明) {string} department 部门
      * @apiSuccess (返回参数说明) {string} username 用户姓名
      * @apiSuccess (返回参数说明) {string} dinner 餐次
      * @apiSuccess (返回参数说明) {string} ordering_type 订餐方式：online：线上订单，personal_choice：个人选菜；no:未订餐就餐
+     * @apiSuccess (返回参数说明) {int} status 状态：1：已经订餐；2：已经取消；3：已结算
      */
     public function orderStatisticDetail($page = 1, $size = 20, $name = '', $phone = '', $canteen_id = 0, $department_id = 0, $dinner_id = 0, $type = 3)
     {

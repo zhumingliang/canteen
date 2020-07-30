@@ -741,6 +741,39 @@ class OrderService extends BaseService
         }
     }
 
+
+    public
+    function orderCancelManager($ids)
+    {
+
+        $idArr = explode(',', $ids);
+        if (empty($idArr)) {
+            throw new ParameterException();
+        }
+        foreach ($idArr as $k => $v) {
+            $order = OrderT::get($v);
+            if (empty($order)) {
+                throw new ParameterException(['msg' => "订单号：" . $v . "不存在"]);
+                break;
+            }
+            //判断是否使用
+            if ($order->used == CommonEnum::STATE_IS_OK) {
+                throw new ParameterException(['msg' => '订单已消费，不能取消']);
+            }
+            //判断是不是微信支付订餐
+            if ($order->pay_way == PayEnum::PAY_WEIXIN) {
+                //撤回订单
+                $this->refundWxOrder($v);
+            }
+            $res = OrderT::update(['state' => OrderEnum::STATUS_CANCEL],['id'=>$v]);
+            if (!$res) {
+                throw new UpdateException();
+            }
+
+        }
+
+    }
+
     public function refundWxOrder($order_id)
     {
         $payOrder = PayT::where('order_id', $order_id)->find();
