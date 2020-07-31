@@ -85,7 +85,7 @@ class OrderStatisticService
     {
         $dataList = [];
         foreach ($list as $k => $v) {
-            $data['order_id'] = $v['id'];
+            $data['order_id'] = $v['order_id'];
             $data['ordering_date'] = $v['ordering_date'];
             $data['username'] = $v['username'];
             $data['canteen'] = $v['canteen'];
@@ -101,7 +101,7 @@ class OrderStatisticService
             $data['foods'] = implode('  ', $detail);
             array_push($dataList, $data);
         }
-        return $list;
+        return $dataList;
     }
 
     private function getStatus($ordering_date, $state, $meal_time_end, $used)
