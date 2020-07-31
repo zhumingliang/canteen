@@ -27,6 +27,7 @@ use app\api\service\ExcelService;
 use app\api\service\NoticeService;
 use app\api\service\OrderService;
 use app\api\service\QrcodeService;
+use app\api\service\SendSMSService;
 use app\api\service\TakeoutService;
 use app\api\service\WalletService;
 use app\api\service\WeiXinService;
@@ -111,8 +112,6 @@ Index extends BaseController
 
     public function test()
     {
-        echo  Redis::instance()->incr('aqws');
-
         /* $company_id = 97;
          $data = (new ExcelService())->saveTestExcel();
          $fail = [];

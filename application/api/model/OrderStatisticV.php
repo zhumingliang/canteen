@@ -96,10 +96,10 @@ class OrderStatisticV extends Model
         $list = self::whereBetweenTime('ordering_date', $time_begin, $time_end)
             ->where(function ($query) use ($name, $phone, $department_id) {
                 if (strlen($name)) {
-                    $query->where('username', $name);
+                    $query->where('username', 'like', '%' . $name . '%');
                 }
                 if (strlen($phone)) {
-                    $query->where('phone', $phone);
+                    $query->where('phone', 'like', '%' . $phone . '%');
                 }
                 if (!empty($department_id)) {
                     $query->where('department_id', $department_id);
@@ -141,10 +141,10 @@ class OrderStatisticV extends Model
         $list = self::whereBetweenTime('ordering_date', $time_begin, $time_end)
             ->where(function ($query) use ($name, $phone, $department_id) {
                 if (strlen($name)) {
-                    $query->where('username', $name);
+                    $query->where('username', 'like', '%' . $name . '%');
                 }
                 if (strlen($phone)) {
-                    $query->where('phone', $phone);
+                    $query->where('phone', 'like', '%' . $phone . '%');
                 }
                 if (!empty($department_id)) {
                     $query->where('department_id', $department_id);
@@ -176,7 +176,7 @@ class OrderStatisticV extends Model
                         ->field('o_id,count,name');
                 }
             ])
-            ->field('order_id,ordering_date,canteen,department,username,dinner,type')
+            ->field('order_id,ordering_date,username,canteen,department,dinner,type,ordering_type,state,meal_time_end,used')
             ->order('order_id DESC')
             ->select()->toArray();
         return $list;
