@@ -90,7 +90,7 @@ class OrderStatisticService
             $data['canteen'] = $v['canteen'];
             $data['department'] = $v['department'];
             $data['username'] = $v['username'];
-            $data['dinner'] = $v['canteen'];
+            $data['dinner'] = $v['dinner'];
             $data['type'] = $v['type'];
             $data['status'] = $this->getStatus($v['ordering_date'], $v['state'], $v['meal_time_end'], $v['used']);
             $foods = $v['foods'];
