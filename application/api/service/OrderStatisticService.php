@@ -87,9 +87,9 @@ class OrderStatisticService
         foreach ($list as $k => $v) {
             $data['order_id'] = $v['order_id'];
             $data['ordering_date'] = $v['ordering_date'];
-            $data['username'] = $v['username'];
             $data['canteen'] = $v['canteen'];
             $data['department'] = $v['department'];
+            $data['username'] = $v['username'];
             $data['dinner'] = $v['canteen'];
             $data['type'] = $v['type'];
             $data['status'] = $this->getStatus($v['ordering_date'], $v['state'], $v['meal_time_end'], $v['used']);
