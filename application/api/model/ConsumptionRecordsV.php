@@ -12,13 +12,16 @@ use function GuzzleHttp\Psr7\str;
 class ConsumptionRecordsV extends Model
 {
 
-    public function getUsedTypeAttr($value)
+    /*public function getUsedTypeAttr($value)
     {
         $data = [
-            'shop' => '小卖部', 'inside' => '就餐', 'outside' => '外卖', 'cash' => '现金充值', 'weixin' => '微信充值'
+            'shop' => '小卖部', 'inside' => '就餐',
+            'outside' => '外卖', 'cash' => '现金充值',
+            'weixin' => '微信充值','recharge'=>"系统补充 ",
+            'deduction'=>'系统补扣'
         ];
         return $data[$value];
-    }
+    }*/
 
     public static function records($u_id, $consumption_time, $page, $size)
     {

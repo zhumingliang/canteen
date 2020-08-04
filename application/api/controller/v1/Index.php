@@ -112,6 +112,7 @@ Index extends BaseController
 
     public function test()
     {
+       echo getRandChar(18);
         /* $company_id = 97;
          $data = (new ExcelService())->saveTestExcel();
          $fail = [];

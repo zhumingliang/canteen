@@ -477,7 +477,10 @@ class Order extends BaseController
      * @apiSuccess (返回参数说明) {int} id 订单id
      * @apiSuccess (返回参数说明) {int} count  订餐数量
      * @apiSuccess (返回参数说明) {string} ordering_date  饭堂订单中订餐日期
-     * @apiSuccess (返回参数说明) {obj} address 地址信息：order_type=2时此数据不为空
+     * @apiSuccess (返回参数说明) {float} money 标准金额
+     * @apiSuccess (返回参数说明) {float} sub_money  附加费用
+     * @apiSuccess (返回参数说明) {float} delivery_fee  配送费用
+     * @apiSuccess (返回参数说明) {obj} address 地址信息
      * @apiSuccess (返回参数说明) {string} address|province  省
      * @apiSuccess (返回参数说明) {string} address|city  城市
      * @apiSuccess (返回参数说明) {string} address|area  区
@@ -485,7 +488,7 @@ class Order extends BaseController
      * @apiSuccess (返回参数说明) {string} address|name  姓名
      * @apiSuccess (返回参数说明) {string} address|phone  手机号
      * @apiSuccess (返回参数说明) {int} address|sex  性别：1|男；2|女
-     * @apiSuccess (返回参数说明) {obj} foods ：order_type=2时此数据不为空
+     * @apiSuccess (返回参数说明) {obj} foods
      * @apiSuccess (返回参数说明) {int} foods|food_id 菜品id
      * @apiSuccess (返回参数说明) {string} foods|price 菜品实时单价
      * @apiSuccess (返回参数说明) {string} foods|count 菜品数量
@@ -840,7 +843,7 @@ class Order extends BaseController
      * @apiParam (请求参数说明) {string} time_end  查询结束时间
      * @apiParam (请求参数说明) {string} phone  手机号查询
      * @apiParam (请求参数说明) {string} name  姓名查询
-     * @apiParam (请求参数说明) {int} consumption_type  消费类型，1：订餐就餐；2：订餐未就餐；3：未订餐就餐；4：补录；5：全部
+     * @apiParam (请求参数说明) {int} consumption_type  消费类型，1：订餐就餐；2：订餐未就餐；3：未订餐就餐；4：补充；5：补扣；6：全部
      * @apiSuccessExample {json}返回样例:
      * {"msg":"ok","errorCode":0,"code":200,"data":{"total":1,"per_page":"20","current_page":1,"last_page":1,"data":[{"order_id":8,"used_time":"0000-00-00 00:00:00","username":"张三","phone":"18956225230","canteen":"饭堂1","department":"董事会-修改","dinner":"中餐","booking":1,"used":2,"consumption_type":2}]}}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
@@ -855,7 +858,7 @@ class Order extends BaseController
      * @apiSuccess (返回参数说明) {string} department 部门
      * @apiSuccess (返回参数说明) {string} name 用户姓名
      * @apiSuccess (返回参数说明) {string} dinner 餐次
-     * @apiSuccess (返回参数说明) {string} consumption_type  消费类型，1：订餐就餐；2：订餐未就餐；3：未订餐就餐；4：补录
+     * @apiSuccess (返回参数说明) {string} consumption_type
      */
     public function orderSettlement($page = 1, $size = 20, $name = '',
                                     $phone = '',
@@ -887,8 +890,7 @@ class Order extends BaseController
      * @apiParam (请求参数说明) {string} time_end  查询结束时间
      * @apiParam (请求参数说明) {string} phone  手机号查询
      * @apiParam (请求参数说明) {string} name  姓名查询
-     * @apiParam (请求参数说明) {int} consumption_type  消费类型，1：订餐就餐；2：订餐未就餐；3：未订餐就餐；4：补录；5：全部
-     * @apiSuccessExample {json} 返回样例:
+     * @apiParam (请求参数说明) {int} consumption_type  消费类型，1：订餐就餐；2：订餐未就餐；3：未订餐就餐；4：补充；5：补扣；6：全部     * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200,"data":{"url":"http:\/\/canteen.tonglingok.com\/static\/excel\/download\/材料价格明细_20190817005931.xls"}}
      * @apiSuccess (返回参数说明) {int} error_code 错误代码 0 表示没有错误
      * @apiSuccess (返回参数说明) {string} msg 操作结果描述
@@ -1130,7 +1132,7 @@ class Order extends BaseController
      * @apiParam (请求参数说明) {int} staff_type_id  人员类型id：全部传入0
      * @apiParam (请求参数说明) {int} canteen_ids  消费地点，饭堂id：全部传入0
      * @apiParam (请求参数说明) {int} company_ids  企业id：全部，将所有ID用逗号分隔
-     * @apiParam (请求参数说明) {int} status  消费类型：全部传入0；1：订餐就餐；2：未订餐就餐；3：未订餐就餐；4：补录操作
+     * @apiParam (请求参数说明) {int} status  消费类型：全部传入0；1：订餐就餐；2：未订餐就餐；3：未订餐就餐；5：补充操作；6：补扣操作
      * @apiParam (请求参数说明) {int} type  汇总类型：1：按部门进行汇总；2：按姓名进行汇总；3：按人员类型进行汇总；4：按消费地点进行汇总；5：按消费类型进行汇总
      * @apiParam (请求参数说明) {string} time_begin  查询开始时间
      * @apiParam (请求参数说明) {string} time_end  查询结束时间
@@ -1259,5 +1261,45 @@ class Order extends BaseController
         return json(new SuccessMessageWithData(['data' => $orders]));
     }
 
+    /**
+     * @api {POST} /api/v1/order/money 微信端-个人选菜-提交订单时查看金额信息
+     * @apiGroup   Official
+     * @apiVersion 3.0.0
+     * @apiDescription    微信端-个人选菜-提交订单时查看金额信息
+     * @apiExample {post}  请求样例:
+     *    {
+     *       "ordering_date": "2019-09-07",
+     *       "dinner_id": 1,
+     *       "dinner": "早餐",
+     *       "type": 1,
+     *       "count": 1,
+     *       "detail":[{"menu_id":1,"foods":[{"food_id":1,"name":"商品1","price":5,""count":1},{"food_id":2,"name":"商品1","price":5,"count":1}]}]
+     *     }
+     * @apiParam (请求参数说明) {string} ordering_date  订餐日期
+     * @apiParam (请求参数说明) {int} dinner_id 餐次id
+     * @apiParam (请求参数说明) {int} dinner 餐次名称
+     * @apiParam (请求参数说明) {int} type 就餐类别：1|食堂；2|外卖
+     * @apiParam (请求参数说明) {int} count 订餐数量
+     * @apiParam (请求参数说明) {obj} detail 订餐菜品明细
+     * @apiParam (请求参数说明) {string} detail|menu_id 菜品类别id
+     * @apiParam (请求参数说明) {obj} detail|foods 菜品明细
+     * @apiParam (请求参数说明) {string} foods|food_id 菜品id
+     * @apiParam (请求参数说明) {string} foods|price 菜品实时单价
+     * @apiParam (请求参数说明) {string} foods|count 菜品数量
+     * @apiParam (请求参数说明) {string} foods|name 菜品名称
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"money":1,"sub_money":2,"delivery_fee":2}}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     * @apiSuccess (返回参数说明) {int} money 标准金额
+     * @apiSuccess (返回参数说明) {int} sub_money 附加金额
+     * @apiSuccess (返回参数说明) {int} delivery_fee 外卖配送费
+     */
+    public function getOrderMoney()
+    {
+        $params = Request::param();
+        $money = (new  OrderService())->getOrderMoney($params);
+        return json(new SuccessMessageWithData(['data' => $money]));
+    }
 
 }

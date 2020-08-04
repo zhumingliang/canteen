@@ -23,6 +23,7 @@ use app\api\model\OrderUsersStatisticV;
 use app\api\model\OutConfigT;
 use app\api\model\PayT;
 use app\api\model\PayWxT;
+use app\api\model\RechargeSupplementT;
 use app\api\model\ShopOrderingV;
 use app\api\model\ShopOrderT;
 use app\api\model\UserBalanceV;
@@ -39,6 +40,7 @@ use app\lib\exception\UpdateException;
 use app\lib\Num;
 use think\Db;
 use think\Exception;
+use function GuzzleHttp\Promise\each_limit;
 
 
 class OrderService extends BaseService
@@ -116,8 +118,27 @@ class OrderService extends BaseService
 
     }
 
+    public function getOrderMoney($params)
+    {
+        $dinner_id = $params['dinner_id'];
+        $ordering_date = $params['ordering_date'];
+        $count = $params['count'];
+        $detail = json_decode($params['detail'], true);
+        $dinner = DinnerT::dinnerInfo($dinner_id);
+        $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
+        $delivery_fee = $this->checkUserOutsider($params['type'], $canteen_id);
+        //检测用户是否可以订餐并返回订单金额
+        $orderMoney = $this->checkUserCanOrder($dinner, $ordering_date, $canteen_id, $count, $detail);
+        return [
+            'delivery_fee' => $delivery_fee,
+            'money' => $orderMoney['money'] * $count,
+            'sub_money' => +$orderMoney['sub_money'] * $count
+        ];
 
-    public function personChoiceOutsider($params)
+    }
+
+    public
+    function personChoiceOutsider($params)
     {
         try {
             Db::startTrans();
@@ -187,7 +208,8 @@ class OrderService extends BaseService
 
     }
 
-    public function savePayOrder($order_id, $company_id, $openid, $u_id, $money, $phone, $username)
+    public
+    function savePayOrder($order_id, $company_id, $openid, $u_id, $money, $phone, $username)
     {
         $data = [
             'openid' => $openid,
@@ -214,7 +236,8 @@ class OrderService extends BaseService
     }
 
 
-    private function checkUserOutsider($type, $canteen_id)
+    private
+    function checkUserOutsider($type, $canteen_id)
     {
 
         $outsiders = Token::getCurrentTokenVar('outsiders');
@@ -331,7 +354,8 @@ class OrderService extends BaseService
         return $strategyMoney;
     }
 
-    private function checkOrderedAnotherCanteen($canteen_id, $orders)
+    private
+    function checkOrderedAnotherCanteen($canteen_id, $orders)
     {
         $count = count($orders);
         if ($count) {
@@ -532,7 +556,8 @@ class OrderService extends BaseService
 
     }
 
-    public function checkEatingOutsider($type, $address_id)
+    public
+    function checkEatingOutsider($type, $address_id)
     {
 
         if ($type == OrderEnum::EAT_OUTSIDER && (!Num::isPositiveInteger($address_id))) {
@@ -765,7 +790,7 @@ class OrderService extends BaseService
                 //撤回订单
                 $this->refundWxOrder($v);
             }
-            $res = OrderT::update(['state' => OrderEnum::STATUS_CANCEL],['id'=>$v]);
+            $res = OrderT::update(['state' => OrderEnum::STATUS_CANCEL], ['id' => $v]);
             if (!$res) {
                 throw new UpdateException();
             }
@@ -774,7 +799,8 @@ class OrderService extends BaseService
 
     }
 
-    public function refundWxOrder($order_id)
+    public
+    function refundWxOrder($order_id)
     {
         $payOrder = PayT::where('order_id', $order_id)->find();
         if (!$payOrder) {
@@ -1123,7 +1149,8 @@ class OrderService extends BaseService
         ];
     }
 
-    private function getMenuCount($menuId, $detail)
+    private
+    function getMenuCount($menuId, $detail)
     {
         LogService::save(json_encode($detail));
         $count = 0;
@@ -1238,12 +1265,42 @@ class OrderService extends BaseService
         $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
         $company_id = Token::getCurrentTokenVar('current_company_id');
         $records = ConsumptionRecordsV::recordsByPhone($phone, $consumption_time, $page, $size);
+        $records['data'] = $this->prefixConsumptionRecords($records['data']);
         $consumptionMoney = ConsumptionRecordsV::monthConsumptionMoneyByPhone($phone, $consumption_time);
         return [
             'balance' => $this->getUserBalance($canteen_id, $company_id, $phone),
             'consumptionMoney' => $consumptionMoney,
             'records' => $records
         ];
+    }
+
+    private
+    function prefixConsumptionRecords($data)
+    {
+        if (count($data)) {
+            foreach ($data as $k => $v) {
+                if ($v['order_type'] == "canteen") {
+                    if ($v['used'] == CommonEnum::STATE_IS_FAIL) {
+                        $data[$k]['used_type'] = "订餐未就餐";
+                    } else {
+                        if ($v['booking'] == CommonEnum::STATE_IS_OK) {
+                            $data[$k]['used_type'] = "订餐就餐";
+
+                        } else {
+                            $data[$k]['used_type'] = "未订餐就餐";
+                        }
+                    }
+                } else if ($v['order_type'] == "recharge") {
+                    if ($v['supplement_type'] == CommonEnum::STATE_IS_OK) {
+                        $data[$k]['used_type'] = "系统补充";
+                    } else {
+                        $data[$k]['used_type'] = "系统补扣";
+
+                    }
+
+                }
+            }
+        }
     }
 
     public
@@ -1284,6 +1341,8 @@ class OrderService extends BaseService
             $order = ShopOrderT::orderInfo($order_id);
         } else if ($order_type == "canteen") {
             $order = OrderT::orderDetail($order_id);
+        } else if ($order_type == "recharge") {
+            $order = RechargeSupplementT::orderDetail($order_id);
         }
         return $order;
     }
@@ -1551,7 +1610,8 @@ class OrderService extends BaseService
         }
     }
 
-    public function usersStatisticInfo($orderIds)
+    public
+    function usersStatisticInfo($orderIds)
     {
         $orders = OrderT::usersStatisticInfo($orderIds);
         return $orders;
