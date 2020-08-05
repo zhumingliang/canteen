@@ -49,7 +49,7 @@ class ConsumptionRecordsV extends Model
             ->where('ordering_date', '<=', $time_end)
             ->hidden(['u_id', 'location_id', 'dinner_id'])
             ->order('create_time desc')
-            ->paginate($size, false, ['page' => $page]);
+            ->paginate($size, false, ['page' => $page])->toArray();
         return $records;
     }
 

@@ -263,7 +263,6 @@ class ModuleService
     {
         $outsiders = Token::getCurrentTokenVar('outsiders');
         $company_id = (new UserService())->getUserCurrentCompanyID();
-
         if ($outsiders == UserEnum::OUTSIDE) {
             $outsider = CompanyOutsiderT::getCompanyOutsiderWithCompanyId($company_id);
             if (empty($outsider)) {

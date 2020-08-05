@@ -1277,6 +1277,7 @@ class OrderService extends BaseService
     private
     function prefixConsumptionRecords($data)
     {
+
         if (count($data)) {
             foreach ($data as $k => $v) {
                 if ($v['order_type'] == "canteen") {
