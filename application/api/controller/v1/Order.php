@@ -479,6 +479,10 @@ class Order extends BaseController
      * @apiSuccess (返回参数说明) {string} ordering_date  饭堂订单中订餐日期
      * @apiSuccess (返回参数说明) {float} money 标准金额
      * @apiSuccess (返回参数说明) {float} sub_money  附加费用
+     * @apiSuccess (返回参数说明) {float} meal_money 订餐就餐标准金额
+     * @apiSuccess (返回参数说明) {float} meal_sub_money  订餐就餐附加费用
+     * @apiSuccess (返回参数说明) {float} no_meal_money 订餐未就餐标准金额
+     * @apiSuccess (返回参数说明) {float} no_meal_sub_money  订餐未就餐附加费用
      * @apiSuccess (返回参数说明) {float} delivery_fee  配送费用
      * @apiSuccess (返回参数说明) {obj} address 地址信息
      * @apiSuccess (返回参数说明) {string} address|province  省

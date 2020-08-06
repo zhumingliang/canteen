@@ -15,7 +15,7 @@ class RechargeSupplementT extends Model
         if ($data['type'] == CommonEnum::STATE_IS_FAIL) {
             return "系统补扣";
         } else {
-            return "系统补充值";
+            return "系统补充";
         }
     }
 
@@ -23,7 +23,8 @@ class RechargeSupplementT extends Model
     {
         $info = self::where('id', $order_id)
             ->field('id,ordering_date,1 as count,
-           1 as consumption_type,money,0 as sub_money 0 as delivery_fee')
+           1 as consumption_type,money,0 as sub_money, 0 as delivery_fee,
+            0 as meal_money, 0 as meal_sub_money,0 as no_meal_money,0 as no_meal_sub_money')
             ->find();
         return $info;
     }
