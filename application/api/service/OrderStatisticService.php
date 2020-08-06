@@ -154,12 +154,13 @@ class OrderStatisticService
         $dataList = [];
         if (count($data)) {
             foreach ($data as $k => $v) {
-
                 if ($v['type'] == 'recharge') {
-                    $consumption_type = "补录";
+                    $consumption_type = "系统补充";
+                } else if ($v['type'] == 'deduction') {
+                    $consumption_type = "系统补扣";
                 } else {
                     if ($v['booking'] == CommonEnum::STATE_IS_OK) {
-                        $consumption_type = $v['used'] == CommonEnum::STATE_IS_OK ? "订餐就餐" : "订餐未就餐";
+                        $consumption_type= $v['used'] == CommonEnum::STATE_IS_OK ? "订餐就餐" : "订餐未就餐";
                     } else {
                         $consumption_type = "未订餐就餐";
                     }
