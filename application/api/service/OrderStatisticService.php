@@ -188,9 +188,9 @@ class OrderStatisticService
             foreach ($data as $k => $v) {
                 $data[$k]['used_time'] = $v['used'] == CommonEnum::STATE_IS_OK ? $v['used_time'] : "-";
                 if ($v['type'] == 'recharge') {
-                    $data[$k]['consumption_type'] = "补充";
+                    $data[$k]['consumption_type'] = "系统补充";
                 } else if ($v['type'] == 'deduction') {
-                    $data[$k]['consumption_type'] = "补扣";
+                    $data[$k]['consumption_type'] = "系统补扣";
                 } else {
                     if ($v['booking'] == CommonEnum::STATE_IS_OK) {
                         $data[$k]['consumption_type'] = $v['used'] == CommonEnum::STATE_IS_OK ? "订餐就餐" : "订餐未就餐";
