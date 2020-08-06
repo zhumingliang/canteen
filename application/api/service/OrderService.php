@@ -132,7 +132,11 @@ class OrderService extends BaseService
         return [
             'delivery_fee' => $delivery_fee,
             'money' => $orderMoney['money'] * $count,
-            'sub_money' => +$orderMoney['sub_money'] * $count
+            'sub_money' => +$orderMoney['sub_money'] * $count,
+            'meal_money' => $orderMoney['meal_money'] * $count,
+            'meal_sub_money' => +$orderMoney['meal_sub_money'] * $count,
+            'no_meal_money' => $orderMoney['no_meal_money'] * $count,
+            'no_meal_sub_money' => +$orderMoney['no_meal_sub_money'] * $count,
         ];
 
     }

@@ -1295,8 +1295,12 @@ class Order extends BaseController
      * {"msg":"ok","errorCode":0,"code":200,"data":{"money":1,"sub_money":2,"delivery_fee":2}}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
      * @apiSuccess (返回参数说明) {string} msg 信息描述
-     * @apiSuccess (返回参数说明) {int} money 标准金额
-     * @apiSuccess (返回参数说明) {int} sub_money 附加金额
+     * @apiSuccess (返回参数说明) {int} money 扣费标准金额
+     * @apiSuccess (返回参数说明) {int} sub_money 扣费附加金额
+     * @apiSuccess (返回参数说明) {int} meal_money 订餐就餐扣费标准金额
+     * @apiSuccess (返回参数说明) {int} meal_sub_money 订餐就餐扣费附加金额
+     * @apiSuccess (返回参数说明) {int} no_meal_money 订餐未就餐扣费标准金额
+     * @apiSuccess (返回参数说明) {int} no_meal_sub_money 订餐未就餐附加金额
      * @apiSuccess (返回参数说明) {int} delivery_fee 外卖配送费
      */
     public function getOrderMoney()
