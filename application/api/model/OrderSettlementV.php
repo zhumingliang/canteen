@@ -57,10 +57,10 @@ class OrderSettlementV extends Model
                         $query->where('booking', CommonEnum::STATE_IS_FAIL)
                             ->where('used', CommonEnum::STATE_IS_OK);
                     } else if ($consumption_type == 4) {
-                        //未订餐就餐
+                        //系统补充
                         $query->where('type', 'recharge');
                     } else if ($consumption_type == 5) {
-                        //未订餐就餐
+                        //系统补扣
                         $query->where('type', 'deduction');
                     }
                 }

@@ -843,8 +843,7 @@ class Order extends BaseController
      * @apiParam (请求参数说明) {string} time_end  查询结束时间
      * @apiParam (请求参数说明) {string} phone  手机号查询
      * @apiParam (请求参数说明) {string} name  姓名查询
-     * @apiParam (请求参数说明) {int} consumption_type
-     * 消费类型，1：订餐就餐；2：订餐未就餐；3：未订餐就餐；4：补充；5：补扣；6：全部
+     * @apiParam (请求参数说明) {int} consumption_type 消费类型，1：订餐就餐；2：订餐未就餐；3：未订餐就餐；4：补充；5：补扣；6：全部
      * @apiSuccessExample {json}返回样例:
      * {"msg":"ok","errorCode":0,"code":200,"data":{"total":1,"per_page":"20","current_page":1,"last_page":1,"data":[{"order_id":8,"used_time":"0000-00-00 00:00:00","username":"张三","phone":"18956225230","canteen":"饭堂1","department":"董事会-修改","dinner":"中餐","booking":1,"used":2,"consumption_type":2}]}}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误

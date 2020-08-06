@@ -189,16 +189,16 @@ class OrderStatisticService
                 $data[$k]['used_time'] = $v['used'] == CommonEnum::STATE_IS_OK ? $v['used_time'] : "-";
                 if ($v['type'] == 'recharge') {
                     $data[$k]['consumption_type'] = "补充";
-                    continue;
-                } else if ($v['type'] == 'recharge') {
+                } else if ($v['type'] == 'deduction') {
                     $data[$k]['consumption_type'] = "补扣";
-                    continue;
-                }
-                if ($v['booking'] == CommonEnum::STATE_IS_OK) {
-                    $data[$k]['consumption_type'] = $v['used'] == CommonEnum::STATE_IS_OK ? "订餐就餐" : "订餐未就餐";
                 } else {
-                    $data[$k]['consumption_type'] = "未订餐就餐";
+                    if ($v['booking'] == CommonEnum::STATE_IS_OK) {
+                        $data[$k]['consumption_type'] = $v['used'] == CommonEnum::STATE_IS_OK ? "订餐就餐" : "订餐未就餐";
+                    } else {
+                        $data[$k]['consumption_type'] = "未订餐就餐";
+                    }
                 }
+
             }
 
         }
