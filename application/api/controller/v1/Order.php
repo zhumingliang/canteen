@@ -909,7 +909,7 @@ class Order extends BaseController
         $time_begin = Request::param('time_begin');
         $time_end = Request::param('time_end');
         $company_ids = Request::param('company_ids');
-        $records = (new OrderStatisticService())->exportOrderSettlement(
+        $records = (new OrderStatisticService())->expƒortOrderSettlement(
             $name, $phone, $canteen_id, $department_id, $dinner_id,
             $consumption_type, $time_begin, $time_end, $company_ids);
         return json(new SuccessMessageWithData(['data' => $records]));
