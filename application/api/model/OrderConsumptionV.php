@@ -15,6 +15,12 @@ class OrderConsumptionV extends Model
         return $status[$value];
     }
 
+    public function getOrderMoneyAttr($value)
+    {
+        return round($value, 2);
+
+    }
+
     public static function consumptionStatisticByDepartment($canteen_id, $status, $department_id,
                                                             $username, $staff_type_id, $time_begin,
                                                             $time_end, $company_id)
