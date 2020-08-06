@@ -1268,7 +1268,7 @@ class OrderService extends BaseService
         $phone = Token::getCurrentPhone();
         $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
         $company_id = Token::getCurrentTokenVar('current_company_id');
-        $records = ConsumptionRecordsV::recordsByPhone($phone, $consumption_time, $page, $size);
+        $records = ConsumptionRecordsV::recordsByPhone($phone, $canteen_id,$consumption_time, $page, $size);
         $records['data'] = $this->prefixConsumptionRecords($records['data']);
         $consumptionMoney = ConsumptionRecordsV::monthConsumptionMoneyByPhone($phone, $consumption_time);
         return [
