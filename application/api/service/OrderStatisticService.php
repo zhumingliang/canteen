@@ -700,7 +700,7 @@ class OrderStatisticService
         }
         return [
             'statistic' => $data,
-            'allMoney' => round($allMoney, 1),
+            'allMoney' => round($allMoney, 2),
             'allCount' => $allCount
         ];
     }
