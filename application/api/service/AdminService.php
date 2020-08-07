@@ -231,6 +231,7 @@ class AdminService
         $grade = Token::getCurrentTokenVar('grade');
         if ($grade == AdminEnum::SYSTEM_SUPER) {
             $types = StaffTypeT::roleTypes($page, $size, $key);
+            return $types;
         } else {
             $allTypes = StaffTypeT::allTypes();
             $company_id = Token::getCurrentTokenVar('company_id');
@@ -244,8 +245,9 @@ class AdminService
                 }
             }
             $companyTypes['data'] = $data;
+            return $companyTypes;
         }
-        return $types;
+
     }
 
     public function allTypes()
