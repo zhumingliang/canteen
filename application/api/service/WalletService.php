@@ -308,7 +308,6 @@ class WalletService
 
     public function prefixSupplementUploadData($company_id, $admin_id, $data)
     {
-        LogService::save(json_encode($data));
         $dataList = [];
         $canteens = (new CanteenService())->companyCanteens($company_id);
         $dinners = DinnerV::companyDinners($company_id);
@@ -353,10 +352,8 @@ class WalletService
 
     private function getConsumptionDate($value)
     {
-        if (strpos($value, '/') !== false) {
-            return str_replace('/', '-', $value);
-        }
-        return $value;
+        return gmdate("Y-m-d", ($value - 25569) * 86400);
+
     }
 
     private function getCanteenID($canteens, $canteen)
