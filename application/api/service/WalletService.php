@@ -308,6 +308,7 @@ class WalletService
 
     public function prefixSupplementUploadData($company_id, $admin_id, $data)
     {
+        LogService::save(json_encode($data));
         $dataList = [];
         $canteens = (new CanteenService())->companyCanteens($company_id);
         $dinners = DinnerV::companyDinners($company_id);
@@ -352,7 +353,6 @@ class WalletService
 
     private function getConsumptionDate($value)
     {
-        LogService::save($value);
         if (strpos($value, '/') !== false) {
             return str_replace('/', '-', $value);
         }
