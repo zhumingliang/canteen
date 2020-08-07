@@ -9,6 +9,7 @@ use app\api\model\AdminModuleT;
 use app\api\model\AdminShopT;
 use app\api\model\AdminT;
 use app\api\model\CanteenModuleV;
+use app\api\model\CompanyStaffT;
 use app\api\model\StaffTypeT;
 use app\lib\enum\AdminEnum;
 use app\lib\enum\CommonEnum;
@@ -227,7 +228,23 @@ class AdminService
 
     public function roleTypes($page, $size, $key)
     {
-        $types = StaffTypeT::roleTypes($page, $size, $key);
+        $grade = Token::getCurrentTokenVar('grade');
+        if ($grade == AdminEnum::SYSTEM_SUPER) {
+            $types = StaffTypeT::roleTypes($page, $size, $key);
+        } else {
+            $allTypes = StaffTypeT::allTypes();
+            $company_id = Token::getCurrentTokenVar('company_id');
+            $companyTypes = CompanyStaffT::staffsType($company_id, $page, $size);
+            $data = $companyTypes['data'];
+            foreach ($data as $k => $v) {
+                foreach ($allTypes as $k2 => $v2) {
+                    if ($v['id'] == $v2['id']) {
+                        $data[$k]['name'] = $v2['name'];
+                    }
+                }
+            }
+            $companyTypes['data'] = $data;
+        }
         return $types;
     }
 

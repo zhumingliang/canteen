@@ -160,7 +160,7 @@ class OrderStatisticService
                     $consumption_type = "系统补扣";
                 } else {
                     if ($v['booking'] == CommonEnum::STATE_IS_OK) {
-                        $consumption_type= $v['used'] == CommonEnum::STATE_IS_OK ? "订餐就餐" : "订餐未就餐";
+                        $consumption_type = $v['used'] == CommonEnum::STATE_IS_OK ? "订餐就餐" : "订餐未就餐";
                     } else {
                         $consumption_type = "未订餐就餐";
                     }
@@ -511,6 +511,14 @@ class OrderStatisticService
     public function exportConsumptionStatistic($canteen_id, $status, $type,
                                                $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id)
     {
+        $fileNameArr = [
+            0 => "消费总报表",
+            1 => '订餐就餐总报表',
+            2 => '未订餐就餐总报表',
+            3 => '系统补充总报表',
+            4 => '系统补扣总报表',
+        ];
+
         switch ($type) {
             case OrderEnum::STATISTIC_BY_DEPARTMENT:
                 $info = $this->consumptionStatisticByDepartment($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id);
@@ -539,7 +547,8 @@ class OrderStatisticService
         $allCount = empty($info['allCount']) ? 0 : $info['allCount'];
         $reports = $this->prefixConsumptionStatistic($statistic, $allMoney, $allCount);
         $header = ['序号', '统计变量', '开始时间', '结束时间', '姓名', '部门', '餐次', '数量', '金额（元）'];
-        $file_name = "消费总报表(" . $time_begin . "-" . $time_end . ")";
+        $reportName = $fileNameArr[$status];
+        $file_name = $reportName . "(" . $time_begin . "-" . $time_end . ")";
         $url = (new ExcelService())->makeExcelMerge($header, $reports, $file_name, 6);
         return [
             'url' => config('setting.domain') . $url

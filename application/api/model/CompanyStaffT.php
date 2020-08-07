@@ -120,4 +120,14 @@ class CompanyStaffT extends Model
             ->select();
     }
 
+    public static function staffsType($company_id, $page, $size)
+    {
+        $types = self::where('company_id', $company_id)
+            ->field(' t_id as id')
+            ->group('t_id')
+            ->paginate($size, false, ['page' => $page])->toArray();
+        return $types;
+
+    }
+
 }
