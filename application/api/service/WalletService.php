@@ -339,7 +339,7 @@ class WalletService
                 'phone' => $v[3],
                 'canteen' => $v[4],
                 'canteen_id' => $newCanteen[$v[4]],
-                'consumption_date' => $v[5],
+                'consumption_date' => $this->getConsumptionDate($v[5]),
                 'dinner_id' => $newDinner[$v[6]],
                 'dinner' => $v[6],
                 'type' => $v[7] == "补扣" ? 2 : 1,
