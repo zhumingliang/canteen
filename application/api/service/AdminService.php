@@ -28,7 +28,7 @@ class AdminService
         try {
             Db::startTrans();
             //检测角色账号是否重复
-            $check = AdminT::check($params['c_id'], $params['account']);
+            $check = AdminT::check( $params['account']);
             if ($check) {
                 throw new SaveException(['msg' => '账号：' . $params['account'] . '已经存在']);
 
