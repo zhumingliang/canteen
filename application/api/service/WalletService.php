@@ -257,7 +257,7 @@ class WalletService
         $company_id = Token::getCurrentTokenVar('company_id');
         $admin_id = Token::getCurrentUid();
         $fileName = (new ExcelService())->saveExcelReturnName($supplement_excel);
-       // $fileName = dirname($_SERVER['SCRIPT_FILENAME']) . '/static/excel/upload/test.xlsx';
+        // $fileName = dirname($_SERVER['SCRIPT_FILENAME']) . '/static/excel/upload/test.xlsx';
         $fail = $this->checkSupplementData($company_id, $fileName);
         if (count($fail)) {
             return [
@@ -289,7 +289,7 @@ class WalletService
         }
         $newStaffs = [];
         foreach ($staffs as $k => $v) {
-            array_push($newStaffs, $v['username'] . '&' . $v['phone']);
+            array_push($newStaffs, $v['code'] . '&' . $v['username'] . '&' . $v['card_num'] . '&' . $v['phone']);
         }
         $fail = [];
         $data = (new ExcelService())->importExcel($fileName);
@@ -297,7 +297,8 @@ class WalletService
             if ($k < 2) {
                 continue;
             }
-            if (!in_array($v[1] . '&' . $v[3], $newStaffs) ||
+            $checkData = $v[0] . '&' . $v[1] . '&' . $v[2] . '&' . $v[3];
+            if (!in_array($checkData, $newStaffs) ||
                 !in_array($v[4], $newCanteen) || !in_array($v[6], $newDinner)) {
                 array_push($fail, '第' . $k . '行数据有问题');
             }
