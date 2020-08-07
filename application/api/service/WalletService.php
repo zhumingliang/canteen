@@ -352,6 +352,7 @@ class WalletService
 
     private function getConsumptionDate($value)
     {
+        LogService::save($value);
         if (strpos($value, '/') !== false) {
             return str_replace('/', '-', $value);
         }
