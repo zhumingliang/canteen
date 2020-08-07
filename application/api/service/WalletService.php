@@ -350,6 +350,14 @@ class WalletService
         return $dataList;
     }
 
+    private function getConsumptionDate($value)
+    {
+        if (strpos($value, '/') !== false) {
+            return str_replace('/', '-', $value);
+        }
+        return $value;
+    }
+
     private function getCanteenID($canteens, $canteen)
     {
         $canteenId = '';

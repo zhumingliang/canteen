@@ -112,7 +112,11 @@ Index extends BaseController
 
     public function test()
     {
-       echo getRandChar(18);
+        $value = "2020/8-5";
+        if (strpos($value, '/') !== false) {
+            echo str_replace('/', '-', $value);
+        }
+        echo $value;
         /* $company_id = 97;
          $data = (new ExcelService())->saveTestExcel();
          $fail = [];
