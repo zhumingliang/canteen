@@ -728,7 +728,7 @@ class OrderStatisticService
             $data[$k]['time_end'] = $time_end;
             $dinnerStatistic = [];
             foreach ($statistic as $k2 => $v2) {
-                $statistic[$k]['order_money'] = $status ? $statistic[$k]['order_money'] : abs($statistic[$k]['order_money']);
+                $statistic[$k2]['order_money'] = $status ? $statistic[$k2]['order_money'] : abs($statistic[$k2]['order_money']);
                 if ($v['staff_id'] == $v2['staff_id']) {
                     array_push($dinnerStatistic, $v2);
                     unset($statistic[$k2]);
