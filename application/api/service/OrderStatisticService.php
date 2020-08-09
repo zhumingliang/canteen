@@ -728,9 +728,9 @@ class OrderStatisticService
             $data[$k]['time_end'] = $time_end;
             $dinnerStatistic = [];
             foreach ($statistic as $k2 => $v2) {
-                $statistic[$k2]['order_money'] = $status ? $statistic[$k2]['order_money'] : abs($statistic[$k2]['order_money']);
+                $statistic[$k2]['order_money'] = $status ? abs($statistic[$k2]['order_money']) : $statistic[$k2]['order_money'];
                 if ($v['staff_id'] == $v2['staff_id']) {
-                    array_push($dinnerStatistic, $v2);
+                    array_push($dinnerStatistic, $statistic[$k2]);
                     unset($statistic[$k2]);
                 }
                 $data[$k]['dinnerStatistic'] = $dinnerStatistic;
@@ -743,7 +743,7 @@ class OrderStatisticService
             $time_end, $company_id);
         return [
             'statistic' => $users,
-            'allMoney' => $statistic['order_money'],
+            'allMoney' => $status ? abs($statistic['order_money']) : $statistic['order_money'],
             'allCount' => $statistic['order_count']
         ];
     }
