@@ -254,7 +254,6 @@ class OrderService extends BaseService
             }
 
         }
-
         return 0;
     }
 
@@ -1268,7 +1267,7 @@ class OrderService extends BaseService
         $phone = Token::getCurrentPhone();
         $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
         $company_id = Token::getCurrentTokenVar('current_company_id');
-        $records = ConsumptionRecordsV::recordsByPhone($phone, $canteen_id,$consumption_time, $page, $size);
+        $records = ConsumptionRecordsV::recordsByPhone($phone, $canteen_id, $consumption_time, $page, $size);
         $records['data'] = $this->prefixConsumptionRecords($records['data']);
         $consumptionMoney = ConsumptionRecordsV::monthConsumptionMoneyByPhone($phone, $consumption_time);
         return [
@@ -1295,6 +1294,9 @@ class OrderService extends BaseService
                             $data[$k]['used_type'] = "未订餐就餐";
                         }
                     }
+                    $eatingType = $v['eating_type'] == OrderEnum::EAT_CANTEEN ? '堂食' : '外卖';
+                    $v['location'] = $v['location'] . '-' . $eatingType;
+
                 } else if ($v['order_type'] == "recharge") {
                     if ($v['supplement_type'] == CommonEnum::STATE_IS_OK) {
                         $data[$k]['used_type'] = "系统补充";

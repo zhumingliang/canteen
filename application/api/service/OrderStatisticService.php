@@ -544,119 +544,78 @@ class OrderStatisticService
         } else {
             $statistic = $info['statistic'];
         }
-        $allMoney = empty($info['allMoney']) ? 0 : $info['allMoney'];
-        $allCount = empty($info['allCount']) ? 0 : $info['allCount'];
-        $reports = $this->prefixConsumptionStatistic($statistic, $allMoney, $allCount);
-        $header = ['序号', '统计变量', '开始时间', '结束时间', '姓名', '部门', '餐次', '数量', '金额（元）'];
+        $header = ['序号', '统计变量', '开始时间', '结束时间', '姓名', '部门'];
+        //获取饭堂对应的餐次设置
+        $dinner = DinnerT::dinnerNames($canteen_id);
+        $header = $this->addDinnerToHeader($header, $dinner);
+        $reports = $this->prefixConsumptionStatistic($statistic, $dinner);
         $reportName = $fileNameArr[$status];
         $file_name = $reportName . "(" . $time_begin . "-" . $time_end . ")";
-        $url = (new ExcelService())->makeExcelMerge($header, $reports, $file_name, 6);
+        $url = (new ExcelService())->makeExcel($header, $reports, $file_name);
         return [
             'url' => config('setting.domain') . $url
         ];
 
     }
 
-    private function prefixConsumptionStatistic($statistic, $allMoney, $allCount)
+    private function addDinnerToHeader($header, $dinner)
+    {
+        foreach ($dinner as $k => $v) {
+            array_push($header, $v['name'] . "数量", $v['name'] . '金额（元）');
+        }
+        return $header;
+
+    }
+
+    private function prefixConsumptionStatistic($statistic, $dinner)
     {
         $dataList = [];
         if (!empty($statistic)) {
-            $i = 2;
+            $endData = $this->addDinnerToStatistic($dinner);;
             foreach ($statistic as $k => $v) {
-                // $v['dinnerStatistic']
                 $dinner_statistic = array_key_exists('dinnerStatistic', $v) ? $v['dinnerStatistic'] : $v['dinner_statistic'];
+                $data = $this->addDinnerToStatistic($dinner);
+                $data['number'] = $k + 1;
+                $data['statistic'] = $v['statistic'];
+                $data['username'] = empty($v['username']) ? '' : $v['username'];
+                $data['department'] = empty($v['department']) ? '' : $v['department'];
                 if (empty($dinner_statistic)) {
-                    array_push($dataList, [
-                        'number' => $k + 1,
-                        'statistic' => $v['statistic'],
-                        'time_begin' => '/',
-                        'time_end' => '/',
-                        'username' => empty($v['username']) ? '' : $v['username'],
-                        'department' => empty($v['department']) ? '' : $v['department'],
-                        'dinner' => '',
-                        'order_count' => 0,
-                        'order_money' => 0,
-                        'merge' => CommonEnum::STATE_IS_FAIL,
-                        'start' => 0,
-                        'end' => 0
-                    ]);
-                    $i++;
                     continue;
                 }
-                $all_order_count = 0;
-                $all_order_money = 0;
-                array_push($dinner_statistic, []);
                 foreach ($dinner_statistic as $k2 => $v2) {
-                    if ($k2 + 1 == count($dinner_statistic)) {
-                        array_push($dataList, [
-                            'number' => $k + 1,
-                            'statistic' => $v['statistic'],
-                            'time_begin' => '/',
-                            'time_end' => '/',
-                            'username' => empty($v['username']) ? '' : $v['username'],
-                            'department' => empty($v['department']) ? '' : $v['department'],
-                            'dinner' => "合计",
-                            'order_count' => $all_order_count,
-                            'order_money' => $all_order_money,
-                            'merge' => CommonEnum::STATE_IS_OK,
-                            'start' => $k2 == 0 ? $i : $i - 1,
-                            'end' => $i
-                        ]);
-                        $i++;
-                        break;
+                    if (key_exists($v2['dinner_id'] . 'count', $data)) {
+                        $data[$v2['dinner_id'] . 'count'] = $v2['order_count'];
+                        $endData[$v2['dinner_id'] . 'count'] += $v2['order_count'];
                     }
-                    array_push($dataList, [
-                        'number' => $k + 1,
-                        'statistic' => $v['statistic'],
-                        'time_begin' => '/',
-                        'time_end' => '/',
-                        'username' => empty($v['username']) ? '' : $v['username'],
-                        'department' => empty($v['department']) ? '' : $v['department'],
-                        'dinner' => $v2['dinner'],
-                        'order_count' => $v2['order_count'],
-                        'order_money' => $v2['order_money'],
-                        'merge' => CommonEnum::STATE_IS_OK,
-                        'start' => $k2 == 0 ? $i : $i - 1,
-                        'end' => $i
-                    ]);
-                    $all_order_count += $v2['order_count'];
-                    $all_order_money += $v2['order_money'];
-                    $i++;
-                }
-                /*      $i = $i + 1;
-                      array_push($dataList, [
-                          'number' => '',
-                          'statistic' => '',
-                          'time_begin' => '',
-                          'time_end' => '',
-                          'username' => '',
-                          'department' => '',
-                          'dinner' => "合计",
-                          'order_count' => $all_order_count,
-                          'order_money' => $all_order_money,
-                          'merge' => CommonEnum::STATE_IS_FAIL,
-                          'start' => 0,
-                          'end' => 0
-                      ]);*/
+                    if (key_exists($v2['dinner_id'] . 'money', $data)) {
+                        $data[$v2['dinner_id'] . 'money'] = $v2['order_money'];
+                        $endData[$v2['dinner_id'] . 'money'] += $v2['order_money'];
+                    }
 
+                }
+                array_push($dataList, $data);
             }
         }
+        array_push($dataList, $endData);
+        return $dataList;
+    }
 
-        array_push($dataList, [
+    private function addDinnerToStatistic($dinner)
+    {
+        $data = [
             'number' => '合计',
             'statistic' => '',
-            'time_begin' => '',
-            'time_end' => '',
+            'time_begin' => '/',
+            'time_end' => '/',
             'username' => '',
             'department' => '',
-            'dinner' => '',
-            'order_count' => $allCount,
-            'order_money' => $allMoney,
-            'merge' => CommonEnum::STATE_IS_FAIL,
-            'start' => 0,
-            'end' => 0,
-        ]);
-        return $dataList;
+        ];
+        foreach ($dinner as $k => $v) {
+            $data[$v['id'] . 'count'] = 0;
+            $data[$v['id'] . 'money'] = 0;
+        }
+        return $data;
+
     }
 
     private function consumptionStatisticByDepartment($canteen_id, $status, $department_id,

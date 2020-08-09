@@ -12,7 +12,7 @@ class OrderSettlementV extends Model
 {
     public function getMoneyAttr($value)
     {
-        return round($value, 2);
+        return abs($value);
     }
 
     public static function orderSettlement($page, $size,
