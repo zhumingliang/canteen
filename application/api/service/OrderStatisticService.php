@@ -625,12 +625,12 @@ class OrderStatisticService
         $statistic = OrderConsumptionV::consumptionStatisticByDepartment($canteen_id, $status, $department_id,
             $username, $staff_type_id, $time_begin,
             $time_end, $company_id);
-        $statistic = $this->prefixStatistic($statistic, 'department', $time_begin, $time_end);
+        $statistic = $this->prefixStatistic($statistic, 'department', $time_begin, $time_end, $status);
         return $statistic;
 
     }
 
-    private function prefixStatistic($statistic, $field, $time_begin, $time_end)
+    private function prefixStatistic($statistic, $field, $time_begin, $time_end, $status)
     {
         $fieldArr = [];
         $data = [];
@@ -638,8 +638,10 @@ class OrderStatisticService
         $allCount = 0;
         if (count($statistic)) {
             foreach ($statistic as $k => $v) {
-                $allMoney += $v['order_money'];
-                $allCount += $v['order_count'];
+                $orderMoney = $status ? abs($v['order_money']) : $v['order_money'];
+                $orderCount = $v['order_count'];
+                $allMoney += $orderMoney;
+                $allCount +=$orderCount;
                 if (in_array($v[$field], $fieldArr)) {
                     continue;
                 }
@@ -653,8 +655,8 @@ class OrderStatisticService
                         array_push($dinnerStatistic, [
                             'dinner_id' => $v2['dinner_id'],
                             'dinner' => $v2['dinner'],
-                            'order_count' => $v2['order_count'],
-                            'order_money' => $v2['order_money'],
+                            'order_count' =>$allCount,
+                            'order_money' => $allMoney
                         ]);
                     }
                 }
