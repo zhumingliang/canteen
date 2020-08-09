@@ -641,7 +641,7 @@ class OrderStatisticService
                 $orderMoney = $status ? abs($v['order_money']) : $v['order_money'];
                 $orderCount = $v['order_count'];
                 $allMoney += $orderMoney;
-                $allCount +=$orderCount;
+                $allCount += $orderCount;
                 if (in_array($v[$field], $fieldArr)) {
                     continue;
                 }
@@ -655,7 +655,7 @@ class OrderStatisticService
                         array_push($dinnerStatistic, [
                             'dinner_id' => $v2['dinner_id'],
                             'dinner' => $v2['dinner'],
-                            'order_count' =>$allCount,
+                            'order_count' => $allCount,
                             'order_money' => $allMoney
                         ]);
                     }
@@ -728,6 +728,7 @@ class OrderStatisticService
             $data[$k]['time_end'] = $time_end;
             $dinnerStatistic = [];
             foreach ($statistic as $k2 => $v2) {
+                $statistic[$k]['order_money'] = $status ? $statistic[$k]['order_money'] : abs($statistic[$k]['order_money']);
                 if ($v['staff_id'] == $v2['staff_id']) {
                     array_push($dinnerStatistic, $v2);
                     unset($statistic[$k2]);
@@ -742,7 +743,7 @@ class OrderStatisticService
             $time_end, $company_id);
         return [
             'statistic' => $users,
-            'allMoney' => round($statistic['order_money'], 1),
+            'allMoney' => $statistic['order_money'],
             'allCount' => $statistic['order_count']
         ];
     }
@@ -755,7 +756,7 @@ class OrderStatisticService
         $statistic = OrderConsumptionV::consumptionStatisticByStatus($canteen_id, $status, $department_id,
             $username, $staff_type_id, $time_begin,
             $time_end, $company_id);
-        $statistic = $this->prefixStatistic($statistic, 'status', $time_begin, $time_end);
+        $statistic = $this->prefixStatistic($statistic, 'status', $time_begin, $time_end, $status);
         return $statistic;
 
     }
@@ -767,7 +768,7 @@ class OrderStatisticService
         $statistic = OrderConsumptionV::consumptionStatisticByCanteen($canteen_id, $status, $department_id,
             $username, $staff_type_id, $time_begin,
             $time_end, $company_id);
-        $statistic = $this->prefixStatistic($statistic, 'canteen', $time_begin, $time_end);
+        $statistic = $this->prefixStatistic($statistic, 'canteen', $time_begin, $time_end, $status);
         return $statistic;
 
     }
@@ -779,7 +780,7 @@ class OrderStatisticService
         $statistic = OrderConsumptionV::consumptionStatisticByStaff($canteen_id, $status, $department_id,
             $username, $staff_type_id, $time_begin,
             $time_end, $company_id);
-        $statistic = $this->prefixStatistic($statistic, 'staff_type', $time_begin, $time_end);
+        $statistic = $this->prefixStatistic($statistic, 'staff_type', $time_begin, $time_end, $status);
         return $statistic;
 
     }
