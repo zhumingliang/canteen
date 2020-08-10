@@ -10,7 +10,6 @@ namespace app\api\service;
 
 
 use app\api\model\CanteenAccountT;
-use app\api\model\CompanyStaffT;
 use app\api\model\ConsumptionRecordsV;
 use app\api\model\DinnerStatisticV;
 use app\api\model\DinnerT;
@@ -22,7 +21,6 @@ use app\api\model\OrderT;
 use app\api\model\OrderUsersStatisticV;
 use app\api\model\OutConfigT;
 use app\api\model\PayT;
-use app\api\model\PayWxT;
 use app\api\model\RechargeSupplementT;
 use app\api\model\ShopOrderingV;
 use app\api\model\ShopOrderT;
@@ -33,7 +31,6 @@ use app\lib\enum\MenuEnum;
 use app\lib\enum\OrderEnum;
 use app\lib\enum\PayEnum;
 use app\lib\enum\UserEnum;
-use app\lib\exception\AuthException;
 use app\lib\exception\ParameterException;
 use app\lib\exception\SaveException;
 use app\lib\exception\UpdateException;
@@ -339,7 +336,6 @@ class OrderService extends BaseService
         $company_id = Token::getCurrentTokenVar('current_company_id');
         //获取用户指定日期订餐数量
         $orders = OrderingV::getRecordForDayOrderingByPhone($day, $dinner->name, $phone);
-
         $consumptionCount = $this->checkOrderedAnotherCanteen($canteen_id, $orders);
         //检测消费策略
         $t_id = (new UserService())->getUserStaffTypeByPhone($phone, $company_id);
@@ -942,6 +938,9 @@ class OrderService extends BaseService
         if (!$order) {
             throw new ParameterException(['msg' => '指定订餐信息不存在']);
         }
+        if ($order->used == CommonEnum::STATE_IS_OK) {
+            throw  new  SaveException(['msg' => '订餐已消费，不能修改订单']);
+        }
         if ($order->type == OrderEnum::EAT_OUTSIDER && $order->receive == CommonEnum::STATE_IS_OK) {
             throw  new  SaveException(['msg' => '订餐已被确认，不能修改订单']);
         }
@@ -956,14 +955,18 @@ class OrderService extends BaseService
             throw new UpdateException(['msg' => '超出最大订餐数量，不能预定']);
         }
         $old_money = $order->money;
+        $old_sub_money = $order->sub_money;
+        $old_meal_money = $order->meal_money;
+        $old_meal_sub_money = $order->meal_sub_money;
         $old_no_meal_money = $order->no_meal_money;
         $old_no_meal_sub_money = $order->no_meal_sub_money;
-        $old_sub_money = $order->sub_money;
         $old_count = $order->count;
         $new_money = ($old_money / $old_count) * $count;
-        $new_no_meal_money = ($old_no_meal_money / $old_count) * $count;
         $new_sub_money = ($old_no_meal_sub_money / $old_count) * $count;
+        $new_no_meal_money = ($old_no_meal_money / $old_count) * $count;
         $new_no_meal_sub_money = ($old_sub_money / $old_count) * $count;
+        $new_meal_money = ($old_meal_money / $old_count) * $count;
+        $new_meal_sub_money = ($old_meal_sub_money / $old_count) * $count;
         //检测订单金额是否合法
         $check_res = $this->checkBalance($order->u_id, $order->c_id, ($new_money + $new_sub_money - $old_money - $old_sub_money));
         if (!$check_res) {
@@ -974,9 +977,11 @@ class OrderService extends BaseService
         //处理订单金额
         $order->money = $new_money;
         $order->no_meal_money = $new_no_meal_money;
+        $order->meal_money = $new_meal_money;
         //处理订单附加金额
         $order->sub_money = $new_sub_money;
         $order->no_meal_sub_money = $new_no_meal_sub_money;
+        $order->meal_sub_money = $new_meal_sub_money;
         //处理消费方式
         $order->pay_way = $check_res;
         $order->update_time = date('Y-m-d H:i:s');
@@ -992,13 +997,14 @@ class OrderService extends BaseService
             Db::startTrans();
             $id = $params['id'];
             $detail = json_decode($params['detail'], true);
-            /* if (empty($detail)) {
-                 throw new ParameterException(['msg' => '订单明细为空或者数据格式错误']);
-             }*/
             $order = OrderT::where('id', $id)->find();
+            if ($order->used == CommonEnum::STATE_IS_OK) {
+                throw  new  SaveException(['msg' => '订餐已消费，不能修改订单']);
+            }
             if ($order->type == OrderEnum::EAT_OUTSIDER && $order->receive == CommonEnum::STATE_IS_OK) {
                 throw  new  SaveException(['msg' => '订餐已被确认，不能修改订单']);
             }
+
             //检测订单是否可操作
             $count = $order->count;
             $this->checkOrderCanHandel($order->d_id, $order->ordering_date);
@@ -1019,8 +1025,25 @@ class OrderService extends BaseService
                 $count, $detail);
 
             $order->pay_way = $check_money['pay_way'];
-            $order->money = $check_money['new_money'];
-            $order->sub_money = $check_money['new_sub_money'];
+
+            $order->meal_money = $check_money['new_money'];
+            $order->meal_sub_money = $check_money['new_sub_money'];
+            $old_count = $order->count;
+            $old_no_meal_money = $order->no_meal_money;
+            $old_no_meal_sub_money = $order->no_meal_sub_money;
+
+            $new_no_meal_money = $old_no_meal_money / $old_count * $count;
+            $new_no_meal_sub_money = $old_no_meal_sub_money / $old_count * $count;
+            if ($new_no_meal_money + $new_no_meal_sub_money
+                < $check_money['new_money'] + $check_money['new_sub_money']) {
+                $order->money = $check_money['new_money'];
+                $order->sub_money = $check_money['new_sub_money'];
+                $order->consumption_type = "ordering_meals";
+            } else {
+                $order->money = $new_no_meal_money;
+                $order->sub_money = $new_no_meal_sub_money;
+                $order->consumption_type = "no_meals_ordered";
+            }
             $order->count = $count;
             $order->update_time = date('Y-m-d H:i:s');
             $res = $order->save();
