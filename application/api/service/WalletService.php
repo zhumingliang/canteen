@@ -274,17 +274,13 @@ class WalletService
     private function checkSupplementData($company_id, $fileName)
     {
         $newCanteen = [];
-        $newDinner = [];
         $canteens = (new CanteenService())->companyCanteens($company_id);
         $dinners = DinnerV::companyDinners($company_id);
         $staffs = CompanyStaffT::staffs($company_id);
         foreach ($canteens as $k => $v) {
             array_push($newCanteen, $v['name']);
         }
-        /* foreach ($dinners as $k => $v) {
-             array_push($newDinner, $v['dinner']);
-         }*/
-        if (!count($newCanteen) || !count($newDinner)) {
+        if (!count($newCanteen) || !count($dinners)) {
             throw  new  SaveException(['msg' => '企业饭堂或者餐次设置异常']);
         }
         $newStaffs = [];
