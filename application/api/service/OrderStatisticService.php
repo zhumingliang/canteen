@@ -625,7 +625,6 @@ class OrderStatisticService
         $statistic = OrderConsumptionV::consumptionStatisticByDepartment($canteen_id, $status, $department_id,
             $username, $staff_type_id, $time_begin,
             $time_end, $company_id);
-        return $statistic;
         $statistic = $this->prefixStatistic($statistic, 'department', $time_begin, $time_end, $status);
         return $statistic;
 
