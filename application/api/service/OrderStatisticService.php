@@ -625,6 +625,7 @@ class OrderStatisticService
         $statistic = OrderConsumptionV::consumptionStatisticByDepartment($canteen_id, $status, $department_id,
             $username, $staff_type_id, $time_begin,
             $time_end, $company_id);
+        return $statistic;
         $statistic = $this->prefixStatistic($statistic, 'department', $time_begin, $time_end, $status);
         return $statistic;
 
@@ -655,8 +656,8 @@ class OrderStatisticService
                         array_push($dinnerStatistic, [
                             'dinner_id' => $v2['dinner_id'],
                             'dinner' => $v2['dinner'],
-                            'order_count' => $allCount,
-                            'order_money' => $allMoney
+                            'order_count' => $v2['order_count'],
+                            'order_money' => $v2['order_money']
                         ]);
                     }
                 }
