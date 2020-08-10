@@ -281,9 +281,9 @@ class WalletService
         foreach ($canteens as $k => $v) {
             array_push($newCanteen, $v['name']);
         }
-        foreach ($dinners as $k => $v) {
-            array_push($newDinner, $v['dinner']);
-        }
+        /* foreach ($dinners as $k => $v) {
+             array_push($newDinner, $v['dinner']);
+         }*/
         if (!count($newCanteen) || !count($newDinner)) {
             throw  new  SaveException(['msg' => '企业饭堂或者餐次设置异常']);
         }
@@ -299,11 +299,23 @@ class WalletService
             }
             $checkData = $v[0] . '&' . $v[1] . '&' . $v[2] . '&' . $v[3];
             if (!in_array($checkData, $newStaffs) ||
-                !in_array($v[4], $newCanteen) || !in_array($v[6], $newDinner)) {
+                !in_array($v[4], $newCanteen) || !$this->checkDinnerInCanteen($v[4], $v[6], $dinners)) {
                 array_push($fail, '第' . $k . '行数据有问题');
             }
         }
         return $fail;
+    }
+
+    private function checkDinnerInCanteen($canteen, $dinner, $dinners)
+    {
+        foreach ($dinners as $k => $v) {
+            if ($v['dinner'] == $dinner && $v['canteen'] == $canteen) {
+                return true;
+                break;
+            }
+        }
+        return false;
+
     }
 
     public function prefixSupplementUploadData($company_id, $admin_id, $data)
