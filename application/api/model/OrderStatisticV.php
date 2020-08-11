@@ -42,7 +42,8 @@ class OrderStatisticV extends Model
     public static function statistic($time_begin, $time_end, $company_ids, $canteen_id, $page, $size)
     {
         // $time_end = addDay(1, $time_end);
-        $list = self::whereBetweenTime('ordering_date', $time_begin, $time_end)
+        $list = self::where('ordering_date', '>=', $time_begin)
+            ->where('ordering_date', '<=', $time_end)
             ->where(function ($query) use ($company_ids, $canteen_id) {
                 if (empty($canteen_id)) {
                     if (strpos($company_ids, ',') !== false) {
@@ -57,7 +58,7 @@ class OrderStatisticV extends Model
             ->field('ordering_date,company,canteen,dinner,sum(count) as count')
             ->order('ordering_date DESC')
             ->where('state', CommonEnum::STATE_IS_OK)
-            ->group('dinner_id')
+            ->group('ordering_date,dinner_id')
             ->paginate($size, false, ['page' => $page]);
         return $list;
 

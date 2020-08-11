@@ -62,14 +62,14 @@ class AdminT extends Model
 
     }
 
-    public static function rolesWithIds($page, $size, $state, $key, $c_name,$company_ids)
+    public static function rolesWithIds($page, $size, $state, $key, $c_name, $company_ids)
     {
         $list = self::with([
             'canteen' => function ($query) {
                 $query->field('id,canteen_id,admin_id,canteen_name');
             }
         ])
-            ->whereIn('c_id',$company_ids)
+            ->whereIn('c_id', $company_ids)
             ->where(function ($query) use ($key) {
                 if (strlen($key)) {
                     $query->where('company', 'like', '%' . $key . '%');
@@ -102,10 +102,10 @@ class AdminT extends Model
         return $role;
     }
 
-    public static function check($c_id, $account)
+    public static function check($account)
     {
-        $count = self::where('c_id', $c_id)
-            ->where('account', $account)
+        $count = self::
+        where('account', $account)
             ->where('state', CommonEnum::STATE_IS_OK)
             ->count('id');
         return $count;

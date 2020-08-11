@@ -94,7 +94,6 @@ class ModuleService
             $modules = $this->getSuperModules();
         } else if ($grade == AdminEnum::COMPANY_SUPER) {
             $company_id = Token::getCurrentTokenVar('company_id');
-            //$modules = CanteenModuleT::companyModules($company_id);
             $modules = CanteenModuleV::canteenModules($company_id);
         } else if ($grade == AdminEnum::COMPANY_OTHER) {
             $admin_id = Token::getCurrentUid();
@@ -263,7 +262,6 @@ class ModuleService
     {
         $outsiders = Token::getCurrentTokenVar('outsiders');
         $company_id = (new UserService())->getUserCurrentCompanyID();
-
         if ($outsiders == UserEnum::OUTSIDE) {
             $outsider = CompanyOutsiderT::getCompanyOutsiderWithCompanyId($company_id);
             if (empty($outsider)) {

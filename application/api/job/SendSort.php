@@ -79,12 +79,12 @@ class SendSort
     {
         try {
             $canteenID = $data['canteenID'];
-            // $outsider = $data['outsider'];
+             $outsider = $data['outsider'];
             $orderID = $data['orderID'];
             $sortCode = $data['sortCode'];
             $websocketCode = $data['websocketCode'];
             $order = OrderT::get($orderID);
-            $outsider = $order->outsider;
+            //$outsider = $order->outsider;
             $machine = MachineT::getSortMachine($canteenID, $outsider);
             if ($machine) {
                 $sendData = [

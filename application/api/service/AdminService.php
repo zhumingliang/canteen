@@ -9,6 +9,7 @@ use app\api\model\AdminModuleT;
 use app\api\model\AdminShopT;
 use app\api\model\AdminT;
 use app\api\model\CanteenModuleV;
+use app\api\model\CompanyStaffT;
 use app\api\model\StaffTypeT;
 use app\lib\enum\AdminEnum;
 use app\lib\enum\CommonEnum;
@@ -27,7 +28,7 @@ class AdminService
         try {
             Db::startTrans();
             //检测角色账号是否重复
-            $check = AdminT::check($params['c_id'], $params['account']);
+            $check = AdminT::check( $params['account']);
             if ($check) {
                 throw new SaveException(['msg' => '账号：' . $params['account'] . '已经存在']);
 
@@ -227,8 +228,26 @@ class AdminService
 
     public function roleTypes($page, $size, $key)
     {
-        $types = StaffTypeT::roleTypes($page, $size, $key);
-        return $types;
+        $grade = Token::getCurrentTokenVar('grade');
+        if ($grade == AdminEnum::SYSTEM_SUPER) {
+            $types = StaffTypeT::roleTypes($page, $size, $key);
+            return $types;
+        } else {
+            $allTypes = StaffTypeT::allTypes();
+            $company_id = Token::getCurrentTokenVar('company_id');
+            $companyTypes = CompanyStaffT::staffsType($company_id, $page, $size);
+            $data = $companyTypes['data'];
+            foreach ($data as $k => $v) {
+                foreach ($allTypes as $k2 => $v2) {
+                    if ($v['id'] == $v2['id']) {
+                        $data[$k]['name'] = $v2['name'];
+                    }
+                }
+            }
+            $companyTypes['data'] = $data;
+            return $companyTypes;
+        }
+
     }
 
     public function allTypes()

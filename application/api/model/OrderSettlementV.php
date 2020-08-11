@@ -10,6 +10,11 @@ use think\Model;
 
 class OrderSettlementV extends Model
 {
+    public function getMoneyAttr($value)
+    {
+        return abs($value);
+    }
+
     public static function orderSettlement($page, $size,
                                            $name, $phone, $canteen_id, $department_id, $dinner_id,
                                            $consumption_type, $time_begin, $time_end, $company_ids)
@@ -43,7 +48,7 @@ class OrderSettlementV extends Model
                 }
             })
             ->where(function ($query) use ($consumption_type) {
-                if ($consumption_type < 5) {
+                if ($consumption_type < 6) {
                     if ($consumption_type == 1) {
                         //订餐就餐
                         $query->where('booking', CommonEnum::STATE_IS_OK)
@@ -57,8 +62,11 @@ class OrderSettlementV extends Model
                         $query->where('booking', CommonEnum::STATE_IS_FAIL)
                             ->where('used', CommonEnum::STATE_IS_OK);
                     } else if ($consumption_type == 4) {
-                        //未订餐就餐
+                        //系统补充
                         $query->where('type', 'recharge');
+                    } else if ($consumption_type == 5) {
+                        //系统补扣
+                        $query->where('type', 'deduction');
                     }
                 }
 
@@ -74,7 +82,7 @@ class OrderSettlementV extends Model
     public static function exportOrderSettlement($name, $phone, $canteen_id, $department_id, $dinner_id,
                                                  $consumption_type, $time_begin, $time_end, $company_ids)
     {
-       // $time_end = addDay(1, $time_end);
+        // $time_end = addDay(1, $time_end);
         $list = self::whereBetweenTime('ordering_date', $time_begin, $time_end)
             ->where(function ($query) use ($name, $phone, $department_id) {
                 if (strlen($name)) {
@@ -116,10 +124,13 @@ class OrderSettlementV extends Model
                         //未订餐就餐
                         $query->where('booking', CommonEnum::STATE_IS_FAIL)
                             ->where('used', CommonEnum::STATE_IS_OK);
-                    } else if ($consumption_type == 4) {
-                        //未订餐就餐
-                        $query->where('type', 'recharge');
                     }
+                } else if ($consumption_type == 4) {
+                    //未订餐就餐
+                    $query->where('type', 'recharge');
+                } else if ($consumption_type == 5) {
+                    //未订餐就餐
+                    $query->where('type', 'deduction');
                 }
 
             })

@@ -11,8 +11,14 @@ class OrderConsumptionV extends Model
 
     public function getStatusAttr($value)
     {
-        $status = ['1' => '订餐就餐', 2 => '订餐未就餐', 3 => '未订餐就餐', 4 => '补录操作'];
+        $status = ['1' => '订餐就餐', 2 => '订餐未就餐', 3 => '未订餐就餐', 4 => '系统补充', 5 => '系统补扣'];
         return $status[$value];
+    }
+
+    public function getOrderMoneyAttr($value)
+    {
+        return round($value, 2);
+
     }
 
     public static function consumptionStatisticByDepartment($canteen_id, $status, $department_id,
@@ -43,7 +49,7 @@ class OrderConsumptionV extends Model
                     $query->where('department_id', $department_id);
                 }
                 if (!empty($username)) {
-                    $query->where('username', $username);
+                    $query->where('username', 'like', '%' . $username . '%');
                 }
                 if (!empty($staff_type_id)) {
                     $query->where('staff_type_id', $staff_type_id);
@@ -86,7 +92,7 @@ class OrderConsumptionV extends Model
                     $query->where('department_id', $department_id);
                 }
                 if (!empty($username)) {
-                    $query->where('username', $username);
+                    $query->where('username', 'like', '%' . $username . '%');
                 }
                 if (!empty($staff_type_id)) {
                     $query->where('staff_type_id', $staff_type_id);
@@ -128,7 +134,7 @@ class OrderConsumptionV extends Model
                     $query->where('department_id', $department_id);
                 }
                 if (!empty($username)) {
-                    $query->where('username', $username);
+                    $query->where('username', 'like', '%' . $username . '%');
                 }
                 if (!empty($staff_type_id)) {
                     $query->where('staff_type_id', $staff_type_id);
@@ -169,7 +175,7 @@ class OrderConsumptionV extends Model
                     $query->where('department_id', $department_id);
                 }
                 if (!empty($username)) {
-                    $query->where('username', $username);
+                    $query->where('username', 'like', '%' . $username . '%');
                 }
                 if (!empty($staff_type_id)) {
                     $query->where('staff_type_id', $staff_type_id);
@@ -212,7 +218,7 @@ class OrderConsumptionV extends Model
                     $query->where('department_id', $department_id);
                 }
                 if (!empty($username)) {
-                    $query->where('username', $username);
+                    $query->where('username', 'like', '%' . $username . '%');
                 }
                 if (!empty($staff_type_id)) {
                     $query->where('staff_type_id', $staff_type_id);
@@ -255,7 +261,7 @@ class OrderConsumptionV extends Model
                     $query->where('department_id', $department_id);
                 }
                 if (!empty($username)) {
-                    $query->where('username', $username);
+                    $query->where('username', 'like', '%' . $username . '%');
                 }
                 if (!empty($staff_type_id)) {
                     $query->where('staff_type_id', $staff_type_id);
@@ -291,7 +297,7 @@ class OrderConsumptionV extends Model
                 $query->where('department_id', $department_id);
             }
             if (!empty($username)) {
-                $query->where('username', $username);
+                $query->where('username', 'like', '%' . $username . '%');
             }
             if (!empty($status)) {
                 $query->where('staff_type_id', $staff_type_id);
@@ -334,9 +340,9 @@ class OrderConsumptionV extends Model
                 $query->where('department_id', $department_id);
             }
             if (!empty($username)) {
-                $query->where('username', $username);
+                $query->where('username', 'like', '%' . $username . '%');
             }
-            if (!empty($status)) {
+            if (!empty($staff_type_id)) {
                 $query->where('staff_type_id', $staff_type_id);
             }
 

@@ -202,6 +202,7 @@ Route::post('api/:version/order/material/report/delete', 'api/:version.Order/mat
 Route::get('api/:version/order/consumptionStatistic', 'api/:version.Order/consumptionStatistic');
 Route::get('api/:version/order/consumptionStatistic/export', 'api/:version.Order/exportConsumptionStatistic');
 Route::post('api/:version/order/handel', 'api/:version.Takeout/handel');
+Route::post('api/:version/order/money', 'api/:version.Order/getOrderMoney');
 
 Route::post('api/:version/address/save', 'api/:version.Address/save');
 Route::post('api/:version/address/update', 'api/:version.Address/update');

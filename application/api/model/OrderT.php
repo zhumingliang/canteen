@@ -16,28 +16,49 @@ use think\Model;
 
 class OrderT extends Model
 {
-    public function foods()
+
+    public function getConsumptionTypeAttr($value, $data)
+    {
+        if ($data['used'] == CommonEnum::STATE_IS_FAIL) {
+            return "订餐未就餐";
+        } else {
+            if ($data['booking'] == CommonEnum::STATE_IS_OK) {
+                return "订餐就餐";
+
+            } else {
+                return "未订餐就餐";
+            }
+
+        }
+    }
+
+    public
+    function foods()
     {
         return $this->hasMany('OrderDetailT', 'o_id', 'id');
     }
 
-    public function dinner()
+    public
+    function dinner()
     {
         return $this->belongsTo('DinnerT', 'd_id', 'id');
     }
 
-    public function canteen()
+    public
+    function canteen()
     {
         return $this->belongsTo('CanteenT', 'c_id', 'id');
     }
 
-    public function address()
+    public
+    function address()
     {
         return $this->belongsTo('UserAddressT', 'address_id', 'id');
 
     }
 
-    public function user()
+    public
+    function user()
     {
         return $this->belongsTo('UserT', 'u_id', 'id');
 
@@ -50,7 +71,8 @@ class OrderT extends Model
          return $finalUrl;
      }*/
 
-    public static function personalChoiceInfo($id)
+    public
+    static function personalChoiceInfo($id)
     {
         $info = self::where('id', $id)
             ->with([
@@ -67,7 +89,8 @@ class OrderT extends Model
         return $info;
     }
 
-    public static function orderInfo($id)
+    public
+    static function orderInfo($id)
     {
         $info = self::where('id', $id)
             ->with([
@@ -81,7 +104,8 @@ class OrderT extends Model
         return $info;
     }
 
-    public static function orderDetail($id)
+    public
+    static function orderDetail($id)
     {
         $info = self::where('id', $id)
             ->with([
@@ -93,13 +117,15 @@ class OrderT extends Model
                     $query->field('id,province,city,area,address,name,phone,sex');
                 }
             ])
-            ->field('id,u_id,type as order_type,ordering_type,ordering_date,count,address_id,state,used,
-            c_id as canteen_id,d_id as dinner_id,wx_confirm,sort_code,outsider')
+            ->field('id,u_id,type as order_type,ordering_type,ordering_date,count,address_id,state,used,booking,
+            c_id as canteen_id,d_id as dinner_id,wx_confirm,sort_code,outsider,1 as consumption_type,money,sub_money,delivery_fee,
+            meal_money, meal_sub_money,no_meal_money,no_meal_sub_money,used_time')
             ->find();
         return $info;
     }
 
-    public static function statisticToOfficial($canteen_id, $consumption_time, $key)
+    public
+    static function statisticToOfficial($canteen_id, $consumption_time, $key)
     {
         $statistic = self::where('c_id', $canteen_id)
             ->where('state', CommonEnum::STATE_IS_OK)
@@ -111,7 +137,8 @@ class OrderT extends Model
         return $statistic;
     }
 
-    public static function orderUsersNoUsed($dinner_id, $consumption_time)
+    public
+    static function orderUsersNoUsed($dinner_id, $consumption_time)
     {
 
         $statistic = self::where('d_id', $dinner_id)
@@ -123,7 +150,8 @@ class OrderT extends Model
         return $statistic;
     }
 
-    public static function infoToPrint($id)
+    public
+    static function infoToPrint($id)
     {
         $info = self::where('id', $id)
             ->with([
@@ -141,7 +169,8 @@ class OrderT extends Model
         return $info;
     }
 
-    public static function infoToMachine($canteen_id, $staff_id, $dinner_id)
+    public
+    static function infoToMachine($canteen_id, $staff_id, $dinner_id)
     {
         $info = self::where('c_id', $canteen_id)
             ->where('staff_id', $staff_id)
@@ -160,7 +189,8 @@ class OrderT extends Model
         return $info;
     }
 
-    public static function infoToCanteenMachine($order_id)
+    public
+    static function infoToCanteenMachine($order_id)
     {
         $info = self::where('id', $order_id)
             ->with([
@@ -174,7 +204,8 @@ class OrderT extends Model
         return $info;
     }
 
-    public static function infoForPrinter($id)
+    public
+    static function infoForPrinter($id)
     {
         $info = self::where('id', $id)
             ->with([
@@ -191,7 +222,8 @@ class OrderT extends Model
         return $info;
     }
 
-    public static function outsiderInfoForPrinter($id)
+    public
+    static function outsiderInfoForPrinter($id)
     {
         $info = self::where('id', $id)
             ->with([
@@ -211,7 +243,8 @@ class OrderT extends Model
     }
 
 
-    public static function usersStatisticInfo($orderIds)
+    public
+    static function usersStatisticInfo($orderIds)
     {
         $info = self::where(function ($query) use ($orderIds) {
             if (strpos($orderIds, ',') !== false) {
@@ -232,7 +265,8 @@ class OrderT extends Model
         return $info;
     }
 
-    public static function infoToRefund($id)
+    public
+    static function infoToRefund($id)
     {
         $info = self::where('id', $id)
             ->with([
@@ -245,7 +279,8 @@ class OrderT extends Model
         return $info;
     }
 
-    public static function infoToReceive($id)
+    public
+    static function infoToReceive($id)
     {
         $info = self::where('id', $id)
             ->with([
@@ -265,7 +300,8 @@ class OrderT extends Model
     }
 
 
-    public static function orderUsers($dinner_id, $consumption_time, $consumption_type, $page, $size)
+    public
+    static function orderUsers($dinner_id, $consumption_time, $consumption_type, $page, $size)
     {
         $users = self::where('d_id', $dinner_id)
             ->where('ordering_date', $consumption_time)

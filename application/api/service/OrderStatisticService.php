@@ -154,9 +154,10 @@ class OrderStatisticService
         $dataList = [];
         if (count($data)) {
             foreach ($data as $k => $v) {
-
                 if ($v['type'] == 'recharge') {
-                    $consumption_type = "补录";
+                    $consumption_type = "系统补充";
+                } else if ($v['type'] == 'deduction') {
+                    $consumption_type = "系统补扣";
                 } else {
                     if ($v['booking'] == CommonEnum::STATE_IS_OK) {
                         $consumption_type = $v['used'] == CommonEnum::STATE_IS_OK ? "订餐就餐" : "订餐未就餐";
@@ -186,16 +187,18 @@ class OrderStatisticService
     {
         if (count($data)) {
             foreach ($data as $k => $v) {
-                $data[$k]['used_time'] = $v['used'] == CommonEnum::STATE_IS_OK ? $v['used_time'] : "-";
                 if ($v['type'] == 'recharge') {
-                    $data[$k]['consumption_type'] = "补录";
-                    continue;
-                }
-                if ($v['booking'] == CommonEnum::STATE_IS_OK) {
-                    $data[$k]['consumption_type'] = $v['used'] == CommonEnum::STATE_IS_OK ? "订餐就餐" : "订餐未就餐";
+                    $data[$k]['consumption_type'] = "系统补充";
+                } else if ($v['type'] == 'deduction') {
+                    $data[$k]['consumption_type'] = "系统补扣";
                 } else {
-                    $data[$k]['consumption_type'] = "未订餐就餐";
+                    if ($v['booking'] == CommonEnum::STATE_IS_OK) {
+                        $data[$k]['consumption_type'] = $v['used'] == CommonEnum::STATE_IS_OK ? "订餐就餐" : "订餐未就餐";
+                    } else {
+                        $data[$k]['consumption_type'] = "未订餐就餐";
+                    }
                 }
+
             }
 
         }
@@ -508,6 +511,15 @@ class OrderStatisticService
     public function exportConsumptionStatistic($canteen_id, $status, $type,
                                                $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id)
     {
+        $fileNameArr = [
+            0 => "消费总报表",
+            1 => '订餐就餐总报表',
+            2 => '订餐未就餐总报表',
+            3 => '未订餐就餐总报表',
+            4 => '系统补充总报表',
+            5 => '系统补扣总报表',
+        ];
+
         switch ($type) {
             case OrderEnum::STATISTIC_BY_DEPARTMENT:
                 $info = $this->consumptionStatisticByDepartment($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id);
@@ -532,118 +544,78 @@ class OrderStatisticService
         } else {
             $statistic = $info['statistic'];
         }
-        $allMoney = empty($info['allMoney']) ? 0 : $info['allMoney'];
-        $allCount = empty($info['allCount']) ? 0 : $info['allCount'];
-        $reports = $this->prefixConsumptionStatistic($statistic, $allMoney, $allCount);
-        $header = ['序号', '统计变量', '开始时间', '结束时间', '姓名', '部门', '餐次', '数量', '金额（元）'];
-        $file_name = "消费总报表(" . $time_begin . "-" . $time_end . ")";
-        $url = (new ExcelService())->makeExcelMerge($header, $reports, $file_name, 6);
+        $header = ['序号', '统计变量', '开始时间', '结束时间', '姓名', '部门'];
+        //获取饭堂对应的餐次设置
+        $dinner = DinnerT::dinnerNames($canteen_id);
+        $header = $this->addDinnerToHeader($header, $dinner);
+        $reports = $this->prefixConsumptionStatistic($statistic, $dinner);
+        $reportName = $fileNameArr[$status];
+        $file_name = $reportName . "(" . $time_begin . "-" . $time_end . ")";
+        $url = (new ExcelService())->makeExcel($header, $reports, $file_name);
         return [
             'url' => config('setting.domain') . $url
         ];
 
     }
 
-    private function prefixConsumptionStatistic($statistic, $allMoney, $allCount)
+    private function addDinnerToHeader($header, $dinner)
+    {
+        foreach ($dinner as $k => $v) {
+            array_push($header, $v['name'] . "数量", $v['name'] . '金额（元）');
+        }
+        return $header;
+
+    }
+
+    private function prefixConsumptionStatistic($statistic, $dinner)
     {
         $dataList = [];
         if (!empty($statistic)) {
-            $i = 2;
+            $endData = $this->addDinnerToStatistic($dinner);;
             foreach ($statistic as $k => $v) {
-                // $v['dinnerStatistic']
                 $dinner_statistic = array_key_exists('dinnerStatistic', $v) ? $v['dinnerStatistic'] : $v['dinner_statistic'];
+                $data = $this->addDinnerToStatistic($dinner);
+                $data['number'] = $k + 1;
+                $data['statistic'] = $v['statistic'];
+                $data['username'] = empty($v['username']) ? '' : $v['username'];
+                $data['department'] = empty($v['department']) ? '' : $v['department'];
                 if (empty($dinner_statistic)) {
-                    array_push($dataList, [
-                        'number' => $k + 1,
-                        'statistic' => $v['statistic'],
-                        'time_begin' => '/',
-                        'time_end' => '/',
-                        'username' => empty($v['username']) ? '' : $v['username'],
-                        'department' => empty($v['department']) ? '' : $v['department'],
-                        'dinner' => '',
-                        'order_count' => 0,
-                        'order_money' => 0,
-                        'merge' => CommonEnum::STATE_IS_FAIL,
-                        'start' => 0,
-                        'end' => 0
-                    ]);
-                    $i++;
                     continue;
                 }
-                $all_order_count = 0;
-                $all_order_money = 0;
-                array_push($dinner_statistic, []);
                 foreach ($dinner_statistic as $k2 => $v2) {
-                    if ($k2 + 1 == count($dinner_statistic)) {
-                        array_push($dataList, [
-                            'number' => $k + 1,
-                            'statistic' => $v['statistic'],
-                            'time_begin' => '/',
-                            'time_end' => '/',
-                            'username' => empty($v['username']) ? '' : $v['username'],
-                            'department' => empty($v['department']) ? '' : $v['department'],
-                            'dinner' => "合计",
-                            'order_count' => $all_order_count,
-                            'order_money' => $all_order_money,
-                            'merge' => CommonEnum::STATE_IS_OK,
-                            'start' => $k2 == 0 ? $i : $i - 1,
-                            'end' => $i
-                        ]);
-                        $i++;
-                        break;
+                    if (key_exists($v2['dinner_id'] . 'count', $data)) {
+                        $data[$v2['dinner_id'] . 'count'] = $v2['order_count'];
+                        $endData[$v2['dinner_id'] . 'count'] += $v2['order_count'];
                     }
-                    array_push($dataList, [
-                        'number' => $k + 1,
-                        'statistic' => $v['statistic'],
-                        'time_begin' => '/',
-                        'time_end' => '/',
-                        'username' => empty($v['username']) ? '' : $v['username'],
-                        'department' => empty($v['department']) ? '' : $v['department'],
-                        'dinner' => $v2['dinner'],
-                        'order_count' => $v2['order_count'],
-                        'order_money' => $v2['order_money'],
-                        'merge' => CommonEnum::STATE_IS_OK,
-                        'start' => $k2 == 0 ? $i : $i - 1,
-                        'end' => $i
-                    ]);
-                    $all_order_count += $v2['order_count'];
-                    $all_order_money += $v2['order_money'];
-                    $i++;
-                }
-                /*      $i = $i + 1;
-                      array_push($dataList, [
-                          'number' => '',
-                          'statistic' => '',
-                          'time_begin' => '',
-                          'time_end' => '',
-                          'username' => '',
-                          'department' => '',
-                          'dinner' => "合计",
-                          'order_count' => $all_order_count,
-                          'order_money' => $all_order_money,
-                          'merge' => CommonEnum::STATE_IS_FAIL,
-                          'start' => 0,
-                          'end' => 0
-                      ]);*/
+                    if (key_exists($v2['dinner_id'] . 'money', $data)) {
+                        $data[$v2['dinner_id'] . 'money'] = $v2['order_money'];
+                        $endData[$v2['dinner_id'] . 'money'] += $v2['order_money'];
+                    }
 
+                }
+                array_push($dataList, $data);
             }
         }
+        array_push($dataList, $endData);
+        return $dataList;
+    }
 
-        array_push($dataList, [
+    private function addDinnerToStatistic($dinner)
+    {
+        $data = [
             'number' => '合计',
             'statistic' => '',
-            'time_begin' => '',
-            'time_end' => '',
+            'time_begin' => '/',
+            'time_end' => '/',
             'username' => '',
             'department' => '',
-            'dinner' => '',
-            'order_count' => $allCount,
-            'order_money' => $allMoney,
-            'merge' => CommonEnum::STATE_IS_FAIL,
-            'start' => 0,
-            'end' => 0,
-        ]);
-        return $dataList;
+        ];
+        foreach ($dinner as $k => $v) {
+            $data[$v['id'] . 'count'] = 0;
+            $data[$v['id'] . 'money'] = 0;
+        }
+        return $data;
+
     }
 
     private function consumptionStatisticByDepartment($canteen_id, $status, $department_id,
@@ -653,12 +625,12 @@ class OrderStatisticService
         $statistic = OrderConsumptionV::consumptionStatisticByDepartment($canteen_id, $status, $department_id,
             $username, $staff_type_id, $time_begin,
             $time_end, $company_id);
-        $statistic = $this->prefixStatistic($statistic, 'department', $time_begin, $time_end);
+        $statistic = $this->prefixStatistic($statistic, 'department', $time_begin, $time_end, $status);
         return $statistic;
 
     }
 
-    private function prefixStatistic($statistic, $field, $time_begin, $time_end)
+    private function prefixStatistic($statistic, $field, $time_begin, $time_end, $status)
     {
         $fieldArr = [];
         $data = [];
@@ -666,8 +638,10 @@ class OrderStatisticService
         $allCount = 0;
         if (count($statistic)) {
             foreach ($statistic as $k => $v) {
-                $allMoney += $v['order_money'];
-                $allCount += $v['order_count'];
+                $orderMoney = $status ? abs($v['order_money']) : $v['order_money'];
+                $orderCount = $v['order_count'];
+                $allMoney += $orderMoney;
+                $allCount += $orderCount;
                 if (in_array($v[$field], $fieldArr)) {
                     continue;
                 }
@@ -682,7 +656,7 @@ class OrderStatisticService
                             'dinner_id' => $v2['dinner_id'],
                             'dinner' => $v2['dinner'],
                             'order_count' => $v2['order_count'],
-                            'order_money' => $v2['order_money'],
+                            'order_money' => $v2['order_money']
                         ]);
                     }
                 }
@@ -698,7 +672,7 @@ class OrderStatisticService
         }
         return [
             'statistic' => $data,
-            'allMoney' => round($allMoney, 1),
+            'allMoney' => round($allMoney, 2),
             'allCount' => $allCount
         ];
     }
@@ -754,8 +728,10 @@ class OrderStatisticService
             $data[$k]['time_end'] = $time_end;
             $dinnerStatistic = [];
             foreach ($statistic as $k2 => $v2) {
+
+                $statistic[$k2]['order_money'] = $status ? abs($statistic[$k2]['order_money']) : $statistic[$k2]['order_money'];
                 if ($v['staff_id'] == $v2['staff_id']) {
-                    array_push($dinnerStatistic, $v2);
+                    array_push($dinnerStatistic, $statistic[$k2]);
                     unset($statistic[$k2]);
                 }
                 $data[$k]['dinnerStatistic'] = $dinnerStatistic;
@@ -768,7 +744,7 @@ class OrderStatisticService
             $time_end, $company_id);
         return [
             'statistic' => $users,
-            'allMoney' => round($statistic['order_money'], 1),
+            'allMoney' => $status ? abs($statistic['order_money']) : $statistic['order_money'],
             'allCount' => $statistic['order_count']
         ];
     }
@@ -781,7 +757,7 @@ class OrderStatisticService
         $statistic = OrderConsumptionV::consumptionStatisticByStatus($canteen_id, $status, $department_id,
             $username, $staff_type_id, $time_begin,
             $time_end, $company_id);
-        $statistic = $this->prefixStatistic($statistic, 'status', $time_begin, $time_end);
+        $statistic = $this->prefixStatistic($statistic, 'status', $time_begin, $time_end, $status);
         return $statistic;
 
     }
@@ -793,7 +769,7 @@ class OrderStatisticService
         $statistic = OrderConsumptionV::consumptionStatisticByCanteen($canteen_id, $status, $department_id,
             $username, $staff_type_id, $time_begin,
             $time_end, $company_id);
-        $statistic = $this->prefixStatistic($statistic, 'canteen', $time_begin, $time_end);
+        $statistic = $this->prefixStatistic($statistic, 'canteen', $time_begin, $time_end, $status);
         return $statistic;
 
     }
@@ -805,7 +781,7 @@ class OrderStatisticService
         $statistic = OrderConsumptionV::consumptionStatisticByStaff($canteen_id, $status, $department_id,
             $username, $staff_type_id, $time_begin,
             $time_end, $company_id);
-        $statistic = $this->prefixStatistic($statistic, 'staff_type', $time_begin, $time_end);
+        $statistic = $this->prefixStatistic($statistic, 'staff_type', $time_begin, $time_end, $status);
         return $statistic;
 
     }

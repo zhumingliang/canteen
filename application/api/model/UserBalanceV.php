@@ -9,6 +9,10 @@ use think\Model;
 class UserBalanceV extends Model
 {
 
+    public function getBalanceAttr($value)
+    {
+        return round($value, 2);
+    }
 
     public static function usersBalance($page, $size, $department_id, $user, $phone, $company_id)
     {

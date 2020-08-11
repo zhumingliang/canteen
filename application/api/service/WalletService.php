@@ -257,7 +257,7 @@ class WalletService
         $company_id = Token::getCurrentTokenVar('company_id');
         $admin_id = Token::getCurrentUid();
         $fileName = (new ExcelService())->saveExcelReturnName($supplement_excel);
-       // $fileName = dirname($_SERVER['SCRIPT_FILENAME']) . '/static/excel/upload/test.xlsx';
+        // $fileName = dirname($_SERVER['SCRIPT_FILENAME']) . '/static/excel/upload/test.xlsx';
         $fail = $this->checkSupplementData($company_id, $fileName);
         if (count($fail)) {
             return [
@@ -274,22 +274,18 @@ class WalletService
     private function checkSupplementData($company_id, $fileName)
     {
         $newCanteen = [];
-        $newDinner = [];
         $canteens = (new CanteenService())->companyCanteens($company_id);
         $dinners = DinnerV::companyDinners($company_id);
         $staffs = CompanyStaffT::staffs($company_id);
         foreach ($canteens as $k => $v) {
             array_push($newCanteen, $v['name']);
         }
-        foreach ($dinners as $k => $v) {
-            array_push($newDinner, $v['dinner']);
-        }
-        if (!count($newCanteen) || !count($newDinner)) {
+        if (!count($newCanteen) || !count($dinners)) {
             throw  new  SaveException(['msg' => '企业饭堂或者餐次设置异常']);
         }
         $newStaffs = [];
         foreach ($staffs as $k => $v) {
-            array_push($newStaffs, $v['username'] . '&' . $v['phone']);
+            array_push($newStaffs, $v['code'] . '&' . $v['username'] . '&' . $v['card_num'] . '&' . $v['phone']);
         }
         $fail = [];
         $data = (new ExcelService())->importExcel($fileName);
@@ -297,12 +293,25 @@ class WalletService
             if ($k < 2) {
                 continue;
             }
-            if (!in_array($v[1] . '&' . $v[3], $newStaffs) ||
-                !in_array($v[4], $newCanteen) || !in_array($v[6], $newDinner)) {
+            $checkData = $v[0] . '&' . $v[1] . '&' . $v[2] . '&' . $v[3];
+            if (!in_array($checkData, $newStaffs) ||
+                !in_array($v[4], $newCanteen) || !$this->checkDinnerInCanteen($v[4], $v[6], $dinners)) {
                 array_push($fail, '第' . $k . '行数据有问题');
             }
         }
         return $fail;
+    }
+
+    private function checkDinnerInCanteen($canteen, $dinner, $dinners)
+    {
+        foreach ($dinners as $k => $v) {
+            if ($v['dinner'] == $dinner && $v['canteen'] == $canteen) {
+                return true;
+                break;
+            }
+        }
+        return false;
+
     }
 
     public function prefixSupplementUploadData($company_id, $admin_id, $data)
@@ -338,15 +347,21 @@ class WalletService
                 'phone' => $v[3],
                 'canteen' => $v[4],
                 'canteen_id' => $newCanteen[$v[4]],
-                'consumption_date' => $v[5],
-                'dinner_id' => $newDinner[$v[7]],
-                'dinner' => $v[7],
+                'consumption_date' => $this->getConsumptionDate($v[5]),
+                'dinner_id' => $newDinner[$v[6]],
+                'dinner' => $v[6],
                 'type' => $v[7] == "补扣" ? 2 : 1,
-                'money' => $v[8]
+                'money' => $v[7] == "补扣" ? 0 - $v[8] : $v[8]
             ]);
         }
 
         return $dataList;
+    }
+
+    private function getConsumptionDate($value)
+    {
+        return gmdate("Y-m-d", ($value - 25569) * 86400);
+
     }
 
     private function getCanteenID($canteens, $canteen)

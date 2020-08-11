@@ -112,8 +112,9 @@ Index extends BaseController
 
     public function test()
     {
-        /* $company_id = 97;
-         $data = (new ExcelService())->saveTestExcel();
+        $a = 44048;
+
+        /* $data = (new ExcelService())->saveTestExcel();
          $fail = [];
          foreach ($data as $k => $v) {
              if ($k == 1 || empty($v[0])) {
