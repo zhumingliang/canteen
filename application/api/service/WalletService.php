@@ -351,7 +351,7 @@ class WalletService
                 'dinner_id' => $newDinner[$v[6]],
                 'dinner' => $v[6],
                 'type' => $v[7] == "补扣" ? 2 : 1,
-                'money' => $v[8]
+                'money' => $v[7] == "补扣" ? 0 - $v[8] : $v[8]
             ]);
         }
 

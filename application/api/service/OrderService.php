@@ -934,7 +934,6 @@ class OrderService extends BaseService
     public
     function changeOrderCount($id, $count)
     {
-        LogService::save($count);
         $order = OrderT::where('id', $id)->find();
         if (!$order) {
             throw new ParameterException(['msg' => '指定订餐信息不存在']);
@@ -995,7 +994,6 @@ class OrderService extends BaseService
     function changeOrderFoods($params)
     {
         try {
-            LogService::save(json_encode($params));
             Db::startTrans();
             $id = $params['id'];
             $detail = json_decode($params['detail'], true);
