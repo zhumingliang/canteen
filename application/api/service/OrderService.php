@@ -1025,7 +1025,6 @@ class OrderService extends BaseService
                 $count, $detail);
 
             $order->pay_way = $check_money['pay_way'];
-
             $order->meal_money = $check_money['new_meal_money'];
             $order->meal_sub_money = $check_money['new_meal_sub_money'];
 
@@ -1168,7 +1167,7 @@ class OrderService extends BaseService
 
 
         if ($fixed == CommonEnum::STATE_IS_FAIL) {
-            $new_money = $new_money / $old_count * $count;
+            $new_money = $new_money * $count;
             $new_meal_money = $old_meal_money;
         } else {
             $new_money = $old_money / $old_count * $count;
