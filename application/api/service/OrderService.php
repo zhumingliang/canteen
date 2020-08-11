@@ -964,7 +964,7 @@ class OrderService extends BaseService
         $new_money = ($old_money / $old_count) * $count;
         $new_sub_money = ($old_sub_money / $old_count) * $count;
         $new_no_meal_money = ($old_no_meal_money / $old_count) * $count;
-        $new_no_meal_sub_money = ($old_sub_money / $old_count) * $count;
+        $new_no_meal_sub_money = ($old_no_meal_sub_money / $old_count) * $count;
         $new_meal_money = ($old_meal_money / $old_count) * $count;
         $new_meal_sub_money = ($old_meal_sub_money / $old_count) * $count;
         //检测订单金额是否合法
