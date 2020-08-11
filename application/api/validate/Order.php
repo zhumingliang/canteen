@@ -36,7 +36,7 @@ class Order extends BaseValidate
         'canteenMenus' => ['canteen_id'],
         'orderingCancel' => ['id'],
         'changeOrderCount' => ['id', 'count'],
-        'changeOrderFoods' => ['id', 'detail'],
+        'changeOrderFoods' => ['id'],
         'personalChoiceInfo' => ['id'],
         'userOrders' => ['id', 'type'],
         'userOrderings' => ['id', 'type'],
