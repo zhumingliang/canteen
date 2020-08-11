@@ -1026,8 +1026,8 @@ class OrderService extends BaseService
 
             $order->pay_way = $check_money['pay_way'];
 
-            $order->meal_money = $check_money['new_money'];
-            $order->meal_sub_money = $check_money['new_sub_money'];
+            $order->meal_money = $check_money['new_meal_money'];
+            $order->meal_sub_money = $check_money['new_meal_sub_money'];
             $old_count = $order->count;
             $old_no_meal_money = $order->no_meal_money;
             $old_no_meal_sub_money = $order->no_meal_sub_money;
@@ -1115,7 +1115,7 @@ class OrderService extends BaseService
 
     private
     function checkOrderUpdateMoney($o_id, $u_id, $canteen_id, $dinner_id, $pay_way,
-                                   $old_money, $old_sub_money, $old_count, $count, $new_detail)
+                                   $old_money, $old_sub_money, $old_meal_money, $old_meal_sub_money, $old_count, $count, $new_detail)
     {
         //获取餐次下所有菜品类别
         $menus = (new MenuService())->dinnerMenus($dinner_id);
@@ -1159,18 +1159,24 @@ class OrderService extends BaseService
         }
 
 
-        if ($fixed == CommonEnum::STATE_IS_FAIL && (!empty($new_detail))) {
+        if ($fixed == CommonEnum::STATE_IS_FAIL) {
             $new_money = $new_money * $count;
+            $new_meal_money = $new_money * $count;
         } else {
             $new_money = $old_money / $old_count * $count;
+            $new_meal_money = $old_money / $old_count * $count;
+
         }
         $new_sub_money = $old_sub_money / $old_count * $count;
+        $new_meal_sub_money = $old_meal_sub_money / $old_count * $count;
         if ($new_money > $old_money) {
             $pay_way = $this->checkBalance($u_id, $canteen_id, $new_money + $new_sub_money - $old_money - $old_sub_money);
         }
         return [
             'new_money' => $new_money,
             'new_sub_money' => $new_sub_money,
+            'new_meal_money' => $new_meal_money,
+            'new_meal_sub_money' => $new_meal_sub_money,
             'pay_way' => $pay_way
         ];
     }
