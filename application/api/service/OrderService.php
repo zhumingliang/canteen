@@ -962,7 +962,7 @@ class OrderService extends BaseService
         $old_no_meal_sub_money = $order->no_meal_sub_money;
         $old_count = $order->count;
         $new_money = ($old_money / $old_count) * $count;
-        $new_sub_money = ($old_no_meal_sub_money / $old_count) * $count;
+        $new_sub_money = ($old_sub_money / $old_count) * $count;
         $new_no_meal_money = ($old_no_meal_money / $old_count) * $count;
         $new_no_meal_sub_money = ($old_sub_money / $old_count) * $count;
         $new_meal_money = ($old_meal_money / $old_count) * $count;
