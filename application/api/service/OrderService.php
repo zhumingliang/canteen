@@ -994,6 +994,7 @@ class OrderService extends BaseService
     function changeOrderFoods($params)
     {
         try {
+            LogService::save(json_encode($params));
             Db::startTrans();
             $id = $params['id'];
             $detail = json_decode($params['detail'], true);
