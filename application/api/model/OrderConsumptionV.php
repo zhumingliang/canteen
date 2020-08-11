@@ -92,7 +92,7 @@ class OrderConsumptionV extends Model
                     $query->where('department_id', $department_id);
                 }
                 if (!empty($username)) {
-                    $query->where('username', $username);
+                    $query->where('username', 'like', '%' . $username . '%');
                 }
                 if (!empty($staff_type_id)) {
                     $query->where('staff_type_id', $staff_type_id);
@@ -134,7 +134,7 @@ class OrderConsumptionV extends Model
                     $query->where('department_id', $department_id);
                 }
                 if (!empty($username)) {
-                    $query->where('username', $username);
+                    $query->where('username', 'like', '%' . $username . '%');
                 }
                 if (!empty($staff_type_id)) {
                     $query->where('staff_type_id', $staff_type_id);
