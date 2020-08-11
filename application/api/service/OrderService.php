@@ -1021,7 +1021,7 @@ class OrderService extends BaseService
             }
 
             $check_money = $this->checkOrderUpdateMoney($id, $order->u_id, $order->c_id,
-                $order->d_id, $order->pay_way, $order->money, $order->sub_money, $order->meal_sub_money, $order->count,
+                $order->d_id, $order->pay_way, $order->money, $order->sub_money, $order->meal_money, $order->meal_sub_money, $order->count,
                 $count, $detail);
 
             $order->pay_way = $check_money['pay_way'];
@@ -1115,7 +1115,7 @@ class OrderService extends BaseService
 
     private
     function checkOrderUpdateMoney($o_id, $u_id, $canteen_id, $dinner_id, $pay_way,
-                                   $old_money, $old_sub_money, $old_meal_sub_money, $old_count, $count, $new_detail)
+                                   $old_money, $old_sub_money,$old_meal_money, $old_meal_sub_money, $old_count, $count, $new_detail)
     {
         //获取餐次下所有菜品类别
         $menus = (new MenuService())->dinnerMenus($dinner_id);
@@ -1164,7 +1164,7 @@ class OrderService extends BaseService
             $new_meal_money = $new_money * $count;
         } else {
             $new_money = $old_money / $old_count * $count;
-            $new_meal_money = $old_money / $old_count * $count;
+            $new_meal_money = $old_meal_money / $old_count * $count;
 
         }
         $new_sub_money = $old_sub_money / $old_count * $count;
