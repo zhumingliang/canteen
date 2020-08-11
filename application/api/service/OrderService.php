@@ -934,6 +934,7 @@ class OrderService extends BaseService
     public
     function changeOrderCount($id, $count)
     {
+        LogService::save($count);
         $order = OrderT::where('id', $id)->find();
         if (!$order) {
             throw new ParameterException(['msg' => '指定订餐信息不存在']);
