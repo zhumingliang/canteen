@@ -1028,22 +1028,30 @@ class OrderService extends BaseService
 
             $order->meal_money = $check_money['new_meal_money'];
             $order->meal_sub_money = $check_money['new_meal_sub_money'];
+
             $old_count = $order->count;
             $old_no_meal_money = $order->no_meal_money;
             $old_no_meal_sub_money = $order->no_meal_sub_money;
 
             $new_no_meal_money = $old_no_meal_money / $old_count * $count;
             $new_no_meal_sub_money = $old_no_meal_sub_money / $old_count * $count;
-            if ($new_no_meal_money + $new_no_meal_sub_money
-                < $check_money['new_money'] + $check_money['new_sub_money']) {
+
+            if ($order->fixed == CommonEnum::STATE_IS_OK) {
+                if ($new_no_meal_money + $new_no_meal_sub_money
+                    < $check_money['new_money'] + $check_money['new_sub_money']) {
+                    $order->money = $check_money['new_money'];
+                    $order->sub_money = $check_money['new_sub_money'];
+                    $order->consumption_type = "ordering_meals";
+                } else {
+                    $order->money = $new_no_meal_money;
+                    $order->sub_money = $new_no_meal_sub_money;
+                    $order->consumption_type = "no_meals_ordered";
+                }
+            } else {
                 $order->money = $check_money['new_money'];
                 $order->sub_money = $check_money['new_sub_money'];
-                $order->consumption_type = "ordering_meals";
-            } else {
-                $order->money = $new_no_meal_money;
-                $order->sub_money = $new_no_meal_sub_money;
-                $order->consumption_type = "no_meals_ordered";
             }
+
             $order->count = $count;
             $order->update_time = date('Y-m-d H:i:s');
             $res = $order->save();
@@ -1115,7 +1123,7 @@ class OrderService extends BaseService
 
     private
     function checkOrderUpdateMoney($o_id, $u_id, $canteen_id, $dinner_id, $pay_way,
-                                   $old_money, $old_sub_money,$old_meal_money, $old_meal_sub_money, $old_count, $count, $new_detail)
+                                   $old_money, $old_sub_money, $old_meal_money, $old_meal_sub_money, $old_count, $count, $new_detail)
     {
         //获取餐次下所有菜品类别
         $menus = (new MenuService())->dinnerMenus($dinner_id);
@@ -1148,20 +1156,20 @@ class OrderService extends BaseService
                     throw new SaveException(['msg' => '选菜失败,菜品类别：<' . $menu['category'] . '> 选菜数量超过最大值：' . $menu['count']]);
                 }
             }
-
-            if ($fixed == CommonEnum::STATE_IS_FAIL) {
+            if (count($check_data)) {
                 foreach ($check_data as $k3 => $v3) {
                     $new_money += $v3['price'] * $v3['count'];
                 }
             }
+
         } else {
             $new_money = $old_money;
         }
 
 
         if ($fixed == CommonEnum::STATE_IS_FAIL) {
-            $new_money = $new_money * $count;
-            $new_meal_money = $new_money * $count;
+            $new_money = $new_money / $old_count * $count;
+            $new_meal_money = $old_meal_money;
         } else {
             $new_money = $old_money / $old_count * $count;
             $new_meal_money = $old_meal_money / $old_count * $count;
