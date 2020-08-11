@@ -111,7 +111,7 @@ class OrderSettlementV extends Model
                 }
             })
             ->where(function ($query) use ($consumption_type) {
-                if ($consumption_type < 5) {
+                if ($consumption_type < 6) {
                     if ($consumption_type == 1) {
                         //订餐就餐
                         $query->where('booking', CommonEnum::STATE_IS_OK)
@@ -124,13 +124,13 @@ class OrderSettlementV extends Model
                         //未订餐就餐
                         $query->where('booking', CommonEnum::STATE_IS_FAIL)
                             ->where('used', CommonEnum::STATE_IS_OK);
+                    } else if ($consumption_type == 4) {
+                        //系统补充
+                        $query->where('type', 'recharge');
+                    } else if ($consumption_type == 5) {
+                        //系统补扣
+                        $query->where('type', 'deduction');
                     }
-                } else if ($consumption_type == 4) {
-                    //未订餐就餐
-                    $query->where('type', 'recharge');
-                } else if ($consumption_type == 5) {
-                    //未订餐就餐
-                    $query->where('type', 'deduction');
                 }
 
             })
