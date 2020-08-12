@@ -322,12 +322,8 @@ class WalletService
         $staffs = CompanyStaffT::staffs($company_id);
         $newStaffs = [];
         $newCanteen = [];
-        $newDinner = [];
         foreach ($staffs as $k => $v) {
             $newStaffs[$v['phone']] = $v['id'];
-        }
-        foreach ($dinners as $k => $v) {
-            $newDinner[$v['dinner']] = $v['dinner_id'];
         }
         foreach ($canteens as $k => $v) {
             $newCanteen[$v['name']] = $v['id'];
@@ -348,7 +344,7 @@ class WalletService
                 'canteen' => $v[4],
                 'canteen_id' => $newCanteen[$v[4]],
                 'consumption_date' => $this->getConsumptionDate($v[5]),
-                'dinner_id' => $newDinner[$v[6]],
+                'dinner_id' => $this->getDinnerID($dinners, $newCanteen[$v[4]], $v[6]),
                 'dinner' => $v[6],
                 'type' => $v[7] == "补扣" ? 2 : 1,
                 'money' => $v[7] == "补扣" ? 0 - $v[8] : $v[8]
