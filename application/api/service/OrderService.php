@@ -600,10 +600,13 @@ class OrderService extends BaseService
                     //检测是否可以订餐
                     $checkOrder = $this->checkUserCanOrderForOnline($canteen_id, $dinner, $v2['ordering_date'], $v2['count'], $strategies, $phone);
                     $data = [];
+                    $delivery_fee = $this->checkUserOutsider($type, $canteen_id);
+
                     $data['u_id'] = $u_id;
                     $data['c_id'] = $canteen_id;
                     $data['d_id'] = $v['d_id'];
                     $data['address_id'] = $address_id;
+                    $data['delivery_fee'] = $delivery_fee;
                     $data['type'] = $type;
                     $data['staff_type_id'] = $staff_type_id;
                     $data['department_id'] = $department_id;
