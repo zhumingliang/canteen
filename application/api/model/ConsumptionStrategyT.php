@@ -41,7 +41,7 @@ class ConsumptionStrategyT extends Model
             ->where('state', CommonEnum::STATE_IS_OK)
             ->with([
                 'dinner' => function ($query) {
-                    $query->field('id,name');
+                    $query->field('id,name,fixed');
                 },
                 'role' => function ($query) {
                     $query->field('id,name');
