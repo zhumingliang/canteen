@@ -23,18 +23,21 @@ class Pos extends BaseController
      */
     public function login()
     {
-        $account = Request::param('account');
+        $cardCode=Request::param('card_code');
+        $companyId=Request::param('company_id');
+        if(empty($companyId)){
+            throw new AuthException(['msg'=>'企业id为空，未找到相关企业']);
+        }
+        if(empty($cardCode)){
+            throw new AuthException(['msg'=>'请刷卡登录']);
+        }
+        $sql="select t3.name from canteen_staff_card_t t1 left join canteen_company_staff_t t2 on t1.staff_id=t2.id left join canteen_staff_type_t t3 on t2.t_id=t3.id where t2.company_id='".$companyId."' and t1.card_code='".$cardCode."' and t2.state=1";
+        $name=Db::query($sql);
+        if($name[0]['name']=='管理员'){
+            return json(new SuccessMessage());
+        }else{
+            throw new AuthException(['msg'=>'非管理员，没有登录权限']);
 
-        if ($account == null) {
-            throw new AuthException(['msg' => '请先扫二维码再点击登录']);
-        } else {
-            $sql = "select role,c_id,company from canteen_admin_t where account='" . $account . "' and state=1 ";
-            $result = Db::query($sql);
-            if (empty($result)) {
-                throw new AuthException(['msg' => '未找到收银员']);
-            } else {
-                return json(new SuccessMessageWithData(['data' => $result]));
-            }
         }
     }
 

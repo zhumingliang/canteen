@@ -11,6 +11,7 @@ namespace app\api\service;
 
 use app\api\model\CanteenAccountT;
 use app\api\model\ConsumptionRecordsV;
+use app\api\model\ConsumptionStrategyT;
 use app\api\model\DinnerStatisticV;
 use app\api\model\DinnerT;
 use app\api\model\FoodsStatisticV;
@@ -30,6 +31,7 @@ use app\lib\enum\CommonEnum;
 use app\lib\enum\MenuEnum;
 use app\lib\enum\OrderEnum;
 use app\lib\enum\PayEnum;
+use app\lib\enum\StrategyEnum;
 use app\lib\enum\UserEnum;
 use app\lib\exception\ParameterException;
 use app\lib\exception\SaveException;
@@ -80,12 +82,12 @@ class OrderService extends BaseService
             $params['delivery_fee'] = $delivery_fee;
             $params['outsider'] = UserEnum::INSIDE;
             $params['money'] = $orderMoney['money'] * $count;
-            $params['sub_money'] = $orderMoney['sub_money'] * $count;
+            $params['sub_money'] = $orderMoney['sub_money'];
             $params['consumption_type'] = $orderMoney['consumption_type'];
-            $params['meal_money'] = $orderMoney['meal_money'] * $count;
-            $params['meal_sub_money'] = $orderMoney['meal_sub_money'] * $count;
-            $params['no_meal_money'] = $orderMoney['no_meal_money'] * $count;
-            $params['no_meal_sub_money'] = $orderMoney['no_meal_sub_money'] * $count;
+            $params['meal_money'] = $orderMoney['meal_money'];
+            $params['meal_sub_money'] = $orderMoney['meal_sub_money'];
+            $params['no_meal_money'] = $orderMoney['no_meal_money'];
+            $params['no_meal_sub_money'] = $orderMoney['no_meal_sub_money'];
             $params['company_id'] = $company_id;
             $phone = Token::getCurrentPhone();
             $staff = (new UserService())->getUserCompanyInfo($phone, $company_id);
@@ -124,20 +126,12 @@ class OrderService extends BaseService
         $dinner = DinnerT::dinnerInfo($dinner_id);
         $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
         $delivery_fee = $this->checkUserOutsider($params['type'], $canteen_id);
-
-        //获取企业消费策略配置：逐一扣费/一次性扣费
-
-
-        //检测用户是否可以订餐并返回订单金额
         $orderMoney = $this->checkUserCanOrder($dinner, $ordering_date, $canteen_id, $count, $detail);
+
         return [
             'delivery_fee' => $delivery_fee,
-            'money' => $orderMoney['money'] * $count,
-            'sub_money' => +$orderMoney['sub_money'] * $count,
-            'meal_money' => $orderMoney['meal_money'] * $count,
-            'meal_sub_money' => +$orderMoney['meal_sub_money'] * $count,
-            'no_meal_money' => $orderMoney['no_meal_money'] * $count,
-            'no_meal_sub_money' => +$orderMoney['no_meal_sub_money'] * $count,
+            'times' => '',
+            'orderMoney' => $orderMoney
         ];
 
     }
@@ -345,13 +339,29 @@ class OrderService extends BaseService
         $t_id = (new UserService())->getUserStaffTypeByPhone($phone, $company_id);
         //获取指定用户消费策略
         $strategies = (new CanteenService())->getStaffConsumptionStrategy($canteen_id, $dinner->id, $t_id);
+
+        if (empty($strategy)) {
+            throw new ParameterException(['msg' => '消费策略设置异常']);
+        }
+        //检测打卡模式：一次性消费/逐次消费
+        if ($strategy->consumption_type == StrategyEnum::CONSUMPTION_TIMES_ONE) {
+            $strategyMoney = $this->checkConsumptionStrategy($strategies, $count, $consumptionCount);
+        } else {
+            $strategyMoney = $this->checkConsumptionStrategyTimesMore($strategies, $count, $consumptionCount);
+
+        }
         $orderMoneyFixed = $dinner->fixed;
-        $strategyMoney = $this->checkConsumptionStrategy($strategies, $count, $consumptionCount);
         if ($ordering_type == "person_choice") {
             //检测菜单数据是否合法并返回订单金额
             $detailMoney = $this->checkMenu($dinner->id, $detail);
             if ($orderMoneyFixed == CommonEnum::STATE_IS_FAIL) {
-                $strategyMoney['money'] = $detailMoney;
+                if ($strategy->consumption_type == StrategyEnum::CONSUMPTION_TIMES_ONE) {
+                    $strategyMoney['money'] = $detailMoney * $count;
+                } else {
+                    foreach ($strategyMoney as $k => $v) {
+                        $strategyMoney[$k]['money'] = $detailMoney;
+                    }
+                }
             }
         }
         return $strategyMoney;
@@ -411,10 +421,8 @@ class OrderService extends BaseService
         }
         $limit_time = $dinner->limit_time;
         $type_number = $dinner->type_number;
-        //$limit_time = date('Y-m-d') . ' ' . $limit_time;
         $limit_time = $ordering_date . ' ' . $limit_time;
         $expiryDate = $this->prefixExpiryDate($limit_time, [$type => $type_number], '-');
-        //$expiryDate = $this->prefixExpiryDate($ordering_date, [$type => $type_number]);
         if (time() > strtotime($expiryDate)) {
             throw  new  SaveException(['msg' => '超出订餐时间']);
         }
@@ -424,9 +432,6 @@ class OrderService extends BaseService
     private
     function checkConsumptionStrategy($strategies, $orderCount, $consumptionCount)
     {
-        if (!$strategies) {
-            throw new SaveException(['msg' => '饭堂消费策略没有设置']);
-        }
         if ($orderCount > $strategies->ordered_count) {
             throw new SaveException(['msg' => '订餐数量超过最大订餐数量，最大订餐数量为：' . $strategies->ordered_count]);
         }
@@ -445,6 +450,63 @@ class OrderService extends BaseService
         $meal_sub_money = 0;
         foreach ($detail as $k => $v) {
             if (($consumptionCount + 1) == $v['number']) {
+                $strategy = $v['strategy'];
+                foreach ($strategy as $k2 => $v2) {
+                    if ($v2['status'] == "no_meals_ordered") {
+                        $no_meal_money = $v2['money'] * $orderCount;
+                        $no_meal_sub_money = $v2['sub_money'] * $orderCount;
+                    } else if ($v2['status'] == "ordering_meals") {
+                        $meal_money = $v2['money'] * $orderCount;
+                        $meal_sub_money = $v2['sub_money'] * $orderCount;
+                    }
+                }
+
+                $returnMoney['meal_money'] = $meal_money;
+                $returnMoney['meal_sub_money'] = $meal_sub_money;
+                $returnMoney['no_meal_money'] = $no_meal_money;
+                $returnMoney['no_meal_sub_money'] = $no_meal_sub_money;
+                if (($no_meal_money + $no_meal_sub_money) > ($meal_money + $meal_sub_money)) {
+                    $returnMoney['consumption_type'] = 'no_meals_ordered';
+                    $returnMoney['money'] = $no_meal_money;
+                    $returnMoney['sub_money'] = $no_meal_sub_money;
+                } else {
+                    $returnMoney['consumption_type'] = 'ordering_meals';
+                    $returnMoney['money'] = $meal_money;
+                    $returnMoney['sub_money'] = $meal_sub_money;
+                }
+                break;
+            }
+        }
+
+        return $returnMoney;
+    }
+
+    private
+    function checkConsumptionStrategyTimesMore($strategies, $orderCount, $consumptionCount)
+    {
+        if ($orderCount > $strategies->ordered_count) {
+            throw new SaveException(['msg' => '订餐数量超过最大订餐数量，最大订餐数量为：' . $strategies->ordered_count]);
+        }
+        if ($consumptionCount >= $strategies->consumption_count) {
+            throw new SaveException(['msg' => '消费次数已达到上限，最大消费次数为：' . $strategies->consumption_count]);
+        }
+        $detail = $strategies->detail;
+        if (empty($detail)) {
+            throw new ParameterException(['msg' => "消费策略设置异常"]);
+        }
+        //获取消费策略中：订餐未就餐的标准金额和附加金额
+        $returnMoneyList = [];
+        $no_meal_money = 0;
+        $no_meal_sub_money = 0;
+        $meal_money = 0;
+        $meal_sub_money = 0;
+        $i = 1;
+        foreach ($detail as $k => $v) {
+            $returnMoney = [];
+            if ($i > $orderCount) {
+                break;
+            }
+            if (($consumptionCount + $i) == $v['number']) {
                 $strategy = $v['strategy'];
                 foreach ($strategy as $k2 => $v2) {
                     if ($v2['status'] == "no_meals_ordered") {
@@ -469,8 +531,10 @@ class OrderService extends BaseService
                     $returnMoney['money'] = $meal_money;
                     $returnMoney['sub_money'] = $meal_sub_money;
                 }
-                break;
             }
+            $returnMoney['number'] = $i;
+            array_push($returnMoneyList, $returnMoney);
+            $i++;
         }
         return $returnMoney;
     }
@@ -620,13 +684,13 @@ class OrderService extends BaseService
                     $data['count'] = $v2['count'];
                     $data['order_num'] = makeOrderNo();
                     $data['ordering_type'] = OrderEnum::ORDERING_ONLINE;
-                    $data['money'] = $checkOrder['money'] * $v2['count'];
-                    $data['sub_money'] = $checkOrder['sub_money'] * $v2['count'];
+                    $data['money'] = $checkOrder['money'];
+                    $data['sub_money'] = $checkOrder['sub_money'];
                     $data['consumption_type'] = $checkOrder['consumption_type'];
-                    $data['meal_money'] = $checkOrder['meal_money'] * $v2['count'];
-                    $data['meal_sub_money'] = $checkOrder['meal_sub_money'] * $v2['count'];
-                    $data['no_meal_money'] = $checkOrder['no_meal_money'] * $v2['count'];
-                    $data['no_meal_sub_money'] = $checkOrder['no_meal_sub_money'] * $v2['count'];
+                    $data['meal_money'] = $checkOrder['meal_money'];
+                    $data['meal_sub_money'] = $checkOrder['meal_sub_money'];
+                    $data['no_meal_money'] = $checkOrder['no_meal_money'];
+                    $data['no_meal_sub_money'] = $checkOrder['no_meal_sub_money'];
                     $data['pay_way'] = '';
                     $data['phone'] = $phone;
                     $data['fixed'] = $dinner->fixed;
