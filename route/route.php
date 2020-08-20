@@ -154,6 +154,19 @@ Route::get('api/:version/reception/receptionsForApplyOutput', 'api/:version.Rece
 Route::get('api/:version/reception/applySubmitted', 'api/:version.Reception/applySubmitted');
 Route::get('api/:version/reception/applyDetails', 'api/:version.Reception/applyDetails');
 
+Route::post('api/:version/pos/login', 'api/:version.Pos/login');
+Route::get('api/:version/pos/getTotalRecords', 'api/:version.Pos/getTotalRecords');
+Route::get('api/:version/pos/getStaffInfo', 'api/:version.Pos/getStaffInfo');
+Route::get('api/:version/pos/getAccounts', 'api/:version.Pos/getAccounts');
+Route::post('api/:version/pos/consume', 'api/:version.Pos/consume');
+Route::post('api/:version/pos/refund', 'api/:version.Pos/refund');
+Route::post('api/:version/pos/bindingCard', 'api/:version.Pos/bindingCard');
+Route::get('api/:version/pos/getCardInfo', 'api/:version.Pos/getCardInfo');
+Route::post('api/:version/pos/loss', 'api/:version.Pos/loss');
+Route::post('api/:version/pos/cancel', 'api/:version.Pos/cancel');
+Route::post('api/:version/pos/recover', 'api/:version.Pos/recover');
+
+
 Route::rule('api/:version/weixin/server', 'api/:version.WeiXin/server');
 Route::rule('api/:version/weixin/menu/save', 'api/:version.WeiXin/createMenu');
 

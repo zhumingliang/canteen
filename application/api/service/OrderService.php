@@ -124,6 +124,10 @@ class OrderService extends BaseService
         $dinner = DinnerT::dinnerInfo($dinner_id);
         $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
         $delivery_fee = $this->checkUserOutsider($params['type'], $canteen_id);
+
+        //获取企业消费策略配置：逐一扣费/一次性扣费
+
+
         //检测用户是否可以订餐并返回订单金额
         $orderMoney = $this->checkUserCanOrder($dinner, $ordering_date, $canteen_id, $count, $detail);
         return [
