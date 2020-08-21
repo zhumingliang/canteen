@@ -66,7 +66,7 @@ class OrderService extends BaseService
             $delivery_fee = $this->checkUserOutsider($params['type'], $canteen_id);
             //检测用户是否可以订餐并返回订单金额
             $orderMoney = $this->checkUserCanOrder($dinner, $ordering_date, $canteen_id, $count, $detail);
-            $checkMoney = $orderMoney['money'] * $count + $orderMoney['sub_money'] * $count + $delivery_fee;
+            $checkMoney = $orderMoney['money'] + $orderMoney['sub_money'] + $delivery_fee;
             $pay_way = $this->checkBalance($u_id, $canteen_id, $checkMoney);
             if (!$pay_way) {
                 throw new SaveException(['errorCode' => 49000, 'msg' => '余额不足']);
@@ -342,8 +342,9 @@ class OrderService extends BaseService
         if (!$strategies) {
             throw new ParameterException(['msg' => '消费策略设置异常']);
         }
+        $consumptionType = $strategies->consumption_type;
         //检测打卡模式：一次性消费/逐次消费
-        if ($strategies->consumption_type == StrategyEnum::CONSUMPTION_TIMES_ONE) {
+        if ($consumptionType == StrategyEnum::CONSUMPTION_TIMES_ONE) {
             $strategyMoney = $this->checkConsumptionStrategy($strategies, $count, $consumptionCount);
         } else {
             $strategyMoney = $this->checkConsumptionStrategyTimesMore($strategies, $count, $consumptionCount);
@@ -353,7 +354,7 @@ class OrderService extends BaseService
             //检测菜单数据是否合法并返回订单金额
             $detailMoney = $this->checkMenu($dinner->id, $detail);
             if ($orderMoneyFixed == CommonEnum::STATE_IS_FAIL) {
-                if ($strategies->consumption_type == StrategyEnum::CONSUMPTION_TIMES_ONE) {
+                if ($consumptionType == StrategyEnum::CONSUMPTION_TIMES_ONE) {
                     $strategyMoney['money'] = $detailMoney * $count;
                 } else {
                     foreach ($strategyMoney as $k => $v) {
@@ -362,6 +363,9 @@ class OrderService extends BaseService
                 }
             }
         }
+        $times = $consumptionType > StrategyEnum::CONSUMPTION_TIMES_ONE ? 'one' : 'more';
+        $strategyMoney['times'] = $times;
+        $strategyMoney['consumption_count'] = $consumptionCount;
         return $strategyMoney;
     }
 
