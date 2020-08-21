@@ -339,23 +339,21 @@ class OrderService extends BaseService
         $t_id = (new UserService())->getUserStaffTypeByPhone($phone, $company_id);
         //获取指定用户消费策略
         $strategies = (new CanteenService())->getStaffConsumptionStrategy($canteen_id, $dinner->id, $t_id);
-
-        if (empty($strategy)) {
+        if (!$strategies) {
             throw new ParameterException(['msg' => '消费策略设置异常']);
         }
         //检测打卡模式：一次性消费/逐次消费
-        if ($strategy->consumption_type == StrategyEnum::CONSUMPTION_TIMES_ONE) {
+        if ($strategies->consumption_type == StrategyEnum::CONSUMPTION_TIMES_ONE) {
             $strategyMoney = $this->checkConsumptionStrategy($strategies, $count, $consumptionCount);
         } else {
             $strategyMoney = $this->checkConsumptionStrategyTimesMore($strategies, $count, $consumptionCount);
-
         }
         $orderMoneyFixed = $dinner->fixed;
         if ($ordering_type == "person_choice") {
             //检测菜单数据是否合法并返回订单金额
             $detailMoney = $this->checkMenu($dinner->id, $detail);
             if ($orderMoneyFixed == CommonEnum::STATE_IS_FAIL) {
-                if ($strategy->consumption_type == StrategyEnum::CONSUMPTION_TIMES_ONE) {
+                if ($strategies->consumption_type == StrategyEnum::CONSUMPTION_TIMES_ONE) {
                     $strategyMoney['money'] = $detailMoney * $count;
                 } else {
                     foreach ($strategyMoney as $k => $v) {
@@ -517,7 +515,7 @@ class OrderService extends BaseService
                         $meal_sub_money = $v2['sub_money'];
                     }
                 }
-
+                $returnMoney['number'] = $i;
                 $returnMoney['meal_money'] = $meal_money;
                 $returnMoney['meal_sub_money'] = $meal_sub_money;
                 $returnMoney['no_meal_money'] = $no_meal_money;
@@ -532,11 +530,10 @@ class OrderService extends BaseService
                     $returnMoney['sub_money'] = $meal_sub_money;
                 }
             }
-            $returnMoney['number'] = $i;
             array_push($returnMoneyList, $returnMoney);
             $i++;
         }
-        return $returnMoney;
+        return $returnMoneyList;
     }
 
     private
