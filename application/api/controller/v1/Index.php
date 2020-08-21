@@ -112,7 +112,7 @@ Index extends BaseController
 
     public function test()
     {
-        $a = 44048;
+        return json(\app\api\service\Token::generateToken());
 
         /* $data = (new ExcelService())->saveTestExcel();
          $fail = [];
