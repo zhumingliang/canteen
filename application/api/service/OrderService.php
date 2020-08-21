@@ -363,7 +363,7 @@ class OrderService extends BaseService
                 }
             }
         }
-        $times = $consumptionType > StrategyEnum::CONSUMPTION_TIMES_ONE ? 'one' : 'more';
+        $times = $consumptionType > StrategyEnum::CONSUMPTION_TIMES_ONE ? 'more' : 'one';
         $strategyMoney['times'] = $times;
         $strategyMoney['consumption_count'] = $consumptionCount;
         return $strategyMoney;
