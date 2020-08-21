@@ -66,6 +66,7 @@ class OrderService extends BaseService
             $delivery_fee = $this->checkUserOutsider($params['type'], $canteen_id);
             //检测用户是否可以订餐并返回订单金额
             $orderMoney = $this->checkUserCanOrder($dinner, $ordering_date, $canteen_id, $count, $detail);
+
             $checkMoney = $orderMoney['money'] + $orderMoney['sub_money'] + $delivery_fee;
             $pay_way = $this->checkBalance($u_id, $canteen_id, $checkMoney);
             if (!$pay_way) {
@@ -130,7 +131,6 @@ class OrderService extends BaseService
 
         return [
             'delivery_fee' => $delivery_fee,
-            'times' => '',
             'orderMoney' => $orderMoney
         ];
 
