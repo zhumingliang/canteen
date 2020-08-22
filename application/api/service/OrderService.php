@@ -18,6 +18,7 @@ use app\api\model\FoodsStatisticV;
 use app\api\model\OrderDetailT;
 use app\api\model\OrderHandelT;
 use app\api\model\OrderingV;
+use app\api\model\OrderParentT;
 use app\api\model\OrderT;
 use app\api\model\OrderUsersStatisticV;
 use app\api\model\OutConfigT;
@@ -58,58 +59,34 @@ class OrderService extends BaseService
             $u_id = Token::getCurrentUid();
             $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
             $company_id = Token::getCurrentTokenVar('current_company_id');
+            $phone = Token::getCurrentPhone();
+            $staff = (new UserService())->getUserCompanyInfo($phone, $company_id);
             $this->checkEatingOutsider($params['type'], $params['address_id']);
             //获取餐次信息
             $dinner = DinnerT::dinnerInfo($dinner_id);
             //检测该餐次订餐时间是否允许
             $this->checkDinnerForPersonalChoice($dinner, $ordering_date);
             $delivery_fee = $this->checkUserOutsider($params['type'], $canteen_id);
+            $consumptionType = $this->getConsumptionType($phone, $company_id, $canteen_id, $dinner_id);
             //检测用户是否可以订餐并返回订单金额
             $orderMoney = $this->checkUserCanOrder($dinner, $ordering_date, $canteen_id, $count, $detail);
+            $strategyMoney = $orderMoney['strategyMoney'];
+            if ($consumptionType == StrategyEnum::CONSUMPTION_TIMES_ONE) {
+                $orderId = $this->handleConsumptionTimesOne($u_id, $ordering_date, $company_id, $canteen_id,
+                    $count, $detail, $delivery_fee, $dinner, $params, $staff, $phone, $strategyMoney);
+            } elseif ($consumptionType == StrategyEnum::CONSUMPTION_TIMES_MORE) {
+                $orderId = $this->handleConsumptionTimesMore($u_id, $ordering_date, $company_id, $canteen_id,
+                    $count, $detail, $delivery_fee, $dinner, $params, $staff, $phone, $strategyMoney);
 
-            $checkMoney = $orderMoney['money'] + $orderMoney['sub_money'] + $delivery_fee;
-            $pay_way = $this->checkBalance($u_id, $canteen_id, $checkMoney);
-            if (!$pay_way) {
-                throw new SaveException(['errorCode' => 49000, 'msg' => '余额不足']);
+            } else {
+                throw new ParameterException(['msg' => '消费策略扣费模式异常']);
             }
-
-            //保存订单信息
-            $params['order_num'] = makeOrderNo();
-            $params['pay_way'] = $pay_way;
-            $params['u_id'] = $u_id;
-            $params['c_id'] = $canteen_id;
-            $params['d_id'] = $dinner_id;
-            $params['pay'] = PayEnum::PAY_SUCCESS;
-            $params['delivery_fee'] = $delivery_fee;
-            $params['outsider'] = UserEnum::INSIDE;
-            $params['money'] = $orderMoney['money'] * $count;
-            $params['sub_money'] = $orderMoney['sub_money'];
-            $params['consumption_type'] = $orderMoney['consumption_type'];
-            $params['meal_money'] = $orderMoney['meal_money'];
-            $params['meal_sub_money'] = $orderMoney['meal_sub_money'];
-            $params['no_meal_money'] = $orderMoney['no_meal_money'];
-            $params['no_meal_sub_money'] = $orderMoney['no_meal_sub_money'];
-            $params['company_id'] = $company_id;
-            $phone = Token::getCurrentPhone();
-            $staff = (new UserService())->getUserCompanyInfo($phone, $company_id);
-            $params['staff_type_id'] = $staff->t_id;
-            $params['department_id'] = $staff->d_id;
-            $params['staff_id'] = $staff->id;
-            $params['phone'] = $phone;
-            $params['fixed'] = $dinner->fixed;
-            $params['state'] = CommonEnum::STATE_IS_OK;
-            $params['receive'] = Token::getCurrentTokenVar('outsiders');
-            $order = OrderT::create($params);
-            if (!$order) {
-                throw new SaveException(['msg' => '生成订单失败']);
-            }
-            $this->prefixDetail($detail, $order->id);
             if ($params['type'] == OrderEnum::EAT_OUTSIDER && !empty($params['address_id'])) {
                 (new AddressService())->prefixAddressDefault($params['address_id']);
             }
             Db::commit();
             return [
-                'id' => $order->id
+                'id' => $orderId
             ];
         } catch (Exception $e) {
             Db::rollback();
@@ -118,7 +95,106 @@ class OrderService extends BaseService
 
     }
 
-    public function getOrderMoney($params)
+
+    private function handleConsumptionTimesOne($u_id, $ordering_date, $company_id, $canteen_id,
+                                               $count, $detail, $delivery_fee,
+                                               $dinner, $params, $staff, $phone, $orderMoney)
+    {
+
+        $checkMoney = $orderMoney['money'] + $orderMoney['sub_money'] + $delivery_fee;
+        $pay_way = $this->checkBalance($u_id, $canteen_id, $checkMoney);
+        if (!$pay_way) {
+            throw new SaveException(['errorCode' => 49000, 'msg' => '余额不足']);
+        }
+
+        //保存订单信息
+        $params['order_num'] = makeOrderNo();
+        $params['pay_way'] = $pay_way;
+        $params['u_id'] = $u_id;
+        $params['c_id'] = $canteen_id;
+        $params['d_id'] = $dinner->id;
+        $params['pay'] = PayEnum::PAY_SUCCESS;
+        $params['delivery_fee'] = $delivery_fee;
+        $params['outsider'] = UserEnum::INSIDE;
+        $params['money'] = $orderMoney['money'];
+        $params['sub_money'] = $orderMoney['sub_money'];
+        $params['consumption_type'] = $orderMoney['consumption_type'];
+        $params['meal_money'] = $orderMoney['meal_money'];
+        $params['meal_sub_money'] = $orderMoney['meal_sub_money'];
+        $params['no_meal_money'] = $orderMoney['no_meal_money'];
+        $params['no_meal_sub_money'] = $orderMoney['no_meal_sub_money'];
+        $params['company_id'] = $company_id;
+        $params['staff_type_id'] = $staff->t_id;
+        $params['department_id'] = $staff->d_id;
+        $params['staff_id'] = $staff->id;
+        $params['phone'] = $phone;
+        $params['fixed'] = $dinner->fixed;
+        $params['state'] = CommonEnum::STATE_IS_OK;
+        $params['receive'] = Token::getCurrentTokenVar('outsiders');
+        $order = OrderT::create($params);
+        if (!$order) {
+            throw new SaveException(['msg' => '生成订单失败']);
+        }
+        $this->prefixDetail($detail, $order->id);
+        return $order->id;
+    }
+
+
+    private function handleConsumptionTimesMore($u_id, $ordering_date, $company_id,
+                                                $canteen_id, $count,
+                                                $detail, $delivery_fee,
+                                                $dinner, $params, $staff, $phone, $orderMoney)
+    {
+        //检测总订单是否存在
+        $orderId = $this->checkOrderParentExits($ordering_date, $canteen_id, $dinner->id, $phone);
+        if (!$orderId) {
+            $orderData = [
+                'u_id' => $u_id,
+                'd_id' => $dinner->id,
+                'c_id' => $canteen_id,
+                'phone' => $phone,
+                'count' => $count,
+                'type' => $params['type'],
+                'ordering_date' => $ordering_date,
+                'state' => CommonEnum::STATE_IS_OK,
+                'order_num' => makeOrderNo(),
+                'address_id' => $params['address_id'],
+                'pay' => PayEnum::PAY_SUCCESS,
+                'delivery_fee' => $delivery_fee,
+                'ordering_type' => 'personal_choice',
+                'staff_type_id' => $staff->t_id,
+                'department_id' => $staff->d_id,
+                'staff_id' => $staff->id,
+                'company_id' => $company_id,
+                'booking' => CommonEnum::STATE_IS_OK,
+                'remark' => $params['remark'],
+                'outsider' => UserEnum::INSIDE
+            ];
+            $orderParent = OrderParentT::create($orderData);
+            if (!$orderParent) {
+                throw new SaveException(['msg' => '新增总订单失败']);
+            }
+            $orderId = $orderParent->id;
+        }
+        //处理子订单
+        $subOrderMoney = $orderMoney['orderMoney'];
+
+
+    }
+
+
+    private function checkOrderParentExits($ordering_date, $canteen_id, $dinner_id, $phone)
+    {
+        $order = OrderParentT::orderInfo($ordering_date, $canteen_id, $dinner_id, $phone);
+        if (!$order) {
+            return 0;
+        }
+        return $order->id;
+
+    }
+
+    public
+    function getOrderMoney($params)
     {
         $dinner_id = $params['dinner_id'];
         $ordering_date = $params['ordering_date'];
@@ -128,11 +204,8 @@ class OrderService extends BaseService
         $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
         $delivery_fee = $this->checkUserOutsider($params['type'], $canteen_id);
         $orderMoney = $this->checkUserCanOrder($dinner, $ordering_date, $canteen_id, $count, $detail);
-
-        return [
-            'delivery_fee' => $delivery_fee,
-            'orderMoney' => $orderMoney
-        ];
+        $orderMoney['delivery_fee'] = $delivery_fee;
+        return $orderMoney;
 
     }
 
@@ -328,7 +401,54 @@ class OrderService extends BaseService
 
 
     public
-    function checkUserCanOrder($dinner, $day, $canteen_id, $count, $detail, $ordering_type = "person_choice")
+    function checkUserCanOrder($dinner, $day, $canteen_id, $count,
+                               $detail,
+                               $ordering_type = "person_choice")
+    {
+        $phone = Token::getCurrentPhone();
+        $company_id = Token::getCurrentTokenVar('current_company_id');
+        //获取用户指定日期订餐数量
+        $orders = OrderingV::getRecordForDayOrderingByPhone($day, $dinner->name, $phone);
+        $consumptionCount = $this->checkOrderedAnotherCanteen($canteen_id, $orders);
+        //检测消费策略
+        $t_id = (new UserService())->getUserStaffTypeByPhone($phone, $company_id);
+        //获取指定用户消费策略
+        $strategies = (new CanteenService())->getStaffConsumptionStrategy($canteen_id, $dinner->id, $t_id);
+        if (!$strategies) {
+            throw new ParameterException(['msg' => '消费策略设置异常']);
+        }
+        $consumptionType = $strategies->consumption_type;
+        //检测打卡模式：一次性消费/逐次消费
+        if ($consumptionType == StrategyEnum::CONSUMPTION_TIMES_ONE) {
+            $strategyMoney = $this->checkConsumptionStrategy($strategies, $count, $consumptionCount);
+        } else {
+            $strategyMoney = $this->checkConsumptionStrategyTimesMore($strategies, $count, $consumptionCount);
+        }
+        $orderMoneyFixed = $dinner->fixed;
+        if ($ordering_type == "person_choice") {
+            //检测菜单数据是否合法并返回订单金额
+            $detailMoney = $this->checkMenu($dinner->id, $detail);
+            if ($orderMoneyFixed == CommonEnum::STATE_IS_FAIL) {
+                if ($consumptionType == StrategyEnum::CONSUMPTION_TIMES_ONE) {
+                    $strategyMoney['money'] = $detailMoney * $count;
+                } else {
+                    foreach ($strategyMoney as $k => $v) {
+                        $strategyMoney[$k]['money'] = $detailMoney;
+                    }
+                }
+            }
+        }
+        $times = $consumptionType > StrategyEnum::CONSUMPTION_TIMES_ONE ? 'more' : 'one';
+        return [
+            'times' => $times,
+            'consumption_count' => $consumptionCount,
+            'strategyMoney' => $strategyMoney
+        ];
+    }
+
+
+    public
+    function checkUserCanOrderMore($dinner, $day, $canteen_id, $count, $detail, $ordering_type = "person_choice")
     {
         $phone = Token::getCurrentPhone();
         $company_id = Token::getCurrentTokenVar('current_company_id');
@@ -367,6 +487,19 @@ class OrderService extends BaseService
         $strategyMoney['times'] = $times;
         $strategyMoney['consumption_count'] = $consumptionCount;
         return $strategyMoney;
+    }
+
+    private
+    function getConsumptionType($phone, $company_id, $canteen_id, $dinner_id)
+    {
+        $t_id = (new UserService())->getUserStaffTypeByPhone($phone, $company_id);
+        //获取指定用户消费策略
+        $strategies = (new CanteenService())->getStaffConsumptionStrategy($canteen_id, $dinner_id, $t_id);
+        if (!$strategies) {
+            throw new ParameterException(['msg' => '消费策略设置异常']);
+        }
+        $consumptionType = $strategies->consumption_type;
+        return $consumptionType;
     }
 
     private
@@ -519,7 +652,7 @@ class OrderService extends BaseService
                         $meal_sub_money = $v2['sub_money'];
                     }
                 }
-                $returnMoney['number'] = $i;
+                $returnMoney['number'] = $consumptionCount + $i;
                 $returnMoney['meal_money'] = $meal_money;
                 $returnMoney['meal_sub_money'] = $meal_sub_money;
                 $returnMoney['no_meal_money'] = $no_meal_money;
