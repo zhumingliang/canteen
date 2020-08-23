@@ -6,6 +6,7 @@ namespace app\api\service;
 
 use app\api\model\CompanyStaffT;
 use app\api\model\DinnerV;
+use app\api\model\OrderParentT;
 use app\api\model\OrderT;
 use app\api\model\PayT;
 use app\api\model\RechargeCashT;
@@ -527,12 +528,19 @@ class WalletService
         return $status;
     }
 
-    public function paySuccess($order_id, $order_type)
+    public function paySuccess($order_id, $order_type, $times)
     {
-        if ($order_type == "canteen") {
-            OrderT::update([
+        if ($times == 'one') {
+            if ($order_type == "canteen") {
+                OrderT::update([
+                    'pay' => 'paid'
+                ], ['id' => $order_id]);
+            }
+        } else if ($times == 'more') {
+            OrderParentT::update([
                 'pay' => 'paid'
             ], ['id' => $order_id]);
         }
+
     }
 }

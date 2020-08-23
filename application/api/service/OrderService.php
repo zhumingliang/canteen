@@ -42,7 +42,6 @@ use app\lib\exception\UpdateException;
 use app\lib\Num;
 use think\Db;
 use think\Exception;
-use function GuzzleHttp\Promise\each_limit;
 
 
 class OrderService extends BaseService
@@ -126,6 +125,8 @@ class OrderService extends BaseService
         $params['no_meal_money'] = $orderMoney['no_meal_money'];
         $params['no_meal_sub_money'] = $orderMoney['no_meal_sub_money'];
         $params['company_id'] = $company_id;
+        $params['ordering_date'] = $ordering_date;
+        $params['count'] = $count;
         $params['staff_type_id'] = $staff->t_id;
         $params['department_id'] = $staff->d_id;
         $params['staff_id'] = $staff->id;
@@ -238,6 +239,8 @@ class OrderService extends BaseService
             $ordering_date = $params['ordering_date'];
             $type = $params['type'];
             $count = $params['count'];
+            $address_id = empty($params['address_id']) ? 0 : $params['address_id'];
+            $remark = empty($params['remark']) ? 0 : $params['remark'];
             $openid = Token::getCurrentOpenid();
             $username = Token::getCurrentTokenVar('nickName');
             $detail = json_decode($params['detail'], true);
@@ -254,43 +257,26 @@ class OrderService extends BaseService
             $dinner = DinnerT::dinnerInfo($dinner_id);
             //检测该餐次订餐时间是否允许
             $this->checkDinnerForPersonalChoice($dinner, $ordering_date);
+            $consumptionType = $this->getConsumptionType($phone, $company_id, $canteen_id, $dinner_id);
 
             //获取订单金额
             $orderMoney = $this->checkOutsiderOrderMoney($dinner_id, $detail);
-            //保存订单信息
-            $params['order_num'] = makeOrderNo();
-            $params['type'] = $type;
-            $params['pay_way'] = PayEnum::PAY_WEIXIN;;
-            $params['u_id'] = $u_id;
-            $params['c_id'] = $canteen_id;
-            $params['d_id'] = $dinner_id;
-            $params['pay'] = PayEnum::PAY_FAIL;
-            $params['delivery_fee'] = $delivery_fee;
-            $params['outsider'] = UserEnum::OUTSIDE;
-            $params['money'] = $orderMoney * $count;
-            $params['sub_money'] = 0;
-            $params['consumption_type'] = 'ordering_meals';
-            $params['meal_money'] = $orderMoney;
-            $params['meal_sub_money'] = 0;
-            $params['no_meal_money'] = 0;
-            $params['no_meal_sub_money'] = 0;
-            $params['pay'] = PayEnum::PAY_FAIL;
-            $params['company_id'] = $company_id;
-            $params['phone'] = $phone;
-            $params['fixed'] = $dinner->fixed;
-            $params['state'] = CommonEnum::STATE_IS_OK;
-            $params['receive'] = CommonEnum::STATE_IS_FAIL;
-            $order = OrderT::create($params);
-            if (!$order) {
-                throw new SaveException(['msg' => '生成订单失败']);
+
+            if ($consumptionType == StrategyEnum::CONSUMPTION_TIMES_ONE) {
+                $orderId = $this->handleOutsiderConsumptionTimesOne($u_id, $type,
+                    $company_id, $canteen_id, $phone, $dinner_id,
+                    $dinner->fixed, $delivery_fee, $orderMoney, $count, $detail, $params);
+            } else {
+                $orderId = $this->handleOutsiderConsumptionTimesMore($u_id, $dinner_id, $canteen_id, $phone, $count, $type
+                    , $ordering_date, $delivery_fee, $company_id, $address_id, $remark, $orderMoney, $detail);
+
             }
-            $this->prefixDetail($detail, $order->id, true);
             if ($params['type'] == OrderEnum::EAT_OUTSIDER && !empty($params['address_id'])) {
                 (new AddressService())->prefixAddressDefault($params['address_id']);
             }
             //生成微信支付订单
-            $payMoney = $order->money + $delivery_fee;
-            $payOrder = $this->savePayOrder($order->id, $company_id, $openid, $u_id, $payMoney, $phone, $username);
+            $payMoney = $orderMoney * $count + $delivery_fee;
+            $payOrder = $this->savePayOrder($orderId, $company_id, $openid, $u_id, $payMoney, $phone, $username, 'more');
             Db::commit();
             return $payOrder;
         } catch (Exception $e) {
@@ -300,8 +286,97 @@ class OrderService extends BaseService
 
     }
 
+    private function handleOutsiderConsumptionTimesMore($u_id, $dinnerId, $canteen_id, $phone, $count, $type
+        , $ordering_date, $delivery_fee, $company_id, $address_id, $remark, $orderMoney, $detail)
+    {
+        $orderData = [
+            'u_id' => $u_id,
+            'd_id' => $dinnerId,
+            'c_id' => $canteen_id,
+            'phone' => $phone,
+            'count' => $count,
+            'type' => $type,
+            'ordering_date' => $ordering_date,
+            'state' => CommonEnum::STATE_IS_OK,
+            'order_num' => makeOrderNo(),
+            'address_id' => $address_id,
+            'pay' => PayEnum::PAY_FAIL,
+            'delivery_fee' => $delivery_fee,
+            'ordering_type' => 'personal_choice',
+            'company_id' => $company_id,
+            'booking' => CommonEnum::STATE_IS_OK,
+            'remark' => $remark,
+            'outsider' => UserEnum::OUTSIDE
+        ];
+        $orderParent = OrderParentT::create($orderData);
+        if (!$orderParent) {
+            throw new SaveException(['msg' => '新增总订单失败']);
+        }
+        $orderId = $orderParent->id;
+        //处理子订单
+        for ($i = 0; $i < $count; $i++) {
+            $data = [
+                'order_id' => $orderId,
+                'ordering_date' => $ordering_date,
+                'consumption_sort' => $i + 1,
+                'order_sort' => $i + 1,
+                'money' => $orderMoney,
+                'sub_money' => 0,
+                'consumption_type' => 'ordering_meals',
+                'meal_money' => $orderMoney,
+                'meal_sub_money' => 0,
+                'no_meal_money' => 0,
+                'no_meal_sub_money' => 0,
+                'ordering_type' => 'personal_choice',
+            ];
+            array_push($subOrderDataList, $data);
+        }
+        $list = (new OrderSubT())->saveAll($subOrderDataList);
+        if (!$list) {
+            throw new SaveException(['msg' => '新增子订单失败']);
+        }
+        $this->prefixDetail($detail, $orderId, 'more');
+        return $orderId;
+    }
+
+    private function handleOutsiderConsumptionTimesOne($u_id, $type, $company_id, $canteen_id, $phone, $dinner_id,
+                                                       $orderMoneyFixed, $delivery_fee
+        , $orderMoney, $count, $detail, $params)
+    {
+        //保存订单信息
+        $params['order_num'] = makeOrderNo();
+        $params['type'] = $type;
+        $params['pay_way'] = PayEnum::PAY_WEIXIN;;
+        $params['u_id'] = $u_id;
+        $params['c_id'] = $canteen_id;
+        $params['d_id'] = $dinner_id;
+        $params['pay'] = PayEnum::PAY_FAIL;
+        $params['delivery_fee'] = $delivery_fee;
+        $params['outsider'] = UserEnum::OUTSIDE;
+        $params['money'] = $orderMoney * $count;
+        $params['sub_money'] = 0;
+        $params['consumption_type'] = 'ordering_meals';
+        $params['meal_money'] = $orderMoney;
+        $params['meal_sub_money'] = 0;
+        $params['no_meal_money'] = 0;
+        $params['no_meal_sub_money'] = 0;
+        $params['pay'] = PayEnum::PAY_FAIL;
+        $params['company_id'] = $company_id;
+        $params['phone'] = $phone;
+        $params['fixed'] = $orderMoneyFixed;
+        $params['state'] = CommonEnum::STATE_IS_OK;
+        $params['receive'] = CommonEnum::STATE_IS_FAIL;
+        $order = OrderT::create($params);
+        if (!$order) {
+            throw new SaveException(['msg' => '生成订单失败']);
+        }
+        $orderId = $order->id;
+        $this->prefixDetail($detail, $orderId, 'one');
+        return $orderId;
+    }
+
     public
-    function savePayOrder($order_id, $company_id, $openid, $u_id, $money, $phone, $username)
+    function savePayOrder($order_id, $company_id, $openid, $u_id, $money, $phone, $username, $times = 'one')
     {
         $data = [
             'openid' => $openid,
@@ -314,6 +389,7 @@ class OrderService extends BaseService
             'order_id' => $order_id,
             'type' => 'canteen',
             'phone' => $phone,
+            'times' => $times,
             'username' => $username,
             'outsider' => UserEnum::OUTSIDE
 

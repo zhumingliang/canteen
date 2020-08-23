@@ -380,7 +380,7 @@ class Wallet extends BaseController
                     $order->paid_at = time(); // 更新支付时间为当前时间
                     $order->status = 'paid';
                     //修改订餐订单状态
-                    (new WalletService())->paySuccess($order->order_id, $order->type);
+                    (new WalletService())->paySuccess($order->order_id, $order->type, $order->times);
 
                 } elseif ($message['result_code'] === 'FAIL') {
                     // 用户支付失败
