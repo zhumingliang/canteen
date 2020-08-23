@@ -19,6 +19,7 @@ use app\api\model\OrderDetailT;
 use app\api\model\OrderHandelT;
 use app\api\model\OrderingV;
 use app\api\model\OrderParentT;
+use app\api\model\OrderSubT;
 use app\api\model\OrderT;
 use app\api\model\OrderUsersStatisticV;
 use app\api\model\OutConfigT;
@@ -26,6 +27,7 @@ use app\api\model\PayT;
 use app\api\model\RechargeSupplementT;
 use app\api\model\ShopOrderingV;
 use app\api\model\ShopOrderT;
+use app\api\model\SubFoodT;
 use app\api\model\UserBalanceV;
 use app\api\model\WxRefundT;
 use app\lib\enum\CommonEnum;
@@ -69,14 +71,14 @@ class OrderService extends BaseService
             $delivery_fee = $this->checkUserOutsider($params['type'], $canteen_id);
             $consumptionType = $this->getConsumptionType($phone, $company_id, $canteen_id, $dinner_id);
             //检测用户是否可以订餐并返回订单金额
-            $orderMoney = $this->checkUserCanOrder($dinner, $ordering_date, $canteen_id, $count, $detail);
-            $strategyMoney = $orderMoney['strategyMoney'];
+            $strategyMoney = $this->checkUserCanOrder($dinner, $ordering_date, $canteen_id, $count, $detail);
+            $orderMoney = $strategyMoney['strategyMoney'];
             if ($consumptionType == StrategyEnum::CONSUMPTION_TIMES_ONE) {
                 $orderId = $this->handleConsumptionTimesOne($u_id, $ordering_date, $company_id, $canteen_id,
-                    $count, $detail, $delivery_fee, $dinner, $params, $staff, $phone, $strategyMoney);
+                    $count, $detail, $delivery_fee, $dinner, $params, $staff, $phone, $orderMoney);
             } elseif ($consumptionType == StrategyEnum::CONSUMPTION_TIMES_MORE) {
                 $orderId = $this->handleConsumptionTimesMore($u_id, $ordering_date, $company_id, $canteen_id,
-                    $count, $detail, $delivery_fee, $dinner, $params, $staff, $phone, $strategyMoney);
+                    $count, $detail, $delivery_fee, $dinner, $params, $staff, $phone, $orderMoney);
 
             } else {
                 throw new ParameterException(['msg' => '消费策略扣费模式异常']);
@@ -145,41 +147,59 @@ class OrderService extends BaseService
                                                 $detail, $delivery_fee,
                                                 $dinner, $params, $staff, $phone, $orderMoney)
     {
-        //检测总订单是否存在
-        $orderId = $this->checkOrderParentExits($ordering_date, $canteen_id, $dinner->id, $phone);
-        if (!$orderId) {
-            $orderData = [
-                'u_id' => $u_id,
-                'd_id' => $dinner->id,
-                'c_id' => $canteen_id,
-                'phone' => $phone,
-                'count' => $count,
-                'type' => $params['type'],
-                'ordering_date' => $ordering_date,
-                'state' => CommonEnum::STATE_IS_OK,
-                'order_num' => makeOrderNo(),
-                'address_id' => $params['address_id'],
-                'pay' => PayEnum::PAY_SUCCESS,
-                'delivery_fee' => $delivery_fee,
-                'ordering_type' => 'personal_choice',
-                'staff_type_id' => $staff->t_id,
-                'department_id' => $staff->d_id,
-                'staff_id' => $staff->id,
-                'company_id' => $company_id,
-                'booking' => CommonEnum::STATE_IS_OK,
-                'remark' => $params['remark'],
-                'outsider' => UserEnum::INSIDE
-            ];
-            $orderParent = OrderParentT::create($orderData);
-            if (!$orderParent) {
-                throw new SaveException(['msg' => '新增总订单失败']);
-            }
-            $orderId = $orderParent->id;
+        $orderData = [
+            'u_id' => $u_id,
+            'd_id' => $dinner->id,
+            'c_id' => $canteen_id,
+            'phone' => $phone,
+            'count' => $count,
+            'type' => $params['type'],
+            'ordering_date' => $ordering_date,
+            'state' => CommonEnum::STATE_IS_OK,
+            'order_num' => makeOrderNo(),
+            'address_id' => $params['address_id'],
+            'pay' => PayEnum::PAY_SUCCESS,
+            'delivery_fee' => $delivery_fee,
+            'ordering_type' => 'personal_choice',
+            'staff_type_id' => $staff->t_id,
+            'department_id' => $staff->d_id,
+            'staff_id' => $staff->id,
+            'company_id' => $company_id,
+            'booking' => CommonEnum::STATE_IS_OK,
+            'remark' => $params['remark'],
+            'outsider' => UserEnum::INSIDE
+        ];
+        $orderParent = OrderParentT::create($orderData);
+        if (!$orderParent) {
+            throw new SaveException(['msg' => '新增总订单失败']);
         }
-        //处理子订单
-        $subOrderMoney = $orderMoney['orderMoney'];
-
-
+        $orderId = $orderParent->id;
+        //处理订单菜品信息
+        $this->prefixDetail($detail, $orderId, 'more');
+        //处理子订单信息
+        $subOrderDataList = [];
+        foreach ($orderMoney as $k => $v) {
+            $data = [
+                'order_id' => $orderId,
+                'ordering_date' => $ordering_date,
+                'consumption_sort' => $v['number'],
+                'order_sort' => $v['order_sort'],
+                'money' => $v['money'],
+                'sub_money' => $v['sub_money'],
+                'consumption_type' => $v['consumption_type'],
+                'meal_money' => $v['meal_money'],
+                'meal_sub_money' => $v['meal_sub_money'],
+                'no_meal_money' => $v['no_meal_money'],
+                'no_meal_sub_money' => $v['no_meal_sub_money'],
+                'ordering_type' => 'personal_choice',
+            ];
+            array_push($subOrderDataList, $data);
+        }
+        $list = (new OrderSubT())->saveAll($subOrderDataList);
+        if (!$list) {
+            throw new SaveException(['msg' => '新增子订单失败']);
+        }
+        return $orderId;
     }
 
 
@@ -326,7 +346,7 @@ class OrderService extends BaseService
     }
 
     public
-    function prefixDetail($detail, $o_id, $external = false)
+    function prefixDetail($detail, $o_id, $consumptionTimes = 'one')
     {
         $data_list = [];
         foreach ($detail as $k => $v) {
@@ -343,9 +363,12 @@ class OrderService extends BaseService
                 ];
                 array_push($data_list, $data);
             }
-
         }
-        $res = (new OrderDetailT())->saveAll($data_list);
+        if ($consumptionTimes == 'one') {
+            $res = (new OrderDetailT())->saveAll($data_list);
+        } else {
+            $res = (new SubFoodT())->saveAll($data_list);
+        }
         if (!$res) {
             throw new SaveException(['msg' => '存储订餐明细失败']);
         }
@@ -653,6 +676,7 @@ class OrderService extends BaseService
                     }
                 }
                 $returnMoney['number'] = $consumptionCount + $i;
+                $returnMoney['order_sort'] = $i;
                 $returnMoney['meal_money'] = $meal_money;
                 $returnMoney['meal_sub_money'] = $meal_sub_money;
                 $returnMoney['no_meal_money'] = $no_meal_money;
@@ -1195,6 +1219,7 @@ class OrderService extends BaseService
         }
     }
 
+    //一次性扣费消费模式下-修改订单
     public
     function changeOrderFoods($params)
     {
@@ -1228,7 +1253,6 @@ class OrderService extends BaseService
             $check_money = $this->checkOrderUpdateMoney($id, $order->u_id, $order->c_id,
                 $order->d_id, $order->pay_way, $order->money, $order->sub_money, $order->meal_money, $order->meal_sub_money, $order->count,
                 $count, $detail);
-
             $order->pay_way = $check_money['pay_way'];
             $order->meal_money = $check_money['new_meal_money'];
             $order->meal_sub_money = $check_money['new_meal_sub_money'];
@@ -1272,8 +1296,189 @@ class OrderService extends BaseService
         }
     }
 
+    //逐次扣费消费模式下-修改订单
+    public
+    function changeOrderFoodsToConsumptionMore($params)
+    {
+        try {
+            Db::startTrans();
+            $id = $params['id'];
+            $detail = json_decode($params['detail'], true);
+            $order = OrderParentT::where('id', $id)->find();
+            if (!$order) {
+                throw new ParameterException(['msg' => '订单不存在']);
+            }
+            //检测订单是否可操作
+            $this->checkOrderCanHandel($order->dinner_id, $order->ordering_date);
+            //处理菜品信息
+            $updateFoodsMoney = 0;
+            if (!empty($detail)) {
+                $updateFoodsMoney = $this->checkChangeFoods($id, $order->dinner_id, $detail);
+            }
+            //检测订单数量
+            $orderCount = $order->count;
+            $updateCount = $params['count'];
+            $orderMoneyFixed = $order->fixed;
+            //订单数量没有变化，修改订单金额
+            if (empty($updateCount) || ($updateCount == $orderCount)) {
+                if (!$updateFoodsMoney) {
+                    throw new ParameterException(['msg' => '数据异常：数量未变且修改后菜品金额为零']);
+                }
+                if ($orderMoneyFixed == CommonEnum::STATE_IS_FAIL) {
+                    //动态金额模式-修改子订单对应金额
+                    $updateSub = OrderSubT::update(['money' => $updateFoodsMoney], ['order_id' => $id]);
+                    if (!$updateSub) {
+                        throw new UpdateException(['msg' => '修改子订单金额失败']);
+                    }
+                }
+
+                return true;
+            }
+            //订单数量发生变化
+            if ($updateCount != $orderCount) {
+                //检测订单修改数量是否合法
+                $count = $params['count'];
+                $strategy = (new CanteenService())->getStaffConsumptionStrategy($order->canteen_id,
+                    $order->dinner_id,
+                    $order->staff_type_id);
+                if (!$strategy) {
+                    throw new ParameterException(['msg' => '当前用户消费策略不存在']);
+                }
+                if ($count > $strategy->ordered_count) {
+                    throw new UpdateException(['msg' => '超出最大订餐量，不能修改']);
+                }
+                //减少子订单数量
+                if ($updateCount < $orderCount) {
+                    if ($orderMoneyFixed == CommonEnum::STATE_IS_FAIL) {
+                        $updateSub = OrderSubT::update(['money', $updateFoodsMoney], ['order_id', $id]);
+                        if (!$updateSub) {
+                            throw new UpdateException(['msg' => '修改子订单金额失败']);
+                        }
+                    }
+                    $updateSub = OrderSubT::update(['state', CommonEnum::STATE_IS_FAIL],
+                        ['order_sort', '>', $updateCount]);
+                    if (!$updateSub) {
+                        throw new UpdateException(['msg' => '修改子订单数量']);
+                    }
+                    return true;
+                }
+                /**
+                 * 增加子订单数量
+                 * 1.获取增加部分消费策略金额
+                 * 2.判断是否固定金额消费
+                 * 3.生成子订单
+                 */
+                $this->handleIncreaseSubOrder($strategy, $id, $order->ordering_date, $orderMoneyFixed, $order->canteen_id,
+                    $order->dinner_id, $order->phone, $updateCount - $orderCount, $updateFoodsMoney);
+
+            }
+
+            $order->count = $updateCount;
+            $order->update_time = date('Y-m-d H:i:s');
+            $res = $order->save();
+            if (!$res) {
+                throw new UpdateException();
+            }
+            //处理订单明细
+            if (!empty($detail)) {
+                $this->prefixUpdateOrderDetail($id, $detail, 'more');
+            }
+            Db::commit();
+        } catch
+        (Exception $e) {
+            Db::rollback();
+            LogService::save($e->getMessage());
+            throw $e;
+        }
+    }
+
+    /**
+     * 处理逐次消费中，增加订餐数量情况
+     */
+    private function handleIncreaseSubOrder($strategy, $orderId, $ordering_date, $orderMoneyFixed, $canteen_id,
+                                            $dinner_id, $phone, $increaseCount, $updateFoodsMoney)
+    {
+        $dinner = DinnerT::dinnerInfo($dinner_id);
+        $orders = OrderingV::getRecordForDayOrderingByPhone($ordering_date, $dinner->name, $phone);
+        $consumptionCount = $this->checkOrderedAnotherCanteen($canteen_id, $orders);
+        $strategyMoney = $this->checkConsumptionStrategyTimesMore($strategy, $increaseCount, $consumptionCount);
+        if ($orderMoneyFixed == CommonEnum::STATE_IS_FAIL) {
+            //1.处理之前已经下单的金额
+            OrderSubT::update(['money' => $updateFoodsMoney], ['order_id' => $orderId]);
+        }
+        foreach ($strategyMoney as $k => $v) {
+            $money = $orderMoneyFixed == CommonEnum::STATE_IS_FAIL ? $updateFoodsMoney : $v['money'];
+            $data = [
+                'order_id' => $orderId,
+                'ordering_date' => $ordering_date,
+                'consumption_sort' => $v['number'],
+                'order_sort' => $v['order_sort'],
+                'money' => $money,
+                'sub_money' => $v['sub_money'],
+                'consumption_type' => $v['consumption_type'],
+                'meal_money' => $v['meal_money'],
+                'meal_sub_money' => $v['meal_sub_money'],
+                'no_meal_money' => $v['no_meal_money'],
+                'no_meal_sub_money' => $v['no_meal_sub_money'],
+                'ordering_type' => 'personal_choice',
+            ];
+            array_push($subOrderDataList, $data);
+        }
+        $list = (new OrderSubT())->saveAll($subOrderDataList);
+        if (!$list) {
+            throw new SaveException(['msg' => '生成子订单失败']);
+        }
+
+    }
+
+    /**
+     * 检查个人选菜修改菜品信息是否合法并返回单份菜品金额
+     */
     private
-    function prefixUpdateOrderDetail($o_id, $new_detail)
+    function checkChangeFoods($orderId, $dinnerId, $updateFoods)
+    {
+        //获取餐次下所有菜品类别
+        $menus = (new MenuService())->dinnerMenus($dinnerId);
+        if (!count($menus)) {
+            throw new ParameterException(['msg' => '指定餐次未设置菜单信息']);
+        }
+        $oldFoods = SubFoodT::detail($orderId);
+        $check_data = [];
+        if (!empty($updateFoods)) {
+            foreach ($updateFoods as $k => $v) {
+                if ($k == 0) {
+                    $check_data = $oldFoods;
+                }
+                $menu_id = $v['menu_id'];
+                $add_foods = $v['add_foods'];
+                $update_foods = $v['update_foods'];
+                $cancel_foods = $v['cancel_foods'];
+                $check_data = $this->checkOrderDetailUpdate($update_foods, $check_data);
+                $check_data = $this->checkOrderDetailCancel($cancel_foods, $check_data);
+                $check_data = $this->checkOrderDetailAdd($menu_id, $add_foods, $check_data);
+                $menu = $this->getMenuInfo($menus, $menu_id);
+                if (empty($menu)) {
+                    throw new ParameterException(['msg' => '菜品类别id错误']);
+                }
+                $newMenuCount = $this->getMenuCount($menu_id, $check_data);
+                if (($menu['status'] == MenuEnum::FIXED) && ($menu['count'] < $newMenuCount)) {
+                    throw new SaveException(['msg' => '选菜失败,菜品类别：<' . $menu['category'] . '> 选菜数量超过最大值：' . $menu['count']]);
+                }
+            }
+        }
+
+        if (!count($check_data)) {
+            return 0;
+        }
+        $updateMoney = 0;
+        foreach ($check_data as $k3 => $v3) {
+            $updateMoney += $v3['price'] * $v3['count'];
+        }
+        return 0;
+    }
+
+    private
+    function prefixUpdateOrderDetail($o_id, $new_detail, $consumptionTimes = 'one')
     {
         $data_list = [];
         foreach ($new_detail as $k => $v) {
@@ -1319,7 +1524,12 @@ class OrderService extends BaseService
 
 
         }
-        $res = (new OrderDetailT())->saveAll($data_list);
+        if ($consumptionTimes == 'one') {
+            $res = (new OrderDetailT())->saveAll($data_list);
+        } else {
+            $res = (new SubFoodT())->saveAll($data_list);
+
+        }
         if (!$res) {
             throw new UpdateException(['msg' => '更新订单明细失败']);
         }
@@ -1327,7 +1537,9 @@ class OrderService extends BaseService
 
     private
     function checkOrderUpdateMoney($o_id, $u_id, $canteen_id, $dinner_id, $pay_way,
-                                   $old_money, $old_sub_money, $old_meal_money, $old_meal_sub_money, $old_count, $count, $new_detail)
+                                   $old_money, $old_sub_money, $old_meal_money,
+                                   $old_meal_sub_money,
+                                   $old_count, $count, $new_detail)
     {
         //获取餐次下所有菜品类别
         $menus = (new MenuService())->dinnerMenus($dinner_id);

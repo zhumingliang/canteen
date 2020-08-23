@@ -66,7 +66,6 @@ class Order extends BaseController
         $params = Request::param();
         $order = (new OrderService())->personChoice($params);
         return json(new SuccessMessageWithData(['data' => $order]));
-
     }
 
     /**
@@ -311,6 +310,46 @@ class Order extends BaseController
         return json(new SuccessMessage());
 
     }
+
+
+    /**
+     * @api {POST} /api/v1/order/changeFoods/more 微信端---个人选菜---逐次扣费订单-修改订单菜品信息
+     * @apiGroup   Official
+     * @apiVersion 3.0.0
+     * @apiDescription    微信端---个人选菜---逐次扣费订单-修改订单菜品信息
+     * @apiExample {post}  请求样例:
+     *    {
+     *       "id": 1,
+     *       "count": 2,
+     *       "detail": [{"menu_id":1,"add_foods":[{"food_id":1,"name":"商品1","price":5,"count":1},{"food_id":1,"name":"商品1","price":5,"count":1},{"food_id":2,"name":"商品1","price":5,"count":1}],"update_foods":[{"detail_id":1,"count":1}],"cancel_foods":"3,4"}]
+     *     }
+     * @apiParam (请求参数说明) {int} id  订单id
+     * @apiParam (请求参数说明) {int} count 订餐数量
+     * @apiParam (请求参数说明) {obj} detail 订餐菜品明细
+     * @apiParam (请求参数说明) {string} detail|menu_id 菜品类别id
+     * @apiParam (请求参数说明) {obj} add_foods 新增菜品明细
+     * @apiParam (请求参数说明) {string} food_id 菜品id
+     * @apiParam (请求参数说明) {string} price 菜品实时单价
+     * @apiParam (请求参数说明) {string} count 菜品数量
+     * @apiParam (请求参数说明) {string} price 菜品实时单价
+     * @apiParam (请求参数说明) {string} name 菜品名称
+     * @apiParam (请求参数说明) {obj} update_foods 修改菜品明细
+     * @apiParam (请求参数说明) {string} detail_id 订单菜品明细id
+     * @apiParam (请求参数说明) {string} count 修改菜品数量
+     * @apiParam (请求参数说明) {string} cancel_foods 取消菜品id列表，多个用逗号分隔，此id来自于订单信息中detail_id
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     */
+    public function changeOrderFoodsToConsumptionMore()
+    {
+        $params = Request::param();
+        (new OrderService())->changeOrderFoodsToConsumptionMore($params);
+        return json(new SuccessMessage());
+
+    }
+
 
     /**
      * @api {GET} /api/v1/order/personalChoice/info  微信端-个人选菜-获取订单信息
