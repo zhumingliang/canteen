@@ -186,6 +186,7 @@ class OrderService extends BaseService
                 'consumption_sort' => $v['number'],
                 'order_sort' => $v['order_sort'],
                 'money' => $v['money'],
+                'order_num' => makeOrderNo(),
                 'sub_money' => $v['sub_money'],
                 'consumption_type' => $v['consumption_type'],
                 'meal_money' => $v['meal_money'],
