@@ -150,8 +150,8 @@ class OrderService extends BaseService
     {
         $orderData = [
             'u_id' => $u_id,
-            'd_id' => $dinner->id,
-            'c_id' => $canteen_id,
+            'dinner_id' => $dinner->id,
+            'canteen_id' => $canteen_id,
             'phone' => $phone,
             'count' => $count,
             'type' => $params['type'],
