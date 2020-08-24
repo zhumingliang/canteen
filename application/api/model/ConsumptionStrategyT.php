@@ -77,7 +77,7 @@ class ConsumptionStrategyT extends Model
             ->where('state', CommonEnum::STATE_IS_OK)
             ->hidden(['create_time', 'update_time', 'state', 'd_id', 't_id', 'c_id'])
             ->order('create_time desc')
-            ->find();
+            ->select();
         return $info;
 
     }
