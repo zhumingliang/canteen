@@ -454,6 +454,12 @@ class CanteenService
         return $info;
     }
 
+    public function getStaffAllConsumptionStrategy($c_id, $t_id)
+    {
+        $info = ConsumptionStrategyT::getStaffAllConsumptionStrategy($c_id, $t_id);
+        return $info;
+    }
+
     public function getDinnerConsumptionStrategyForNoMeals($c_id, $d_id)
     {
         $info = ConsumptionStrategyT::getDinnerConsumptionStrategy($c_id, $d_id);

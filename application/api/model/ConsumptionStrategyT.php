@@ -70,6 +70,18 @@ class ConsumptionStrategyT extends Model
 
     }
 
+    public static function getStaffAllConsumptionStrategy($c_id, $t_id)
+    {
+        $info = self::where('c_id', $c_id)
+            ->where('t_id', $t_id)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->hidden(['create_time', 'update_time', 'state', 'd_id', 't_id', 'c_id'])
+            ->order('create_time desc')
+            ->find();
+        return $info;
+
+    }
+
     public static function getDinnerConsumptionStrategy($c_id, $d_id)
     {
         $info = self::where('c_id', $c_id)
@@ -87,7 +99,7 @@ class ConsumptionStrategyT extends Model
         $info = self::where('c_id', $c_id)
             ->where('t_id', $t_id)
             ->where('state', CommonEnum::STATE_IS_OK)
-            ->field('id,d_id,ordered_count')
+            ->field('id,d_id,ordered_count,consumption_type')
             ->select();
         return $info;
     }

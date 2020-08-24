@@ -891,19 +891,19 @@ class OrderService extends BaseService
         $staff_type_id = $staff->t_id;
         $department_id = $staff->d_id;
         $staff_id = $staff->id;
+        $delivery_fee = $this->checkUserOutsider($type, $canteen_id);
+        $strategies = (new CanteenService())->getStaffAllConsumptionStrategy($canteen_id, $staff_type_id);
 
         foreach ($detail as $k => $v) {
             //检测该餐次是否在订餐时间范围内
             $ordering_data = $v['ordering'];
             $dinner = DinnerT::dinnerInfo($v['d_id']);
-            $strategies = (new CanteenService())->getStaffConsumptionStrategy($canteen_id, $v['d_id'], $staff_type_id);
             if (!empty($ordering_data)) {
                 foreach ($ordering_data as $k2 => $v2) {
                     //检测是否可以订餐
-                    $checkOrder = $this->checkUserCanOrderForOnline($canteen_id, $dinner, $v2['ordering_date'], $v2['count'], $strategies, $phone);
+                    $strategy = $this->getDinnerConsumptionStrategy($strategies,$v['d_id']);
+                    $checkOrder = $this->checkUserCanOrderForOnline($canteen_id, $dinner, $v2['ordering_date'], $v2['count'], $stratege, $phone);
                     $data = [];
-                    $delivery_fee = $this->checkUserOutsider($type, $canteen_id);
-
                     $data['u_id'] = $u_id;
                     $data['c_id'] = $canteen_id;
                     $data['d_id'] = $v['d_id'];
@@ -942,6 +942,17 @@ class OrderService extends BaseService
             'all_money' => $all_money,
             'list' => $data_list
         ];
+
+    }
+
+    private function getDinnerConsumptionStrategy($strategies, $dinnerId)
+    {
+        foreach ($strategies as $k => $v) {
+            if ($dinnerId == $v['d_id']) {
+                return $strategies[$k];
+            }
+        }
+        return [];
 
     }
 
@@ -1025,6 +1036,7 @@ class OrderService extends BaseService
             foreach ($strategies as $k2 => $v2) {
                 if ($v['id'] == $v2['d_id']) {
                     $dinner[$k]['ordered_count'] = $v2['ordered_count'];
+                    $dinner[$k]['consumption_type'] = $v2['consumption_type'];
                     unset($strategies[$k2]);
                 }
 
