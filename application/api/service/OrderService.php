@@ -1390,62 +1390,70 @@ class OrderService extends BaseService
      * 修改订餐数量
      */
     public
-    function changeOrderCount($id, $count)
+    function changeOrderCountToConsumptionMore($id, $updateCount)
     {
-        $order = OrderT::where('id', $id)->find();
-        if (!$order) {
-            throw new ParameterException(['msg' => '指定订餐信息不存在']);
+
+        try {
+            Db::startTrans();
+            $order = OrderParentT::where('id', $id)->find();
+            if (!$order) {
+                throw new ParameterException(['msg' => '指定订餐信息不存在']);
+            }
+            //检测订单是否可操作
+            $this->checkOrderCanHandel($order->d_id, $order->ordering_date);
+            //检测订单修改数量是否合法
+            $strategy = (new CanteenService())->getStaffConsumptionStrategy($order->c_id, $order->d_id, $order->staff_type_id);
+            if (!$strategy) {
+                throw new ParameterException(['msg' => '当前用户消费策略不存在']);
+            }
+            if ($updateCount > $strategy->ordered_count) {
+                throw new UpdateException(['msg' => '超出最大订餐数量，不能预定']);
+            }
+            $orderCount = $order->count;
+            //订单数量发生变化
+            if ($updateCount != $orderCount) {
+                //检测订单修改数量是否合法
+                $strategy = (new CanteenService())->getStaffConsumptionStrategy($order->canteen_id,
+                    $order->dinner_id,
+                    $order->staff_type_id);
+                if (!$strategy) {
+                    throw new ParameterException(['msg' => '当前用户消费策略不存在']);
+                }
+                if ($updateCount > $strategy->ordered_count) {
+                    throw new UpdateException(['msg' => '超出最大订餐量，不能修改']);
+                }
+                //减少子订单数量
+                if ($updateCount < $orderCount) {
+                    $updateSub = OrderSubT::update(['state', CommonEnum::STATE_IS_FAIL],
+                        ['order_sort', '>', $updateCount]);
+                    if (!$updateSub) {
+                        throw new UpdateException(['msg' => '修改子订单数量']);
+                    }
+                    return true;
+
+                }
+                /**
+                 * 增加子订单数量
+                 * 1.获取增加部分消费策略金额
+                 * 2.判断是否固定金额消费
+                 * 3.生成子订单
+                 */
+                $this->handleIncreaseSubOrder($strategy, $id, $order->ordering_date, CommonEnum::STATE_IS_OK, $order->canteen_id,
+                    $order->dinner_id, $order->phone, $updateCount - $orderCount, 0);
+
+            }
+            $order->count = $updateCount;
+            $order->update_time = date('Y-m-d H:i:s');
+            $res = $order->save();
+            if (!$res) {
+                throw new UpdateException();
+            }
+            Db::commit();
+        } catch (Exception $e) {
+            Db::rollback();
+            throw $e;
         }
-        if ($order->used == CommonEnum::STATE_IS_OK) {
-            throw  new  SaveException(['msg' => '订餐已消费，不能修改订单']);
-        }
-        if ($order->type == OrderEnum::EAT_OUTSIDER && $order->receive == CommonEnum::STATE_IS_OK) {
-            throw  new  SaveException(['msg' => '订餐已被确认，不能修改订单']);
-        }
-        //检测订单是否可操作
-        $this->checkOrderCanHandel($order->d_id, $order->ordering_date);
-        //检测订单修改数量是否合法
-        $strategy = (new CanteenService())->getStaffConsumptionStrategy($order->c_id, $order->d_id, $order->staff_type_id);
-        if (!$strategy) {
-            throw new ParameterException(['msg' => '当前用户消费策略不存在']);
-        }
-        if ($count > $strategy->ordered_count) {
-            throw new UpdateException(['msg' => '超出最大订餐数量，不能预定']);
-        }
-        $old_money = $order->money;
-        $old_sub_money = $order->sub_money;
-        $old_meal_money = $order->meal_money;
-        $old_meal_sub_money = $order->meal_sub_money;
-        $old_no_meal_money = $order->no_meal_money;
-        $old_no_meal_sub_money = $order->no_meal_sub_money;
-        $old_count = $order->count;
-        $new_money = ($old_money / $old_count) * $count;
-        $new_sub_money = ($old_sub_money / $old_count) * $count;
-        $new_no_meal_money = ($old_no_meal_money / $old_count) * $count;
-        $new_no_meal_sub_money = ($old_no_meal_sub_money / $old_count) * $count;
-        $new_meal_money = ($old_meal_money / $old_count) * $count;
-        $new_meal_sub_money = ($old_meal_sub_money / $old_count) * $count;
-        //检测订单金额是否合法
-        $check_res = $this->checkBalance($order->u_id, $order->c_id, ($new_money + $new_sub_money - $old_money - $old_sub_money));
-        if (!$check_res) {
-            throw new UpdateException(['msg' => '当前用户可消费余额不足']);
-        }
-        //修改数量
-        $order->count = $count;
-        //处理订单金额
-        $order->money = $new_money;
-        $order->no_meal_money = $new_no_meal_money;
-        $order->meal_money = $new_meal_money;
-        //处理订单附加金额
-        $order->sub_money = $new_sub_money;
-        $order->no_meal_sub_money = $new_no_meal_sub_money;
-        $order->meal_sub_money = $new_meal_sub_money;
-        //处理消费方式
-        $order->pay_way = $check_res;
-        $order->update_time = date('Y-m-d H:i:s');
-        if (!($order->save())) {
-            throw new UpdateException();
-        }
+
     }
 
     //一次性扣费消费模式下-修改订单
@@ -1601,7 +1609,6 @@ class OrderService extends BaseService
                     $order->dinner_id, $order->phone, $updateCount - $orderCount, $updateFoodsMoney);
 
             }
-
             $order->count = $updateCount;
             $order->update_time = date('Y-m-d H:i:s');
             $res = $order->save();

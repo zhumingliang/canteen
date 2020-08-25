@@ -189,7 +189,9 @@ Route::get('api/:version/order/personalChoice/info', 'api/:version.Order/persona
 Route::post('api/:version/order/cancel', 'api/:version.Order/orderCancel');
 Route::post('api/:version/order/cancel/manager', 'api/:version.Order/managerOrderCancel');
 Route::post('api/:version/order/changeCount', 'api/:version.Order/changeOrderCount');
+Route::post('api/:version/order/changeCount/more', 'api/:version.Order/changeOrderCountToConsumptionMore');
 Route::post('api/:version/order/changeFoods', 'api/:version.Order/changeOrderFoods');
+Route::post('api/:version/order/changeFoods/more', 'api/:version.Order/changeOrderFoodsToConsumptionMore');
 Route::post('api/:version/order/changeAddress', 'api/:version.Order/changeOrderAddress');
 Route::post('api/:version/order/handelOrderedNoMeal', 'api/:version.Order/handelOrderedNoMeal');
 Route::get('api/:version/order/userOrderings', 'api/:version.Order/userOrderings');

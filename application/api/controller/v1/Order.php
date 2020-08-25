@@ -275,6 +275,33 @@ class Order extends BaseController
     }
 
     /**
+     * @api {POST} /api/v1/order/changeCount/more 微信端---线上订餐---逐次扣费模式修改订单预定数量
+     * @apiGroup   Official
+     * @apiVersion 3.0.0
+     * @apiDescription    微信端---线上订餐---逐次扣费模式修改订单预定数量
+     * @apiExample {post}  请求样例:
+     *    {
+     *       "id": 1,
+     *       "count": 1,
+     *     }
+     * @apiParam (请求参数说明) {int} id  订单id
+     * @apiParam (请求参数说明) {int} count 订餐数量
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     */
+    public function changeOrderCountToConsumptionMore()
+    {
+        $id = Request::param('id');
+        $count = Request::param('count');
+        (new OrderService())->changeOrderCountToConsumptionMore($id, $count);
+        return json(new SuccessMessage());
+
+    }
+
+
+    /**
      * @api {POST} /api/v1/order/changeFoods 微信端---个人选菜---修改订单菜品信息
      * @apiGroup   Official
      * @apiVersion 3.0.0
