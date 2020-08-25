@@ -829,21 +829,24 @@ class Order extends BaseController
      * @apiParam (请求参数说明) {string} name  姓名查询
      * @apiParam (请求参数说明) {int} type  订餐类型：1｜饭堂就餐；2｜外卖；3｜全部
      * @apiSuccessExample {json}返回样例:
-     * {"msg":"ok","errorCode":0,"code":200,"data":{"total":4255,"per_page":"1","current_page":1,"last_page":4255,"data":[{"order_id":37812,"ordering_date":"2020-07-28","username":"林佩熔","canteen":"饭堂","department":"整形外科","dinner":"晚餐","type":"食堂","ordering_type":"personal_choice","state":1,"meal_time_begin":"16:05:00","meal_time_end":"19:20:00","status":3}]}}     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"total":4255,"per_page":"1","current_page":1,"last_page":4255,"data":[{"order_id":37812,"ordering_date":"2020-07-28","username":"林佩熔","canteen":"饭堂","department":"整形外科","dinner":"晚餐","type":"食堂","ordering_type":"personal_choice","consumption_type":1,"count":1,"order_money":10}]}}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
      * @apiSuccess (返回参数说明) {String} msg 信息描述
      * @apiSuccess (返回参数说明) {int} total 数据总数
      * @apiSuccess (返回参数说明) {int} per_page 每页多少条数据
      * @apiSuccess (返回参数说明) {int} current_page 当前页码
      * @apiSuccess (返回参数说明) {int} last_page 最后页码
      * @apiSuccess (返回参数说明) {int} order_id 订单id
+     * @apiSuccess (返回参数说明) {int} consumption_type 消费策略消费模式：one：一次性消费；more:逐次消费
      * @apiSuccess (返回参数说明) {string} ordering_date 订餐日期
-     * @apiSuccess (返回参数说明) {string} meal_time_end 就餐截止时间（选中取消操作时，判断一下ordering_date+meal_time_end 是否小于当前时间）
+     * @apiSuccess (返回参数说明) {string} type 订单类型
      * @apiSuccess (返回参数说明) {string} canteen 消费地点
      * @apiSuccess (返回参数说明) {string} department 部门
      * @apiSuccess (返回参数说明) {string} username 用户姓名
      * @apiSuccess (返回参数说明) {string} dinner 餐次
+     * @apiSuccess (返回参数说明) {int} count 订餐数量
+     * @apiSuccess (返回参数说明) {float} order_money 订单金额
      * @apiSuccess (返回参数说明) {string} ordering_type 订餐方式：online：线上订单，personal_choice：个人选菜；no:未订餐就餐
-     * @apiSuccess (返回参数说明) {int} status 状态：1：已经订餐；2：已经取消；3：已结算
      */
     public function orderStatisticDetail($page = 1, $size = 20, $name = '', $phone = '', $canteen_id = 0, $department_id = 0, $dinner_id = 0, $type = 3)
     {
@@ -856,6 +859,38 @@ class Order extends BaseController
             $dinner_id, $type);
         return json(new SuccessMessageWithData(['data' => $list]));
 
+    }
+
+    /**
+     * @api {GET} /api/v1/order/orderStatistic/detail/info CMS管理端-订餐管理-订餐明细-子订单详情
+     * @apiGroup  CMS管理端
+     * @apiVersion 3.0.0
+     * @apiDescription CMS管理端-订餐管理-子订单详情
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/order/orderStatistic/detail/info?id=33042&consumption_type=more
+     * @apiParam (请求参数说明) {int} id  订单id
+     * @apiParam (请求参数说明) {string} consumption_type  订单消费类型：one：一次性消费；more 逐次消费
+     * @apiSuccessExample {json}返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"id":33042,"delivery_fee":"0.00","ordering_date":"2020-08-25","meal_time_end":"23:59","sub":[{"number":1,"order_id":33043,"money":9.01,"status":3},{"number":2,"order_id":33044,"money":15.01,"status":3},{"number":3,"order_id":33045,"money":21.01,"status":3}]}}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {String} msg 信息描述
+     * @apiSuccess (返回参数说明) {int} id 总订单id
+     * @apiSuccess (返回参数说明) {float} delivery_fee 配送费
+     * @apiSuccess (返回参数说明) {string} ordering_date 订餐日期
+     * @apiSuccess (返回参数说明) {string} meal_time_end 就餐截止时间（选中取消操作时，判断一下ordering_date+meal_time_end 是否小于当前时间）
+     * @apiSuccess (返回参数说明) {obj} sub 子订单信息
+     * @apiSuccess (返回参数说明) {string} number 排序
+     * @apiSuccess (返回参数说明) {string} order_id 子订单订单号
+     * @apiSuccess (返回参数说明) {float} money 子订单金额
+     * @apiSuccess (返回参数说明) {int} status 订单状态：1 ：已订餐（可取消）；2：已取消；3：已结算
+     */
+
+    public function orderStatisticDetailInfo()
+    {
+        $orderId = Request::param('id');
+        $consumptionType = Request::param('consumption_type');
+        $info = (new OrderService())->orderStatisticDetailInfo($orderId, $consumptionType);
+        return json(new SuccessMessageWithData(['data' => $info]));
     }
 
     /**

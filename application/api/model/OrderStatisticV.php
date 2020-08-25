@@ -93,7 +93,6 @@ class OrderStatisticV extends Model
                                   $phone, $canteen_id, $department_id,
                                   $dinner_id, $type)
     {
-        //$time_end = addDay(1, $time_end);
         $list = self::whereBetweenTime('ordering_date', $time_begin, $time_end)
             ->where(function ($query) use ($name, $phone, $department_id) {
                 if (strlen($name)) {
@@ -126,7 +125,8 @@ class OrderStatisticV extends Model
                     $query->where('type', $type);
                 }
             })
-            ->field('order_id,ordering_date,username,canteen,department,dinner,type,ordering_type,state,meal_time_begin,meal_time_end,used,1 as status')
+            ->field('order_id,consumption_type,ordering_date,username,canteen,department,
+            dinner,type,ordering_type,order_money')
             ->order('order_id DESC')
             ->paginate($size, false, ['page' => $page]);
         return $list;

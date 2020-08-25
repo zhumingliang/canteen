@@ -184,6 +184,7 @@ class OrderService extends BaseService
                 'order_id' => $orderId,
                 'ordering_date' => $ordering_date,
                 'consumption_sort' => $v['number'],
+                'count' => 1,
                 'order_sort' => $v['order_sort'],
                 'money' => $v['money'],
                 'order_num' => makeOrderNo(),
@@ -953,6 +954,7 @@ class OrderService extends BaseService
                             'ordering_date' => $v2['ordering_date'],
                             'consumption_sort' => $v['number'],
                             'order_sort' => $v['order_sort'],
+                            'count' => 1,
                             'money' => $v['money'],
                             'order_num' => makeOrderNo(),
                             'sub_money' => $v['sub_money'],
@@ -1400,6 +1402,7 @@ class OrderService extends BaseService
                 throw new ParameterException(['msg' => '指定订餐信息不存在']);
             }
             //检测订单是否可操作
+            $this->checkConsumptionTimesOrderCanUpdate($id);
             $this->checkOrderCanHandel($order->d_id, $order->ordering_date);
             //检测订单修改数量是否合法
             $strategy = (new CanteenService())->getStaffConsumptionStrategy($order->c_id, $order->d_id, $order->staff_type_id);
@@ -1456,7 +1459,20 @@ class OrderService extends BaseService
 
     }
 
-    //一次性扣费消费模式下-修改订单
+    /**
+     * 检测逐次消费模式订单是否可以操作
+     * @param $orderID
+     */
+    private function checkConsumptionTimesOrderCanUpdate($orderID)
+    {
+        $usedOrderCount = OrderSubT::usedOrders($orderID);
+        if ($usedOrderCount) {
+            throw new ParameterException(['msg' => '订单已消费不能修改']);
+        }
+    }
+
+
+//一次性扣费消费模式下-修改订单
     public
     function changeOrderFoods($params)
     {
@@ -1533,7 +1549,7 @@ class OrderService extends BaseService
         }
     }
 
-    //逐次扣费消费模式下-修改订单
+//逐次扣费消费模式下-修改订单
     public
     function changeOrderFoodsToConsumptionMore($params)
     {
@@ -1650,6 +1666,7 @@ class OrderService extends BaseService
                 'ordering_date' => $ordering_date,
                 'consumption_sort' => $v['number'],
                 'order_sort' => $v['order_sort'],
+                'count' => 1,
                 'money' => $money,
                 'sub_money' => $v['sub_money'],
                 'consumption_type' => $v['consumption_type'],
@@ -2314,4 +2331,89 @@ class OrderService extends BaseService
         $orders = OrderT::usersStatisticInfo($orderIds);
         return $orders;
     }
+
+    public function orderStatisticDetailInfo($orderId, $consumptionType)
+    {
+        if ($consumptionType == "one") {
+
+            return $this->InfoToConsumptionTimesOne($orderId);
+        } else if ($consumptionType == "more") {
+            return $this->InfoToConsumptionTimesMore($orderId);
+        }
+    }
+
+    private function InfoToConsumptionTimesOne($orderId)
+    {
+        $order = OrderT::infoToStatisticDetail($orderId);
+        if (!$order) {
+            throw new ParameterException(['msg' => "订单不存在"]);
+        }
+        $count = $order->count;
+        $money = $order->money / $count;
+        $sub_money = $order->sub_money / $count;
+        $dinner = $order->dinner;
+        $data['id'] = $order->id;
+        $data['delivery_fee'] = $order->delivery_fee;
+        $data['ordering_date'] = $order->ordering_date;
+        $data['meal_time_end'] = $dinner['meal_time_end'];
+        $status = $this->getOrderStatus($order->state, $order->used, $order->ordering_date, $dinner['meal_time_end']);
+        $dataList = [];
+        for ($i = 1; $i <= $count; $i++) {
+            $detail = [
+                'number' => $i,
+                'order_id' => $orderId,
+                'money' => $money + $sub_money,
+                'status' => $status
+            ];
+            array_push($dataList, $detail);
+        }
+        $data['sub'] = $dataList;
+        return $data;
+    }
+
+    private function InfoToConsumptionTimesMore($orderId)
+    {
+        $order = OrderParentT::infoToStatisticDetail($orderId);
+        if (!$order) {
+            throw new ParameterException(['msg' => "订单不存在"]);
+        }
+        $data['id'] = $order->id;
+        $dinner = $order->dinner;
+        $sub = $order->sub;
+        $data['delivery_fee'] = $order->delivery_fee;
+        $data['ordering_date'] = $order->ordering_date;
+        $data['meal_time_end'] = $dinner['meal_time_end'];
+        $dataList = [];
+        foreach ($sub as $k => $v) {
+            $status = $this->getOrderStatus($v['state'], $v['used'], $order->ordering_date, $dinner['meal_time_end']);
+            $detail = [
+                'number' => $v['order_sort'],
+                'order_id' => $v['id'],
+                'money' => round($v['money'] + $v['sub_money'], 2),
+                'status' => $status
+            ];
+            array_push($dataList, $detail);
+        }
+        $data['sub'] = $dataList;
+        return $data;
+    }
+
+    private function getOrderStatus($state, $used, $ordering_date, $meal_time_end)
+    {
+        if ($state != CommonEnum::STATE_IS_OK) {
+            return 2;//已取消
+        } else {
+            $expiryDate = $ordering_date . ' ' . $meal_time_end;
+            if (time() > strtotime($expiryDate)) {
+                return 3;//已结算
+            } else {
+                if ($used == CommonEnum::STATE_IS_FAIL) {
+                    return 1;//可取消
+                } else {
+                    return 3;
+                }
+            }
+        }
+    }
+
 }

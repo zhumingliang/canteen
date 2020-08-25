@@ -206,6 +206,7 @@ Route::get('api/:version/order/foodUsersStatistic', 'api/:version.Order/foodUser
 Route::get('api/:version/order/orderStatistic', 'api/:version.Order/orderStatistic');
 Route::get('api/:version/order/orderStatistic/export', 'api/:version.Order/exportOrderStatistic');
 Route::get('api/:version/order/orderStatistic/detail', 'api/:version.Order/orderStatisticDetail');
+Route::get('api/:version/order/orderStatistic/detail/info', 'api/:version.Order/orderStatisticDetailInfo');
 Route::get('api/:version/order/orderStatistic/detail/export', 'api/:version.Order/exportOrderStatisticDetail');
 Route::get('api/:version/order/orderSettlement', 'api/:version.Order/orderSettlement');
 Route::get('api/:version/order/orderSettlement/export', 'api/:version.Order/exportOrderSettlement');
