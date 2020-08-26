@@ -148,6 +148,10 @@ class OrderService extends BaseService
                                                 $detail, $delivery_fee,
                                                 $dinner, $params, $staff, $phone, $orderMoney)
     {
+        $pay_way = $this->checkBalance($u_id, $canteen_id, $orderMoney);
+        if (!$pay_way) {
+            throw new SaveException(['errorCode' => 49000, 'msg' => '余额不足']);
+        }
         $orderData = [
             'u_id' => $u_id,
             'dinner_id' => $dinner->id,
@@ -160,6 +164,7 @@ class OrderService extends BaseService
             'order_num' => makeOrderNo(),
             'address_id' => $params['address_id'],
             'pay' => PayEnum::PAY_SUCCESS,
+            'pay_way' => $pay_way,
             'delivery_fee' => $delivery_fee,
             'ordering_type' => 'personal_choice',
             'staff_type_id' => $staff->t_id,
@@ -303,6 +308,7 @@ class OrderService extends BaseService
             'order_num' => makeOrderNo(),
             'address_id' => $address_id,
             'pay' => PayEnum::PAY_FAIL,
+            'pay_way' => PayEnum::PAY_WEIXIN,
             'delivery_fee' => $delivery_fee,
             'ordering_type' => 'personal_choice',
             'company_id' => $company_id,
@@ -1227,18 +1233,18 @@ class OrderService extends BaseService
 
 
     public
-    function orderCancelManager($ids)
+    function orderCancelManager($one_ids, $more_ids)
     {
 
-        $idArr = explode(',', $ids);
+        $oneIdArr = explode(',', $one_ids);
+        $moreIdArr = explode(',', $more_ids);
         if (empty($idArr)) {
             throw new ParameterException();
         }
-        foreach ($idArr as $k => $v) {
+        foreach ($oneIdArr as $k => $v) {
             $order = OrderT::get($v);
             if (empty($order)) {
                 throw new ParameterException(['msg' => "订单号：" . $v . "不存在"]);
-                break;
             }
             //判断是否使用
             if ($order->used == CommonEnum::STATE_IS_OK) {
@@ -1257,6 +1263,61 @@ class OrderService extends BaseService
         }
 
     }
+
+    private function cancelConsumptionTimeOne($oneIdArr)
+    {
+        if (empty($idArr)) {
+            return true;
+        }
+        foreach ($oneIdArr as $k => $v) {
+            $order = OrderT::get($v);
+            if (empty($order)) {
+                throw new ParameterException(['msg' => "订单号：" . $v . "不存在"]);
+            }
+            //判断是否使用
+            if ($order->used == CommonEnum::STATE_IS_OK) {
+                throw new ParameterException(['msg' => '订单已消费，不能取消']);
+            }
+            //判断是不是微信支付订餐
+            if ($order->pay_way == PayEnum::PAY_WEIXIN) {
+                //撤回订单
+                $this->refundWxOrder($v);
+            }
+            $res = OrderT::update(['state' => OrderEnum::STATUS_CANCEL], ['id' => $v]);
+            if (!$res) {
+                throw new UpdateException();
+            }
+
+        }
+    }
+
+    private function cancelConsumptionTimeMore($moreIdArr)
+    {
+        if (empty($moreIdArr)) {
+            return true;
+        }
+        foreach ($moreIdArr as $k => $v) {
+            $order = OrderParentT::get($v);
+            if (empty($order)) {
+                throw new ParameterException(['msg' => "订单号：" . $v . "不存在"]);
+            }
+            //判断是否使用
+            if ($order->used == CommonEnum::STATE_IS_OK) {
+                throw new ParameterException(['msg' => '订单已消费，不能取消']);
+            }
+            //判断是不是微信支付订餐
+            if ($order->pay_way == PayEnum::PAY_WEIXIN) {
+                //撤回订单
+                $this->refundWxOrder($v);
+            }
+            $res = OrderParentT::update(['state' => OrderEnum::STATUS_CANCEL], ['id' => $v]);
+            if (!$res) {
+                throw new UpdateException();
+            }
+
+        }
+    }
+
 
     public
     function refundWxOrder($order_id)

@@ -226,15 +226,17 @@ class Order extends BaseController
     }
 
     /**
-     * @api {POST} /api/v1/order/cancel/manager 订餐明细-取消订餐
+     * @api {POST} /api/v1/order/cancel/manager 订餐明细-批量取消订单
      * @apiGroup   PC
      * @apiVersion 3.0.0
      * @apiDescription 订餐明细-取消订餐
      * @apiExample {post}  请求样例:
      *    {
-     *       "ids": 1
+     *       "one_ids":1,2,3,
+     *       "more_ids":1,2,3
      *     }
-     * @apiParam (请求参数说明) {string} ids 取消订单 id，批量取消订单用逗号隔开：1,2,3
+     * @apiParam (请求参数说明) {string} one_ids 一次扣费 订单id，批量取消订单用逗号隔开：1,2,3
+     * @apiParam (请求参数说明) {string} more_ids 逐次次扣费 订单id，批量取消订单用逗号隔开：1,2,3
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
@@ -242,8 +244,9 @@ class Order extends BaseController
      */
     public function managerOrderCancel()
     {
-        $ids = Request::param('ids');
-        (new OrderService())->orderCancelManager($ids);
+        $one_ids = Request::param('one_ids');
+        $more_ids = Request::param('more_ids');
+        (new OrderService())->orderCancelManager($one_ids,$more_ids);
         return json(new SuccessMessage());
     }
 
