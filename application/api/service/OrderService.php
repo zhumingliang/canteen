@@ -1236,31 +1236,22 @@ class OrderService extends BaseService
     function orderCancelManager($one_ids, $more_ids)
     {
 
-        $oneIdArr = explode(',', $one_ids);
-        $moreIdArr = explode(',', $more_ids);
-        if (empty($idArr)) {
-            throw new ParameterException();
+        try {
+            Db::startTrans();
+            $oneIdArr = explode(',', $one_ids);
+            $moreIdArr = explode(',', $more_ids);
+            if (!empty($oneIdArr)) {
+                $this->cancelConsumptionTimeOne($oneIdArr);
+            }
+            if (!empty($moreIdArr)) {
+                $this->cancelConsumptionTimeMore($moreIdArr);
+            }
+            Db::commit();
+        } catch (Exception $e) {
+            Db::rollback();
+            throw $e;
         }
-        foreach ($oneIdArr as $k => $v) {
-            $order = OrderT::get($v);
-            if (empty($order)) {
-                throw new ParameterException(['msg' => "订单号：" . $v . "不存在"]);
-            }
-            //判断是否使用
-            if ($order->used == CommonEnum::STATE_IS_OK) {
-                throw new ParameterException(['msg' => '订单已消费，不能取消']);
-            }
-            //判断是不是微信支付订餐
-            if ($order->pay_way == PayEnum::PAY_WEIXIN) {
-                //撤回订单
-                $this->refundWxOrder($v);
-            }
-            $res = OrderT::update(['state' => OrderEnum::STATUS_CANCEL], ['id' => $v]);
-            if (!$res) {
-                throw new UpdateException();
-            }
 
-        }
 
     }
 
@@ -1308,21 +1299,27 @@ class OrderService extends BaseService
             //判断是不是微信支付订餐
             if ($order->pay_way == PayEnum::PAY_WEIXIN) {
                 //撤回订单
-                $this->refundWxOrder($v);
+                $this->refundWxOrder($v, 'more');
             }
             $res = OrderParentT::update(['state' => OrderEnum::STATUS_CANCEL], ['id' => $v]);
             if (!$res) {
-                throw new UpdateException();
+                throw new UpdateException(['msg' => '取消总订单失败']);
             }
-
+            //修改子订单状态
+            $subUpdate = OrderSubT::update(['state' => OrderEnum::STATUS_CANCEL], ['order_id' => $v]);
+            if (!$subUpdate) {
+                throw new UpdateException(['msg' => '取消子订单失败']);
+            }
         }
     }
 
 
     public
-    function refundWxOrder($order_id)
+    function refundWxOrder($order_id, $consumptionType = 'one')
     {
-        $payOrder = PayT::where('order_id', $order_id)->find();
+        $payOrder = PayT::where('order_id', $order_id)
+            ->where('times', $consumptionType)
+            ->find();
         if (!$payOrder) {
             throw new UpdateException(['msg' => '取消订单失败，订单不存在']);
         }
