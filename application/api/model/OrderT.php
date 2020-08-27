@@ -38,6 +38,14 @@ class OrderT extends Model
         return $this->hasMany('OrderDetailT', 'o_id', 'id');
     }
 
+
+    public
+    function address()
+    {
+        return $this->belongsTo('UserAddressT', 'address_id', 'id');
+
+    }
+
     public
     function dinner()
     {
@@ -50,12 +58,7 @@ class OrderT extends Model
         return $this->belongsTo('CanteenT', 'c_id', 'id');
     }
 
-    public
-    function address()
-    {
-        return $this->belongsTo('UserAddressT', 'address_id', 'id');
 
-    }
 
     public
     function user()

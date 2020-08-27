@@ -457,9 +457,10 @@ class Order extends BaseController
      * @apiVersion 3.0.0
      * @apiDescription 微信端-订单查询-获取订单详情
      * @apiExample {get}  请求样例:
-     * http://canteen.tonglingok.com/api/v1/order/detail?id=8&type=1
+     * http://canteen.tonglingok.com/api/v1/order/detail?id=8&type=1&consumption_type="one"
      * @apiParam (请求参数说明) {int} type  类型：1|就餐；2|外卖；3|小卖部
-     * @apiParam (请求参数说明) {int} id  订单id
+     * @apiParam (请求参数说明) {int} id  订单id (consumption_type="more" 时传入子订单id)
+     * @apiParam (请求参数说明) {string} consumption_type  订单消费模式 one:一次性扣费;more：逐次扣费
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200,"data":{"id":8,"u_id":3,"order_type":1,"ordering_type":"personal_choice|","count":1,"address_id":1,"state":1,"foods":[{"detail_id":5,"o_id":8,"food_id":1,"count":1,"name":"菜品1"},{"detail_id":6,"o_id":8,"food_id":3,"count":1,"name":"菜品2"}],"address":{"id":1,"province":"广东省","city":"江门市","area":"蓬江区","address":"江门市白石大道东4号路3栋","name":"张三","phone":"18956225230","sex":1}}}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
@@ -490,9 +491,11 @@ class Order extends BaseController
     {
         $type = Request::param('type');
         $id = Request::param('id');
-        $order = (new OrderService())->orderDetail($type, $id);
+        $consumptionType = Request::param('consumption_type');
+        $order = (new OrderService())->orderDetail($consumptionType, $type, $id);
         return json(new SuccessMessageWithData(['data' => $order]));
     }
+
 
     /**
      * @api {GET} /api/v1/order/consumptionRecords 微信端-消费查询-订单列表

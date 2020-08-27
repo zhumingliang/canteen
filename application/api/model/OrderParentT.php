@@ -10,6 +10,20 @@ use think\Request;
 
 class OrderParentT extends Model
 {
+    public
+    function foods()
+    {
+        return $this->hasMany('SubFoodT', 'o_id', 'id');
+    }
+
+
+    public
+    function address()
+    {
+        return $this->belongsTo('UserAddressT', 'address_id', 'id');
+
+    }
+
 
     public
     function dinner()
@@ -50,6 +64,25 @@ class OrderParentT extends Model
             ->field('id,dinner_id,ordering_date,count,delivery_fee')
             ->find();
         return $order;
+    }
+
+    public static function detail($orderId)
+    {
+
+        $info = self::where('id', $orderId)
+            ->with([
+                'foods' => function ($query) {
+                    $query->where('state', CommonEnum::STATE_IS_OK)
+                        ->field('id as detail_id ,o_id,f_id as food_id,count,name,price');
+                },
+                'address' => function ($query) {
+                    $query->field('id,province,city,area,address,name,phone,sex');
+                }
+            ])
+            ->field('id,address_id,type as order_type,ordering_type,ordering_date,canteen_id,dinner_id,delivery_fee,booking,outsider')
+            ->find();
+
+        return $info;
     }
 
 }

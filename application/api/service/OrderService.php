@@ -1294,6 +1294,12 @@ class OrderService extends BaseService
             }
             $this->refundWxSubOrder($id, $refundMoney);
         }
+
+        $orderParent->money = $orderParent->money - $order->money - $order->sub_monney;
+        if ($subIsLast) {
+            $orderParent->state = OrderEnum::STATUS_CANCEL;
+        }
+        $orderParent->save();
         //调整子订单的顺序和价格
         $sortSub = $this->sortSubOrder($subOrders, $id);
         $res = (new OrderSubT())->saveAll($sortSub);
@@ -2208,22 +2214,48 @@ class OrderService extends BaseService
     }
 
     public
-    function orderDetail($type, $id)
+    function orderDetail($consumptionType, $type, $id)
     {
-        $u_id = Token::getCurrentUid();
+        $u_id = 1;//Token::getCurrentUid();
         if ($type == OrderEnum::USER_ORDER_SHOP) {
             $order = ShopOrderT::orderInfo($id);
         } else {
-            $order = OrderT::orderDetail($id);
-            $check = $this->checkOrderCanHandelToDetail($order->dinner_id, $order->ordering_date, $order->order_type);
+            if ($consumptionType == "one") {
+                $order = OrderT::orderDetail($id);
+
+            } else {
+                $order = $this->getOrderDetailConsumptionTimeMore($id);
+            }
+            if (!$order) {
+                throw new ParameterException(['msg' => '订单不存在']);
+            }
+            $check = $this->checkOrderCanHandelToDetail($order['dinner_id'], $order['ordering_date'], $order['order_type']);
             $order['handel'] = $check['handel'];
             $order['showConfirm'] = $check['showConfirm'];
         }
-        /*if ($order->u_id != $u_id) {
-            throw new AuthException();
-        }*/
-
         return $order;
+    }
+
+    private function getOrderDetailConsumptionTimeMore($orderId)
+    {
+        $subOrder = OrderSubT::where('id', $orderId)->find();
+        if (!$subOrder) {
+            return false;
+        }
+        $parentOrder = OrderParentT::detail($subOrder->order_id);
+        $parentOrder['money'] = $subOrder['money'];
+        $parentOrder['sub_money'] = $subOrder['sub_money'];
+        $parentOrder['meal_money'] = $subOrder['meal_money'];
+        $parentOrder['meal_sub_money'] = $subOrder['meal_sub_money'];
+        $parentOrder['no_meal_money'] = $subOrder['no_meal_money'];
+        $parentOrder['no_meal_sub_money'] = $subOrder['no_meal_sub_money'];
+        $parentOrder['used_time'] = $subOrder['used_time'];
+        $parentOrder['sort_code'] = $subOrder['sort_code'];
+        $parentOrder['wx_confirm'] = $subOrder['wx_confirm'];
+        $parentOrder['count'] = $subOrder['count'];
+        $parentOrder['state'] = $subOrder['state'];
+        $parentOrder['used'] = $subOrder['used'];
+        return $parentOrder;
     }
 
 
