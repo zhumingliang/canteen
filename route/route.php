@@ -165,7 +165,7 @@ Route::get('api/:version/pos/getCardInfo', 'api/:version.Pos/getCardInfo');
 Route::post('api/:version/pos/loss', 'api/:version.Pos/loss');
 Route::post('api/:version/pos/cancel', 'api/:version.Pos/cancel');
 Route::post('api/:version/pos/recover', 'api/:version.Pos/recover');
-
+Route::get('api/:version/pos/machine', 'api/:version.Pos/machine');
 
 Route::rule('api/:version/weixin/server', 'api/:version.WeiXin/server');
 Route::rule('api/:version/weixin/menu/save', 'api/:version.WeiXin/createMenu');

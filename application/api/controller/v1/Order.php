@@ -210,9 +210,11 @@ class Order extends BaseController
      * @apiDescription 微信端-取消订餐（线上订餐/个人选菜）
      * @apiExample {post}  请求样例:
      *    {
-     *       "id": 1
+     *       "id": 1,
+     *       "consumption_type": "one"
      *     }
-     * @apiParam (请求参数说明) {string} id  订餐id
+     * @apiParam (请求参数说明) {int} id  订餐id
+     * @apiParam (请求参数说明) {string} consumption_type  消费订单类型 one:一次消费；more:逐次消费
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
@@ -221,7 +223,8 @@ class Order extends BaseController
     public function orderCancel()
     {
         $id = Request::param('id');
-        (new OrderService())->orderCancel($id);
+        $consumptionType = Request::param('id');
+        (new OrderService())->orderCancel($id, $consumptionType);
         return json(new SuccessMessage());
     }
 
@@ -246,7 +249,7 @@ class Order extends BaseController
     {
         $one_ids = Request::param('one_ids');
         $more_ids = Request::param('more_ids');
-        (new OrderService())->orderCancelManager($one_ids,$more_ids);
+        (new OrderService())->orderCancelManager($one_ids, $more_ids);
         return json(new SuccessMessage());
     }
 

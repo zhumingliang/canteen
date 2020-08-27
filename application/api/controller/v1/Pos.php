@@ -23,20 +23,20 @@ class Pos extends BaseController
      */
     public function login()
     {
-        $cardCode=Request::param('card_code');
-        $companyId=Request::param('company_id');
-        if(empty($companyId)){
-            throw new AuthException(['msg'=>'企业id为空，未找到相关企业']);
+        $cardCode = Request::param('card_code');
+        $companyId = Request::param('company_id');
+        if (empty($companyId)) {
+            throw new AuthException(['msg' => '企业id为空，未找到相关企业']);
         }
-        if(empty($cardCode)){
-            throw new AuthException(['msg'=>'请刷卡登录']);
+        if (empty($cardCode)) {
+            throw new AuthException(['msg' => '请刷卡登录']);
         }
-        $sql="select t3.name from canteen_staff_card_t t1 left join canteen_company_staff_t t2 on t1.staff_id=t2.id left join canteen_staff_type_t t3 on t2.t_id=t3.id where t2.company_id='".$companyId."' and t1.card_code='".$cardCode."' and t2.state=1";
-        $name=Db::query($sql);
-        if($name[0]['name']=='管理员'){
+        $sql = "select t3.name from canteen_staff_card_t t1 left join canteen_company_staff_t t2 on t1.staff_id=t2.id left join canteen_staff_type_t t3 on t2.t_id=t3.id where t2.company_id='" . $companyId . "' and t1.card_code='" . $cardCode . "' and t2.state=1";
+        $name = Db::query($sql);
+        if ($name[0]['name'] == '管理员') {
             return json(new SuccessMessage());
-        }else{
-            throw new AuthException(['msg'=>'非管理员，没有登录权限']);
+        } else {
+            throw new AuthException(['msg' => '非管理员，没有登录权限']);
 
         }
     }
@@ -144,9 +144,9 @@ class Pos extends BaseController
      */
     public function getCardInfo()
     {
-        $phone=Request::param('phone');
-        $birthday=Request::param('birthday');
-        $companyId=Request::param('company_id');
+        $phone = Request::param('phone');
+        $birthday = Request::param('birthday');
+        $companyId = Request::param('company_id');
         if (empty($phone)) {
             throw new Exception("手机号码不能为空！！");
         }
@@ -161,13 +161,12 @@ class Pos extends BaseController
             ->where('company_id', $companyId)
             ->find();
         $username = $data['username'];
-        $uId=$data['id'];
-        if(empty($data)){
-            throw new AuthException(['msg'=>'查询信息错误，未找到卡号']);
-        }
-        else{
+        $uId = $data['id'];
+        if (empty($data)) {
+            throw new AuthException(['msg' => '查询信息错误，未找到卡号']);
+        } else {
             $data2 = db('staff_card_t')->where('staff_id', $uId)->find();
-            $cardCode=$data2['card_code'];
+            $cardCode = $data2['card_code'];
             return json(new SuccessMessageWithData(['data' => ['username' => $username, 'card_code' => $cardCode]]));
         }
     }
@@ -177,19 +176,18 @@ class Pos extends BaseController
      */
     public function loss()
     {
-        $phone=Request::param('phone');
-        $birthday=Request::param('birthday');
-        $companyId=Request::param('company_id');
+        $phone = Request::param('phone');
+        $birthday = Request::param('birthday');
+        $companyId = Request::param('company_id');
         $date = date('Y-m-d H:i:s');
         $data = db('company_staff_t')->where('phone', $phone)
             ->where('birthday', $birthday)
             ->where('company_id', $companyId)
             ->find();
-        $uId=$data['id'];
-        if(empty($data)){
-            throw new AuthException(['msg'=>'输入信息错误，挂失失败']);
-        }
-        else{
+        $uId = $data['id'];
+        if (empty($data)) {
+            throw new AuthException(['msg' => '输入信息错误，挂失失败']);
+        } else {
             $sql = "update canteen_staff_card_t set state = 2,update_time = '" . $date . "' where staff_id =" . $uId;
             $date = Db::execute($sql);
             if ($date > 0) {
@@ -203,19 +201,18 @@ class Pos extends BaseController
      */
     public function cancel()
     {
-        $phone=Request::param('phone');
-        $birthday=Request::param('birthday');
-        $companyId=Request::param('company_id');
+        $phone = Request::param('phone');
+        $birthday = Request::param('birthday');
+        $companyId = Request::param('company_id');
         $date = date('Y-m-d H:i:s');
         $data = db('company_staff_t')->where('phone', $phone)
             ->where('birthday', $birthday)
             ->where('company_id', $companyId)
             ->find();
-        $uId=$data['id'];
-        if(empty($data)){
-            throw new AuthException(['msg'=>'输入信息错误，注销失败']);
-        }
-        else{
+        $uId = $data['id'];
+        if (empty($data)) {
+            throw new AuthException(['msg' => '输入信息错误，注销失败']);
+        } else {
             $sql = "update canteen_staff_card_t set state = 3,update_time = '" . $date . "' where staff_id =" . $uId;
             $date = Db::execute($sql);
             if ($date > 0) {
@@ -229,25 +226,39 @@ class Pos extends BaseController
      */
     public function recover()
     {
-        $phone=Request::param('phone');
-        $birthday=Request::param('birthday');
-        $companyId=Request::param('company_id');
+        $phone = Request::param('phone');
+        $birthday = Request::param('birthday');
+        $companyId = Request::param('company_id');
         $date = date('Y-m-d H:i:s');
         $data = db('company_staff_t')->where('phone', $phone)
             ->where('birthday', $birthday)
             ->where('company_id', $companyId)
             ->find();
-        $uId=$data['id'];
-        if(empty($data)){
-            throw new AuthException(['msg'=>'输入信息错误，恢复失败']);
-        }
-        else{
+        $uId = $data['id'];
+        if (empty($data)) {
+            throw new AuthException(['msg' => '输入信息错误，恢复失败']);
+        } else {
             $sql = "update canteen_staff_card_t set state = 1,update_time = '" . $date . "' where staff_id =" . $uId;
             $date = Db::execute($sql);
             if ($date > 0) {
                 return json(new SuccessMessage());
             }
         }
+    }
+
+    /**
+     * 通过设备获取企业
+     */
+    public function machine()
+    {
+        $code = Request::param('code');
+        if (empty($code)) {
+            throw new AuthException(['msg' => '未获取到Pos机标识码']);
+        }
+        $sql = "select t1.company_id,t2.name as company_name from canteen_machine_t t1 left join canteen_company_t t2 on t1.company_id=t2.id where t1.code='" . $code . "' and t1.state=1";
+        $data = Db::query($sql);
+
+        return json(new SuccessMessageWithData(['data' => $data]));
     }
 
     private function usersBalance($phone, $company_id)

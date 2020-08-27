@@ -113,10 +113,12 @@ Index extends BaseController
 
     public function test()
     {
-        $money=OrderSubT::getOrderMoney(1);
-
-        $money=  array_sum(array_column($money,'money'));
-        print_r($money);
+        $subOrders = OrderSubT::where('order_id', 33042)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->select();
+        print_r($subOrders);
+        $sub = (new OrderService())->sortSubOrder($subOrders, 33045);
+        print_r($sub);
         //return json(\app\api\service\Token::getCurrentTokenVar());
 
         /* $data = (new ExcelService())->saveTestExcel();

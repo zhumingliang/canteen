@@ -1208,9 +1208,27 @@ class OrderService extends BaseService
      * 取消订单
      */
     public
-    function orderCancel($id)
+    function orderCancel($id, $consumptionType)
     {
-        //检测取消订餐操作是否可以执行
+        try {
+            Db::startTrans();
+            //检测取消订餐操作是否可以执行
+            if ($consumptionType == "one") {
+                $this->cancelConsumptionTimesOneOrder($id);
+
+            } else {
+                $this->cancelConsumptionTimesMoreOrder($id);
+            }
+            Db::commit();
+        } catch (Exception $e) {
+            Db::rollback();
+            throw $e;
+        }
+
+    }
+
+    private function cancelConsumptionTimesOneOrder($id)
+    {
         $order = OrderT::where('id', $id)->find();
         if (!$order) {
             throw new ParameterException(['msg' => '指定订餐信息不存在']);
@@ -1241,6 +1259,122 @@ class OrderService extends BaseService
         }
     }
 
+    private function cancelConsumptionTimesMoreOrder($id)
+    {
+        $order = OrderSubT::where('id', $id)->find();
+        if (!$order) {
+            throw new ParameterException(['msg' => '指定订餐信息不存在']);
+        }
+        if ($order->used == CommonEnum::STATE_IS_OK) {
+            throw new ParameterException(['msg' => '订单已消费，不能取消']);
+        }
+
+        //获取总订单
+        $orderParent = OrderParentT::where('id', $order->order_id)
+            ->find();
+        $outsider = $orderParent->outsider;
+        if ($orderParent->type == OrderEnum::EAT_OUTSIDER
+            && $order->receive == CommonEnum::STATE_IS_OK) {
+            throw new UpdateException(['msg' => '商家已经接单，不能取消']);
+        }
+
+        //获取所有子订单
+        $subOrders = OrderSubT::where('order_id', $orderParent->id)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->select();
+        $subIsLast = $this->checkSubIsLast($subOrders);
+        if ($outsider == UserEnum::INSIDE) {
+            $this->checkOrderCanHandel($orderParent->dinner_id, $orderParent->ordering_date);
+        } else {
+            //外来人员微信支付--撤回订单
+            //检测定单是不是最后一个子订单：如果为最后一个子订单，修改总订单状态，退款加上配送费
+            $refundMoney = $order->money + $order->sub_monney;
+            if ($subIsLast) {
+                $refundMoney += $orderParent->delivery_fee;
+            }
+            $this->refundWxSubOrder($id, $refundMoney);
+        }
+        //调整子订单的顺序和价格
+        $sortSub = $this->sortSubOrder($subOrders, $id);
+        $res = (new OrderSubT())->saveAll($sortSub);
+        if (!$res) {
+            throw new SaveException();
+        }
+    }
+
+    public function sortSubOrder($subOrders, $subId)
+    {
+        $subList = [];
+        $userType = Token::getCurrentTokenVar('type');
+        if ($userType == "cms") {
+            $state = OrderEnum::STATE_SHOP_REFUSE;
+        } else if ($userType == "official") {
+            $state = OrderEnum::STATUS_CANCEL;
+        }
+        array_push($subList, [
+            'id' => $subId,
+            'state' => $state
+        ]);
+        if (count($subOrders) > 1) {
+            $check = false;
+            $money = 0;
+            $sub_money = 0;
+            $meal_money = 0;
+            $meal_sub_money = 0;
+            $no_meal_money = 0;
+            $no_meal_sub_money = 0;
+            $order_sort = 0;
+            foreach ($subOrders as $k => $v) {
+                if (!$check) {
+                    if ($v['id'] == $subId) {
+                        $money = $v['money'];
+                        $sub_money = $v['sub_money'];
+                        $meal_money = $v['meal_money'];
+                        $meal_sub_money = $v['meal_sub_money'];
+                        $no_meal_money = $v['no_meal_money'];
+                        $no_meal_sub_money = $v['no_meal_sub_money'];
+                        $order_sort = $v['order_sort'];
+                        $check = true;
+                    }
+                    continue;
+                } else {
+                    array_push($subList, [
+                        'id' => $v['id'],
+                        'money' => $money,
+                        'sub_money' => $sub_money,
+                        'meal_money' => $meal_money,
+                        'meal_sub_money' => $meal_sub_money,
+                        'no_meal_money' => $no_meal_money,
+                        'no_meal_sub_money' => $no_meal_sub_money,
+                        'order_sort' => $order_sort,
+                    ]);
+                    $money = $v['money'];
+                    $sub_money = $v['sub_money'];
+                    $meal_money = $v['meal_money'];
+                    $meal_sub_money = $v['meal_sub_money'];
+                    $no_meal_money = $v['no_meal_money'];
+                    $no_meal_sub_money = $v['no_meal_sub_money'];
+                    $order_sort = $v['order_sort'];
+                }
+
+            }
+            return $subList;
+
+        }
+
+    }
+
+    private
+    function checkSubIsLast($subOrders)
+    {
+        if (empty($subOrders)) {
+            throw new ParameterException(['msg' => '无可取消订单']);
+        }
+        if (count($subOrders) == 1) {
+            return true;
+        }
+        return false;
+    }
 
     public
     function orderCancelManager($one_ids, $more_ids)
@@ -1265,7 +1399,8 @@ class OrderService extends BaseService
 
     }
 
-    private function cancelConsumptionTimeOne($oneIdArr)
+    private
+    function cancelConsumptionTimeOne($oneIdArr)
     {
         if (empty($idArr)) {
             return true;
@@ -1292,7 +1427,8 @@ class OrderService extends BaseService
         }
     }
 
-    private function cancelConsumptionTimeMore($moreIdArr)
+    private
+    function cancelConsumptionTimeMore($moreIdArr)
     {
         if (empty($moreIdArr)) {
             return true;
@@ -1357,10 +1493,51 @@ class OrderService extends BaseService
             throw new UpdateException(['msg' => '取消订单失败', "失败原因：" . $refundRes['return_msg']]);
         }
         //处理逻辑
+        $payOrder->refund_money = $money;
         $payOrder->refund = CommonEnum::STATE_IS_OK;
         $payOrder->save();
 
     }
+
+    public
+    function refundWxSubOrder($order_id, $refundMoney)
+    {
+        $payOrder = PayT::where('order_id', $order_id)
+            ->where('times', 'more')
+            ->find();
+        if (!$payOrder) {
+            throw new UpdateException(['msg' => '取消订单失败，订单不存在']);
+        }
+        if ($payOrder->method_id != PayEnum::PAY_METHOD_WX) {
+            throw new UpdateException(['msg' => '取消订单失败，非微信支付订单']);
+        }
+        $company_id = $payOrder->company_id;
+        $money = $refundMoney;
+        $order_number = $payOrder->order_num;
+        $refund_order_number = makeOrderNo();
+        $refund = WxRefundT::create([
+            'order_number' => $order_number,
+            'refund_order_number' => $refund_order_number,
+            'money' => $money,
+            'res' => CommonEnum::STATE_IS_FAIL
+        ]);
+        if (!$refund) {
+            throw new UpdateException(['msg' => '取消订单失败']);
+        }
+        $refundRes = (new WeiXinPayService())->refundOrder($company_id, $order_number, $refund_order_number, $money, $money);
+        $refund->res = $refundRes['res'];
+        $refund->return_msg = $refundRes['return_msg'];
+        $refund->save();
+        if ($refundRes['res'] == CommonEnum::STATE_IS_FAIL) {
+            throw new UpdateException(['msg' => '取消订单失败', "失败原因：" . $refundRes['return_msg']]);
+        }
+        //处理逻辑
+        $payOrder->refund_money = $payOrder->refund_money + $refundMoney;
+        $payOrder->refund = CommonEnum::STATE_IS_OK;
+        $payOrder->save();
+
+    }
+
 
     public
     function checkOrderCanHandel($d_id, $ordering_date)
@@ -1532,7 +1709,8 @@ class OrderService extends BaseService
      * 检测逐次消费模式订单是否可以操作
      * @param $orderID
      */
-    private function checkConsumptionTimesOrderCanUpdate($orderID)
+    private
+    function checkConsumptionTimesOrderCanUpdate($orderID)
     {
         $usedOrderCount = OrderSubT::usedOrders($orderID);
         if ($usedOrderCount) {
@@ -1541,7 +1719,7 @@ class OrderService extends BaseService
     }
 
 
-    //一次性扣费消费模式下-修改订单
+//一次性扣费消费模式下-修改订单
     public
     function changeOrderFoods($params)
     {
@@ -1713,7 +1891,8 @@ class OrderService extends BaseService
         }
     }
 
-    private function updateParentOrderMoney($orderId)
+    private
+    function updateParentOrderMoney($orderId)
     {
         //修改总订单金额
         $parentMoney = OrderSubT::getOrderMoney($orderId);
@@ -2413,7 +2592,8 @@ class OrderService extends BaseService
         return $orders;
     }
 
-    public function orderStatisticDetailInfo($orderId, $consumptionType)
+    public
+    function orderStatisticDetailInfo($orderId, $consumptionType)
     {
         if ($consumptionType == "one") {
 
@@ -2423,7 +2603,8 @@ class OrderService extends BaseService
         }
     }
 
-    private function InfoToConsumptionTimesOne($orderId)
+    private
+    function InfoToConsumptionTimesOne($orderId)
     {
         $order = OrderT::infoToStatisticDetail($orderId);
         if (!$order) {
@@ -2452,7 +2633,8 @@ class OrderService extends BaseService
         return $data;
     }
 
-    private function InfoToConsumptionTimesMore($orderId)
+    private
+    function InfoToConsumptionTimesMore($orderId)
     {
         $order = OrderParentT::infoToStatisticDetail($orderId);
         if (!$order) {
@@ -2479,7 +2661,8 @@ class OrderService extends BaseService
         return $data;
     }
 
-    private function getOrderStatus($state, $used, $ordering_date, $meal_time_end)
+    private
+    function getOrderStatus($state, $used, $ordering_date, $meal_time_end)
     {
         if ($state != CommonEnum::STATE_IS_OK) {
             return 2;//已取消
