@@ -125,7 +125,7 @@ class OrderStatisticV extends Model
                     $query->where('type', $type);
                 }
             })
-            ->field('order_id,consumption_type,ordering_date,username,canteen,department,phone,count,dinner,type,ordering_type,order_money')
+            ->field('order_id,consumption_type,ordering_date,username,canteen,department,phone,count,dinner,type,ordering_type,order_money,1 as status')
             ->order('order_id DESC')
             ->paginate($size, false, ['page' => $page]);
         return $list;
