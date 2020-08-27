@@ -12,6 +12,7 @@ use app\api\model\ConsumptionRecordsV;
 use app\api\model\ConsumptionStrategyT;
 use app\api\model\DinnerT;
 use app\api\model\OrderConsumptionV;
+use app\api\model\OrderSubT;
 use app\api\model\OrderT;
 use app\api\model\PayT;
 use app\api\model\RechargeCashT;
@@ -112,7 +113,11 @@ Index extends BaseController
 
     public function test()
     {
-        return json(\app\api\service\Token::getCurrentTokenVar());
+        $money=OrderSubT::getOrderMoney(1);
+
+        $money=  array_sum(array_column($money,'money'));
+        print_r($money);
+        //return json(\app\api\service\Token::getCurrentTokenVar());
 
         /* $data = (new ExcelService())->saveTestExcel();
          $fail = [];

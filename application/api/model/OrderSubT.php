@@ -18,4 +18,12 @@ class OrderSubT extends Model
             ->count('id');
     }
 
+    public static function getOrderMoney($id)
+    {
+        return self::where('order_id', $id)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->field('(money+sub_money) as money')
+            ->select()->toArray();
+    }
+
 }

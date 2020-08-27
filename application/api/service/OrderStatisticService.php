@@ -62,6 +62,7 @@ class OrderStatisticService
         return $list;
     }
 
+
     public function exportOrderStatisticDetail($company_ids, $time_begin,
                                                $time_end, $name,
                                                $phone, $canteen_id, $department_id,

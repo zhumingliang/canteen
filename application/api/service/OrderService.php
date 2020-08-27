@@ -148,7 +148,12 @@ class OrderService extends BaseService
                                                 $detail, $delivery_fee,
                                                 $dinner, $params, $staff, $phone, $orderMoney)
     {
-        $pay_way = $this->checkBalance($u_id, $canteen_id, $orderMoney);
+        $money = 0;
+        foreach ($orderMoney as $k => $v) {
+            $money += ($v['money'] + $v['sub_money']);
+        }
+        $checkMoney = $money + $delivery_fee;
+        $pay_way = $this->checkBalance($u_id, $canteen_id, $checkMoney);
         if (!$pay_way) {
             throw new SaveException(['errorCode' => 49000, 'msg' => '余额不足']);
         }
@@ -156,6 +161,8 @@ class OrderService extends BaseService
             'u_id' => $u_id,
             'dinner_id' => $dinner->id,
             'canteen_id' => $canteen_id,
+            'money' => $checkMoney,
+            'sub_money' => 0,
             'phone' => $phone,
             'count' => $count,
             'type' => $params['type'],
@@ -301,6 +308,7 @@ class OrderService extends BaseService
             'd_id' => $dinnerId,
             'c_id' => $canteen_id,
             'phone' => $phone,
+            'money' => $orderMoney * $count,
             'count' => $count,
             'type' => $type,
             'ordering_date' => $ordering_date,
@@ -978,6 +986,8 @@ class OrderService extends BaseService
                     if (!$list) {
                         throw new SaveException(['msg' => '新增子订单失败']);
                     }
+                    //处理总订单金额
+                    $this->updateParentOrderMoney($orderId);
                 }
             }
 
@@ -1509,6 +1519,7 @@ class OrderService extends BaseService
             if (!$res) {
                 throw new UpdateException();
             }
+            $this->updateParentOrderMoney($id);
             Db::commit();
         } catch (Exception $e) {
             Db::rollback();
@@ -1530,7 +1541,7 @@ class OrderService extends BaseService
     }
 
 
-//一次性扣费消费模式下-修改订单
+    //一次性扣费消费模式下-修改订单
     public
     function changeOrderFoods($params)
     {
@@ -1602,7 +1613,6 @@ class OrderService extends BaseService
             Db::commit();
         } catch (Exception $e) {
             Db::rollback();
-            LogService::save($e->getMessage());
             throw $e;
         }
     }
@@ -1693,13 +1703,26 @@ class OrderService extends BaseService
             if (!empty($detail)) {
                 $this->prefixUpdateOrderDetail($id, $detail, 'more');
             }
+
+            $this->updateParentOrderMoney($id);
             Db::commit();
         } catch
         (Exception $e) {
             Db::rollback();
-            LogService::save($e->getMessage());
             throw $e;
         }
+    }
+
+    private function updateParentOrderMoney($orderId)
+    {
+        //修改总订单金额
+        $parentMoney = OrderSubT::getOrderMoney($orderId);
+        $parentMoney = array_sum(array_column($parentMoney, 'money'));
+        $updateParentRes = OrderParentT::update(['money' => $parentMoney], ['id' => $orderId]);
+        if (!$updateParentRes) {
+            throw  new UpdateException(['msg' => '修改总订单失败']);
+        }
+
     }
 
     /**
