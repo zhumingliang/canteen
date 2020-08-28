@@ -880,10 +880,11 @@ class Order extends BaseController
      * @apiParam (请求参数说明) {int} id  订单id
      * @apiParam (请求参数说明) {string} consumption_type  订单消费类型：one：一次性消费；more 逐次消费
      * @apiSuccessExample {json}返回样例:
-     * {"msg":"ok","errorCode":0,"code":200,"data":{"id":33042,"delivery_fee":"0.00","ordering_date":"2020-08-25","meal_time_end":"23:59","sub":[{"number":1,"order_id":33043,"money":9.01,"status":3},{"number":2,"order_id":33044,"money":15.01,"status":3},{"number":3,"order_id":33045,"money":21.01,"status":3}]}}
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"id":33042,"type":1,"delivery_fee":"0.00","ordering_date":"2020-08-25","meal_time_end":"23:59","sub":[{"number":1,"order_id":33043,"money":9.01,"status":3},{"number":2,"order_id":33044,"money":15.01,"status":3},{"number":3,"order_id":33045,"money":21.01,"status":3}]}}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
      * @apiSuccess (返回参数说明) {String} msg 信息描述
      * @apiSuccess (返回参数说明) {int} id 总订单id
+     * @apiSuccess (返回参数说明) {int}  type 订单类别 ：1|食堂；2|外卖
      * @apiSuccess (返回参数说明) {float} delivery_fee 配送费
      * @apiSuccess (返回参数说明) {string} ordering_date 订餐日期
      * @apiSuccess (返回参数说明) {string} meal_time_end 就餐截止时间（选中取消操作时，判断一下ordering_date+meal_time_end 是否小于当前时间）

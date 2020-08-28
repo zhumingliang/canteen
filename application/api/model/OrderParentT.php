@@ -61,7 +61,7 @@ class OrderParentT extends Model
                     $query->field('id,order_id,state,used,state,money,sub_money,used,order_sort')->order('order_sort');
                 }
             ])
-            ->field('id,dinner_id,ordering_date,count,delivery_fee')
+            ->field('id,dinner_id,ordering_date,count,delivery_fee,type')
             ->find();
         return $order;
     }

@@ -1299,6 +1299,7 @@ class OrderService extends BaseService
         if ($subIsLast) {
             $orderParent->state = OrderEnum::STATUS_CANCEL;
         }
+        $orderParent->count = $orderParent->count - 1;
         $orderParent->save();
         //调整子订单的顺序和价格
         $sortSub = $this->sortSubOrder($subOrders, $id);
@@ -2628,7 +2629,6 @@ class OrderService extends BaseService
     function orderStatisticDetailInfo($orderId, $consumptionType)
     {
         if ($consumptionType == "one") {
-
             return $this->InfoToConsumptionTimesOne($orderId);
         } else if ($consumptionType == "more") {
             return $this->InfoToConsumptionTimesMore($orderId);
@@ -2647,6 +2647,7 @@ class OrderService extends BaseService
         $sub_money = $order->sub_money / $count;
         $dinner = $order->dinner;
         $data['id'] = $order->id;
+        $data['type'] = $order->type;
         $data['delivery_fee'] = $order->delivery_fee;
         $data['ordering_date'] = $order->ordering_date;
         $data['meal_time_end'] = $dinner['meal_time_end'];
@@ -2675,6 +2676,7 @@ class OrderService extends BaseService
         $data['id'] = $order->id;
         $dinner = $order->dinner;
         $sub = $order->sub;
+        $data['type'] = $order->type;
         $data['delivery_fee'] = $order->delivery_fee;
         $data['ordering_date'] = $order->ordering_date;
         $data['meal_time_end'] = $dinner['meal_time_end'];
