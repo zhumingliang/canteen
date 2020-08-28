@@ -2657,7 +2657,8 @@ class OrderService extends BaseService
             $detail = [
                 'number' => $i,
                 'order_id' => $orderId,
-                'money' => $money + $sub_money,
+                'money' => $money ,
+                'sub_money' =>  $sub_money,
                 'status' => $status
             ];
             array_push($dataList, $detail);

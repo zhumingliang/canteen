@@ -891,7 +891,8 @@ class Order extends BaseController
      * @apiSuccess (返回参数说明) {obj} sub 子订单信息
      * @apiSuccess (返回参数说明) {string} number 排序
      * @apiSuccess (返回参数说明) {string} order_id 子订单订单号
-     * @apiSuccess (返回参数说明) {float} money 子订单金额
+     * @apiSuccess (返回参数说明) {float} money 子订单标准金额
+     * @apiSuccess (返回参数说明) {float} sub_money 子订单附加金额
      * @apiSuccess (返回参数说明) {int} status 订单状态：1 ：已订餐（可取消）；2：已取消；3：已结算
      */
 
