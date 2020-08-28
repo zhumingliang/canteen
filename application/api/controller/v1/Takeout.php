@@ -31,7 +31,7 @@ class Takeout extends BaseController
      * @apiParam (请求参数说明) {string} ordering_date  订餐日期
      * @apiParam (请求参数说明) {int} status  状态：1:已经支付；2：已取消；3：已接单；4:已完成 ;5:已退回 ；6 全部
      * @apiSuccessExample {json}返回样例:
-     * {"msg":"ok","errorCode":0,"code":200,"data":{"total":1,"per_page":"20","current_page":1,"last_page":1,"data":[{"order_id":233,"money":"6.0","used":2,"ordering_date":"2020-02-15","dinner":"午餐","canteen":"11楼饭堂","username":"宁晓晓","phone":"18219112778","province":"广东省","area":"蓬江区","city":"江门市","address":"。。。","department_id":81,"outsider":2,"receive":1,"pay":"paid","state":1,"status":2}]}}
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"total":1,"per_page":"20","current_page":1,"last_page":1,"data":[{"order_id":233,"money":"6.0","used":2,"ordering_date":"2020-02-15","dinner":"午餐","canteen":"11楼饭堂","username":"宁晓晓","phone":"18219112778","province":"广东省","area":"蓬江区","city":"江门市","address":"。。。","department_id":81,"outsider":2,"receive":1,"pay":"paid","state":1,"status":2,"consumption_type":one}]}}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
      * @apiSuccess (返回参数说明) {String} msg 信息描述
      * @apiSuccess (返回参数说明) {int} total 数据总数
@@ -45,6 +45,7 @@ class Takeout extends BaseController
      * @apiSuccess (返回参数说明) {string} phone 用户手机号
      * @apiSuccess (返回参数说明) {float} money 金额
      * @apiSuccess (返回参数说明) {string} dinner 餐次
+     * @apiSuccess (返回参数说明) {string} consumption_type  消费类型：one : 一次性消费;more 逐次消费
      * @apiSuccess (返回参数说明) {string} outsider 是否外来人员订单 1：是；2｜否
      * @apiSuccess (返回参数说明) {int} status 订单状态：1:已经支付；2：已取消；3：已接单；4:已完成 ;5:已退回
      */
@@ -175,8 +176,9 @@ class Takeout extends BaseController
      * @apiVersion 3.0.0
      * @apiDescription  微信端--外卖管理--获取打印订单的信息
      * @apiExample {get}  请求样例:
-     * http://canteen.tonglingok.com/api/v1/order/info/print?order_id=8
+     * http://canteen.tonglingok.com/api/v1/order/info/print?order_id=8&consumption_type=one
      * @apiParam (请求参数说明) {int} order_id 订单id
+     * @apiParam (请求参数说明) {int} consumption_type 消费类型：one 一次性消费；more 逐次消费
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200,"data":{"id":8,"count":2,"address_id":1,"d_id":6,"type":2,"money":2,"sub_money":2,"delivery_fee":2,"create_time":"2019-09-09 16:34:15","hidden":2,"foods":[{"detail_id":5,"o_id":8,"food_id":1,"count":1,"name":"菜品1","price":"5.0"},{"detail_id":6,"o_id":8,"food_id":3,"count":1,"name":"菜品2","price":"5.0"}],"address":{"id":1,"province":"广东省","city":"江门市","area":"蓬江区","address":"江门市白石大道东4号路3栋","name":"张三","phone":"18956225230","sex":1}}}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
@@ -204,7 +206,8 @@ class Takeout extends BaseController
     public function infoToPrint()
     {
         $id = Request::param('order_id');
-        $info = (new OrderStatisticService())->infoToPrint($id);
+        $consumptionType = Request::param('consumption_type');
+        $info = (new OrderStatisticService())->infoToPrint($id,$consumptionType);
         return json(new SuccessMessageWithData(['data' => $info]));
     }
 

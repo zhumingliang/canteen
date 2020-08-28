@@ -340,7 +340,7 @@ class OrderT extends Model
                 'dinner' => function ($query) {
                     $query->field('id,name,meal_time_end');
                 }])
-            ->field('id,d_id,ordering_date,state,used,count,money,sub_money,delivery_fee')
+            ->field('id,d_id,ordering_date,state,used,count,money,sub_money,delivery_fee,type')
             ->find();
         return $order;
 

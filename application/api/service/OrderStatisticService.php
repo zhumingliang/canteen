@@ -12,6 +12,7 @@ use app\api\model\MaterialReportDetailV;
 use app\api\model\MaterialReportT;
 use app\api\model\OrderConsumptionV;
 use app\api\model\OrderMaterialV;
+use app\api\model\OrderParentT;
 use app\api\model\OrderSettlementV;
 use app\api\model\OrderStatisticV;
 use app\api\model\OrderT;
@@ -259,13 +260,18 @@ class OrderStatisticService
 
     }
 
-    public function infoToPrint($id)
+    public function infoToPrint($id, $consumptionType = 'one')
     {
-        $info = OrderT::infoToPrint($id);
-        if ($info->type != 2) {
+        if ($consumptionType == "one") {
+            $info = OrderT::infoToPrint($id);
+
+        } else {
+            $info = OrderParentT::infoToPrint($id);
+        }
+        if ($info['type'] != OrderEnum::EAT_OUTSIDER) {
             throw new ParameterException(['msg' => '该订单不为外卖订单']);
         }
-        $dinner = DinnerT::get($info->d_id);
+        $dinner = DinnerT::get($info['d_id']);
         $info['dinner'] = $dinner->name;
         $info['hidden'] = $dinner->fixed;
         return $info;
