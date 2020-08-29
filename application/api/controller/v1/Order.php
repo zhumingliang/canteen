@@ -1007,7 +1007,7 @@ class Order extends BaseController
      * @apiParam (请求参数说明) {string} time_end  查询结束时间
      * @apiParam (请求参数说明) {string} phone  手机号查询
      * @apiParam (请求参数说明) {string} name  姓名查询
-     * @apiParam (请求参数说明) {int} consumption_type  消费类型，1：订餐就餐；2：订餐未就餐；3：未订餐就餐；4：补充；5：补扣；6：全部
+     * @apiParam (请求参数说明) {int} consumption_type  消费类型，1：订餐就餐；2：订餐未就餐；3：未订餐就餐；4：补充；5：补扣；6：外卖;7:全部
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200,"data":{"url":"http:\/\/canteen.tonglingok.com\/static\/excel\/download\/材料价格明细_20190817005931.xls"}}
      * @apiSuccess (返回参数说明) {int} error_code 错误代码 0 表示没有错误
@@ -1018,7 +1018,7 @@ class Order extends BaseController
                                           $phone = '',
                                           $canteen_id = 0,
                                           $department_id = 0,
-                                          $dinner_id = 0, $consumption_type = 5)
+                                          $dinner_id = 0, $consumption_type = 7)
     {
         $time_begin = Request::param('time_begin');
         $time_end = Request::param('time_end');

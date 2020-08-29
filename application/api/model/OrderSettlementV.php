@@ -51,15 +51,15 @@ class OrderSettlementV extends Model
                 if ($consumption_type < 7) {
                     if ($consumption_type == 1) {
                         //订餐就餐
-                        $query->where('booking', CommonEnum::STATE_IS_OK)
+                        $query->where('consumption_type', OrderEnum::EAT_CANTEEN)->where('booking', CommonEnum::STATE_IS_OK)
                             ->where('used', CommonEnum::STATE_IS_OK);
                     } else if ($consumption_type == 2) {
                         //订餐未就餐
-                        $query->where('booking', CommonEnum::STATE_IS_OK)
+                        $query->where('consumption_type', OrderEnum::EAT_CANTEEN)->where('booking', CommonEnum::STATE_IS_OK)
                             ->where('used', CommonEnum::STATE_IS_FAIL);
                     } else if ($consumption_type == 3) {
                         //未订餐就餐
-                        $query->where('booking', CommonEnum::STATE_IS_FAIL)
+                        $query->where('consumption_type', OrderEnum::EAT_CANTEEN)->where('booking', CommonEnum::STATE_IS_FAIL)
                             ->where('used', CommonEnum::STATE_IS_OK);
                     } else if ($consumption_type == 4) {
                         //系统补充
@@ -67,16 +67,15 @@ class OrderSettlementV extends Model
                     } else if ($consumption_type == 5) {
                         //系统补扣
                         $query->where('type', 'deduction');
-                    }
-                    else if ($consumption_type == 6) {
+                    } else if ($consumption_type == 6) {
                         //系统补扣
-                        $query->where('type', 'deduction');
+                        $query->where('consumption_type', OrderEnum::EAT_OUTSIDER);
                     }
                 }
 
             })
-            ->field('order_id,used_time,username,phone,canteen,department,dinner,booking,used,type,ordering_date,money')
-            ->order('order_id DESC')
+            ->field('order_id,used_time,username,phone,canteen,department,dinner,booking,used,type,ordering_date,money,consumption_type')
+            ->order('ordering_date DESC,phone')
             ->paginate($size, false, ['page' => $page])->toArray();
         return $list;
 
@@ -115,18 +114,18 @@ class OrderSettlementV extends Model
                 }
             })
             ->where(function ($query) use ($consumption_type) {
-                if ($consumption_type < 6) {
+                if ($consumption_type < 7) {
                     if ($consumption_type == 1) {
                         //订餐就餐
-                        $query->where('booking', CommonEnum::STATE_IS_OK)
+                        $query->where('consumption_type', OrderEnum::EAT_CANTEEN)->where('booking', CommonEnum::STATE_IS_OK)
                             ->where('used', CommonEnum::STATE_IS_OK);
                     } else if ($consumption_type == 2) {
                         //订餐未就餐
-                        $query->where('booking', CommonEnum::STATE_IS_OK)
+                        $query->where('consumption_type', OrderEnum::EAT_CANTEEN)->where('booking', CommonEnum::STATE_IS_OK)
                             ->where('used', CommonEnum::STATE_IS_FAIL);
                     } else if ($consumption_type == 3) {
                         //未订餐就餐
-                        $query->where('booking', CommonEnum::STATE_IS_FAIL)
+                        $query->where('consumption_type', OrderEnum::EAT_CANTEEN)->where('booking', CommonEnum::STATE_IS_FAIL)
                             ->where('used', CommonEnum::STATE_IS_OK);
                     } else if ($consumption_type == 4) {
                         //系统补充
@@ -134,12 +133,15 @@ class OrderSettlementV extends Model
                     } else if ($consumption_type == 5) {
                         //系统补扣
                         $query->where('type', 'deduction');
+                    } else if ($consumption_type == 5) {
+                        //系统外卖
+                        $query->where('consumption_type', OrderEnum::EAT_OUTSIDER);
                     }
                 }
 
             })
-            ->field('used_time,department,username,phone,canteen,dinner,booking,used,type,money,remark')
-            ->order('order_id DESC')
+            ->field('used_time,department,username,phone,canteen,dinner,booking,used,type,money,remark,consumption_type')
+            ->order('ordering_date DESC,phone')
             ->select()->toArray();
         return $list;
 
