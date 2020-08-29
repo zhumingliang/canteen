@@ -264,10 +264,10 @@ class OrderStatisticService
     {
         if ($consumptionType == "one") {
             $info = OrderT::infoToPrint($id);
-            $dinner_id=$info['d_id'];
+            $dinner_id = $info['d_id'];
         } else {
             $info = OrderParentT::infoToPrint($id);
-            $dinner_id=$info['dinner_id'];
+            $dinner_id = $info['dinner_id'];
         }
         if (!$info) {
             throw new ParameterException(['msg' => '订单不存在']);
@@ -513,23 +513,23 @@ class OrderStatisticService
     }
 
     public function consumptionStatistic($canteen_id, $status, $type,
-                                         $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id, $page, $size)
+                                         $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id, $phone, $page, $size)
     {
         switch ($type) {
             case OrderEnum::STATISTIC_BY_DEPARTMENT:
-                return $this->consumptionStatisticByDepartment($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id);
+                return $this->consumptionStatisticByDepartment($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id,$phone);
                 break;
             case OrderEnum::STATISTIC_BY_USERNAME:
-                return $this->consumptionStatisticByUsername($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id, $page, $size);
+                return $this->consumptionStatisticByUsername($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id,$phone, $page, $size);
                 break;
             case OrderEnum::STATISTIC_BY_STAFF_TYPE:
-                return $this->consumptionStatisticByStaff($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id);
+                return $this->consumptionStatisticByStaff($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id,$phone);
                 break;
             case OrderEnum::STATISTIC_BY_CANTEEN:
-                return $this->consumptionStatisticByCanteen($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id);
+                return $this->consumptionStatisticByCanteen($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id,$phone);
                 break;
             case OrderEnum::STATISTIC_BY_STATUS:
-                return $this->consumptionStatisticByStatus($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id);
+                return $this->consumptionStatisticByStatus($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id,$phone);
                 break;
             default:
                 throw new ParameterException();
@@ -537,7 +537,7 @@ class OrderStatisticService
     }
 
     public function exportConsumptionStatistic($canteen_id, $status, $type,
-                                               $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id)
+                                               $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id,$phone)
     {
         $fileNameArr = [
             0 => "消费总报表",
@@ -546,23 +546,24 @@ class OrderStatisticService
             3 => '未订餐就餐总报表',
             4 => '系统补充总报表',
             5 => '系统补扣总报表',
+            6 => '外卖总报表',
         ];
 
         switch ($type) {
             case OrderEnum::STATISTIC_BY_DEPARTMENT:
-                $info = $this->consumptionStatisticByDepartment($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id);
+                $info = $this->consumptionStatisticByDepartment($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id,$phone);
                 break;
             case OrderEnum::STATISTIC_BY_USERNAME:
-                $info = $this->consumptionStatisticByUsername($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id, 1, 10000);
+                $info = $this->consumptionStatisticByUsername($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id,$phone, 1, 10000);
                 break;
             case OrderEnum::STATISTIC_BY_STAFF_TYPE:
-                $info = $this->consumptionStatisticByStaff($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id);
+                $info = $this->consumptionStatisticByStaff($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id,$phone);
                 break;
             case OrderEnum::STATISTIC_BY_CANTEEN:
-                $info = $this->consumptionStatisticByCanteen($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id);
+                $info = $this->consumptionStatisticByCanteen($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id,$phone);
                 break;
             case OrderEnum::STATISTIC_BY_STATUS:
-                $info = $this->consumptionStatisticByStatus($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id);
+                $info = $this->consumptionStatisticByStatus($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id,$phone);
                 break;
             default:
                 throw new ParameterException();
@@ -648,11 +649,11 @@ class OrderStatisticService
 
     private function consumptionStatisticByDepartment($canteen_id, $status, $department_id,
                                                       $username, $staff_type_id, $time_begin,
-                                                      $time_end, $company_id)
+                                                      $time_end, $company_id,$phone)
     {
         $statistic = OrderConsumptionV::consumptionStatisticByDepartment($canteen_id, $status, $department_id,
             $username, $staff_type_id, $time_begin,
-            $time_end, $company_id);
+            $time_end, $company_id,$phone);
         $statistic = $this->prefixStatistic($statistic, 'department', $time_begin, $time_end, $status);
         return $statistic;
 
@@ -736,16 +737,16 @@ class OrderStatisticService
 
     private function consumptionStatisticByUsername($canteen_id, $status, $department_id,
                                                     $username, $staff_type_id, $time_begin,
-                                                    $time_end, $company_id, $page, $size)
+                                                    $time_end, $company_id, $phone,$page, $size)
     {
 
         $users = OrderConsumptionV::userStatistic($canteen_id, $status, $department_id,
             $username, $staff_type_id, $time_begin,
-            $time_end, $company_id, $page, $size);
+            $time_end, $company_id,$phone, $page, $size);
 
         $statistic = OrderConsumptionV::userDinnerStatistic($canteen_id, $status, $department_id,
             $username, $staff_type_id, $time_begin,
-            $time_end, $company_id, $page, $size);
+            $time_end, $company_id,$phone, $page, $size);
 
         if (!count($users)) {
             return $users;
@@ -780,11 +781,11 @@ class OrderStatisticService
 
     private function consumptionStatisticByStatus($canteen_id, $status, $department_id,
                                                   $username, $staff_type_id, $time_begin,
-                                                  $time_end, $company_id)
+                                                  $time_end, $company_id,$phone)
     {
         $statistic = OrderConsumptionV::consumptionStatisticByStatus($canteen_id, $status, $department_id,
             $username, $staff_type_id, $time_begin,
-            $time_end, $company_id);
+            $time_end, $company_id,$phone);
         $statistic = $this->prefixStatistic($statistic, 'status', $time_begin, $time_end, $status);
         return $statistic;
 
@@ -792,11 +793,11 @@ class OrderStatisticService
 
     private function consumptionStatisticByCanteen($canteen_id, $status, $department_id,
                                                    $username, $staff_type_id, $time_begin,
-                                                   $time_end, $company_id)
+                                                   $time_end, $company_id,$phone)
     {
         $statistic = OrderConsumptionV::consumptionStatisticByCanteen($canteen_id, $status, $department_id,
             $username, $staff_type_id, $time_begin,
-            $time_end, $company_id);
+            $time_end, $company_id,$phone);
         $statistic = $this->prefixStatistic($statistic, 'canteen', $time_begin, $time_end, $status);
         return $statistic;
 
@@ -804,11 +805,11 @@ class OrderStatisticService
 
     private function consumptionStatisticByStaff($canteen_id, $status, $department_id,
                                                  $username, $staff_type_id, $time_begin,
-                                                 $time_end, $company_id)
+                                                 $time_end, $company_id,$phone)
     {
         $statistic = OrderConsumptionV::consumptionStatisticByStaff($canteen_id, $status, $department_id,
             $username, $staff_type_id, $time_begin,
-            $time_end, $company_id);
+            $time_end, $company_id,$phone);
         $statistic = $this->prefixStatistic($statistic, 'staff_type', $time_begin, $time_end, $status);
         return $statistic;
 

@@ -960,7 +960,7 @@ class Order extends BaseController
      * @apiParam (请求参数说明) {string} time_end  查询结束时间
      * @apiParam (请求参数说明) {string} phone  手机号查询
      * @apiParam (请求参数说明) {string} name  姓名查询
-     * @apiParam (请求参数说明) {int} consumption_type 消费类型，1：订餐就餐；2：订餐未就餐；3：未订餐就餐；4：补充；5：补扣；6：全部
+     * @apiParam (请求参数说明) {int} consumption_type 消费类型，1：订餐就餐；2：订餐未就餐；3：未订餐就餐；4：补充；5：补扣；6:外卖；7：全部
      * @apiSuccessExample {json}返回样例:
      * {"msg":"ok","errorCode":0,"code":200,"data":{"total":1,"per_page":"20","current_page":1,"last_page":1,"data":[{"order_id":8,"used_time":"0000-00-00 00:00:00","username":"张三","phone":"18956225230","canteen":"饭堂1","department":"董事会-修改","dinner":"中餐","booking":1,"used":2,"consumption_type":2}]}}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
@@ -981,7 +981,7 @@ class Order extends BaseController
                                     $phone = '',
                                     $canteen_id = 0,
                                     $department_id = 0,
-                                    $dinner_id = 0, $consumption_type = 5)
+                                    $dinner_id = 0, $consumption_type = 7)
     {
         $time_begin = Request::param('time_begin');
         $time_end = Request::param('time_end');
@@ -1242,7 +1242,7 @@ class Order extends BaseController
      * @apiVersion 3.0.0
      * @apiDescription CMS管理端-结算管理-结算报表
      * @apiExample {get}  请求样例:
-     * http://canteen.tonglingok.com/api/v1/order/consumptionStatistic?time_begin=2019-09-07&time_end=2019-12-07&page=1&size=20&category_id=0&product_id=0&status=0&status=1&department_id=0&username=
+     * http://canteen.tonglingok.com/api/v1/order/consumptionStatistic?time_begin=2019-09-07&time_end=2019-12-07&page=1&size=20&category_id=0&product_id=0&status=0&status=1&department_id=0&username=&phone=18956225230
      * @apiParam (请求参数说明) {int} page 当前页码
      * @apiParam (请求参数说明) {int} size 每页多少条数据
      * @apiParam (请求参数说明) {int} department_id  部门id：全部传入0
@@ -1250,10 +1250,11 @@ class Order extends BaseController
      * @apiParam (请求参数说明) {int} staff_type_id  人员类型id：全部传入0
      * @apiParam (请求参数说明) {int} canteen_ids  消费地点，饭堂id：全部传入0
      * @apiParam (请求参数说明) {int} company_ids  企业id：全部，将所有ID用逗号分隔
-     * @apiParam (请求参数说明) {int} status  消费类型：全部传入0；1：订餐就餐；2：订餐未就餐；3：未订餐就餐；5：补充操作；6：补扣操作
+     * @apiParam (请求参数说明) {int} status  消费类型：全部传入0；1：订餐就餐；2：订餐未就餐；3：未订餐就餐；4：补充操作；4：补扣操作；6：外卖
      * @apiParam (请求参数说明) {int} type  汇总类型：1：按部门进行汇总；2：按姓名进行汇总；3：按人员类型进行汇总；4：按消费地点进行汇总；5：按消费类型进行汇总
      * @apiParam (请求参数说明) {string} time_begin  查询开始时间
      * @apiParam (请求参数说明) {string} time_end  查询结束时间
+     * @apiParam (请求参数说明) {string} phone  手机号
      * @apiSuccessExample {json}汇总类型为：1/3/4/5返回样例:
      * {"msg":"ok","errorCode":0,"code":200,"data":{"statistic":[{"statistic":"股东","time_begin":"2019-10-11","time_end":"2019-11-30","department":"股东","dinnerStatistic":[{"dinner_id":6,"dinner":"中餐","order_count":"8","order_money":28},{"dinner_id":5,"dinner":"早餐","order_count":"2","order_money":4},{"dinner_id":7,"dinner":"晚餐","order_count":"5","order_money":3}]}],"allMoney":35,"allCount":15}}
      * @apiSuccessExample {json}汇总类型为：2返回样例:
@@ -1276,13 +1277,13 @@ class Order extends BaseController
      * @apiSuccess (返回参数说明) {int} allCount 合计-总金额
      */
     public function consumptionStatistic($canteen_ids = 0, $status = 0, $type = 1,
-                                         $department_id = 0, $username = '', $staff_type_id = 0, $page = 1, $size = 10)
+                                         $department_id = 0, $username = '', $staff_type_id = 0, $phone = '', $page = 1, $size = 10)
     {
         $time_begin = Request::param('time_begin');
         $time_end = Request::param('time_end');
         $company_ids = Request::param('company_ids');
         $statistic = (new OrderStatisticService())->consumptionStatistic($canteen_ids, $status, $type,
-            $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_ids, $page, $size);
+            $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_ids, $phone, $page, $size);
         return json(new SuccessMessageWithData(['data' => $statistic]));
 
     }
@@ -1293,16 +1294,17 @@ class Order extends BaseController
      * @apiVersion 3.0.0
      * @apiDescription CMS管理端-结算管理-结算报表-导出报表
      * @apiExample {get}  请求样例:
-     * http://canteen.tonglingok.com/api/v1/order/consumptionStatistic/export?time_begin=2019-09-07&time_end=2019-12-07&category_id=0&product_id=0&status=0&status=1&department_id=0&username=
+     * http://canteen.tonglingok.com/api/v1/order/consumptionStatistic/export?time_begin=2019-09-07&time_end=2019-12-07&category_id=0&product_id=0&status=0&status=1&department_id=0&username=&phone=18956225230
      * @apiParam (请求参数说明) {int} department_id  部门id：全部传入0
      * @apiParam (请求参数说明) {string} username  用户名
      * @apiParam (请求参数说明) {int} staff_type_id  人员类型id：全部传入0
      * @apiParam (请求参数说明) {int} canteen_ids  消费地点，饭堂id：全部传入0
      * @apiParam (请求参数说明) {int} company_ids  企业id：全部，将所有ID用逗号分隔
-     * @apiParam (请求参数说明) {int} status  消费类型：全部传入0；1：订餐就餐；2：订餐未就餐；3：未订餐就餐；4：补充操作；5：补扣操作
+     * @apiParam (请求参数说明) {int} status  消费类型：全部传入0；1：订餐就餐；2：订餐未就餐；3：未订餐就餐；4：补充操作；5：补扣操作;6:外卖
      * @apiParam (请求参数说明) {int} type  汇总类型：1：按部门进行汇总；2：按姓名进行汇总；3：按人员类型进行汇总；4：按消费地点进行汇总；5：按消费类型进行汇总
      * @apiParam (请求参数说明) {string} time_begin  查询开始时间
      * @apiParam (请求参数说明) {string} time_end  查询结束时间
+     * @apiParam (请求参数说明) {string} phone  手机号
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200,"data":{"url":"http:\/\/canteen.tonglingok.com\/static\/excel\/download\/材料价格明细_20190817005931.xls"}}
      * @apiSuccess (返回参数说明) {int} error_code 错误代码 0 表示没有错误
@@ -1310,13 +1312,13 @@ class Order extends BaseController
      * @apiSuccess (返回参数说明) {string} url 下载地址
      */
     public function exportConsumptionStatistic($canteen_ids = 0, $status = 0, $type = 1,
-                                               $department_id = 0, $username = '', $staff_type_id = 0)
+                                               $department_id = 0, $username = '', $staff_type_id = 0, $phone = "")
     {
         $time_begin = Request::param('time_begin');
         $time_end = Request::param('time_end');
         $company_ids = Request::param('company_ids');
         $statistic = (new OrderStatisticService())->exportConsumptionStatistic($canteen_ids, $status, $type,
-            $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_ids);
+            $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_ids,$phone);
         return json(new SuccessMessageWithData(['data' => $statistic]));
 
     }

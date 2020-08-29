@@ -24,6 +24,12 @@ class OrderParentT extends Model
 
     }
 
+    public
+    function user()
+    {
+        return $this->belongsTo('UserT', 'u_id', 'id');
+
+    }
 
     public
     function dinner()

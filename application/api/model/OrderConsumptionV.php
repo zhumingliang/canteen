@@ -4,6 +4,7 @@
 namespace app\api\model;
 
 
+use app\lib\enum\OrderEnum;
 use think\Model;
 
 class OrderConsumptionV extends Model
@@ -11,7 +12,7 @@ class OrderConsumptionV extends Model
 
     public function getStatusAttr($value)
     {
-        $status = ['1' => '订餐就餐', 2 => '订餐未就餐', 3 => '未订餐就餐', 4 => '系统补充', 5 => '系统补扣'];
+        $status = ['1' => '订餐就餐', 2 => '订餐未就餐', 3 => '未订餐就餐', 4 => '系统补充', 5 => '系统补扣', 6 => '外卖'];
         return $status[$value];
     }
 
@@ -23,7 +24,7 @@ class OrderConsumptionV extends Model
 
     public static function consumptionStatisticByDepartment($canteen_id, $status, $department_id,
                                                             $username, $staff_type_id, $time_begin,
-                                                            $time_end, $company_id)
+                                                            $time_end, $company_id, $phone)
     {
         $statistic = self::where(function ($query) use ($company_id, $canteen_id) {
             if (!empty($canteen_id)) {
@@ -40,13 +41,21 @@ class OrderConsumptionV extends Model
             ->where('consumption_date', '<=', $time_end)
             ->where(function ($query) use (
                 $status, $department_id,
-                $username, $staff_type_id
+                $username, $staff_type_id, $phone
             ) {
                 if (!empty($status)) {
-                    $query->where('status', $status);
+                    if ($status == 6) {
+                        $query->where('type', OrderEnum::EAT_OUTSIDER);
+                    } else {
+                        $query->where('type', OrderEnum::EAT_CANTEEN)->where('status', $status);
+
+                    }
                 }
                 if (!empty($department_id)) {
                     $query->where('department_id', $department_id);
+                }
+                if (!empty($phone)) {
+                    $query->where('phone', $phone);
                 }
                 if (!empty($username)) {
                     $query->where('username', 'like', '%' . $username . '%');
@@ -149,7 +158,7 @@ class OrderConsumptionV extends Model
 
     public static function consumptionStatisticByStatus($canteen_id, $status, $department_id,
                                                         $username, $staff_type_id, $time_begin,
-                                                        $time_end, $company_id)
+                                                        $time_end, $company_id, $phone)
     {
         $statistic = self::where(function ($query) use ($company_id, $canteen_id) {
             if (!empty($canteen_id)) {
@@ -166,10 +175,17 @@ class OrderConsumptionV extends Model
             ->where('consumption_date', '<=', $time_end)
             ->where(function ($query) use (
                 $status, $department_id,
-                $username, $staff_type_id
+                $username, $staff_type_id, $phone
             ) {
+                if (!empty($phone)) {
+                    $query->where('phone', $phone);
+                }
                 if (!empty($status)) {
-                    $query->where('status', $status);
+                    if ($status == 6) {
+                        $query->where('type', OrderEnum::EAT_OUTSIDER);
+                    } else {
+                        $query->where('type', OrderEnum::EAT_CANTEEN)->where('status', $status);
+                    }
                 }
                 if (!empty($department_id)) {
                     $query->where('department_id', $department_id);
@@ -191,7 +207,7 @@ class OrderConsumptionV extends Model
 
     public static function consumptionStatisticByCanteen($canteen_id, $status, $department_id,
                                                          $username, $staff_type_id, $time_begin,
-                                                         $time_end, $company_id)
+                                                         $time_end, $company_id, $phone)
     {
         // $time_end = addDay(1, $time_end);
         $statistic = self::where(function ($query) use ($company_id, $canteen_id) {
@@ -209,10 +225,18 @@ class OrderConsumptionV extends Model
             ->where('consumption_date', '<=', $time_end)
             ->where(function ($query) use (
                 $status, $department_id,
-                $username, $staff_type_id
+                $username, $staff_type_id, $phone
             ) {
                 if (!empty($status)) {
-                    $query->where('status', $status);
+                    if ($status == 6) {
+                        $query->where('type', OrderEnum::EAT_OUTSIDER);
+                    } else {
+                        $query->where('type', OrderEnum::EAT_CANTEEN)->where('status', $status);
+
+                    }
+                }
+                if (!empty($phone)) {
+                    $query->where('phone', $phone);
                 }
                 if (!empty($department_id)) {
                     $query->where('department_id', $department_id);
@@ -234,7 +258,7 @@ class OrderConsumptionV extends Model
 
     public static function consumptionStatisticByStaff($canteen_id, $status, $department_id,
                                                        $username, $staff_type_id, $time_begin,
-                                                       $time_end, $company_id)
+                                                       $time_end, $company_id, $phone)
     {
         //$time_end = addDay(1, $time_end);
         $statistic = self::where(function ($query) use ($company_id, $canteen_id) {
@@ -252,13 +276,21 @@ class OrderConsumptionV extends Model
             ->where('consumption_date', '<=', $time_end)
             ->where(function ($query) use (
                 $status, $department_id,
-                $username, $staff_type_id
+                $username, $staff_type_id, $phone
             ) {
                 if (!empty($status)) {
-                    $query->where('status', $status);
+                    if ($status == 6) {
+                        $query->where('type', OrderEnum::EAT_OUTSIDER);
+                    } else {
+                        $query->where('type', OrderEnum::EAT_CANTEEN)->where('status', $status);
+
+                    }
                 }
                 if (!empty($department_id)) {
                     $query->where('department_id', $department_id);
+                }
+                if (!empty($phone)) {
+                    $query->where('phone', $phone);
                 }
                 if (!empty($username)) {
                     $query->where('username', 'like', '%' . $username . '%');
@@ -277,7 +309,7 @@ class OrderConsumptionV extends Model
 
     public static function userDinnerStatistic($canteen_id, $status, $department_id,
                                                $username, $staff_type_id, $time_begin,
-                                               $time_end, $company_id, $page, $size)
+                                               $time_end, $company_id, $phone, $page, $size)
     {
         return self::where(function ($query) use ($company_id, $canteen_id) {
             if (!empty($canteen_id)) {
@@ -291,10 +323,13 @@ class OrderConsumptionV extends Model
             }
         })->where(function ($query) use (
             $department_id,
-            $username, $staff_type_id
+            $username, $staff_type_id, $phone
         ) {
             if (!empty($department_id)) {
                 $query->where('department_id', $department_id);
+            }
+            if (!empty($phone)) {
+                $query->where('phone', $phone);
             }
             if (!empty($username)) {
                 $query->where('username', 'like', '%' . $username . '%');
@@ -310,7 +345,12 @@ class OrderConsumptionV extends Model
                 $status
             ) {
                 if (!empty($status)) {
-                    $query2->where('status', $status);
+                    if ($status == 6) {
+                        $query2->where('type', OrderEnum::EAT_OUTSIDER);
+                    } else {
+                        $query2->where('type', OrderEnum::EAT_CANTEEN)->where('status', $status);
+
+                    }
                 }
             })
             ->field('staff_id,username,department,dinner_id,dinner,sum(order_count) as order_count,sum(order_money) as order_money')
@@ -320,7 +360,7 @@ class OrderConsumptionV extends Model
 
     public static function userStatistic($canteen_id, $status, $department_id,
                                          $username, $staff_type_id, $time_begin,
-                                         $time_end, $company_id, $page, $size)
+                                         $time_end, $company_id, $phone, $page, $size)
     {
         return self::where(function ($query) use ($company_id, $canteen_id) {
             if (!empty($canteen_id)) {
@@ -334,10 +374,13 @@ class OrderConsumptionV extends Model
             }
         })->where(function ($query) use (
             $department_id,
-            $username, $staff_type_id
+            $username, $staff_type_id, $phone
         ) {
             if (!empty($department_id)) {
                 $query->where('department_id', $department_id);
+            }
+            if (!empty($phone)) {
+                $query->where('phone', $phone);
             }
             if (!empty($username)) {
                 $query->where('username', 'like', '%' . $username . '%');
@@ -353,7 +396,12 @@ class OrderConsumptionV extends Model
                 $status
             ) {
                 if (!empty($status)) {
-                    $query2->where('status', $status);
+                    if ($status == 6) {
+                        $query2->where('type', OrderEnum::EAT_OUTSIDER);
+                    } else {
+                        $query2->where('type', OrderEnum::EAT_CANTEEN)->where('status', $status);
+
+                    }
                 }
             })
             ->field('staff_id,username, username as statistic,department')
