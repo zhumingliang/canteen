@@ -16,6 +16,11 @@ class OrderParentT extends Model
         return $this->hasMany('SubFoodT', 'o_id', 'id');
     }
 
+    public
+    function canteen()
+    {
+        return $this->belongsTo('CanteenT', 'canteen_id', 'id');
+    }
 
     public
     function address()
