@@ -2657,8 +2657,8 @@ class OrderService extends BaseService
             $detail = [
                 'number' => $i,
                 'order_id' => $orderId,
-                'money' => $money ,
-                'sub_money' =>  $sub_money,
+                'money' => $money,
+                'sub_money' => $sub_money,
                 'status' => $status
             ];
             array_push($dataList, $detail);
@@ -2687,7 +2687,8 @@ class OrderService extends BaseService
             $detail = [
                 'number' => $v['order_sort'],
                 'order_id' => $v['id'],
-                'money' => round($v['money'] + $v['sub_money'], 2),
+                'money' => round($v['money'], 2),
+                'sub_money' => round($v['sub_money'], 2),
                 'status' => $status
             ];
             array_push($dataList, $detail);

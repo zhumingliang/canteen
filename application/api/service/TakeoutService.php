@@ -21,38 +21,49 @@ class TakeoutService
     const PRINTER = 3;
     const REFUND = 4;
 
-    public function handelOrder($orderID, $type, $canteenID)
+    public function handelOrder($oneId, $moreId, $type, $canteenID)
     {
-        $orderIDArr = explode(',', $orderID);
-        if (!count($orderIDArr)) {
+        $oneIDArr = explode(',', $oneId);
+        $moreIDArr = explode(',', $moreId);
+        if (!count($oneIDArr) && !count($moreIDArr)) {
             throw new ParameterException(['msg' => '订单id异常']);
         }
         switch ($type) {
             case self::RECEIVE :
-                $this->receiveOrders($orderIDArr);
+                $this->receiveOrders($oneIDArr,$moreIDArr);
                 break;
             case self::RECEIVE_PRINTER :
-                $this->receiveAndPrint($orderIDArr, $canteenID);
+                $this->receiveAndPrint($oneIDArr,$moreIDArr, $canteenID);
                 break;
             case self::PRINTER:
-                $this->printOrders($orderIDArr, $canteenID);
+                $this->printOrders($oneIDArr,$moreIDArr, $canteenID);
                 break;
             case self::REFUND:
-                $this->refundOrder($orderIDArr);
+                $this->refundOrder($oneIDArr,$moreIDArr);
                 break;
         }
 
 
     }
 
-    private function receiveOrders($orderIDArr)
+    private function receiveOrders($oneIDArr,$moreIDArr)
     {
-        $dataList = [];
-        foreach ($orderIDArr as $k => $v) {
-            array_push($dataList, [
+        $oneList = [];
+        $moreList = [];
+        if (count($oneIDArr))
+        foreach ($oneIDArr as $k => $v) {
+            array_push($oneList, [
                 'id' => $v,
                 'receive' => CommonEnum::STATE_IS_OK
             ]);
+        }
+
+        if (count($moreList)){
+            foreach ($moreList as $k => $v) {
+                array_push($oneList, [
+                    'id' => $v,
+                    'receive' => CommonEnum::STATE_IS_OK
+                ]);
         }
         $res = (new OrderT())->saveAll($dataList);
         if (!$res) {
@@ -69,11 +80,11 @@ class TakeoutService
 
     private function receiveAndPrint($orderIDArr, $canteenID)
     {
-        $this->receiveOrders($orderIDArr);
+        $this->receiveOrders($oneIDArr,$moreIDArr);
         $this->printOrders($orderIDArr, $canteenID);
     }
 
-    private function printOrders($orderIDArr, $canteenId)
+    private function printOrders($oneIDArr,$moreIDArr, $canteenId)
     {
         $sn = (new Printer())->checkPrinter($canteenId, 4);
         foreach ($orderIDArr as $k => $v) {
@@ -81,7 +92,7 @@ class TakeoutService
         }
     }
 
-    public function refundOrder($orderIDArr)
+    public function refundOrder($oneIDArr,$moreIDArr)
     {
 
         foreach ($orderIDArr as $k => $v) {

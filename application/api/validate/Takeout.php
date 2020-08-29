@@ -22,7 +22,7 @@ class Takeout extends BaseValidate
         'statistic' => ['canteen_id', 'company_ids', 'ordering_date', 'dinner_id', 'status'],
         'officialStatistic' => ['ordering_date', 'dinner_id', 'status', 'department_id'],
         'used' => ['id'],
-        'handel' => ['ids', 'type', 'canteen_id'],
+        'handel' => ['type', 'canteen_id'],
         'infoToPrint' => ['order_id']
     ];
 
