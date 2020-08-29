@@ -113,12 +113,9 @@ Index extends BaseController
 
     public function test()
     {
-        $subOrders = OrderSubT::where('order_id', 33042)
-            ->where('state', CommonEnum::STATE_IS_OK)
-            ->select();
-        print_r($subOrders);
-        $sub = (new OrderService())->sortSubOrder($subOrders, 33045);
-        print_r($sub);
+        echo (new Printer())->printOutsiderOrderDetail(33051, '921533330', 'more');
+
+
         //return json(\app\api\service\Token::getCurrentTokenVar());
 
         /* $data = (new ExcelService())->saveTestExcel();

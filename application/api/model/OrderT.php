@@ -166,7 +166,7 @@ class OrderT extends Model
                     $query->field('id,province,city,area,address,name,phone,sex');
                 }
             ])
-            ->field('id,address_id,d_id,type,count,money,sub_money,delivery_fee,create_time,remark,ordering_type')
+            ->field('id,address_id,d_id,fixed,ordering_date,type,count,money,sub_money,delivery_fee,create_time,remark,ordering_type')
             ->find();
 
         return $info;

@@ -5,6 +5,7 @@ namespace app\api\service;
 
 
 use app\api\model\OfficialTemplateT;
+use app\api\model\OrderParentT;
 use app\api\model\OrderT;
 use app\lib\enum\CommonEnum;
 use app\lib\enum\OrderEnum;
@@ -30,83 +31,120 @@ class TakeoutService
         }
         switch ($type) {
             case self::RECEIVE :
-                $this->receiveOrders($oneIDArr,$moreIDArr);
+                $this->receiveOrders($oneIDArr, $moreIDArr);
                 break;
             case self::RECEIVE_PRINTER :
-                $this->receiveAndPrint($oneIDArr,$moreIDArr, $canteenID);
+                $this->receiveAndPrint($oneIDArr, $moreIDArr, $canteenID);
                 break;
             case self::PRINTER:
-                $this->printOrders($oneIDArr,$moreIDArr, $canteenID);
+                $this->printOrders($oneIDArr, $moreIDArr, $canteenID);
                 break;
             case self::REFUND:
-                $this->refundOrder($oneIDArr,$moreIDArr);
+                $this->refundOrder($oneIDArr, $moreIDArr);
                 break;
         }
 
 
     }
 
-    private function receiveOrders($oneIDArr,$moreIDArr)
+    private function receiveOrders($oneIDArr, $moreIDArr)
     {
         $oneList = [];
         $moreList = [];
-        if (count($oneIDArr))
-        foreach ($oneIDArr as $k => $v) {
-            array_push($oneList, [
-                'id' => $v,
-                'receive' => CommonEnum::STATE_IS_OK
-            ]);
-        }
-
-        if (count($moreList)){
-            foreach ($moreList as $k => $v) {
+        if (count($oneIDArr)) {
+            foreach ($oneIDArr as $k => $v) {
                 array_push($oneList, [
                     'id' => $v,
                     'receive' => CommonEnum::STATE_IS_OK
                 ]);
+            }
+            $res = (new OrderT())->saveAll($oneList);
+            if (!$res) {
+                throw new  UpdateException(['msg' => '更新订单失败']);
+            }
         }
-        $res = (new OrderT())->saveAll($dataList);
-        if (!$res) {
-            throw new  UpdateException(['msg' => '更新订单失败']);
+        if (count($moreIDArr)) {
+            foreach ($moreIDArr as $k => $v) {
+                array_push($moreList, [
+                    'id' => $v,
+                    'receive' => CommonEnum::STATE_IS_OK
+                ]);
+            }
+            $res = (new OrderParentT())->saveAll($oneList);
+            if (!$res) {
+                throw new  UpdateException(['msg' => '更新订单失败']);
+            }
         }
         //批量发送模板
-        foreach ($orderIDArr as $k => $v) {
+        foreach ($oneIDArr as $k => $v) {
             $order = OrderT::infoToReceive($v);
+            if ($order) {
+                $this->sendReceiveTemplate($order['user']['openid'], $order['ordering_date'], $order['dinner']['name'], $order['canteen']['name']);
+            }
+        }
+        foreach ($moreIDArr as $k => $v) {
+            $order = OrderParentT::infoToReceive($v);
             if ($order) {
                 $this->sendReceiveTemplate($order['user']['openid'], $order['ordering_date'], $order['dinner']['name'], $order['canteen']['name']);
             }
         }
     }
 
-    private function receiveAndPrint($orderIDArr, $canteenID)
+    private function receiveAndPrint($oneIDArr, $moreIDArr, $canteenID)
     {
-        $this->receiveOrders($oneIDArr,$moreIDArr);
-        $this->printOrders($orderIDArr, $canteenID);
+        $this->receiveOrders($oneIDArr, $moreIDArr);
+        $this->printOrders($oneIDArr, $moreIDArr, $canteenID);
     }
 
-    private function printOrders($oneIDArr,$moreIDArr, $canteenId)
+    private function printOrders($oneIDArr, $moreIDArr, $canteenId)
     {
         $sn = (new Printer())->checkPrinter($canteenId, 4);
-        foreach ($orderIDArr as $k => $v) {
-            (new Printer())->printOutsiderOrderDetail($v, $sn);
+        if (!empty($oneIDArr)) {
+            foreach ($oneIDArr as $k => $v) {
+                (new Printer())->printOutsiderOrderDetail($v, $sn, 'one');
+            }
         }
+        if (!empty($moreIDArr)) {
+            foreach ($moreIDArr as $k => $v) {
+                (new Printer())->printOutsiderOrderDetail($v, $sn, 'more');
+            }
+        }
+
     }
 
-    public function refundOrder($oneIDArr,$moreIDArr)
+    public function refundOrder($oneIDArr, $moreIDArr)
     {
 
-        foreach ($orderIDArr as $k => $v) {
-            $order = OrderT::infoToRefund($v);
-            $order->state = OrderEnum::REFUND;
-            //检测是否需要微信退款
-            if ($order->pay_way == PayEnum::PAY_WEIXIN) {
-                (new OrderService())->refundWxOrder($v);
+        if (count($oneIDArr)) {
+            foreach ($oneIDArr as $k => $v) {
+                $order = OrderT::infoToRefund($v);
+                $order->state = OrderEnum::REFUND;
+                //检测是否需要微信退款
+                if ($order->pay_way == PayEnum::PAY_WEIXIN) {
+                    (new OrderService())->refundWxOrder($v,'one');
+                }
+                $res = $order->save();
+                if (!$res) {
+                    throw new  UpdateException(['msg' => '更新订单失败']);
+                }
+                $this->sendRefundTemplate($order['user']['openid'], $order['money']);
             }
-            $res = $order->save();
-            if (!$res) {
-                throw new  UpdateException(['msg' => '更新订单失败']);
+        }
+
+        if (count($moreIDArr)) {
+            foreach ($moreIDArr as $k => $v) {
+                $order = OrderParentT::infoToRefund($v);
+                $order->state = OrderEnum::REFUND;
+                //检测是否需要微信退款
+                if ($order->pay_way == PayEnum::PAY_WEIXIN) {
+                    (new OrderService())->refundWxOrder($v,'more');
+                }
+                $res = $order->save();
+                if (!$res) {
+                    throw new  UpdateException(['msg' => '更新订单失败']);
+                }
+                $this->sendRefundTemplate($order['user']['openid'], $order['money']);
             }
-            $this->sendRefundTemplate($order['user']['openid'], $order['money']);
         }
 
     }

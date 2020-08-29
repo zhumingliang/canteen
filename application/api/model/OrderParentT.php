@@ -98,12 +98,50 @@ class OrderParentT extends Model
                     $query->field('id,province,city,area,address,name,phone,sex');
                 },
                 'sub' => function ($query) {
-                    $query->where('state', CommonEnum::STATE_IS_OK)->field('id,order_id,order_sort,count,money,sub_money');
+                    $query->where('state', CommonEnum::STATE_IS_OK)
+                        ->field('id,order_id,order_sort,count,money,sub_money');
+                },
+                'dinner' => function ($query) {
+                    $query->field('id,name');
                 }
             ])
-            ->field('id,address_id,dinner_id as d_id,type,count,delivery_fee,create_time,remark,ordering_type')
+            ->field('id,address_id,dinner_id,fixed,type,count,money,sub_money,delivery_fee,create_time,ordering_date,remark,ordering_type')
             ->find();
 
+        return $info;
+    }
+
+    public
+    static function infoToReceive($id)
+    {
+        $info = self::where('id', $id)
+            ->with([
+                'user' => function ($query) {
+                    $query->field('id,openid');
+                },
+                'canteen' => function ($query) {
+                    $query->field('id,name');
+                },
+                'dinner' => function ($query) {
+                    $query->field('id,name');
+                }
+            ])
+            ->field('id,u_id,dinner_id,canteen_id,ordering_date')
+            ->find();
+        return $info;
+    }
+
+    public
+    static function infoToRefund($id)
+    {
+        $info = self::where('id', $id)
+            ->with([
+                'user' => function ($query) {
+                    $query->field('id,openid');
+                }
+            ])
+            ->field('id,u_id,pay_way,(money + sub_money + delivery_fee) as money')
+            ->find();
         return $info;
     }
 

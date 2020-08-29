@@ -264,8 +264,10 @@ class OrderStatisticService
     {
         if ($consumptionType == "one") {
             $info = OrderT::infoToPrint($id);
+            $dinner_id=$info['d_id'];
         } else {
             $info = OrderParentT::infoToPrint($id);
+            $dinner_id=$info['dinner_id'];
         }
         if (!$info) {
             throw new ParameterException(['msg' => '订单不存在']);
@@ -276,8 +278,7 @@ class OrderStatisticService
         if ($consumptionType == "one") {
             $info = $this->prefixSubInfoToPrint($info);
         }
-
-        $dinner = DinnerT::get($info['d_id']);
+        $dinner = DinnerT::get($dinner_id);
         $info['dinner'] = $dinner->name;
         $info['hidden'] = $dinner->fixed;
         return $info;
