@@ -264,17 +264,37 @@ class OrderStatisticService
     {
         if ($consumptionType == "one") {
             $info = OrderT::infoToPrint($id);
-
         } else {
             $info = OrderParentT::infoToPrint($id);
+        }
+        if (!$info) {
+            throw new ParameterException(['msg' => '订单不存在']);
         }
         if ($info['type'] != OrderEnum::EAT_OUTSIDER) {
             throw new ParameterException(['msg' => '该订单不为外卖订单']);
         }
+        if ($consumptionType == "one") {
+            $info = $this->prefixSubInfoToPrint($info);
+        }
+
         $dinner = DinnerT::get($info['d_id']);
         $info['dinner'] = $dinner->name;
         $info['hidden'] = $dinner->fixed;
         return $info;
+    }
+
+    private function prefixSubInfoToPrint($order)
+    {
+        $count = $order['count'];
+        $money = $order['money'] / $count;
+        $sub_money = $order['sub_money'] / $count;
+        $subList = [];
+        for ($i = 0; $i < $count; $i++) {
+            array_push($subList, ['order_sort' => $i + 1, 'money' => $money, 'sub_money' => $sub_money]);
+        }
+        $order['sub'] = $subList;
+        return $order;
+
     }
 
     public function orderMaterialsStatistic($page, $size, $time_begin, $time_end, $canteen_id)

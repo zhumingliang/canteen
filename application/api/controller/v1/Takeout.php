@@ -180,17 +180,19 @@ class Takeout extends BaseController
      * @apiParam (请求参数说明) {int} order_id 订单id
      * @apiParam (请求参数说明) {int} consumption_type 消费类型：one 一次性消费；more 逐次消费
      * @apiSuccessExample {json} 返回样例:
-     * {"msg":"ok","errorCode":0,"code":200,"data":{"id":8,"count":2,"address_id":1,"d_id":6,"type":2,"money":2,"sub_money":2,"delivery_fee":2,"create_time":"2019-09-09 16:34:15","hidden":2,"foods":[{"detail_id":5,"o_id":8,"food_id":1,"count":1,"name":"菜品1","price":"5.0"},{"detail_id":6,"o_id":8,"food_id":3,"count":1,"name":"菜品2","price":"5.0"}],"address":{"id":1,"province":"广东省","city":"江门市","area":"蓬江区","address":"江门市白石大道东4号路3栋","name":"张三","phone":"18956225230","sex":1}}}
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"id":33046,"address_id":924,"d_id":239,"type":2,"count":1,"delivery_fee":"0.20","create_time":"2020-08-28 23:02:11","remark":"","ordering_type":"personal_choice","dinner":"午餐","hidden":2,"foods":[{"detail_id":23211,"o_id":33046,"food_id":762,"count":1,"name":"cece","price":"5.01"}],"address":{"id":924,"province":"广东省","city":"广州市","area":"蓬江区","address":"五邑大学","name":"陈思琪","phone":"13794247582","sex":1},"sub":[{"id":33049,"order_id":33046,"order_sort":1,"count":1,"money":"5.01"}]}}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
      * @apiSuccess (返回参数说明) {String} msg 信息描述
      * @apiSuccess (返回参数说明) {int} id 订单id
      * @apiSuccess (返回参数说明) {int} count 订单份数
-     * @apiSuccess (返回参数说明) {int} money 订单基本金额
-     * @apiSuccess (返回参数说明) {int} sub_money 附加金额
      * @apiSuccess (返回参数说明) {int} delivery_fee 配送费
      * @apiSuccess (返回参数说明) {int} hidden 是否隐藏订单明细价格：1｜隐藏；2｜不隐藏
      * @apiSuccess (返回参数说明) {obj} foods 菜品信息
      * @apiSuccess (返回参数说明) {int} count 数量
+     * @apiSuccess (返回参数说明) {obj} sub 子订单信息
+     * @apiSuccess (返回参数说明) {int} order_sort 份数排序
+     * @apiSuccess (返回参数说明) {int} money 子订单基本金额
+     * @apiSuccess (返回参数说明) {int} sub_money 子订单附加金额
      * @apiSuccess (返回参数说明) {string} name 名称
      * @apiSuccess (返回参数说明) {int} price 价格
      * @apiSuccess (返回参数说明) {obj} address 地址信息
@@ -207,7 +209,7 @@ class Takeout extends BaseController
     {
         $id = Request::param('order_id');
         $consumptionType = Request::param('consumption_type');
-        $info = (new OrderStatisticService())->infoToPrint($id,$consumptionType);
+        $info = (new OrderStatisticService())->infoToPrint($id, $consumptionType);
         return json(new SuccessMessageWithData(['data' => $info]));
     }
 
@@ -236,7 +238,7 @@ class Takeout extends BaseController
         $type = Request::param('type');
         $canteenID = Request::param('canteen_id');
 
-        (new  TakeoutService())->handelOrder($orderId, $type,$canteenID);
+        (new  TakeoutService())->handelOrder($orderId, $type, $canteenID);
         return json(new SuccessMessage());
     }
 

@@ -96,9 +96,12 @@ class OrderParentT extends Model
                 },
                 'address' => function ($query) {
                     $query->field('id,province,city,area,address,name,phone,sex');
+                },
+                'sub' => function ($query) {
+                    $query->where('state', CommonEnum::STATE_IS_OK)->field('id,order_id,order_sort,count,money');
                 }
             ])
-            ->field('id,address_id,dinner_id as d_id,type,count,money,sub_money,delivery_fee,create_time,remark,ordering_type')
+            ->field('id,address_id,dinner_id as d_id,type,count,delivery_fee,create_time,remark,ordering_type')
             ->find();
 
         return $info;
