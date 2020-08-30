@@ -48,18 +48,18 @@ class OrderSettlementV extends Model
                 }
             })
             ->where(function ($query) use ($consumption_type) {
-                if ($consumption_type < 7) {
+                if ($consumption_type) {
                     if ($consumption_type == 1) {
                         //订餐就餐
-                        $query->where('consumption_type', OrderEnum::EAT_CANTEEN)->where('booking', CommonEnum::STATE_IS_OK)
+                        $query->where('booking', CommonEnum::STATE_IS_OK)
                             ->where('used', CommonEnum::STATE_IS_OK);
                     } else if ($consumption_type == 2) {
                         //订餐未就餐
-                        $query->where('consumption_type', OrderEnum::EAT_CANTEEN)->where('booking', CommonEnum::STATE_IS_OK)
+                        $query->where('booking', CommonEnum::STATE_IS_OK)
                             ->where('used', CommonEnum::STATE_IS_FAIL);
                     } else if ($consumption_type == 3) {
                         //未订餐就餐
-                        $query->where('consumption_type', OrderEnum::EAT_CANTEEN)->where('booking', CommonEnum::STATE_IS_FAIL)
+                        $query->where('booking', CommonEnum::STATE_IS_FAIL)
                             ->where('used', CommonEnum::STATE_IS_OK);
                     } else if ($consumption_type == 4) {
                         //系统补充
@@ -67,9 +67,6 @@ class OrderSettlementV extends Model
                     } else if ($consumption_type == 5) {
                         //系统补扣
                         $query->where('type', 'deduction');
-                    } else if ($consumption_type == 6) {
-                        //系统补扣
-                        $query->where('consumption_type', OrderEnum::EAT_OUTSIDER);
                     }
                 }
 
@@ -114,18 +111,18 @@ class OrderSettlementV extends Model
                 }
             })
             ->where(function ($query) use ($consumption_type) {
-                if ($consumption_type < 7) {
+                if ($consumption_type) {
                     if ($consumption_type == 1) {
                         //订餐就餐
-                        $query->where('consumption_type', OrderEnum::EAT_CANTEEN)->where('booking', CommonEnum::STATE_IS_OK)
+                        $query->where('booking', CommonEnum::STATE_IS_OK)
                             ->where('used', CommonEnum::STATE_IS_OK);
                     } else if ($consumption_type == 2) {
                         //订餐未就餐
-                        $query->where('consumption_type', OrderEnum::EAT_CANTEEN)->where('booking', CommonEnum::STATE_IS_OK)
+                        $query->where('booking', CommonEnum::STATE_IS_OK)
                             ->where('used', CommonEnum::STATE_IS_FAIL);
                     } else if ($consumption_type == 3) {
                         //未订餐就餐
-                        $query->where('consumption_type', OrderEnum::EAT_CANTEEN)->where('booking', CommonEnum::STATE_IS_FAIL)
+                        $query->where('booking', CommonEnum::STATE_IS_FAIL)
                             ->where('used', CommonEnum::STATE_IS_OK);
                     } else if ($consumption_type == 4) {
                         //系统补充
@@ -133,9 +130,6 @@ class OrderSettlementV extends Model
                     } else if ($consumption_type == 5) {
                         //系统补扣
                         $query->where('type', 'deduction');
-                    } else if ($consumption_type == 5) {
-                        //系统外卖
-                        $query->where('consumption_type', OrderEnum::EAT_OUTSIDER);
                     }
                 }
 

@@ -12,7 +12,7 @@ class OrderConsumptionV extends Model
 
     public function getStatusAttr($value)
     {
-        $status = ['1' => '订餐就餐', 2 => '订餐未就餐', 3 => '未订餐就餐', 4 => '系统补充', 5 => '系统补扣', 6 => '外卖'];
+        $status = ['1' => '订餐就餐', 2 => '订餐未就餐', 3 => '未订餐就餐', 4 => '系统补充', 5 => '系统补扣'];
         return $status[$value];
     }
 
@@ -44,12 +44,7 @@ class OrderConsumptionV extends Model
                 $username, $staff_type_id, $phone
             ) {
                 if (!empty($status)) {
-                    if ($status == 6) {
-                        $query->where('type', OrderEnum::EAT_OUTSIDER);
-                    } else {
-                        $query->where('type', OrderEnum::EAT_CANTEEN)->where('status', $status);
-
-                    }
+                    $query->where('status', $status);
                 }
                 if (!empty($department_id)) {
                     $query->where('department_id', $department_id);
@@ -181,11 +176,7 @@ class OrderConsumptionV extends Model
                     $query->where('phone', $phone);
                 }
                 if (!empty($status)) {
-                    if ($status == 6) {
-                        $query->where('type', OrderEnum::EAT_OUTSIDER);
-                    } else {
-                        $query->where('type', OrderEnum::EAT_CANTEEN)->where('status', $status);
-                    }
+                    $query->where('status', $status);
                 }
                 if (!empty($department_id)) {
                     $query->where('department_id', $department_id);
@@ -228,12 +219,7 @@ class OrderConsumptionV extends Model
                 $username, $staff_type_id, $phone
             ) {
                 if (!empty($status)) {
-                    if ($status == 6) {
-                        $query->where('type', OrderEnum::EAT_OUTSIDER);
-                    } else {
-                        $query->where('type', OrderEnum::EAT_CANTEEN)->where('status', $status);
-
-                    }
+                    $query->where('status', $status);
                 }
                 if (!empty($phone)) {
                     $query->where('phone', $phone);
@@ -279,12 +265,7 @@ class OrderConsumptionV extends Model
                 $username, $staff_type_id, $phone
             ) {
                 if (!empty($status)) {
-                    if ($status == 6) {
-                        $query->where('type', OrderEnum::EAT_OUTSIDER);
-                    } else {
-                        $query->where('type', OrderEnum::EAT_CANTEEN)->where('status', $status);
-
-                    }
+                    $query->where('status', $status);
                 }
                 if (!empty($department_id)) {
                     $query->where('department_id', $department_id);
@@ -345,12 +326,8 @@ class OrderConsumptionV extends Model
                 $status
             ) {
                 if (!empty($status)) {
-                    if ($status == 6) {
-                        $query2->where('type', OrderEnum::EAT_OUTSIDER);
-                    } else {
-                        $query2->where('type', OrderEnum::EAT_CANTEEN)->where('status', $status);
+                    $query2->where('status', $status);
 
-                    }
                 }
             })
             ->field('staff_id,username,department,dinner_id,dinner,sum(order_count) as order_count,sum(order_money) as order_money')
@@ -396,12 +373,8 @@ class OrderConsumptionV extends Model
                 $status
             ) {
                 if (!empty($status)) {
-                    if ($status == 6) {
-                        $query2->where('type', OrderEnum::EAT_OUTSIDER);
-                    } else {
-                        $query2->where('type', OrderEnum::EAT_CANTEEN)->where('status', $status);
+                    $query2->where('status', $status);
 
-                    }
                 }
             })
             ->field('staff_id,username, username as statistic,department')
