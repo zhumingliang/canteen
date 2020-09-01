@@ -59,7 +59,6 @@ class OrderT extends Model
     }
 
 
-
     public
     function user()
     {
@@ -166,7 +165,7 @@ class OrderT extends Model
                     $query->field('id,province,city,area,address,name,phone,sex');
                 }
             ])
-            ->field('id,address_id,d_id,fixed,ordering_date,type,count,money,sub_money,delivery_fee,create_time,remark,ordering_type')
+            ->field('id,address_id,company_id,outsider,d_id,fixed,ordering_date,type,count,money,sub_money,delivery_fee,create_time,remark,ordering_type')
             ->find();
 
         return $info;
@@ -220,7 +219,7 @@ class OrderT extends Model
                     $query->field('id,name');
                 }
             ])
-            ->field('id,d_id,order_num,money,sub_money,phone,outsider,company_id,confirm_time,qrcode_url,remark,count,fixed,c_id,outsider,sort_code')
+            ->field('id,d_id,order_num,money,sub_money,phone,company_id,confirm_time,qrcode_url,remark,count,fixed,c_id,outsider,sort_code')
             ->find()->toArray();
         return $info;
     }
@@ -339,8 +338,12 @@ class OrderT extends Model
             ->with([
                 'dinner' => function ($query) {
                     $query->field('id,name,meal_time_end');
-                }])
-            ->field('id,d_id,ordering_date,state,used,count,money,sub_money,delivery_fee,type')
+                }, 'foods' => function ($query) {
+                    $query->where('state', CommonEnum::STATE_IS_OK)
+                        ->field('id as detail_id ,o_id,count,name,price');
+                }
+            ])
+            ->field('id,create_time,ordering_type,d_id,ordering_date,state,used,count,money,sub_money,delivery_fee,type,wx_confirm,sort_code')
             ->find();
         return $order;
 

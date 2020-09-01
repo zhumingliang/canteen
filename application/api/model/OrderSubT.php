@@ -26,4 +26,13 @@ class OrderSubT extends Model
             ->select()->toArray();
     }
 
+    public
+    static function infoForPrinter($id)
+    {
+        $info = self::where('id', $id)
+            ->field('id,order_id,money,sub_money,phone,outsider,company_id,confirm_time,qrcode_url,count,sort_code')
+            ->find()->toArray();
+        return $info;
+    }
+
 }

@@ -213,7 +213,7 @@ class Order extends BaseController
      *       "id": 1,
      *       "consumption_type": "one"
      *     }
-     * @apiParam (请求参数说明) {int} id  订餐id
+     * @apiParam (请求参数说明) {int} id  微信端总订单id，CMS管理端-退回订单，子订单id
      * @apiParam (请求参数说明) {string} consumption_type  消费订单类型 one:一次消费；more:逐次消费
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200}
@@ -391,8 +391,9 @@ class Order extends BaseController
      * @apiVersion 3.0.0
      * @apiDescription  微信端-个人选菜-获取订单信息
      * @apiExample {get}  请求样例:
-     * http://canteen.tonglingok.com/api/v1/order/personalChoice/info?id=8
+     * http://canteen.tonglingok.com/api/v1/order/personalChoice/info?id=8&consumption_type=one
      * @apiParam (请求参数说明) {int} id  订单id
+     * @apiParam (请求参数说明) {string} consumption_type  订单扣费类型：one ：一次扣费；more:多次扣费
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200,"data":{"id":8,"dinner_id":6,"canteen_id":6,"ordering_date":"2019-09-07","count":1,"type":1,"money":"10.0","foods":[{"detail_id":5,"o_id":8,"food_id":1,"menu_id":0,"count":1},{"detail_id":6,"o_id":8,"food_id":3,"menu_id":0,"count":1}]}}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
@@ -412,7 +413,8 @@ class Order extends BaseController
     public function personalChoiceInfo()
     {
         $id = Request::param('id');
-        $info = (new OrderService())->personalChoiceInfo($id);
+        $consumptionType = Request::param('consumption_type');
+        $info = (new OrderService())->personalChoiceInfo($id, $consumptionType);
         return json(new SuccessMessageWithData(['data' => $info]));
 
     }
@@ -438,6 +440,7 @@ class Order extends BaseController
      * @apiSuccess (返回参数说明) {int} last_page 最后页码
      * @apiSuccess (返回参数说明) {int} id 订单id
      * @apiSuccess (返回参数说明) {string} address  地点
+     * @apiSuccess (返回参数说明) {string} consumption_type  扣费类型：one 一次扣费；more 多次扣费
      * @apiSuccess (返回参数说明) {float} type  类型
      * @apiSuccess (返回参数说明) {string} create_time 日期
      * @apiSuccess (返回参数说明) {int} dinner 名称
@@ -526,9 +529,11 @@ class Order extends BaseController
      * @apiSuccess (返回参数说明) {string} used_type  类型
      * @apiSuccess (返回参数说明) {string} create_time 消费日期
      * @apiSuccess (返回参数说明) {string} ordering_date 餐次日期
+     * @apiSuccess (返回参数说明) {string} consumption_type 扣费类型：one 一次性扣费；more 多次扣费
      * @apiSuccess (返回参数说明) {int} dinner 名称
      * @apiSuccess (返回参数说明) {int} all_money 可用金额
      * @apiSuccess (返回参数说明) {int} effective_money 实际金额
+     * @apiSuccess (返回参数说明) ney 实际金额
      */
     public function consumptionRecords($page = 1, $size = 20)
     {
@@ -1318,7 +1323,7 @@ class Order extends BaseController
         $time_end = Request::param('time_end');
         $company_ids = Request::param('company_ids');
         $statistic = (new OrderStatisticService())->exportConsumptionStatistic($canteen_ids, $status, $type,
-            $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_ids,$phone);
+            $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_ids, $phone);
         return json(new SuccessMessageWithData(['data' => $statistic]));
 
     }
@@ -1355,20 +1360,26 @@ class Order extends BaseController
      * @apiVersion 3.0.0
      * @apiDescription 微信端-订单查询-获取订单详情
      * @apiExample {get}  请求样例:
-     * http://canteen.tonglingok.com/api/v1/order/usersStatistic/info?order_ids=1,2
-     * @apiParam (请求参数说明) {int} order_ids  订单id
+     * http://canteen.tonglingok.com/api/v1/order/usersStatistic/info?id=1&consumption_type=one
+     * @apiParam (请求参数说明) {int} id  订单id
+     * @apiParam (请求参数说明) {int} consumption_type  扣费类型：one 一次扣费；more 多次扣费
      * @apiSuccessExample {json} 返回样例:
-     * {"msg":"ok","errorCode":0,"code":200,"data":[{"id":4665,"count":1,"money":"3.0","sub_money":"0.0","ordering_type":"personal_choice","delivery_fee":"0.00","wx_confirm":2,"sort_code":null,"remark":null,"foods":[{"detail_id":401,"o_id":4665,"count":1,"name":"对内3对外0.2的早餐","price":"3.0"}]},{"id":4666,"count":1,"money":"1.0","sub_money":"0.0","ordering_type":"online","delivery_fee":"0.00","wx_confirm":2,"sort_code":null,"remark":null,"foods":[]}]}     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
-     * @apiSuccess (返回参数说明) {string} msg 信息描述
-     * @apiSuccess (返回参数说明) {int} id 订单id
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"id":33063,"type":2,"create_time":"2020-08-30 01:03:29","ordering_type":"personal_choice","count":2,"delivery_fee":"0.20","ordering_date":"2020-08-30","meal_time_end":"23:59","sub":[{"number":1,"order_id":33077,"money":12,"sub_money":4,"wx_confirm":2,"sort_code":null,"status":3},{"number":2,"order_id":33078,"money":12,"sub_money":10,"wx_confirm":2,"sort_code":null,"status":3}],"foods":[{"detail_id":23238,"o_id":33063,"food_id":727,"count":1,"name":"测试","price":"12.00"}]}}
+     * @apiSuccess (返回参数说明) {int} id 总订单id
+     * @apiSuccess (返回参数说明) {int} create_time  下单时间
+     * @apiSuccess (返回参数说明) {date} ordering_date  餐次日期
+     * @apiSuccess (返回参数说明) {time} meal_time_end  订单可操作截止日期
      * @apiSuccess (返回参数说明) {int} count  订餐数量
-     * @apiSuccess (返回参数说明) {int} money  标准金额
      * @apiSuccess (返回参数说明) {int} ordering_type 订餐类别：personal_choice：个人选菜；online：在线订餐
-     * @apiSuccess (返回参数说明) {int} sub_money  附加金额
      * @apiSuccess (返回参数说明) {int} delivery_fee  派送费
-     * @apiSuccess (返回参数说明) {string} remark  备注
+     * @apiSuccess (返回参数说明) {obj} sub  子订单信息
+     * @apiSuccess (返回参数说明) {int} number  份数排序
+     * @apiSuccess (返回参数说明) {int} order_id  子订单id
+     * @apiSuccess (返回参数说明) {int} money  标准金额
+     * @apiSuccess (返回参数说明) {int} sub_money  附加金额
      * @apiSuccess (返回参数说明) {int} wx_confirm  是否微信确认 1:是；2：否
      * @apiSuccess (返回参数说明) {string} sort_code  排序号 wx_confirm=1 时才有
+     * @apiSuccess (返回参数说明) {obj} foods 菜品信息
      * @apiSuccess (返回参数说明) {int} food_id 菜品id
      * @apiSuccess (返回参数说明) {string} price 菜品实时单价
      * @apiSuccess (返回参数说明) {string} count 菜品数量
@@ -1376,8 +1387,9 @@ class Order extends BaseController
      */
     public function usersStatisticInfo()
     {
-        $orderIds = Request::param('order_ids');
-        $orders = (new OrderService())->usersStatisticInfo($orderIds);
+        $orderId = Request::param('id');
+        $consumptionType = Request::param('consumption_type');
+        $orders = (new OrderService())->orderStatisticDetailInfo($orderId, $consumptionType);
         return json(new SuccessMessageWithData(['data' => $orders]));
     }
 

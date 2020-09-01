@@ -1217,7 +1217,11 @@ class OrderService extends BaseService
                 $this->cancelConsumptionTimesOneOrder($id);
 
             } else {
-                $this->cancelConsumptionTimesMoreOrder($id);
+                if (Token::getCurrentTokenVar('type') == 'official') {
+                    $this->cancelParentConsumptionTimeMore($id);
+                } else {
+                    $this->cancelConsumptionTimesMoreOrder($id);
+                }
             }
             Db::commit();
         } catch (Exception $e) {
@@ -1395,7 +1399,7 @@ class OrderService extends BaseService
                 $this->cancelConsumptionTimeOne($oneIdArr);
             }
             if (!empty($moreIdArr)) {
-                $this->cancelConsumptionTimeMore($moreIdArr);
+                $this->cancelParentConsumptionTimeMore($moreIdArr);
             }
             Db::commit();
         } catch (Exception $e) {
@@ -1435,7 +1439,7 @@ class OrderService extends BaseService
     }
 
     private
-    function cancelConsumptionTimeMore($moreIdArr)
+    function cancelParentConsumptionTimeMore($moreIdArr)
     {
         if (empty($moreIdArr)) {
             return true;
@@ -2193,9 +2197,13 @@ class OrderService extends BaseService
     }
 
     public
-    function personalChoiceInfo($id)
+    function personalChoiceInfo($id, $consumptionType)
     {
-        $info = OrderT:: personalChoiceInfo($id);
+        if ($consumptionType == 'one') {
+            $info = OrderT:: personalChoiceInfo($id);
+        } else {
+            $info = OrderParentT:: personalChoiceInfo($id);
+        }
         return $info;
     }
 
@@ -2205,9 +2213,7 @@ class OrderService extends BaseService
         // $u_id = Token::getCurrentUid();
         $phone = Token::getCurrentPhone();
         if ($type == OrderEnum::USER_ORDER_SHOP) {
-
             $orders = ShopOrderingV::userOrderings($phone, $id, $page, $size);
-
         } else {
             $orders = OrderingV::userOrderings($phone, $type, $id, $page, $size);
         }
@@ -2217,7 +2223,7 @@ class OrderService extends BaseService
     public
     function orderDetail($consumptionType, $type, $id)
     {
-        $u_id = 1;//Token::getCurrentUid();
+        $u_id = Token::getCurrentUid();
         if ($type == OrderEnum::USER_ORDER_SHOP) {
             $order = ShopOrderT::orderInfo($id);
         } else {
@@ -2619,9 +2625,16 @@ class OrderService extends BaseService
     }
 
     public
-    function usersStatisticInfo($orderIds)
+    function usersStatisticInfo($orderIds, $consumptionType)
     {
         $orders = OrderT::usersStatisticInfo($orderIds);
+
+
+        /*  if ($consumptionType == "one") {
+              return $this->InfoToConsumptionTimesOne($orderIds);
+          } else if ($consumptionType == "more") {
+              return $this->InfoToConsumptionTimesMore($orderIds);
+          }*/
         return $orders;
     }
 
@@ -2647,7 +2660,10 @@ class OrderService extends BaseService
         $sub_money = $order->sub_money / $count;
         $dinner = $order->dinner;
         $data['id'] = $order->id;
+        $data['create_time'] = $order->create_time;
+        $data['ordering_type'] = $order->ordering_type;
         $data['type'] = $order->type;
+        $data['count'] = $order->count;
         $data['delivery_fee'] = $order->delivery_fee;
         $data['ordering_date'] = $order->ordering_date;
         $data['meal_time_end'] = $dinner['meal_time_end'];
@@ -2659,10 +2675,13 @@ class OrderService extends BaseService
                 'order_id' => $orderId,
                 'money' => $money,
                 'sub_money' => $sub_money,
+                'wx_confirm' => $order->wx_confirm,
+                'sort_code' => $order->sort_code,
                 'status' => $status
             ];
             array_push($dataList, $detail);
         }
+        $data['foods'] = $order->foods;
         $data['sub'] = $dataList;
         return $data;
     }
@@ -2678,6 +2697,9 @@ class OrderService extends BaseService
         $dinner = $order->dinner;
         $sub = $order->sub;
         $data['type'] = $order->type;
+        $data['create_time'] = $order->create_time;
+        $data['ordering_type'] = $order->ordering_type;
+        $data['count'] = $order->count;
         $data['delivery_fee'] = $order->delivery_fee;
         $data['ordering_date'] = $order->ordering_date;
         $data['meal_time_end'] = $dinner['meal_time_end'];
@@ -2689,11 +2711,14 @@ class OrderService extends BaseService
                 'order_id' => $v['id'],
                 'money' => round($v['money'], 2),
                 'sub_money' => round($v['sub_money'], 2),
+                'wx_confirm' => $v['wx_confirm'],
+                'sort_code' => $v['sort_code'],
                 'status' => $status
             ];
             array_push($dataList, $detail);
         }
         $data['sub'] = $dataList;
+        $data['foods'] = $order->foods;
         return $data;
     }
 
@@ -2714,6 +2739,20 @@ class OrderService extends BaseService
                 }
             }
         }
+    }
+
+    public function consumptionTimesMoreInfoForPrinter($orderID)
+    {
+        $sub = OrderSubT::infoForPrinter($orderID);
+        $parentID = $sub->order_id;
+        $parent = OrderParentT::infoToPrintDetail($parentID);
+        $parent['confirm_time'] = $sub->confirm_time;
+        $parent['money'] = $sub->money;
+        $parent['sub_money'] = $sub->sub_money;
+        $parent['qrcode_url'] = $sub->qrcode_url;
+        $parent['count'] = $sub->count;
+        $parent['sort_code'] = $sub->sort_code;
+        return $parent;
     }
 
 }

@@ -5,6 +5,7 @@ namespace app\lib\printer;
 
 
 use app\api\model\OrderParentT;
+use app\api\model\OrderSubT;
 use app\api\model\OrderT;
 use app\api\model\PrinterT;
 use app\api\service\OrderService;
@@ -17,9 +18,13 @@ use zml\tp_tools\Redis;
 
 class Printer extends PrinterBase
 {
-    public function printOrderDetail($canteenID, $orderID, $sortCode)
+    public function printOrderDetail($canteenID, $orderID, $sortCode, $consumptionType)
     {
-        $order = OrderT::infoForPrinter($orderID);
+        if ($consumptionType == 'one') {
+            $order = OrderT::infoForPrinter($orderID);
+        }else{
+            $order=(new OrderService())->consumptionTimesMoreInfoForPrinter($orderID);
+        }
         $outsider = $order['outsider'];
         //获取打印机信息
         $printer = PrinterT::getPrinter($canteenID, $outsider);
@@ -412,12 +417,12 @@ class Printer extends PrinterBase
 
         $content .= '<BR>--------------------------------<BR>';
         $content .= '金额详情：<BR>';
-        $content .= '份数　　　　 标准金额   附加金额<BR>';
+        $content .= '份数　　　　　 标准金额   附加金额<BR>';
         if (count($sub)) {
             foreach ($sub as $k5 => $v5) {
                 $name = "第 " . $v5['order_sort'] . "份";
                 $price = $v5['money'];
-                $num = '';
+                $num = $v5['order_sort'];
                 $prices = $v5['sub_money'];
                 $kw3 = '';
                 $kw1 = '';
@@ -495,6 +500,7 @@ class Printer extends PrinterBase
                 $content .= $head . $tail;
             }
         }
+
 
         $content .= '<BR>--------------------------------<BR>';
 

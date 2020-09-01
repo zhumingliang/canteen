@@ -69,29 +69,19 @@ class Pos extends BaseController
      */
     public function getStaffInfo()
     {
-        $cardCode = Request::param('card_code');
-        $companyId = Request::param('company_id');
+        $cardCode=Request::param('card_code');
+        $companyId=Request::param('company_id');
 
-        if (empty($companyId)) {
-            throw new AuthException(['msg' => '未接收到企业id']);
+        if(empty($companyId)){
+            throw new AuthException(['msg'=>'未接收到企业id']);
         }
-        if (empty($cardCode)) {
-            throw new AuthException(['msg' => '未接收到卡号']);
-        } else {
-            //canteen_staff_card_t与canteen_company_staff_t通过员工id连接，联表查询当前属于前端传过来的企业id下面的当前卡号的状态
-            $sql = "select t1.state from canteen_staff_card_t t1 left join canteen_company_staff_t t2 on t1.staff_id=t2.id where t2.company_id='" . $companyId . "' and card_code='" . $cardCode . "'";
+        if(empty($cardCode)){
+            throw new AuthException(['msg'=>'未接收到卡号']);
+        }
+        $sql = "select t1.username ,t2.name as department_name ,t1.phone ,t3.state from canteen_company_staff_t t1 left join canteen_company_department_t t2 on t1.d_id=t2.id left join canteen_staff_card_t t3 on t1.id=t3.staff_id where t3.card_code='" . $cardCode . "' and t1.company_id='" . $companyId . "' and t1.state=1";
+        $data = Db::query($sql);
 
-            $state = Db::query($sql);
-            //判断该卡当前状态
-            if ($state[0]['state'] !== 1) {
-                throw new AuthException(['msg' => '此卡处于禁用状态']);
-            } else {
-                //通过卡号联canteen_staff_card_t,canteen_company_staff_t,canteen_company_department_t查询
-                $sql = "select t1.username ,t2.name as department_name ,t1.phone from canteen_company_staff_t t1 left join canteen_company_department_t t2 on t1.d_id=t2.id left join canteen_staff_card_t t3 on t1.id=t3.staff_id where card_code='" . $cardCode . "' and t1.company_id='" . $companyId . "' and t1.state=1";
-                $data = Db::query($sql);
-            }
-        }
-        return json(new SuccessMessageWithData(['data' => $data]));
+        return json(new SuccessMessageWithData(['data'=>$data]));
     }
 
     /**

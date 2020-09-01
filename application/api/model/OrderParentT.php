@@ -69,10 +69,15 @@ class OrderParentT extends Model
                     $query->field('id,name,meal_time_end');
                 },
                 'sub' => function ($query) {
-                    $query->field('id,order_id,state,used,state,money,sub_money,used,order_sort')->order('order_sort');
-                }
+                    $query->field('id,order_id,state,used,state,money,sub_money,used,order_sort,wx_confirm,sort_code')
+                        ->order('order_sort');
+                },
+                'foods' => function ($query) {
+                    $query->where('state', CommonEnum::STATE_IS_OK)
+                        ->field('id as detail_id ,o_id,f_id as food_id,count,name,price');
+                },
             ])
-            ->field('id,dinner_id,ordering_date,count,delivery_fee,type')
+            ->field('id,create_time,dinner_id,ordering_type,ordering_date,count,delivery_fee,type,count')
             ->find();
         return $order;
     }
@@ -116,7 +121,28 @@ class OrderParentT extends Model
                     $query->field('id,name');
                 }
             ])
-            ->field('id,address_id,dinner_id,fixed,type,count,money,sub_money,delivery_fee,create_time,ordering_date,remark,ordering_type')
+            ->field('id,address_id,company_id,outsider,dinner_id,fixed,type,count,money,sub_money,delivery_fee,create_time,ordering_date,remark,ordering_type')
+            ->find();
+
+        return $info;
+    }
+
+    public
+    static function infoToPrintDetail($id)
+    {
+        $info = self::where('id', $id)
+            ->with([
+                'foods' => function ($query) {
+                    $query->where('state', CommonEnum::STATE_IS_OK)
+                        ->field('id as detail_id ,o_id,f_id as food_id,count,name,price');
+                },
+                'dinner' => function ($query) {
+                    $query->field('id,name');
+                }
+            ])
+            ->field('id,address_id,phone,company_id,outsider,
+            dinner_id,fixed,type,count,money,sub_money,delivery_fee,
+            create_time,ordering_date,remark,ordering_type')
             ->find();
 
         return $info;
@@ -155,5 +181,24 @@ class OrderParentT extends Model
             ->find();
         return $info;
     }
+
+    public
+    static function personalChoiceInfo($id)
+    {
+        $info = self::where('id', $id)
+            ->with([
+                'foods' => function ($query) {
+                    $query->where('state', CommonEnum::STATE_IS_OK)
+                        ->field('id as detail_id ,o_id,f_id as food_id,m_id as menu_id,count');
+                },
+                'address' => function ($query) {
+                    $query->field('id,province,city,area,address,name,phone,sex');
+                }
+            ])
+            ->field('id, dinner_id, canteen_id,ordering_date,count,type,money')
+            ->find();
+        return $info;
+    }
+
 
 }
