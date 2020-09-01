@@ -770,6 +770,7 @@ class OrderService extends BaseService
             if ($i > $orderCount) {
                 break;
             }
+
             if (($consumptionCount + $i) == $v['number']) {
                 $strategy = $v['strategy'];
                 foreach ($strategy as $k2 => $v2) {
@@ -796,9 +797,10 @@ class OrderService extends BaseService
                     $returnMoney['money'] = $meal_money;
                     $returnMoney['sub_money'] = $meal_sub_money;
                 }
+                array_push($returnMoneyList, $returnMoney);
+                $i++;
             }
-            array_push($returnMoneyList, $returnMoney);
-            $i++;
+
         }
         return $returnMoneyList;
     }
