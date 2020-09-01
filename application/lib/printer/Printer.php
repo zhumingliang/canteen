@@ -22,8 +22,8 @@ class Printer extends PrinterBase
     {
         if ($consumptionType == 'one') {
             $order = OrderT::infoForPrinter($orderID);
-        }else{
-            $order=(new OrderService())->consumptionTimesMoreInfoForPrinter($orderID);
+        } else {
+            $order = (new OrderService())->consumptionTimesMoreInfoForPrinter($orderID);
         }
         $outsider = $order['outsider'];
         //获取打印机信息
@@ -161,11 +161,17 @@ class Printer extends PrinterBase
     }
 
 
-    public function printReissueOrderDetail($orderID)
+    public function printReissueOrderDetail($orderID, $consumptionType)
     {
-        $order = OrderT::infoForPrinter($orderID);
+        if ($consumptionType == 'one') {
+            $order = OrderT::infoForPrinter($orderID);
+            $canteen_id = $order['c_id'];
+
+        } else {
+            $order = (new OrderService())->consumptionTimesMoreInfoForPrinter($orderID);
+            $canteen_id = $order['c_id'];
+        }
         $outsider = $order['outsider'];
-        $canteen_id = $order['c_id'];
         $sortCode = $order['sort_code'];
         //获取打印机信息
         $printer = PrinterT::getPrinter($canteen_id, $outsider);

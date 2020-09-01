@@ -85,7 +85,7 @@ class Consumption extends BaseController
      *       "order_id": 1,
      *       "consumption_type": one
      *     }
-     * @apiParam (请求参数说明) {string} order_id  订单id
+     * @apiParam (请求参数说明) {string} order_id  订单id （consumption_type=one，总订单id；consumption_type=more 子订单id，按照子订单排序先后顺序，第一份最先消费）
      * @apiParam (请求参数说明) {string} consumption_type  订单扣费类型：one 一次扣费；more 多次扣费
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200,"data":{"sortCode":0001}}
@@ -97,7 +97,7 @@ class Consumption extends BaseController
     {
         $order_id = Request::param('order_id');
         $consumptionType = Request::param('consumption_type');
-        $code = (new ConsumptionService())->confirmOrder($order_id,$consumptionType);
+        $code = (new ConsumptionService())->confirmOrder($order_id, $consumptionType);
         return json(new SuccessMessageWithData(['data' => $code]));
     }
 
@@ -108,9 +108,11 @@ class Consumption extends BaseController
      * @apiVersion 3.0.0
      * @apiDescription     微信端-补打未出票的订单
      *    {
-     *       "order_id": 1
+     *       "order_id": 1,
+     *       "consumption_type": "one"
      *     }
-     * @apiParam (请求参数说明) {string} order_id  订单id
+     * @apiParam (请求参数说明) {string} order_id  consumption_type=one，总订单id；consumption_type=more 子订单id
+     * @apiParam (请求参数说明) {string} consumption_type  订单扣费类型：one 一次扣费；more 多次扣费
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200,"data":{}}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
@@ -119,8 +121,9 @@ class Consumption extends BaseController
      */
     public function printOrder()
     {
-        $order_id = Request::param('order_id');
-        (new \app\lib\printer\Printer())->printReissueOrderDetail($order_id);
+        $orderId = Request::param('order_id');
+        $consumptionType = Request::param('consumption_type');
+        (new \app\lib\printer\Printer())->printReissueOrderDetail($orderId, $consumptionType);
         return json(new SuccessMessage());
     }
 

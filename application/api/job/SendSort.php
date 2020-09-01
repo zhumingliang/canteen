@@ -79,10 +79,11 @@ class SendSort
     {
         try {
             $canteenID = $data['canteenID'];
-             $outsider = $data['outsider'];
+            $outsider = $data['outsider'];
             $orderID = $data['orderID'];
             $sortCode = $data['sortCode'];
             $websocketCode = $data['websocketCode'];
+            $consumptionType = $data['consumptionType'];
             $order = OrderT::get($orderID);
             //$outsider = $order->outsider;
             $machine = MachineT::getSortMachine($canteenID, $outsider);
@@ -94,7 +95,8 @@ class SendSort
                     'data' => [
                         'orderID' => $orderID,
                         'sortCode' => $sortCode,
-                        'websocketCode' => $websocketCode
+                        'websocketCode' => $websocketCode,
+                        'consumptionType' => $consumptionType
                     ]
                 ];
                 GatewayService::sendToMachine($machine->id, json_encode($sendData));

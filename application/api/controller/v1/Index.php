@@ -113,7 +113,7 @@ Index extends BaseController
 
     public function test()
     {
-        $data = [
+/*        $data = [
             '朝阳社区' => '6-24,402-418,472,701-705,816-845,857,964-971,988—989,2188-2210,2249-2266,2469-2481',
             '鹞山社区' => '384-401,749,789-809,1811-1816,1818-1819,2004-2033,2096,2205-2206,2267-2270,2272-2274,2232-2238',
             '金口岭社区' => '51,751,754-761,764-788,810-812,953-957,971,1000-1003,1007,1236-1240,1242-1243,1330,1594-1601,2271,2277-2305',
@@ -159,12 +159,12 @@ Index extends BaseController
 
             }
         }
-        echo implode(',', $all);
+        echo implode(',', $all);*/
 
         // echo (new Printer())->printOutsiderOrderDetail(33051, '921533330', 'more');
 
 
-        //return json(\app\api\service\Token::getCurrentTokenVar());
+        return json(\app\api\service\Token::getCurrentTokenVar());
 
         /* $data = (new ExcelService())->saveTestExcel();
          $fail = [];

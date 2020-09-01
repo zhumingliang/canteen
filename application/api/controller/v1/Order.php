@@ -1404,10 +1404,12 @@ class Order extends BaseController
      *       "dinner_id": 1,
      *       "dinner": "早餐",
      *       "type": 1,
+     *       "ordering_type": "person_choice",
      *       "count": 1,
      *       "detail":[{"menu_id":1,"foods":[{"food_id":1,"name":"商品1","price":5,""count":1},{"food_id":2,"name":"商品1","price":5,"count":1}]}]
      *     }
      * @apiParam (请求参数说明) {string} ordering_date  订餐日期
+     * @apiParam (请求参数说明) {string} ordering_type  订餐类型：person_choice 个人选菜；online 在线预订餐
      * @apiParam (请求参数说明) {int} dinner_id 餐次id
      * @apiParam (请求参数说明) {int} dinner 餐次名称
      * @apiParam (请求参数说明) {int} type 就餐类别：1|食堂；2|外卖
