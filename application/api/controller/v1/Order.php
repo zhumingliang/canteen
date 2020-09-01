@@ -678,19 +678,12 @@ class Order extends BaseController
      * @apiSuccess (返回参数说明) {int} per_page 每页多少条数据
      * @apiSuccess (返回参数说明) {int} current_page 当前页码
      * @apiSuccess (返回参数说明) {int} last_page 最后页码
-     * @apiSuccess (返回参数说明) {int} id 订单id
+     * @apiSuccess (返回参数说明) {int} id 总订单id
      * @apiSuccess (返回参数说明) {string} username 姓名
+     * @apiSuccess (返回参数说明) {string} consumption_type 扣费类型：one 一次扣费；more 逐次扣费
      * @apiSuccess (返回参数说明) {string} order_num 订单号
      * @apiSuccess (返回参数说明) {string} phone 手机号
      * @apiSuccess (返回参数说明) {int} count 订餐份数
-     * @apiSuccess (返回参数说明) {float} money 标准金额
-     * @apiSuccess (返回参数说明) {float} sub_money 附加金额
-     * @apiSuccess (返回参数说明) {float} delivery_fee 配送费 （合计需要：money+sub_money+delivery_fee）
-     * @apiSuccess (返回参数说明) {string} sort_code 排序号
-     * @apiSuccess (返回参数说明) {obj} foods 订单菜品信息（预定餐为空）
-     * @apiSuccess (返回参数说明) {int} name 菜品名称
-     * @apiSuccess (返回参数说明) {string} count 数量
-     * @apiSuccess (返回参数说明) {float} price 价格
      */
     public function orderUsersStatistic($page = 1, $size = 20)
     {
