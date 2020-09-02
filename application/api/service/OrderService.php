@@ -2357,8 +2357,7 @@ class OrderService extends BaseService
         if ($order_type == "shop") {
             $order = ShopOrderT::orderInfo($order_id);
         } else if ($order_type == "canteen") {
-            $order= $this->orderStatisticDetailInfo($order_id, $consumptionType);
-
+            $order = $this->orderStatisticDetailInfo($order_id, $consumptionType);
         } else if ($order_type == "recharge") {
             $order = RechargeSupplementT::orderDetail($order_id);
         }
@@ -2645,9 +2644,9 @@ class OrderService extends BaseService
     public
     function orderStatisticDetailInfo($orderId, $consumptionType)
     {
-        if ($consumptionType == StrategyEnum::CONSUMPTION_TIMES_ONE) {
+        if ($consumptionType == 'one') {
             return $this->InfoToConsumptionTimesOne($orderId);
-        } else if ($consumptionType == StrategyEnum::CONSUMPTION_TIMES_MORE) {
+        } else if ($consumptionType == 'more') {
             return $this->InfoToConsumptionTimesMore($orderId);
         }
     }
