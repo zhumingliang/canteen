@@ -68,7 +68,9 @@ class DepartmentService
         if ($staff) {
             return true;
         }
-        $son = CompanyDepartmentT::where('parent_id', $id)->count('id');
+        $son = CompanyDepartmentT::where('parent_id', $id)
+            ->where('state',CommonEnum::STATE_IS_OK)
+            ->count('id');
         if ($son) {
             return true;
         }
