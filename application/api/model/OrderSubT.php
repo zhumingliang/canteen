@@ -31,7 +31,7 @@ class OrderSubT extends Model
     {
         $info = self::where('id', $id)
             ->field('id,order_id,money,sub_money,confirm_time,qrcode_url,count,sort_code')
-            ->find()->toArray();
+            ->find();
         return $info;
     }
 
