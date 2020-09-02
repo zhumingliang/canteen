@@ -140,7 +140,7 @@ class OrderParentT extends Model
                     $query->field('id,name');
                 }
             ])
-            ->field('id,address_id,phone,company_id,outsider,
+            ->field('id,address_id,canteen_id,phone,company_id,outsider,
             dinner_id,fixed,type,count,money,sub_money,delivery_fee,
             create_time,ordering_date,remark,ordering_type')
             ->find();

@@ -166,10 +166,9 @@ class Printer extends PrinterBase
         if ($consumptionType == 'one') {
             $order = OrderT::infoForPrinter($orderID);
             $canteen_id = $order['c_id'];
-
         } else {
             $order = (new OrderService())->consumptionTimesMoreInfoForPrinter($orderID);
-            $canteen_id = $order['c_id'];
+            $canteen_id = $order['canteen_id'];
         }
         $outsider = $order['outsider'];
         $sortCode = $order['sort_code'];
