@@ -239,7 +239,7 @@ class OrderService extends BaseService
         $dinner = DinnerT::dinnerInfo($dinner_id);
         $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
         $delivery_fee = $this->checkUserOutsider($params['type'], $canteen_id);
-        $orderMoney = $this->checkUserCanOrder($dinner, $ordering_date, $canteen_id, $count, $detail,$ordering_type);
+        $orderMoney = $this->checkUserCanOrder($dinner, $ordering_date, $canteen_id, $count, $detail, $ordering_type);
         $orderMoney['delivery_fee'] = $delivery_fee;
         return $orderMoney;
 
@@ -2352,12 +2352,14 @@ class OrderService extends BaseService
     }
 
     public
-    function recordsDetail($order_type, $order_id)
+    function recordsDetail($order_type, $order_id, $consumptionType)
     {
         if ($order_type == "shop") {
             $order = ShopOrderT::orderInfo($order_id);
         } else if ($order_type == "canteen") {
-            $order = OrderT::orderDetail($order_id);
+            if ($consumptionType == StrategyEnum::CONSUMPTION_TIMES_ONE) {
+                $this->orderStatisticDetailInfo($order_id, $consumptionType);
+            }
         } else if ($order_type == "recharge") {
             $order = RechargeSupplementT::orderDetail($order_id);
         }
@@ -2644,9 +2646,9 @@ class OrderService extends BaseService
     public
     function orderStatisticDetailInfo($orderId, $consumptionType)
     {
-        if ($consumptionType == "one") {
+        if ($consumptionType == StrategyEnum::CONSUMPTION_TIMES_ONE) {
             return $this->InfoToConsumptionTimesOne($orderId);
-        } else if ($consumptionType == "more") {
+        } else if ($consumptionType == StrategyEnum::CONSUMPTION_TIMES_MORE) {
             return $this->InfoToConsumptionTimesMore($orderId);
         }
     }
