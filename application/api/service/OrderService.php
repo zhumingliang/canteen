@@ -1221,7 +1221,9 @@ class OrderService extends BaseService
 
             } else {
                 if (Token::getCurrentTokenVar('type') == 'official') {
-                    $this->cancelParentConsumptionTimeMore($id);
+                    $moreIdArr = explode(',', $id);
+
+                    $this->cancelParentConsumptionTimeMore($moreIdArr);
                 } else {
                     $this->cancelConsumptionTimesMoreOrder($id);
                 }
@@ -1444,7 +1446,7 @@ class OrderService extends BaseService
     private
     function cancelParentConsumptionTimeMore($moreIdArr)
     {
-        if (empty($moreIdArr)) {
+        if (!count($moreIdArr)) {
             return true;
         }
         foreach ($moreIdArr as $k => $v) {
@@ -2676,6 +2678,7 @@ class OrderService extends BaseService
         $data['ordering_date'] = $order->ordering_date;
         $data['meal_time_end'] = $dinner['meal_time_end'];
         $status = $this->getOrderStatus($order->state, $order->used, $order->ordering_date, $dinner['meal_time_end']);
+        $consumptionStatus = $this->getConsumptionStatus($order->booking, $order->used);
         $dataList = [];
         for ($i = 1; $i <= $count; $i++) {
             $detail = [
@@ -2685,6 +2688,7 @@ class OrderService extends BaseService
                 'sub_money' => $sub_money,
                 'wx_confirm' => $order->wx_confirm,
                 'sort_code' => $order->sort_code,
+                'consumption_status' => $consumptionStatus,
                 'status' => $status
             ];
             array_push($dataList, $detail);
@@ -2716,6 +2720,7 @@ class OrderService extends BaseService
         $dataList = [];
         foreach ($sub as $k => $v) {
             $status = $this->getOrderStatus($v['state'], $v['used'], $order->ordering_date, $dinner['meal_time_end']);
+            $consumptionStatus = $this->getConsumptionStatus($v['booking'], $v['used']);
             $detail = [
                 'number' => $v['order_sort'],
                 'order_id' => $v['id'],
@@ -2723,6 +2728,7 @@ class OrderService extends BaseService
                 'sub_money' => round($v['sub_money'], 2),
                 'wx_confirm' => $v['wx_confirm'],
                 'sort_code' => $v['sort_code'],
+                'consumption_status' => $consumptionStatus,
                 'status' => $status
             ];
             array_push($dataList, $detail);
@@ -2748,6 +2754,22 @@ class OrderService extends BaseService
                     return 3;
                 }
             }
+        }
+    }
+
+    private
+    function getConsumptionStatus($booking, $used)
+    {
+        if ($used == CommonEnum::STATE_IS_FAIL) {
+            return "订餐未就餐";
+        } else {
+            if ($booking == CommonEnum::STATE_IS_OK) {
+                return "订餐就餐";
+
+            } else {
+                return "未订餐就餐";
+            }
+
         }
     }
 

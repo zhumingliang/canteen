@@ -343,7 +343,7 @@ class OrderT extends Model
                         ->field('id as detail_id ,o_id,count,name,price');
                 }
             ])
-            ->field('id,create_time,ordering_type,d_id,ordering_date,state,used,count,money,sub_money,delivery_fee,type,wx_confirm,sort_code')
+            ->field('id,create_time,ordering_type,d_id,ordering_date,state,used,count,money,sub_money,delivery_fee,type,wx_confirm,sort_code,booking')
             ->find();
         return $order;
 
