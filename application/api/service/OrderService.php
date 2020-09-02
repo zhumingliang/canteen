@@ -2226,15 +2226,20 @@ class OrderService extends BaseService
     public
     function orderDetail($consumptionType, $type, $id)
     {
-        $u_id = Token::getCurrentUid();
+        //$u_id = Token::getCurrentUid();
         if ($type == OrderEnum::USER_ORDER_SHOP) {
             $order = ShopOrderT::orderInfo($id);
         } else {
             if ($consumptionType == "one") {
                 $order = OrderT::orderDetail($id);
-
             } else {
-                $order = $this->getOrderDetailConsumptionTimeMore($id);
+
+                if (Token::getCurrentTokenVar('type') == 'cms') {
+                    $order = $this->getOrderDetailConsumptionTimeMore($id);
+                } else {
+                    $order = $this->InfoToConsumptionTimesMore($id);
+
+                }
             }
             if (!$order) {
                 throw new ParameterException(['msg' => '订单不存在']);
@@ -2700,6 +2705,8 @@ class OrderService extends BaseService
         $dinner = $order->dinner;
         $sub = $order->sub;
         $data['type'] = $order->type;
+        $data['order_type'] = $order->type;
+        $data['dinner_id'] = $order->dinner_id;
         $data['create_time'] = $order->create_time;
         $data['ordering_type'] = $order->ordering_type;
         $data['count'] = $order->count;
