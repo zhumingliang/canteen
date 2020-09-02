@@ -2707,6 +2707,7 @@ class OrderService extends BaseService
         }
         $data['id'] = $order->id;
         $dinner = $order->dinner;
+        $booking = $order->booking;
         $sub = $order->sub;
         $data['type'] = $order->type;
         $data['order_type'] = $order->type;
@@ -2720,7 +2721,7 @@ class OrderService extends BaseService
         $dataList = [];
         foreach ($sub as $k => $v) {
             $status = $this->getOrderStatus($v['state'], $v['used'], $order->ordering_date, $dinner['meal_time_end']);
-            $consumptionStatus = $this->getConsumptionStatus($v['booking'], $v['used']);
+            $consumptionStatus = $this->getConsumptionStatus($booking, $v['used']);
             $detail = [
                 'number' => $v['order_sort'],
                 'order_id' => $v['id'],
