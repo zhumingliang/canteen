@@ -159,6 +159,7 @@ class OrderService extends BaseService
         }
         $orderData = [
             'u_id' => $u_id,
+            'fixed' => $dinner->fixed,
             'dinner_id' => $dinner->id,
             'canteen_id' => $canteen_id,
             'money' => $checkMoney,
