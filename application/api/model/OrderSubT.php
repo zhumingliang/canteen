@@ -30,7 +30,7 @@ class OrderSubT extends Model
     static function infoForPrinter($id)
     {
         $info = self::where('id', $id)
-            ->field('id,order_id,money,sub_money,outsider,company_id,confirm_time,qrcode_url,count,sort_code')
+            ->field('id,order_id,money,sub_money,company_id,confirm_time,qrcode_url,count,sort_code')
             ->find()->toArray();
         return $info;
     }
