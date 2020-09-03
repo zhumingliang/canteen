@@ -154,7 +154,8 @@ class Department extends BaseController
      *       "code": "123456",
      *       "username": "张三",
      *       "phone": "18956225230"
-     *       "card_num": "1212121"
+     *       "card_num": "1212121",
+     *       "birthday": "1990-10-01"
      *     }
      * @apiParam (请求参数说明) {int}  company_id 企业id
      * @apiParam (请求参数说明) {string}  canteens json字符串,归属饭堂id列表
@@ -164,6 +165,7 @@ class Department extends BaseController
      * @apiParam (请求参数说明) {string} username  姓名
      * @apiParam (请求参数说明) {string} phone  手机号
      * @apiParam (请求参数说明) {string} card_num  卡号
+     * @apiParam (请求参数说明) {string} birthday  生日
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
@@ -192,6 +194,7 @@ class Department extends BaseController
      *       "username": "张三",
      *       "phone": "18956225230"
      *       "card_num": "1212121"
+     *       "birthday": "1990-10-01"
      *       "expiry_date": "2019-08-03 15:48:03"
      *     }
      * @apiParam (请求参数说明) {int} id 员工id
@@ -202,6 +205,7 @@ class Department extends BaseController
      * @apiParam (请求参数说明) {string} code  员工编号
      * @apiParam (请求参数说明) {string} username  姓名
      * @apiParam (请求参数说明) {string} phone  手机号
+     * @apiParam (请求参数说明) {string} birthday  生日
      * @apiParam (请求参数说说明) {string} expiry_date  二维码有效期
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200}
@@ -271,6 +275,7 @@ class Department extends BaseController
      * @apiSuccess (返回参数说明) {string} username 姓名
      * @apiSuccess (返回参数说明) {string} phone 手机号
      * @apiSuccess (返回参数说明) {string} card_num 卡号
+     * @apiSuccess (返回参数说明) {string} birthday 生日
      * @apiSuccess (返回参数说明) {string} expiry_date 二维码有效期
      * @apiSuccess (返回参数说明) {string} url 二维码地址
      * @apiSuccess (返回参数说明) {int} q_id 二维码id

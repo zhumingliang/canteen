@@ -62,7 +62,7 @@ class CompanyStaffV extends BaseModel
                         ->where('state', '=', CommonEnum::STATE_IS_OK);
                 }
             ])
-            ->field('id,company,department,state,type,code,username,phone,card_num')
+            ->field('id,company,department,state,type,code,username,phone,card_num,birthday')
             ->order('create_time desc')
             ->select()->toArray();
         return $list;

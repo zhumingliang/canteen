@@ -69,7 +69,7 @@ class DepartmentService
             return true;
         }
         $son = CompanyDepartmentT::where('parent_id', $id)
-            ->where('state',CommonEnum::STATE_IS_OK)
+            ->where('state', CommonEnum::STATE_IS_OK)
             ->count('id');
         if ($son) {
             return true;
@@ -230,7 +230,7 @@ class DepartmentService
                 } else {
                     array_push($phones, $v[5]);
                 }
-                $check = $this->validateParams($company_id, $param_key, $data[$k], $types, $canteens, $departments);
+                $check = $this->validateParams($company_id, $param_key, $data[$k], $types, $canteens, $departments,$v[8]);
                 if (!$check['res']) {
                     $fail[] = "第" . $k . "数据有问题：" . $check['info']['msg'];
                     continue;
@@ -287,7 +287,7 @@ class DepartmentService
         return $staffsPhone;
     }
 
-    private function validateParams($company_id, $param_key, $data, $types, $canteens, $departments, $len = 7)
+    private function validateParams($company_id, $param_key, $data, $types, $canteens, $departments,$birthday, $len = 8)
     {
         $state = ['启用', '停用'];
         foreach ($data as $k => $v) {
@@ -392,7 +392,9 @@ class DepartmentService
                 'card_num' => $card_num,
                 'company_id' => $company_id,
                 'canteen_ids' => implode(',', $canteen_ids),
-                'state' => $state
+                'birthday' => gmdate("Y-m-d", ($birthday - 25569) * 86400)
+        ,
+        'state' => $state
             ]
         ];
     }
