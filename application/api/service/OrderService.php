@@ -2674,6 +2674,8 @@ class OrderService extends BaseService
         $data['create_time'] = $order->create_time;
         $data['ordering_type'] = $order->ordering_type;
         $data['type'] = $order->type;
+        $data['money'] = $order->money;
+        $data['sub_money'] = $order->sub_money;
         $data['count'] = $order->count;
         $data['delivery_fee'] = $order->delivery_fee;
         $data['ordering_date'] = $order->ordering_date;
