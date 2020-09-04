@@ -2249,6 +2249,7 @@ class OrderService extends BaseService
             }
             $check = $this->checkOrderCanHandelToDetail($order['dinner_id'], $order['ordering_date'], $order['order_type']);
             $order['handel'] = $check['handel'];
+            $order['consumption_type'] = $consumptionType;
             $order['showConfirm'] = $check['showConfirm'];
         }
         return $order;
@@ -2653,10 +2654,12 @@ class OrderService extends BaseService
     function orderStatisticDetailInfo($orderId, $consumptionType)
     {
         if ($consumptionType == 'one') {
-            return $this->InfoToConsumptionTimesOne($orderId);
+            $info = $this->InfoToConsumptionTimesOne($orderId);
         } else if ($consumptionType == 'more') {
-            return $this->InfoToConsumptionTimesMore($orderId);
+            $info = $this->InfoToConsumptionTimesMore($orderId);
         }
+        $info['consumptionType'] = $consumptionType;
+        return $info;
     }
 
     private
