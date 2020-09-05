@@ -77,7 +77,7 @@ class OrderParentT extends Model
                         ->field('id as detail_id ,o_id,f_id as food_id,count,name,price');
                 },
             ])
-            ->field('id,create_time,booking,dinner_id,ordering_type,ordering_date,count,delivery_fee,type,count')
+            ->field('id,create_time,booking,canteen_id,dinner_id,ordering_type,ordering_date,count,delivery_fee,type,count')
             ->find();
         return $order;
     }
