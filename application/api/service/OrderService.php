@@ -2782,6 +2782,7 @@ class OrderService extends BaseService
         $data['type'] = $order->type;
         $data['order_type'] = $order->type;
         $data['dinner_id'] = $order->dinner_id;
+        $data['canteen_id'] = $order->canteen_id;
         $data['create_time'] = $order->create_time;
         $data['ordering_type'] = $order->ordering_type;
         $data['count'] = $order->count;
