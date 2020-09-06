@@ -239,16 +239,15 @@ class Pos extends BaseController
     /**
      * 通过设备获取企业
      */
-    public function machine()
-    {
-        $code = Request::param('code');
-        if (empty($code)) {
-            throw new AuthException(['msg' => '未获取到Pos机标识码']);
+    public function machine(){
+        $code=Request::param('code');
+        if(empty($code)){
+            throw new AuthException(['msg'=>'未获取到Pos机标识码']);
         }
-        $sql = "select t1.company_id,t2.name as company_name from canteen_machine_t t1 left join canteen_company_t t2 on t1.company_id=t2.id where t1.code='" . $code . "' and t1.state=1";
-        $data = Db::query($sql);
+        $sql="select t1.company_id,t2.name as company_name ,t3.name as shop_name from canteen_machine_t t1 left join canteen_company_t t2 on t1.company_id=t2.id left join canteen_shop_t t3 on t1.belong_id=t3.id where t1.code='".$code."' and t1.state=1";
+        $data=Db::query($sql);
 
-        return json(new SuccessMessageWithData(['data' => $data]));
+        return json(new SuccessMessageWithData(['data'=>$data]));
     }
 
     private function usersBalance($phone, $company_id)
@@ -345,7 +344,7 @@ class Pos extends BaseController
             ->where('phone', $phone)
             ->select();
         if (count($phoneInfo) == 0) {
-            throw new AuthException(['msg' => '手机号码不存在']);
+            throw new AuthException(['msg' => '绑卡失败，手机号码不存在']);
         }
         $user = db('company_staff_t')
             ->where('company_id', $company_id)
@@ -353,14 +352,18 @@ class Pos extends BaseController
             ->where('birthday', $birthday)
             ->find();
         if (empty($user)) {
-            throw new AuthException(['msg' => '出生日期与手机号码不匹配']);
+            throw new AuthException(['msg' => '绑卡失败，出生日期与手机号码不匹配']);
         }
         if ($user['state'] != 1) {
             throw new AuthException(['msg' => '账号已经停用。请在挂失功能中启用账号或注销卡号，再重新绑定']);
         }
         $deleteCard = db('staff_card_t')
+            ->where('card_code', $card_code)
+            ->delete();
+        $deleteStaff = db('staff_card_t')
             ->where('staff_id', $user['id'])
             ->delete();
+
         $data = ['staff_id' => $user['id'], 'card_code' => $card_code, 'state' => 1, 'create_time' => $date, 'update_time' => $date];
         $save = db('staff_card_t')
             ->data($data)
