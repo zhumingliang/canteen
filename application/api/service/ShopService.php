@@ -363,7 +363,7 @@ class ShopService
         }
         $money = 0;
         foreach ($products as $k => $v) {
-            $money += $v['price']*$v['count'];
+            $money += $v['price'] * $v['count'];
         }
         if (!$money) {
             throw new ParameterException(['msg' => '商品数据格式错误']);
@@ -835,6 +835,16 @@ class ShopService
         if (!$res) {
             throw new UpdateException();
         }
+    }
+
+    public function getShopId($company_id)
+    {
+        $shop = ShopT::shopWithCompanyID($company_id);
+        if (empty($shop)) {
+            throw new ParameterException(['msg' => '该企业未设置小卖部']);
+        }
+        return $shop->id;
+
     }
 
 

@@ -5,9 +5,11 @@ namespace app\api\controller\v1;
 
 
 use app\api\controller\BaseController;
+use app\api\service\ShopService;
 use app\api\service\WalletService;
 use app\api\model\UserBalanceV;
 use app\lib\enum\CommonEnum;
+use app\lib\exception\DeleteException;
 use think\Db;
 use think\facade\Request;
 use think\exception\DbException;
@@ -69,19 +71,19 @@ class Pos extends BaseController
      */
     public function getStaffInfo()
     {
-        $cardCode=Request::param('card_code');
-        $companyId=Request::param('company_id');
+        $cardCode = Request::param('card_code');
+        $companyId = Request::param('company_id');
 
-        if(empty($companyId)){
-            throw new AuthException(['msg'=>'未接收到企业id']);
+        if (empty($companyId)) {
+            throw new AuthException(['msg' => '未接收到企业id']);
         }
-        if(empty($cardCode)){
-            throw new AuthException(['msg'=>'未接收到卡号']);
+        if (empty($cardCode)) {
+            throw new AuthException(['msg' => '未接收到卡号']);
         }
         $sql = "select t1.username ,t2.name as department_name ,t1.phone ,t3.state,t1.birthday from canteen_company_staff_t t1 left join canteen_company_department_t t2 on t1.d_id=t2.id left join canteen_staff_card_t t3 on t1.id=t3.staff_id where t3.card_code='" . $cardCode . "' and t1.company_id='" . $companyId . "' and t1.state=1";
         $data = Db::query($sql);
 
-        return json(new SuccessMessageWithData(['data'=>$data]));
+        return json(new SuccessMessageWithData(['data' => $data]));
     }
 
     /**
@@ -239,15 +241,16 @@ class Pos extends BaseController
     /**
      * 通过设备获取企业
      */
-    public function machine(){
-        $code=Request::param('code');
-        if(empty($code)){
-            throw new AuthException(['msg'=>'未获取到Pos机标识码']);
+    public function machine()
+    {
+        $code = Request::param('code');
+        if (empty($code)) {
+            throw new AuthException(['msg' => '未获取到Pos机标识码']);
         }
-        $sql="select t1.company_id,t2.name as company_name ,t3.name as shop_name from canteen_machine_t t1 left join canteen_company_t t2 on t1.company_id=t2.id left join canteen_shop_t t3 on t1.belong_id=t3.id where t1.code='".$code."' and t1.state=1";
-        $data=Db::query($sql);
+        $sql = "select t1.company_id,t2.name as company_name ,t3.name as shop_name from canteen_machine_t t1 left join canteen_company_t t2 on t1.company_id=t2.id left join canteen_shop_t t3 on t1.belong_id=t3.id where t1.code='" . $code . "' and t1.state=1";
+        $data = Db::query($sql);
 
-        return json(new SuccessMessageWithData(['data'=>$data]));
+        return json(new SuccessMessageWithData(['data' => $data]));
     }
 
     private function usersBalance($phone, $company_id)
@@ -304,6 +307,7 @@ class Pos extends BaseController
         $date = date('Y-m-d H:i:s');
         $data = [
             'company_id' => $company_id,
+            'shop_id' => (new ShopService())->getShopId($company_id),
             'u_id' => 0,
             'order_num' => $order_num,
             'count' => 1,
@@ -357,12 +361,14 @@ class Pos extends BaseController
         if ($user['state'] != 1) {
             throw new AuthException(['msg' => '账号已经停用。请在挂失功能中启用账号或注销卡号，再重新绑定']);
         }
-        $deleteCard = db('staff_card_t')
-            ->where('card_code', $card_code)
+        $deleteRes = db('staff_card_t')
+            ->whereOr('staff_id', $user['id'])
+            ->whereOr('card_code', $card_code)
             ->delete();
-        $deleteStaff = db('staff_card_t')
-            ->where('staff_id', $user['id'])
-            ->delete();
+        if (!$deleteRes) {
+            throw  new  DeleteException(['msg' => '解除旧卡绑定失败']);
+
+        }
 
         $data = ['staff_id' => $user['id'], 'card_code' => $card_code, 'state' => 1, 'create_time' => $date, 'update_time' => $date];
         $save = db('staff_card_t')
