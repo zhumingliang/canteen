@@ -214,7 +214,7 @@ class Department extends BaseController
      */
     public function updateStaff()
     {
-        $params = Request::only('id,canteens,cancel_canteens,d_id,t_id,code,username,phone,card_num,expiry_date');
+        $params = Request::only('id,canteens,cancel_canteens,d_id,t_id,code,username,phone,card_num,expiry_date,birthday');
         (new DepartmentService())->updateStaff($params);
         return json(new SuccessMessage());
     }
