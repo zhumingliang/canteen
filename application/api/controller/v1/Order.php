@@ -223,7 +223,7 @@ class Order extends BaseController
     public function orderCancel()
     {
         $id = Request::param('id');
-        $consumptionType = Request::param('id');
+        $consumptionType = Request::param('consumption_type');
         (new OrderService())->orderCancel($id, $consumptionType);
         return json(new SuccessMessage());
     }
