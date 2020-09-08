@@ -162,7 +162,7 @@ class OrderService extends BaseService
             'fixed' => $dinner->fixed,
             'dinner_id' => $dinner->id,
             'canteen_id' => $canteen_id,
-            'money' => $checkMoney,
+            'money' => $money,
             'sub_money' => 0,
             'phone' => $phone,
             'count' => $count,
@@ -1665,9 +1665,9 @@ class OrderService extends BaseService
             }
             //检测订单是否可操作
             $this->checkConsumptionTimesOrderCanUpdate($id);
-            $this->checkOrderCanHandel($order->d_id, $order->ordering_date);
+            $this->checkOrderCanHandel($order->dinner_id, $order->ordering_date);
             //检测订单修改数量是否合法
-            $strategy = (new CanteenService())->getStaffConsumptionStrategy($order->c_id, $order->d_id, $order->staff_type_id);
+            $strategy = (new CanteenService())->getStaffConsumptionStrategy($order->canteen_id, $order->dinner_id, $order->staff_type_id);
             if (!$strategy) {
                 throw new ParameterException(['msg' => '当前用户消费策略不存在']);
             }
@@ -1992,6 +1992,7 @@ class OrderService extends BaseService
     function handleIncreaseSubOrder($strategy, $orderId, $ordering_date, $orderMoneyFixed, $canteen_id,
                                     $dinner_id, $phone, $increaseCount, $updateFoodsMoney)
     {
+        $subOrderDataList = [];
         $dinner = DinnerT::dinnerInfo($dinner_id);
         $orders = OrderingV::getRecordForDayOrderingByPhone($ordering_date, $dinner->name, $phone);
         $consumptionCount = $this->checkOrderedAnotherCanteen($canteen_id, $orders);

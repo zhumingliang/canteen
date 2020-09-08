@@ -13,8 +13,9 @@ class OrderSubT extends Model
     {
         return self::where('order_id', $orderID)
             ->where('state', CommonEnum::STATE_IS_OK)
-            ->whereOr('used', CommonEnum::STATE_IS_OK)
-            ->whereOr('wx_confirm', CommonEnum::STATE_IS_OK)
+            // ->where('used', CommonEnum::STATE_IS_OK)
+            // ->where('wx_confirm', CommonEnum::STATE_IS_OK)
+            ->whereRaw('`wx_confirm` = 1  OR `used` = 1')
             ->count('id');
     }
 
