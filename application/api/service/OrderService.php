@@ -1401,10 +1401,10 @@ class OrderService extends BaseService
             Db::startTrans();
             $oneIdArr = explode(',', $one_ids);
             $moreIdArr = explode(',', $more_ids);
-            if (!empty($oneIdArr)) {
+            if (count($oneIdArr)) {
                 $this->cancelConsumptionTimeOne($oneIdArr);
             }
-            if (!empty($moreIdArr)) {
+            if (count($moreIdArr)) {
                 $this->cancelParentConsumptionTimeMore($moreIdArr);
             }
             Db::commit();
@@ -1419,12 +1419,15 @@ class OrderService extends BaseService
     private
     function cancelConsumptionTimeOne($oneIdArr)
     {
-        if (empty($idArr)) {
+        if (empty($oneIdArr)) {
             return true;
         }
         foreach ($oneIdArr as $k => $v) {
+            if (!strlen($v)){
+                continue;
+            }
             $order = OrderT::get($v);
-            if (empty($order)) {
+            if (!$order) {
                 throw new ParameterException(['msg' => "订单号：" . $v . "不存在"]);
             }
             //判断是否使用
@@ -1451,6 +1454,9 @@ class OrderService extends BaseService
             return true;
         }
         foreach ($moreIdArr as $k => $v) {
+            if (!strlen($v)){
+                continue;
+            }
             $order = OrderParentT::get($v);
             if (empty($order)) {
                 throw new ParameterException(['msg' => "订单号：" . $v . "不存在"]);
