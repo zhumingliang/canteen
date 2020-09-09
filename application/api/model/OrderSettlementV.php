@@ -31,7 +31,11 @@ class OrderSettlementV extends Model
                 if (!empty($department_id)) {
                     $query->where('department_id', $department_id);
                 }
-            })->where('type', $type)
+            }) ->where( function ($query) use ($type) {
+                if ($type !== 'all') {
+                    $query->where('types', $type);
+                }
+            })
             ->where(function ($query) use ($company_ids, $canteen_id, $dinner_id, $type) {
 
                 if (!empty($dinner_id)) {
@@ -103,7 +107,11 @@ class OrderSettlementV extends Model
                     $query->where('department_id', $department_id);
                 }
             })
-            ->where('type', $type)
+            ->where( function ($query) use ($type) {
+                if ($type !== 'all') {
+                    $query->where('types', $type);
+                }
+            })
             ->where(function ($query) use ($company_ids, $canteen_id, $dinner_id) {
                 if (!empty($dinner_id)) {
                     $query->where('dinner_id', $dinner_id);

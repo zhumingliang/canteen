@@ -52,12 +52,12 @@ class Pos extends BaseController
         $start = date('Y-m-d');
 
         //扣款笔数等于count订餐数量字段总数
-        $sql = "select count(count) as count from canteen_shop_order_t where date_format(create_time,'%Y-%m-%d') ='" . $start . "'";
+        $sql = "select count(count) as count from canteen_shop_order_t where date_format(create_time,'%Y-%m-%d') ='" . $start . "' and money>0";
 
         $total = Db::query($sql);
         //金额等于每笔订单的金额大于0的总数
 
-        $SQL = "select ifnull(sum(money),0) as sum from canteen_shop_order_t where date_format(create_time,'%Y-%m-%d') = '" . $start . "'and money>0";
+        $SQL = "select ifnull(sum(money),0) as sum from canteen_shop_order_t where date_format(create_time,'%Y-%m-%d') = '" . $start."'";
 
         $money = Db::query($SQL);
         $data = [['count' => $total[0]['count'],

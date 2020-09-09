@@ -24,7 +24,7 @@ class OrderConsumptionV extends Model
 
     public static function consumptionStatisticByDepartment($canteen_id, $status, $department_id,
                                                             $username, $staff_type_id, $time_begin,
-                                                            $time_end, $company_id, $phone)
+                                                            $time_end, $company_id, $phone, $order_type)
     {
         $statistic = self::where(function ($query) use ($company_id, $canteen_id) {
             if (!empty($canteen_id)) {
@@ -37,7 +37,11 @@ class OrderConsumptionV extends Model
                 }
             }
         })
-            ->where('consumption_date', '>=', $time_begin)
+            ->where(function ($query) use ($order_type) {
+                if ($order_type !== 'all') {
+                    $query->where('location', $order_type);
+                }
+            })            ->where('consumption_date', '>=', $time_begin)
             ->where('consumption_date', '<=', $time_end)
             ->where(function ($query) use (
                 $status, $department_id,
@@ -153,7 +157,7 @@ class OrderConsumptionV extends Model
 
     public static function consumptionStatisticByStatus($canteen_id, $status, $department_id,
                                                         $username, $staff_type_id, $time_begin,
-                                                        $time_end, $company_id, $phone)
+                                                        $time_end, $company_id, $phone, $order_type)
     {
         $statistic = self::where(function ($query) use ($company_id, $canteen_id) {
             if (!empty($canteen_id)) {
@@ -166,6 +170,11 @@ class OrderConsumptionV extends Model
                 }
             }
         })
+            ->where(function ($query) use ($order_type) {
+                if ($order_type !== 'all') {
+                    $query->where('location', $order_type);
+                }
+            })
             ->where('consumption_date', '>=', $time_begin)
             ->where('consumption_date', '<=', $time_end)
             ->where(function ($query) use (
@@ -198,7 +207,7 @@ class OrderConsumptionV extends Model
 
     public static function consumptionStatisticByCanteen($canteen_id, $status, $department_id,
                                                          $username, $staff_type_id, $time_begin,
-                                                         $time_end, $company_id, $phone)
+                                                         $time_end, $company_id, $phone, $order_type)
     {
         // $time_end = addDay(1, $time_end);
         $statistic = self::where(function ($query) use ($company_id, $canteen_id) {
@@ -212,6 +221,11 @@ class OrderConsumptionV extends Model
                 }
             }
         })
+            ->where(function ($query) use ($order_type) {
+                if ($order_type !== 'all') {
+                    $query->where('location', $order_type);
+                }
+            })
             ->where('consumption_date', '>=', $time_begin)
             ->where('consumption_date', '<=', $time_end)
             ->where(function ($query) use (
@@ -244,7 +258,7 @@ class OrderConsumptionV extends Model
 
     public static function consumptionStatisticByStaff($canteen_id, $status, $department_id,
                                                        $username, $staff_type_id, $time_begin,
-                                                       $time_end, $company_id, $phone)
+                                                       $time_end, $company_id, $phone, $order_type)
     {
         //$time_end = addDay(1, $time_end);
         $statistic = self::where(function ($query) use ($company_id, $canteen_id) {
@@ -258,6 +272,11 @@ class OrderConsumptionV extends Model
                 }
             }
         })
+            ->where( function ($query) use ($order_type) {
+                if ($order_type !== 'all') {
+                    $query->where('location', $order_type);
+                }
+            })
             ->where('consumption_date', '>=', $time_begin)
             ->where('consumption_date', '<=', $time_end)
             ->where(function ($query) use (
@@ -290,7 +309,7 @@ class OrderConsumptionV extends Model
 
     public static function userDinnerStatistic($canteen_id, $status, $department_id,
                                                $username, $staff_type_id, $time_begin,
-                                               $time_end, $company_id, $phone, $page, $size)
+                                               $time_end, $company_id, $phone, $order_type, $page, $size)
     {
         return self::where(function ($query) use ($company_id, $canteen_id) {
             if (!empty($canteen_id)) {
@@ -302,24 +321,29 @@ class OrderConsumptionV extends Model
                     $query->where('company_id', $company_id);
                 }
             }
-        })->where(function ($query) use (
-            $department_id,
-            $username, $staff_type_id, $phone
-        ) {
-            if (!empty($department_id)) {
-                $query->where('department_id', $department_id);
+        }) ->where( function ($query) use ($order_type) {
+            if ($order_type !== 'all') {
+                $query->where('location', $order_type);
             }
-            if (!empty($phone)) {
-                $query->where('phone', $phone);
-            }
-            if (!empty($username)) {
-                $query->where('username', 'like', '%' . $username . '%');
-            }
-            if (!empty($status)) {
-                $query->where('staff_type_id', $staff_type_id);
-            }
-
         })
+            ->where(function ($query) use (
+                $department_id,
+                $username, $staff_type_id, $phone
+            ) {
+                if (!empty($department_id)) {
+                    $query->where('department_id', $department_id);
+                }
+                if (!empty($phone)) {
+                    $query->where('phone', $phone);
+                }
+                if (!empty($username)) {
+                    $query->where('username', 'like', '%' . $username . '%');
+                }
+                if (!empty($status)) {
+                    $query->where('staff_type_id', $staff_type_id);
+                }
+
+            })
             ->where('consumption_date', '>=', $time_begin)
             ->where('consumption_date', '<=', $time_end)
             ->where(function ($query2) use (
@@ -337,7 +361,7 @@ class OrderConsumptionV extends Model
 
     public static function userStatistic($canteen_id, $status, $department_id,
                                          $username, $staff_type_id, $time_begin,
-                                         $time_end, $company_id, $phone, $page, $size)
+                                         $time_end, $company_id, $phone, $order_type, $page, $size)
     {
         return self::where(function ($query) use ($company_id, $canteen_id) {
             if (!empty($canteen_id)) {
@@ -349,24 +373,29 @@ class OrderConsumptionV extends Model
                     $query->where('company_id', $company_id);
                 }
             }
-        })->where(function ($query) use (
-            $department_id,
-            $username, $staff_type_id, $phone
-        ) {
-            if (!empty($department_id)) {
-                $query->where('department_id', $department_id);
+        }) ->where( function ($query) use ($order_type) {
+            if ($order_type !== 'all') {
+                $query->where('location', $order_type);
             }
-            if (!empty($phone)) {
-                $query->where('phone', $phone);
-            }
-            if (!empty($username)) {
-                $query->where('username', 'like', '%' . $username . '%');
-            }
-            if (!empty($staff_type_id)) {
-                $query->where('staff_type_id', $staff_type_id);
-            }
-
         })
+            ->where(function ($query) use (
+                $department_id,
+                $username, $staff_type_id, $phone
+            ) {
+                if (!empty($department_id)) {
+                    $query->where('department_id', $department_id);
+                }
+                if (!empty($phone)) {
+                    $query->where('phone', $phone);
+                }
+                if (!empty($username)) {
+                    $query->where('username', 'like', '%' . $username . '%');
+                }
+                if (!empty($staff_type_id)) {
+                    $query->where('staff_type_id', $staff_type_id);
+                }
+
+            })
             ->where('consumption_date', '>=', $time_begin)
             ->where('consumption_date', '<=', $time_end)
             ->where(function ($query2) use (
