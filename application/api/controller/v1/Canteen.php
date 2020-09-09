@@ -571,6 +571,30 @@ class Canteen extends BaseController
     }
 
     /**
+     * @api {GET} /api/v1/consumption/place CMS管理端--获取企业下消费地点列表（饭堂/小卖部）
+     * @apiGroup  CMS
+     * @apiVersion 3.0.0
+     * @apiDescription CMS管理端--获取企业下消费地点列表（饭堂/小卖部）
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/consumption/plac?company_id=1
+     * @apiParam (请求参数说明) {int} company_id  企业id
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":[{"id":6,"name":"饭堂1","type":"canteen"},{"id":7,"name":"小卖部","type":"shop"}]}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {String} msg 信息描述
+     * @apiSuccess (返回参数说明) {int} id  消费地点id
+     * @apiSuccess (返回参数说明) {obj} name  消费地点名称
+     * @apiSuccess (返回参数说明) {obj} type  消费地点类别：canteen：饭堂；shop:小卖部
+     */
+    public function consumptionPlace()
+    {
+        $company_id = Request::param('company_id');
+        $canteens = (new CanteenService())->consumptionPlace($company_id);
+        return json(new SuccessMessageWithData(['data' => $canteens]));
+    }
+
+
+    /**
      * @api {GET} /api/v1/managerCanteens  微信端--总订单查询--获取当前角色可管理饭堂列表
      * @apiGroup  Official
      * @apiVersion 3.0.0

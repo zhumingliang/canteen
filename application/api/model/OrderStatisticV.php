@@ -11,7 +11,7 @@ class OrderStatisticV extends Model
 {
     public function getTypeAttr($value)
     {
-        $status = [1 => '食堂', 2 => '外卖'];
+        $status = [1 => '堂食', 2 => '外卖'];
         return $status[$value];
     }
 

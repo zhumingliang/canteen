@@ -23,6 +23,7 @@ use app\api\model\OutConfigV;
 use app\api\model\OutsiderCompanyT;
 use app\api\model\PrinterT;
 use app\api\model\ReceptionConfigT;
+use app\api\model\ShopT;
 use app\api\model\StaffCanteenV;
 use app\api\model\StaffV;
 use app\api\model\StrategyDetailT;
@@ -399,6 +400,25 @@ class CanteenService
         $canteens = CanteenT::where('c_id', $company_id)
             ->where('state', CommonEnum::STATE_IS_OK)
             ->field('id,name')->select()->toArray();
+        return $canteens;
+    }
+
+    public function consumptionPlace($company_id)
+    {
+        if (empty($company_id)) {
+            $company_id = Token::getCurrentTokenVar('company_id');
+        }
+        $canteens = CanteenT::where('c_id', $company_id)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->field('id,name,"canteen" as type')->select()->toArray();
+
+        //获取企业小卖部
+        $shop = ShopT::where('c_id', $company_id)
+            ->field('id,name,"shop" as type')
+            ->find();
+        if ($shop){
+            array_push($canteens, $shop);
+        }
         return $canteens;
     }
 

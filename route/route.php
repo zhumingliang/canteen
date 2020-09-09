@@ -44,6 +44,7 @@ Route::get('api/:version/manager/companies', 'api/:version.Company/managerCompan
 Route::get('api/:version/user/companies', 'api/:version.Company/userCompanies');
 Route::get('api/:version/admin/companies', 'api/:version.Company/adminCompanies');
 Route::get('api/:version/company/qrcode', 'api/:version.Company/getOutQRCode');
+Route::get('api/:version/company/qrcode', 'api/:version.Company/getOutQRCode');
 
 Route::post('api/:version/canteen/save', 'api/:version.Canteen/save');
 Route::post('api/:version/canteen/dinner/delete', 'api/:version.Canteen/deleteDinner');
@@ -68,6 +69,7 @@ Route::get('api/:version/canteen/check/confirm', 'api/:version.Canteen/checkConf
 Route::get('api/:version/canteen/diningMode', 'api/:version.Canteen/diningMode');
 Route::get('api/:version/machines/company', 'api/:version.Canteen/companyMachines');
 Route::get('api/:version/machines', 'api/:version.Canteen/machines');
+Route::get('api/:version/consumption/place', 'api/:version.Canteen/consumptionPlace');
 
 Route::post('api/:version/printer/save', 'api/:version.Printer/save');
 Route::post('api/:version/printer/update', 'api/:version.Printer/update');

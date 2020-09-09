@@ -17,7 +17,7 @@ class OrderSettlementV extends Model
 
     public static function orderSettlement($page, $size,
                                            $name, $phone, $canteen_id, $department_id, $dinner_id,
-                                           $consumption_type, $time_begin, $time_end, $company_ids)
+                                           $consumption_type, $time_begin, $time_end, $company_ids, $type)
     {
         //$time_end = addDay(1, $time_end);
         $list = self::whereBetweenTime('ordering_date', $time_begin, $time_end)
@@ -31,8 +31,9 @@ class OrderSettlementV extends Model
                 if (!empty($department_id)) {
                     $query->where('department_id', $department_id);
                 }
-            })
-            ->where(function ($query) use ($company_ids, $canteen_id, $dinner_id) {
+            })->where('type', $type)
+            ->where(function ($query) use ($company_ids, $canteen_id, $dinner_id, $type) {
+
                 if (!empty($dinner_id)) {
                     $query->where('dinner_id', $dinner_id);
                 } else {
@@ -46,6 +47,7 @@ class OrderSettlementV extends Model
                         }
                     }
                 }
+
             })
             ->where(function ($query) use ($consumption_type) {
                 if ($consumption_type) {
@@ -67,6 +69,12 @@ class OrderSettlementV extends Model
                     } else if ($consumption_type == 5) {
                         //系统补扣
                         $query->where('type', 'deduction');
+                    } else if ($consumption_type == 6) {
+                        //系统补扣
+                        $query->where('money', '>', 0);
+                    } else if ($consumption_type == 7) {
+                        //系统补扣
+                        $query->where('money', '<', 0);
                     }
                 }
 
@@ -80,7 +88,7 @@ class OrderSettlementV extends Model
 
 
     public static function exportOrderSettlement($name, $phone, $canteen_id, $department_id, $dinner_id,
-                                                 $consumption_type, $time_begin, $time_end, $company_ids)
+                                                 $consumption_type, $time_begin, $time_end, $company_ids, $type)
     {
         // $time_end = addDay(1, $time_end);
         $list = self::whereBetweenTime('ordering_date', $time_begin, $time_end)
@@ -95,6 +103,7 @@ class OrderSettlementV extends Model
                     $query->where('department_id', $department_id);
                 }
             })
+            ->where('type', $type)
             ->where(function ($query) use ($company_ids, $canteen_id, $dinner_id) {
                 if (!empty($dinner_id)) {
                     $query->where('dinner_id', $dinner_id);
@@ -130,11 +139,16 @@ class OrderSettlementV extends Model
                     } else if ($consumption_type == 5) {
                         //系统补扣
                         $query->where('type', 'deduction');
+                    } else if ($consumption_type == 6) {
+                        //系统补扣
+                        $query->where('money', '>', 0);
+                    } else if ($consumption_type == 7) {
+                        //系统补扣
+                        $query->where('money', '<', 0);
                     }
                 }
 
-            })
-            ->field('used_time,department,username,phone,canteen,dinner,booking,used,type,money,remark,consumption_type')
+            })->field('used_time,department,username,phone,canteen,dinner,booking,used,type,money,remark,consumption_type')
             ->order('ordering_date DESC,phone')
             ->select()->toArray();
         return $list;
