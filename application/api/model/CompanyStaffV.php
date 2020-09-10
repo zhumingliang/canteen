@@ -27,7 +27,6 @@ class CompanyStaffV extends BaseModel
     public static function companyStaffs($page, $size, $c_id, $d_id)
     {
         $list = self::where('company_id', '=', $c_id)
-            ->where('state', CommonEnum::STATE_IS_OK)
             ->where(function ($query) use ($d_id) {
                 if ($d_id) {
                     $query->where('d_id', '=', $d_id);
@@ -45,7 +44,6 @@ class CompanyStaffV extends BaseModel
                     $query->field('id,staff_id,card_code,state');
                 }
             ])
-            ->hidden(['company_id', 'state'])
             ->order('id desc')
             ->paginate($size, false, ['page' => $page]);
         return $list;
