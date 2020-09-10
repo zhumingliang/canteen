@@ -1423,7 +1423,7 @@ class OrderService extends BaseService
             return true;
         }
         foreach ($oneIdArr as $k => $v) {
-            if (!strlen($v)){
+            if (!strlen($v)) {
                 continue;
             }
             $order = OrderT::get($v);
@@ -1454,7 +1454,7 @@ class OrderService extends BaseService
             return true;
         }
         foreach ($moreIdArr as $k => $v) {
-            if (!strlen($v)){
+            if (!strlen($v)) {
                 continue;
             }
             $order = OrderParentT::get($v);
@@ -2394,6 +2394,8 @@ class OrderService extends BaseService
 
                     }
 
+                } else if ($v['order_type'] == "shop") {
+                    $data[$k]['used_type'] = $v['money'] < 0 ? "小卖部消费" : "小卖部退款";
                 }
             }
         }

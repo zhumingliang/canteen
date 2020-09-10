@@ -38,7 +38,7 @@ class ShopOrderT extends Model
                     $query->field('id,province,city,area,address,name,phone,sex');
                 }
             ])
-            ->field('id,distribution as order_type,u_id,count,"shop" as ordering_type,address_id,state,used')
+            ->field('id,distribution as order_type,u_id,count,"shop" as ordering_type,address_id,state,used,money,if(money>0,"小卖部消费","小卖部退款")  as consumption_type')
             ->find();
         return $order;
     }
