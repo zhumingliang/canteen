@@ -140,7 +140,7 @@ class DepartmentService
             $cancel_canteens = empty($params['cancel_canteens']) ? [] : json_decode($params['cancel_canteens'], true);
             $this->updateStaffCanteen($staff->id, $canteens, $cancel_canteens);
             //处理卡号
-            if (empty($params['card_num'])) {
+            if (!empty($params['card_num'])) {
                 $this->updateCard($params['card_num'], $params['id']);
             }
             Db::commit();
