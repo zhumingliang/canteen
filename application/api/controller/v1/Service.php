@@ -35,8 +35,8 @@ class Service extends BaseController
     {
         $params = Request::param();
         LogService::save(json_encode($params));
-        (new ConsumptionService())->sortTask($params['canteenID'], 0, $params['orderID'], $params['sortCode']);
-        (new \app\lib\printer\Printer())->printOrderDetail($params['canteenID'], $params['orderID'], $params['sortCode']);
+        (new ConsumptionService())->sortTask($params['canteenID'], 0, $params['orderID'], $params['sortCode'], $params['consumptionType']);
+        (new \app\lib\printer\Printer())->printOrderDetail($params['canteenID'], $params['orderID'], $params['sortCode'],$params['consumptionType']);
         return json(new SuccessMessage());
 
     }

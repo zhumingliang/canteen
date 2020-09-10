@@ -19,6 +19,11 @@ class CompanyStaffV extends BaseModel
         return $this->hasMany('StaffCanteenT', 'staff_id', 'id');
     }
 
+    public function card()
+    {
+        return $this->hasOne('StaffCardT', 'staff_id', 'id');
+    }
+
     public static function companyStaffs($page, $size, $c_id, $d_id)
     {
         $list = self::where('company_id', '=', $c_id)
@@ -35,6 +40,9 @@ class CompanyStaffV extends BaseModel
                     }])
                         ->field('id,staff_id,canteen_id')
                         ->where('state', '=', CommonEnum::STATE_IS_OK);
+                },
+                'card' => function ($query) {
+                    $query->field('id,staff_id,card_code,state');
                 }
             ])
             ->hidden(['company_id', 'state'])

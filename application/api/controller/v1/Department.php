@@ -281,9 +281,12 @@ class Department extends BaseController
      * @apiSuccess (返回参数说明) {int} q_id 二维码id
      * @apiSuccess (返回参数说明) {string} create_time 创建时间
      * @apiSuccess (返回参数说明) {obj} canteens  所属饭堂
-     * @apiSuccess (返回参数说明) {obj} canteens|info  饭堂信息
-     * @apiSuccess (返回参数说明) {string} info|id  饭堂id
-     * @apiSuccess (返回参数说明) {string} info|name  饭堂名称
+     * @apiSuccess (返回参数说明) {obj} info  饭堂信息
+     * @apiSuccess (返回参数说明) {string} id  饭堂id
+     * @apiSuccess (返回参数说明) {string} name  饭堂名称
+     * @apiSuccess (返回参数说明) {obj} card  会员卡信息
+     * @apiSuccess (返回参数说明) {string} card_num  卡号
+     * @apiSuccess (返回参数说明) {int} state  卡号状态：1:正常；2:挂失；3:注销
      */
     public function staffs($page = 1, $size = 10)
     {
@@ -296,26 +299,29 @@ class Department extends BaseController
     }
 
     /**
-     * @api {POST} /api/v1/department/staff/delete CMS管理端-删除员工
+     * @api {POST} /api/v1/department/staff/handle CMS管理端-员工状态修改
      * @apiGroup   CMS
      * @apiVersion 3.0.0
-     * @apiDescription  CMS管理端-删除员工
+     * @apiDescription  CMS管理端-员工状态修改
      * @apiExample {post}  请求样例:
      *    {
-     *       "id": 1
+     *       "id": 1,
+     *       "state": 1
      *     }
      * @apiParam (请求参数说明) {string} id  员工id
+     * @apiParam (请求参数说明) {string} state  员工状态 :1 启用；2：停用
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
      * @apiSuccess (返回参数说明) {string} msg 信息描述
      */
-    public function deleteStaff()
+    public function handleStaff()
     {
         $id = Request::param('id');
-        $staff = CompanyStaffT::update(['state' => CommonEnum::STATE_IS_FAIL], ['id' => $id]);
+        $state = Request::param('state');
+        $staff = CompanyStaffT::update(['state' =>$state], ['id' => $id]);
         if (!$staff) {
-            throw  new DeleteException();
+            throw  new UpdateException();
         }
         return json(new SuccessMessage());
     }

@@ -100,7 +100,7 @@ Route::get('api/:version/department/staffs/recharge', 'api/:version.Department/s
 Route::get('api/:version/admin/departments', 'api/:version.Department/adminDepartments');
 Route::post('api/:version/department/staff/save', 'api/:version.Department/addStaff');
 Route::post('api/:version/department/staff/update', 'api/:version.Department/updateStaff');
-Route::post('api/:version/department/staff/delete', 'api/:version.Department/deleteStaff');
+Route::post('api/:version/department/staff/handle', 'api/:version.Department/handleStaff');
 Route::post('api/:version/department/staff/upload', 'api/:version.Department/uploadStaffs');
 Route::post('api/:version/department/staff/move', 'api/:version.Department/moveStaffDepartment');
 Route::get('api/:version/staffs', 'api/:version.Department/staffs');

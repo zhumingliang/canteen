@@ -230,7 +230,7 @@ class DepartmentService
                 } else {
                     array_push($phones, $v[5]);
                 }
-                $check = $this->validateParams($company_id, $param_key, $data[$k], $types, $canteens, $departments,$v[8]);
+                $check = $this->validateParams($company_id, $param_key, $data[$k], $types, $canteens, $departments, $v[8]);
                 if (!$check['res']) {
                     $fail[] = "第" . $k . "数据有问题：" . $check['info']['msg'];
                     continue;
@@ -287,7 +287,7 @@ class DepartmentService
         return $staffsPhone;
     }
 
-    private function validateParams($company_id, $param_key, $data, $types, $canteens, $departments,$birthday, $len = 8)
+    private function validateParams($company_id, $param_key, $data, $types, $canteens, $departments, $birthday, $len = 8)
     {
         $state = ['启用', '停用'];
         foreach ($data as $k => $v) {
@@ -393,8 +393,8 @@ class DepartmentService
                 'company_id' => $company_id,
                 'canteen_ids' => implode(',', $canteen_ids),
                 'birthday' => gmdate("Y-m-d", ($birthday - 25569) * 86400)
-        ,
-        'state' => $state
+                ,
+                'state' => $state
             ]
         ];
     }
