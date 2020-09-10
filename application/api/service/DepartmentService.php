@@ -10,6 +10,7 @@ use app\api\model\CompanyStaffT;
 use app\api\model\CompanyStaffV;
 use app\api\model\DepartmentV;
 use app\api\model\StaffCanteenT;
+use app\api\model\StaffCardT;
 use app\api\model\StaffQrcodeT;
 use app\api\model\StaffV;
 use app\lib\enum\CommonEnum;
@@ -138,11 +139,28 @@ class DepartmentService
             $canteens = empty($params['canteens']) ? [] : json_decode($params['canteens'], true);
             $cancel_canteens = empty($params['cancel_canteens']) ? [] : json_decode($params['cancel_canteens'], true);
             $this->updateStaffCanteen($staff->id, $canteens, $cancel_canteens);
+            //处理卡号
+            if (empty($params['card_num'])) {
+                $this->updateCard($params['card_num'], $params['id']);
+            }
             Db::commit();
         } catch (Exception $e) {
             Db::rollback();
             throw $e;
         }
+    }
+
+    private function updateCard($cardNum, $staffId)
+    {
+        StaffCardT::destroy(function ($query) use ($staffId) {
+            $query->where('staff_id', $staffId);
+        });
+        StaffCardT::create([
+            'staff_id' => $staffId,
+            'card_code' => $cardNum,
+            'state'
+            => CommonEnum::STATE_IS_OK
+        ]);
     }
 
     private function saveStaffCanteen($staff_id, $canteens)

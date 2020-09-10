@@ -125,9 +125,11 @@ class CompanyStaffV extends BaseModel
                     }])
                         ->field('id,staff_id,canteen_id')
                         ->where('state', '=', CommonEnum::STATE_IS_OK);
+                }, 'card' => function ($query) {
+                    $query->field('id,staff_id,card_code,state');
                 }
+
             ])
-            ->hidden(['company_id', 'state'])
             ->order('id desc')
             ->paginate($size, false, ['page' => $page]);
         return $list;
