@@ -784,7 +784,6 @@ class OrderService extends BaseService
                     }
                 }
                 $returnMoney['number'] = $consumptionCount + $i;
-                $returnMoney['order_sort'] = $i;
                 $returnMoney['meal_money'] = $meal_money;
                 $returnMoney['meal_sub_money'] = $meal_sub_money;
                 $returnMoney['no_meal_money'] = $no_meal_money;
@@ -1673,44 +1672,44 @@ class OrderService extends BaseService
             $this->checkConsumptionTimesOrderCanUpdate($id);
             $this->checkOrderCanHandel($order->dinner_id, $order->ordering_date);
             //检测订单修改数量是否合法
-            $strategy = (new CanteenService())->getStaffConsumptionStrategy($order->canteen_id, $order->dinner_id, $order->staff_type_id);
-            if (!$strategy) {
-                throw new ParameterException(['msg' => '当前用户消费策略不存在']);
-            }
-            if ($updateCount > $strategy->ordered_count) {
-                throw new UpdateException(['msg' => '超出最大订餐数量，不能预定']);
+            if ($updateCount > $order->count) {
+                $orderedCount = OrderingV::getOrderingCountByWithDinnerID($order->ordering_date, $order->dinner_id, $order->phone);
+                $checkCount = $orderedCount - $order->count + $updateCount;
+                $strategy = (new CanteenService())->getStaffConsumptionStrategy($order->canteen_id, $order->dinner_id, $order->staff_type_id);
+                if (!$strategy) {
+                    throw new ParameterException(['msg' => '当前用户消费策略不存在']);
+                }
+                if ($checkCount > $strategy->ordered_count) {
+                    throw new UpdateException(['msg' => '超出最大订餐数量，不能预定']);
+                }
             }
             $orderCount = $order->count;
             //订单数量发生变化
             if ($updateCount != $orderCount) {
-                //检测订单修改数量是否合法
-                $strategy = (new CanteenService())->getStaffConsumptionStrategy($order->canteen_id,
-                    $order->dinner_id,
-                    $order->staff_type_id);
-                if (!$strategy) {
-                    throw new ParameterException(['msg' => '当前用户消费策略不存在']);
-                }
-                if ($updateCount > $strategy->ordered_count) {
-                    throw new UpdateException(['msg' => '超出最大订餐量，不能修改']);
-                }
                 //减少子订单数量
                 if ($updateCount < $orderCount) {
-                    $updateSub = OrderSubT::update(['state', CommonEnum::STATE_IS_FAIL],
-                        ['order_sort', '>', $updateCount]);
+                    $updateSub = OrderSubT::where('order_id', $id)
+                        ->where('order_sort', '>', $updateCount)
+                        ->update(['state' => CommonEnum::STATE_IS_FAIL]);
                     if (!$updateSub) {
-                        throw new UpdateException(['msg' => '修改子订单数量']);
+                        throw new UpdateException(['msg' => '修改子订单数量失败']);
                     }
-                    return true;
 
+                } else {
+                    /**
+                     * 增加子订单数量
+                     * 1.获取增加部分消费策略金额
+                     * 2.判断是否固定金额消费
+                     * 3.生成子订单
+                     */
+                    $updateMoney = 0;
+                    if ($order->fixed == CommonEnum::STATE_IS_FAIL) {
+                        //获取菜品金额
+                        $updateMoney = $this->getOrderFoodsMoney($id);
+                    }
+                    $this->handleIncreaseSubOrder($strategy, $id, $order->ordering_date, $order->fixed, $order->canteen_id,
+                        $order->dinner_id, $order->phone, $updateCount - $orderCount, $updateMoney);
                 }
-                /**
-                 * 增加子订单数量
-                 * 1.获取增加部分消费策略金额
-                 * 2.判断是否固定金额消费
-                 * 3.生成子订单
-                 */
-                $this->handleIncreaseSubOrder($strategy, $id, $order->ordering_date, CommonEnum::STATE_IS_OK, $order->canteen_id,
-                    $order->dinner_id, $order->phone, $updateCount - $orderCount, 0);
 
             }
             $order->count = $updateCount;
@@ -1728,6 +1727,13 @@ class OrderService extends BaseService
 
     }
 
+    private function getOrderFoodsMoney($orderId)
+    {
+        $subFoods = SubFoodT::where('o_id', $orderId)->where('state', CommonEnum::STATE_IS_OK)->field('count*price as money')
+            ->select()->toArray();
+        return array_sum(array_column($subFoods, 'money'));
+
+    }
 
     /**
      * 修改订餐数量
@@ -1748,13 +1754,18 @@ class OrderService extends BaseService
         //检测订单是否可操作
         $this->checkOrderCanHandel($order->d_id, $order->ordering_date);
         //检测订单修改数量是否合法
-        $strategy = (new CanteenService())->getStaffConsumptionStrategy($order->c_id, $order->d_id, $order->staff_type_id);
-        if (!$strategy) {
-            throw new ParameterException(['msg' => '当前用户消费策略不存在']);
+        if ($count > $order->count) {
+            $orderedCount = OrderingV::getOrderingCountByWithDinnerID($order->ordering_date, $order->d_id, $order->phone);
+            $checkCount = $orderedCount - $order->count + $count;
+            $strategy = (new CanteenService())->getStaffConsumptionStrategy($order->c_id, $order->d_id, $order->staff_type_id);
+            if (!$strategy) {
+                throw new ParameterException(['msg' => '当前用户消费策略不存在']);
+            }
+            if ($checkCount > $strategy->ordered_count) {
+                throw new UpdateException(['msg' => '超出最大订餐数量，不能预定']);
+            }
         }
-        if ($count > $strategy->ordered_count) {
-            throw new UpdateException(['msg' => '超出最大订餐数量，不能预定']);
-        }
+
         $old_money = $order->money;
         $old_sub_money = $order->sub_money;
         $old_meal_money = $order->meal_money;
@@ -1827,14 +1838,19 @@ class OrderService extends BaseService
             $this->checkOrderCanHandel($order->d_id, $order->ordering_date);
             if (!empty($params['count']) && ($params['count'] != $count)) {
                 //检测订单修改数量是否合法
-                $count = $params['count'];
-                $strategy = (new CanteenService())->getStaffConsumptionStrategy($order->c_id, $order->d_id, $order->staff_type_id);
-                if (!$strategy) {
-                    throw new ParameterException(['msg' => '当前用户消费策略不存在']);
+                $updateCount = $params['count'];
+                if ($updateCount > $count) {
+                    $orderedCount = OrderingV::getOrderingCountByWithDinnerID($order->ordering_date, $order->d_id, $order->phone);
+                    $checkCount = $orderedCount - $count + $updateCount;
+                    $strategy = (new CanteenService())->getStaffConsumptionStrategy($order->c_id, $order->d_id, $order->staff_type_id);
+                    if (!$strategy) {
+                        throw new ParameterException(['msg' => '当前用户消费策略不存在']);
+                    }
+                    if ($checkCount > $strategy->ordered_count) {
+                        throw new UpdateException(['msg' => '超出最大订餐数量，不能预定']);
+                    }
                 }
-                if ($count > $strategy->ordered_count) {
-                    throw new UpdateException(['msg' => '超出最大订餐量，不能修改']);
-                }
+
             }
 
             $check_money = $this->checkOrderUpdateMoney($id, $order->u_id, $order->c_id,
@@ -1898,13 +1914,17 @@ class OrderService extends BaseService
             $this->checkOrderCanHandel($order->dinner_id, $order->ordering_date);
             //处理菜品信息
             $updateFoodsMoney = 0;
+            $orderMoneyFixed = $order->fixed;
             if (!empty($detail)) {
                 $updateFoodsMoney = $this->checkChangeFoods($id, $order->dinner_id, $detail);
+            } else {
+                if ($orderMoneyFixed == CommonEnum::STATE_IS_FAIL) {
+                    $updateFoodsMoney = $this->getOrderFoodsMoney($id);
+                }
             }
             //检测订单数量
             $orderCount = $order->count;
             $updateCount = $params['count'];
-            $orderMoneyFixed = $order->fixed;
             //订单数量没有变化，修改订单金额
             if (empty($updateCount) || ($updateCount == $orderCount)) {
                 if (!$updateFoodsMoney) {
@@ -1917,46 +1937,48 @@ class OrderService extends BaseService
                         throw new UpdateException(['msg' => '修改子订单金额失败']);
                     }
                 }
-
-                return true;
-            }
-            //订单数量发生变化
-            if ($updateCount != $orderCount) {
-                //检测订单修改数量是否合法
-                $count = $params['count'];
-                $strategy = (new CanteenService())->getStaffConsumptionStrategy($order->canteen_id,
-                    $order->dinner_id,
-                    $order->staff_type_id);
-                if (!$strategy) {
-                    throw new ParameterException(['msg' => '当前用户消费策略不存在']);
-                }
-                if ($count > $strategy->ordered_count) {
-                    throw new UpdateException(['msg' => '超出最大订餐量，不能修改']);
-                }
-                //减少子订单数量
-                if ($updateCount < $orderCount) {
-                    if ($orderMoneyFixed == CommonEnum::STATE_IS_FAIL) {
-                        $updateSub = OrderSubT::update(['money', $updateFoodsMoney], ['order_id', $id]);
-                        if (!$updateSub) {
-                            throw new UpdateException(['msg' => '修改子订单金额失败']);
+            }else{
+                //订单数量发生变化
+                if ($updateCount != $orderCount) {
+                    $strategy = (new CanteenService())->getStaffConsumptionStrategy($order->canteen_id, $order->dinner_id, $order->staff_type_id);
+                    if (!$strategy) {
+                        throw new ParameterException(['msg' => '当前用户消费策略不存在']);
+                    }
+                    //检测订单修改数量是否合法
+                    $count = $order->count;
+                    $updateCount = $params['count'];
+                    if ($updateCount > $count) {
+                        $orderedCount = OrderingV::getOrderingCountByWithDinnerID($order->ordering_date, $order->dinner_id, $order->phone);
+                        $checkCount = $orderedCount - $count + $updateCount;
+                        if ($checkCount > $strategy->ordered_count) {
+                            throw new UpdateException(['msg' => '超出最大订餐数量，不能预定']);
                         }
                     }
-                    $updateSub = OrderSubT::update(['state', CommonEnum::STATE_IS_FAIL],
-                        ['order_sort', '>', $updateCount]);
-                    if (!$updateSub) {
-                        throw new UpdateException(['msg' => '修改子订单数量']);
+                    //减少子订单数量
+                    if ($updateCount < $orderCount) {
+                        if ($orderMoneyFixed == CommonEnum::STATE_IS_FAIL) {
+                            $updateSub = OrderSubT::update(['money' => $updateFoodsMoney], ['order_id' => $id]);
+                            if (!$updateSub) {
+                                throw new UpdateException(['msg' => '修改子订单金额失败']);
+                            }
+                        }
+                        $updateSub = OrderSubT::where('order_id', $id)
+                            ->where('order_sort', '>', $updateCount)
+                            ->update(['state' => CommonEnum::STATE_IS_FAIL]);
+                        if (!$updateSub) {
+                            throw new UpdateException(['msg' => '修改子订单数量']);
+                        }
                     }
-                    return true;
-                }
-                /**
-                 * 增加子订单数量
-                 * 1.获取增加部分消费策略金额
-                 * 2.判断是否固定金额消费
-                 * 3.生成子订单
-                 */
-                $this->handleIncreaseSubOrder($strategy, $id, $order->ordering_date, $orderMoneyFixed, $order->canteen_id,
-                    $order->dinner_id, $order->phone, $updateCount - $orderCount, $updateFoodsMoney);
+                    /**
+                     * 增加子订单数量
+                     * 1.获取增加部分消费策略金额
+                     * 2.判断是否固定金额消费
+                     * 3.生成子订单
+                     */
+                    $this->handleIncreaseSubOrder($strategy, $id, $order->ordering_date, $orderMoneyFixed, $order->canteen_id,
+                        $order->dinner_id, $order->phone, $updateCount - $orderCount, $updateFoodsMoney);
 
+                }
             }
             $order->count = $updateCount;
             $order->update_time = date('Y-m-d H:i:s');
@@ -2013,7 +2035,8 @@ class OrderService extends BaseService
                 'order_id' => $orderId,
                 'ordering_date' => $ordering_date,
                 'consumption_sort' => $v['number'],
-                'order_sort' => $v['order_sort'],
+                'order_sort' => $v['number'],
+                'order_num' => makeOrderNo(),
                 'count' => 1,
                 'money' => $money,
                 'sub_money' => $v['sub_money'],

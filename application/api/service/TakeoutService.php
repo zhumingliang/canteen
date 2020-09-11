@@ -53,6 +53,9 @@ class TakeoutService
         $moreList = [];
         if (count($oneIDArr)) {
             foreach ($oneIDArr as $k => $v) {
+                if (!$v) {
+                    continue;
+                }
                 array_push($oneList, [
                     'id' => $v,
                     'receive' => CommonEnum::STATE_IS_OK
@@ -65,12 +68,15 @@ class TakeoutService
         }
         if (count($moreIDArr)) {
             foreach ($moreIDArr as $k => $v) {
+                if (!$v) {
+                    continue;
+                }
                 array_push($moreList, [
                     'id' => $v,
                     'receive' => CommonEnum::STATE_IS_OK
                 ]);
             }
-            $res = (new OrderParentT())->saveAll($oneList);
+            $res = (new OrderParentT())->saveAll($moreList);
             if (!$res) {
                 throw new  UpdateException(['msg' => '更新订单失败']);
             }
@@ -117,11 +123,14 @@ class TakeoutService
 
         if (count($oneIDArr)) {
             foreach ($oneIDArr as $k => $v) {
+                if (!$v) {
+                    continue;
+                }
                 $order = OrderT::infoToRefund($v);
                 $order->state = OrderEnum::REFUND;
                 //检测是否需要微信退款
                 if ($order->pay_way == PayEnum::PAY_WEIXIN) {
-                    (new OrderService())->refundWxOrder($v,'one');
+                    (new OrderService())->refundWxOrder($v, 'one');
                 }
                 $res = $order->save();
                 if (!$res) {
@@ -133,11 +142,14 @@ class TakeoutService
 
         if (count($moreIDArr)) {
             foreach ($moreIDArr as $k => $v) {
+                if (!$v) {
+                    continue;
+                }
                 $order = OrderParentT::infoToRefund($v);
                 $order->state = OrderEnum::REFUND;
                 //检测是否需要微信退款
                 if ($order->pay_way == PayEnum::PAY_WEIXIN) {
-                    (new OrderService())->refundWxOrder($v,'more');
+                    (new OrderService())->refundWxOrder($v, 'more');
                 }
                 $res = $order->save();
                 if (!$res) {

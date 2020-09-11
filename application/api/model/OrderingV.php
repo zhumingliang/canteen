@@ -48,6 +48,16 @@ class OrderingV extends Model
             ->count();
         return $record;
     }
+ public static function getOrderingCountByWithDinnerID($orderingDate, $dinnerID, $phone)
+    {
+        $record = self::where('phone', $phone)
+            ->where('ordering_date', $orderingDate)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->where('pay', PayEnum::PAY_SUCCESS)
+            ->where('d_id', $dinnerID)
+            ->count();
+        return $record;
+    }
 
     public static function userOrdering($phone, $consumption_time)
     {
