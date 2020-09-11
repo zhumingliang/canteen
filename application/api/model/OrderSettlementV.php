@@ -33,7 +33,7 @@ class OrderSettlementV extends Model
                 }
             }) ->where( function ($query) use ($type) {
                 if ($type !== 'all') {
-                    $query->where('types', $type);
+                    $query->where('type', $type);
                 }
             })
             ->where(function ($query) use ($company_ids, $canteen_id, $dinner_id, $type) {
