@@ -84,8 +84,7 @@ class SendSort
             $sortCode = $data['sortCode'];
             $websocketCode = $data['websocketCode'];
             $consumptionType = $data['consumptionType'];
-           // $order = OrderT::get($orderID);
-            //$outsider = $order->outsider;
+
             $machine = MachineT::getSortMachine($canteenID, $outsider);
             if ($machine) {
                 $sendData = [
