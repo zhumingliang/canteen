@@ -20,7 +20,7 @@ class OrderSettlementV extends Model
                                            $consumption_type, $time_begin, $time_end, $company_ids, $type)
     {
         //$time_end = addDay(1, $time_end);
-        $list = self::whereBetweenTime('ordering_date', $time_begin, $time_end)
+        $list = self::where('ordering_date', '>=', $time_begin)->where('ordering_date', '<=', $time_end)
             ->where(function ($query) use ($name, $phone, $department_id) {
                 if (strlen($name)) {
                     $query->where('username', $name);
@@ -31,7 +31,7 @@ class OrderSettlementV extends Model
                 if (!empty($department_id)) {
                     $query->where('department_id', $department_id);
                 }
-            }) ->where( function ($query) use ($type) {
+            })->where(function ($query) use ($type) {
                 if ($type !== 'all') {
                     $query->where('type', $type);
                 }
@@ -85,7 +85,8 @@ class OrderSettlementV extends Model
             })
             ->field('order_id,used_time,username,phone,canteen,department,dinner,booking,used,type,ordering_date,money,consumption_type')
             ->order('ordering_date DESC,phone')
-            ->paginate($size, false, ['page' => $page])->toArray();
+            //->fetchSql(true)->select();
+        ->paginate($size, false, ['page' => $page])->toArray();
         return $list;
 
     }
@@ -95,7 +96,7 @@ class OrderSettlementV extends Model
                                                  $consumption_type, $time_begin, $time_end, $company_ids, $type)
     {
         // $time_end = addDay(1, $time_end);
-        $list = self::whereBetweenTime('ordering_date', $time_begin, $time_end)
+        $list = self::where('ordering_date', '>=', $time_begin)->where('ordering_date', '<=', $time_end)
             ->where(function ($query) use ($name, $phone, $department_id) {
                 if (strlen($name)) {
                     $query->where('username', $name);
@@ -107,7 +108,7 @@ class OrderSettlementV extends Model
                     $query->where('department_id', $department_id);
                 }
             })
-            ->where( function ($query) use ($type) {
+            ->where(function ($query) use ($type) {
                 if ($type !== 'all') {
                     $query->where('types', $type);
                 }

@@ -55,7 +55,7 @@ class OrderingV extends Model
             ->where('state', CommonEnum::STATE_IS_OK)
             ->where('pay', PayEnum::PAY_SUCCESS)
             ->where('d_id', $dinnerID)
-            ->count();
+            ->sum('count');
         return $record;
     }
 
