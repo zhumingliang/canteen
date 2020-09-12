@@ -970,7 +970,7 @@ class OrderService extends BaseService
                             'order_id' => $orderId,
                             'ordering_date' => $v2['ordering_date'],
                             'consumption_sort' => $v['number'],
-                            'order_sort' => $v['order_sort'],
+                            'order_sort' => $v['number'],
                             'count' => 1,
                             'money' => $v['money'],
                             'order_num' => makeOrderNo(),
