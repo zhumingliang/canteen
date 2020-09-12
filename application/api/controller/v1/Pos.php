@@ -57,7 +57,7 @@ class Pos extends BaseController
         $total = Db::query($sql);
         //金额等于每笔订单的金额大于0的总数
 
-        $SQL = "select ifnull(sum(money),0) as sum from canteen_shop_order_t where date_format(create_time,'%Y-%m-%d') = '" . $start."'";
+        $SQL = "select ifnull(sum(money),0) as sum from canteen_shop_order_t where date_format(create_time,'%Y-%m-%d') = '" . $start . "'";
 
         $money = Db::query($SQL);
         $data = [['count' => $total[0]['count'],
@@ -168,28 +168,27 @@ class Pos extends BaseController
      */
     public function loss()
     {
-        $phone=Request::param('phone');
-        $birthday=Request::param('birthday');
-        $companyId=Request::param('company_id');
+        $phone = Request::param('phone');
+        $birthday = Request::param('birthday');
+        $companyId = Request::param('company_id');
         $date = date('Y-m-d H:i:s');
         $data = db('company_staff_t')->where('phone', $phone)
             ->where('birthday', $birthday)
             ->where('company_id', $companyId)
             ->find();
-        $uId=$data['id'];
-        if(empty($data)){
-            throw new AuthException(['msg'=>'输入信息错误，挂失失败']);
-        }
-        else{
+        $uId = $data['id'];
+        if (empty($data)) {
+            throw new AuthException(['msg' => '输入信息错误，挂失失败']);
+        } else {
             $sql = "update canteen_staff_card_t set state = 1,update_time = '" . $date . "' where staff_id =" . $uId;
             $date = Db::execute($sql);
-            $sql2=db('company_staff_t')
+            $sql2 = db('company_staff_t')
                 ->where('phone', $phone)
                 ->where('birthday', $birthday)
                 ->where('company_id', $companyId)
                 ->update(['state' => '2']);
 
-            if ($date >0) {
+            if ($date > 0) {
                 return json(new SuccessMessage());
 
 
@@ -202,22 +201,21 @@ class Pos extends BaseController
      */
     public function cancel()
     {
-        $phone=Request::param('phone');
-        $birthday=Request::param('birthday');
-        $companyId=Request::param('company_id');
+        $phone = Request::param('phone');
+        $birthday = Request::param('birthday');
+        $companyId = Request::param('company_id');
         $date = date('Y-m-d H:i:s');
         $data = db('company_staff_t')->where('phone', $phone)
             ->where('birthday', $birthday)
             ->where('company_id', $companyId)
             ->find();
-        $uId=$data['id'];
-        if(empty($data)){
-            throw new AuthException(['msg'=>'输入信息错误，注销失败']);
-        }
-        else{
+        $uId = $data['id'];
+        if (empty($data)) {
+            throw new AuthException(['msg' => '输入信息错误，注销失败']);
+        } else {
             $sql = "update canteen_staff_card_t set state = 3,update_time = '" . $date . "' where staff_id =" . $uId;
             $date = Db::execute($sql);
-            $sql2=db('company_staff_t')
+            $sql2 = db('company_staff_t')
                 ->where('phone', $phone)
                 ->where('birthday', $birthday)
                 ->where('company_id', $companyId)
@@ -225,7 +223,6 @@ class Pos extends BaseController
 
             if ($date > 0) {
                 return json(new SuccessMessage());
-
 
 
             }
@@ -237,22 +234,21 @@ class Pos extends BaseController
      */
     public function recover()
     {
-        $phone=Request::param('phone');
-        $birthday=Request::param('birthday');
-        $companyId=Request::param('company_id');
+        $phone = Request::param('phone');
+        $birthday = Request::param('birthday');
+        $companyId = Request::param('company_id');
         $date = date('Y-m-d H:i:s');
         $data = db('company_staff_t')->where('phone', $phone)
             ->where('birthday', $birthday)
             ->where('company_id', $companyId)
             ->find();
-        $uId=$data['id'];
-        if(empty($data)){
-            throw new AuthException(['msg'=>'输入信息错误，恢复失败']);
-        }
-        else{
+        $uId = $data['id'];
+        if (empty($data)) {
+            throw new AuthException(['msg' => '输入信息错误，恢复失败']);
+        } else {
             $sql = "update canteen_staff_card_t set state = 1,update_time = '" . $date . "' where staff_id =" . $uId;
             $date = Db::execute($sql);
-            $sql2=db('company_staff_t')
+            $sql2 = db('company_staff_t')
                 ->where('phone', $phone)
                 ->where('birthday', $birthday)
                 ->where('company_id', $companyId)
@@ -386,11 +382,25 @@ class Pos extends BaseController
         if ($user['state'] != 1) {
             throw new AuthException(['msg' => '账号已经停用。请在挂失功能中启用账号或注销卡号，再重新绑定']);
         }
-        $deleteRes = db('staff_card_t')
+        $staff_id = $user['id'];
+
+        $sql = "select id from canteen_staff_card_t where state = 1 and (staff_id = '".$staff_id."' or card_code = '".$card_code."')";
+        $cardInfo = Db::query($sql);
+
+        if (!empty($cardInfo)) {
+            throw new AuthException(['msg' => '该卡或账号已被绑定，请先注销后再绑卡']);
+        }
+        db('staff_card_t')
             ->whereOr('staff_id', $user['id'])
             ->whereOr('card_code', $card_code)
             ->delete();
-        $data = ['staff_id' => $user['id'], 'card_code' => $card_code, 'state' => 1, 'create_time' => $date, 'update_time' => $date];
+        $data = [
+            'staff_id' => $user['id'],
+            'card_code' => $card_code,
+            'state' => 1,
+            'create_time' => $date,
+            'update_time' => $date
+        ];
         $save = db('staff_card_t')
             ->data($data)
             ->insert();
