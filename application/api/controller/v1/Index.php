@@ -114,14 +114,7 @@ Index extends BaseController
 
     public function test()
     {
-        $consumptionType = 'more';
-        $orders = OrderingV::getRecordForDayOrderingByPhone("2020-09-16", "下午茶", "13794247582");
-        if ($consumptionType == "one") {
-            $consumptionCount = count($orders);
-        } else {
-            $consumptionCount = array_sum(array_column($orders, 'count'));
-        }
-        echo $consumptionCount;
+        return json(\app\api\service\Token::getCurrentTokenVar());
 
         /*        $data = [
                     '朝阳社区' => '6-24,402-418,472,701-705,816-845,857,964-971,988—989,2188-2210,2249-2266,2469-2481',
@@ -173,8 +166,6 @@ Index extends BaseController
 
         // echo (new Printer())->printOutsiderOrderDetail(33051, '921533330', 'more');
 
-
-        //return json(\app\api\service\Token::getCurrentTokenVar());
 
         /* $data = (new ExcelService())->saveTestExcel();
          $fail = [];
