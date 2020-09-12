@@ -2820,7 +2820,7 @@ class OrderService extends BaseService
         $data['count'] = $order->count;
         $data['delivery_fee'] = $order->delivery_fee;
         $data['ordering_date'] = $order->ordering_date;
-        $data['remar'] = $order->remark;
+        $data['remark'] = $order->remark;
         $data['meal_time_end'] = $dinner['meal_time_end'];
         $dataList = [];
         foreach ($sub as $k => $v) {
