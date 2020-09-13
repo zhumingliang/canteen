@@ -114,10 +114,8 @@ Index extends BaseController
 
     public function test($code = "")
     {
-        $set = "webSocketReceiveCode";
-        $check = Redis::instance()->sIsMember($set, $code);
-        var_dump($check);
-        // return json(\app\api\service\Token::getCurrentTokenVar());
+
+         return json(\app\api\service\Token::getCurrentTokenVar());
 
         /*        $data = [
                     '朝阳社区' => '6-24,402-418,472,701-705,816-845,857,964-971,988—989,2188-2210,2249-2266,2469-2481',

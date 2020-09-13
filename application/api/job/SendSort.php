@@ -25,11 +25,9 @@ class SendSort
      */
     public function fire(Job $job, $data)
     {
-        LogService::saveJob('jobBegin');
         // 有些消息在到达消费者时,可能已经不再需要执行了
         $isJobStillNeedToBeDone = $this->checkDatabaseToSeeIfJobNeedToBeDone($data);
         if (!$isJobStillNeedToBeDone) {
-            LogService::saveJob('jobDelete');
             $job->delete();
             return;
         }
@@ -88,8 +86,6 @@ class SendSort
             $consumptionType = $data['consumptionType'];
 
             $machine = MachineT::getSortMachine($canteenID, $outsider);
-            LogService::saveJob("$canteenID:$outsider");
-            LogService::saveJob(json_encode($machine));
             if ($machine) {
                 $sendData = [
                     'errorCode' => 0,
