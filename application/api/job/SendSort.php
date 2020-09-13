@@ -86,6 +86,8 @@ class SendSort
             $consumptionType = $data['consumptionType'];
 
             $machine = MachineT::getSortMachine($canteenID, $outsider);
+            LogService::saveJob("$canteenID:$outsider");
+            LogService::saveJob(json_encode($machine));
             if ($machine) {
                 $sendData = [
                     'errorCode' => 0,
