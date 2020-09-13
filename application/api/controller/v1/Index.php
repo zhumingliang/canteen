@@ -112,10 +112,11 @@ Index extends BaseController
          echo implode('|', $user_ids);*/
     }
 
-    public function test()
+    public function test($code = "")
     {
-        $strategies = (new CanteenService())->getStaffAllConsumptionStrategy(155, 62);
-        print_r($strategies);
+        $set = "webSocketReceiveCode";
+        $check = Redis::instance()->sIsMember($set, $code);
+        var_dump($check);
         // return json(\app\api\service\Token::getCurrentTokenVar());
 
         /*        $data = [
