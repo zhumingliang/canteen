@@ -872,9 +872,9 @@ class OrderService extends BaseService
             if (empty($detail)) {
                 throw new ParameterException(['msg' => '订餐数据格式错误']);
             }
-            $u_id = Token::getCurrentUid();
+            $u_id =  Token::getCurrentUid();
             $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
-            $company_id = Token::getCurrentTokenVar('current_company_id');
+            $company_id =  Token::getCurrentTokenVar('current_company_id');
             $phone = Token::getCurrentPhone();
             $staff = (new UserService())->getUserCompanyInfo($phone, $company_id);
             $staff_type_id = $staff->t_id;
@@ -936,6 +936,7 @@ class OrderService extends BaseService
             $dinner_id = $v['d_id'];
             if (!empty($ordering_data)) {
                 foreach ($ordering_data as $k2 => $v2) {
+
                     $orderId = $this->checkOrderParentExits($v2['ordering_date'], $canteen_id, $dinner_id, $phone);
                     if (!$orderId) {
                         //处理总订单：1.检测订餐日期餐次是否已经订餐；2.生成订单
@@ -1017,7 +1018,7 @@ class OrderService extends BaseService
                     $orderMoney = $this->checkUserCanOnlineOrderMore($strategy, $phone, $dinner,
                         $v2['ordering_date'],
                         $canteen_id, $v2['count']);
-                    $detail[$k]['ordering']['orderMoney'] = $orderMoney;
+                    $detail[$k]['ordering'][$k2]['orderMoney'] = $orderMoney;
                     foreach ($orderMoney as $k => $v) {
                         $allMoney += ($v['money'] + $v['sub_money']);
                     }
@@ -2778,7 +2779,7 @@ class OrderService extends BaseService
         $data['delivery_fee'] = $order->delivery_fee;
         $data['ordering_date'] = $order->ordering_date;
         $data['meal_time_end'] = $dinner['meal_time_end'];
-        $data['remark'] =$order->remark;
+        $data['remark'] = $order->remark;
         $status = $this->getOrderStatus($order->state, $order->used, $order->ordering_date, $dinner['meal_time_end']);
         $consumptionStatus = $this->getConsumptionStatus($order->booking, $order->used);
         $dataList = [];
