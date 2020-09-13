@@ -872,9 +872,9 @@ class OrderService extends BaseService
             if (empty($detail)) {
                 throw new ParameterException(['msg' => '订餐数据格式错误']);
             }
-            $u_id =  Token::getCurrentUid();
+            $u_id = Token::getCurrentUid();
             $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
-            $company_id =  Token::getCurrentTokenVar('current_company_id');
+            $company_id = Token::getCurrentTokenVar('current_company_id');
             $phone = Token::getCurrentPhone();
             $staff = (new UserService())->getUserCompanyInfo($phone, $company_id);
             $staff_type_id = $staff->t_id;
@@ -953,7 +953,7 @@ class OrderService extends BaseService
                             'address_id' => $address_id,
                             'pay' => PayEnum::PAY_SUCCESS,
                             'delivery_fee' => $delivery_fee,
-                            'ordering_type' => 'personal_choice',
+                            'ordering_type' => OrderEnum::ORDERING_ONLINE,
                             'staff_type_id' => $staff_type_id,
                             'department_id' => $department_id,
                             'staff_id' => $staff_id,
@@ -980,6 +980,7 @@ class OrderService extends BaseService
                             'order_sort' => $v['number'],
                             'count' => 1,
                             'money' => $v['money'],
+                            'ordering_type' => OrderEnum::ORDERING_ONLINE,
                             'order_num' => makeOrderNo(),
                             'sub_money' => $v['sub_money'],
                             'consumption_type' => $v['consumption_type'],
