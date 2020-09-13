@@ -249,7 +249,7 @@ class OrderStatisticService
     function takeoutStatisticForOfficial($page, $size,
                                          $ordering_date, $dinner_id, $status, $department_id)
     {
-        $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
+        $canteen_id = 155;//Token::getCurrentTokenVar('current_canteen_id');
         $records = OrderTakeoutStatisticV::officialStatistic($page, $size,
             $ordering_date, $dinner_id, $status, $department_id, $canteen_id);
         return $records;

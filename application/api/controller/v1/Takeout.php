@@ -76,7 +76,7 @@ class Takeout extends BaseController
      * @apiParam (请求参数说明) {string} dinner_id  餐次id：全部传0
      * @apiParam (请求参数说明) {string} department_id  部门id，全部传0
      * @apiParam (请求参数说明) {string} ordering_date  订餐日期
-     * @apiParam (请求参数说明) {int} status  状态：3：已接单；4:已完成 ;6 全部
+     * @apiParam (请求参数说明) {int} status  状态：0 全部；2：未接单；3：已接单；4:已完成 ;
      * @apiSuccessExample {json}返回样例:
      * {"msg":"ok","errorCode":0,"code":200,"data":{"total":1,"per_page":"20","current_page":1,"last_page":1,"data":[{"order_id":233,"province":"广东省","city":"江门市","area":"蓬江区","address":"。。。","username":"小新","phone":"18219112778","used":2,"count":2,"money":"12.00","delivery_fee":"0.00","foods":[{"o_id":233,"name":"肉2","price":"1.0","count":1},{"o_id":233,"name":"肉","price":"1.0","count":1}]}]}}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
