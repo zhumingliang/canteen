@@ -8,7 +8,7 @@ class Takeout extends BaseValidate
 {
     protected $rule = [
         'order_id' => 'require|isPositiveInteger',
-        'status' => 'require|in:1,2,3,4,5,6',
+        'status' => 'require|in:0,1,2,3,4,5,6',
         'type' => 'require|in:1,2,3,4',
         'ordering_date' => 'require|isNotEmpty',
         'ids' => 'require|isNotEmpty',
