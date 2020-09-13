@@ -154,12 +154,13 @@ class Pos extends BaseController
             ->find();
         $username = $data['username'];
         $uId = $data['id'];
+        $state = $data['state'];
         if (empty($data)) {
             throw new AuthException(['msg' => '查询信息错误，未找到卡号']);
         } else {
             $data2 = db('staff_card_t')->where('staff_id', $uId)->find();
             $cardCode = $data2['card_code'];
-            return json(new SuccessMessageWithData(['data' => ['username' => $username, 'card_code' => $cardCode]]));
+            return json(new SuccessMessageWithData(['data' => ['username' => $username, 'card_code' => $cardCode,'state' =>$state]]));
         }
     }
 
