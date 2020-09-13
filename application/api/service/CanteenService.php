@@ -416,7 +416,7 @@ class CanteenService
         $shop = ShopT::where('c_id', $company_id)
             ->field('id,name,"shop" as type')
             ->find();
-        if ($shop){
+        if ($shop) {
             array_push($canteens, $shop);
         }
         return $canteens;
@@ -766,6 +766,10 @@ class CanteenService
                 $strategy = ConsumptionStrategyT::get($params['id']);
                 $detail = json_decode($params['detail'], true);
                 $this->prefixStrategyDetail($strategy->id, $strategy->c_id, $strategy->d_id, $strategy->t_id, $detail);
+            }
+            if (!empty($params['consumption_type'])) {
+                ConsumptionStrategyT::update(['consumption_type' => $params['consumption_type']],
+                    ['c_id'=>$strategy->c_id]);
             }
             Db::commit();
         } catch (Exception $e) {
