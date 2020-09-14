@@ -72,7 +72,10 @@ class WalletService
             if ($k < 2) {
                 continue;
             }
-            if (!in_array($v[0] . '&' . $v[1], $newStaffs)) {
+            if (!in_array($v[0] . '&' . $v[1], $newStaffs) ) {
+                array_push($fail, '第' . $k . '行数据有问题');
+            }
+            if ($v[3]!=0 &&empty($v[3])){
                 array_push($fail, '第' . $k . '行数据有问题');
             }
         }
