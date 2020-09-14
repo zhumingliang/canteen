@@ -75,10 +75,10 @@ class OrderSettlementV extends Model
                         $query->where('type', 'deduction');
                     } else if ($consumption_type == 6) {
                         //系统补扣
-                        $query->where('money', '>', 0);
+                        $query->where('type', 'shop')->where('money', '>', 0);
                     } else if ($consumption_type == 7) {
                         //系统补扣
-                        $query->where('money', '<', 0);
+                        $query->where('type', 'shop')->where('money', '<', 0);
                     }
                 }
 
@@ -148,12 +148,12 @@ class OrderSettlementV extends Model
                     } else if ($consumption_type == 5) {
                         //系统补扣
                         $query->where('type', 'deduction');
-                    } else if ($consumption_type == 6) {
+                    }else if ($consumption_type == 6) {
                         //系统补扣
-                        $query->where('money', '>', 0);
+                        $query->where('type', 'shop')->where('money', '>', 0);
                     } else if ($consumption_type == 7) {
                         //系统补扣
-                        $query->where('money', '<', 0);
+                        $query->where('type', 'shop')->where('money', '<', 0);
                     }
                 }
 

@@ -461,6 +461,7 @@ class ConsumptionService
         :in_takeCode,:in_qrcodeUrl,@resCode,@resMessage,@returnDinnerID)',
                 $data);
         } else {
+
             Db::query('call canteenConsumptionTimesMoreWX(:in_orderID,:in_userPhone,:in_readyCode,
         :in_takeCode,:in_qrcodeUrl,@resCode,@resMessage,@returnDinnerID)',
                 $data);
@@ -477,6 +478,7 @@ class ConsumptionService
             ]);
         }
         $sortCode = $this->saveRedisOrderCode($canteenID, $returnDinnerID, $orderID);
+        1;
         //推送消息给显示器
         $this->sortTask($canteenID, $outsider, $orderID, $sortCode, $consumptionType);
         //启动打印机打印信息
