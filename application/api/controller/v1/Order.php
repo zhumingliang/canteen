@@ -854,6 +854,7 @@ class Order extends BaseController
      * @apiSuccess (返回参数说明) {string} username 用户姓名
      * @apiSuccess (返回参数说明) {string} dinner 餐次
      * @apiSuccess (返回参数说明) {int} count 订餐数量
+     * @apiSuccess (返回参数说明) {int} fixed 是否固定消费：1 ：是；2 ： 否
      * @apiSuccess (返回参数说明) {float} order_money 订单金额
      * @apiSuccess (返回参数说明) {string} ordering_type 订餐方式：online：线上订单，personal_choice：个人选菜；no:未订餐就餐
      */

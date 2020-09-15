@@ -70,7 +70,7 @@ class OrderService extends BaseService
             $delivery_fee = $this->checkUserOutsider($params['type'], $canteen_id);
             $consumptionType = $this->getConsumptionType($phone, $company_id, $canteen_id, $dinner_id);
             //检测用户是否可以订餐并返回订单金额
-            $strategyMoney = $this->checkUserCanOrder($dinner, $ordering_date, $canteen_id, $count, $detail, $consumptionType);
+            $strategyMoney = $this->checkUserCanOrder($dinner, $ordering_date, $canteen_id, $count, $detail, 'person_choice', $consumptionType);
             $orderMoney = $strategyMoney['strategyMoney'];
             if ($consumptionType == StrategyEnum::CONSUMPTION_TIMES_ONE) {
                 $orderId = $this->handleConsumptionTimesOne($u_id, $ordering_date, $company_id, $canteen_id,
