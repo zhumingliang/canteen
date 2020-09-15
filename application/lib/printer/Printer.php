@@ -422,12 +422,13 @@ class Printer extends PrinterBase
 
         $content .= '<BR>--------------------------------<BR>';
         $content .= '金额详情：<BR>';
-        $content .= '份数　　　　　 标准金额   附加金额<BR>';
+        $content .= '份数　　　 标准金额   附加金额<BR>';
         if (count($sub)) {
             foreach ($sub as $k5 => $v5) {
                 $name = "第 " . $v5['order_sort'] . "份";
                 $price = $v5['money'];
-                $num = $v5['order_sort'];
+               // $num = $v5['order_sort'];
+                $num = '';
                 $prices = $v5['sub_money'];
                 $kw3 = '';
                 $kw1 = '';
