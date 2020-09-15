@@ -240,7 +240,7 @@ class OrderService extends BaseService
         $dinner = DinnerT::dinnerInfo($dinner_id);
         $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
         $delivery_fee = $this->checkUserOutsider($params['type'], $canteen_id);
-        $orderMoney = $this->checkUserCanOrder($dinner, $ordering_date, $canteen_id, $count, $detail, $ordering_type);
+        $orderMoney = $this->checkUserCanOrder($dinner, $ordering_date, $canteen_id, $count, $detail,"person_choice",$ordering_type);
         $orderMoney['delivery_fee'] = $delivery_fee;
         return $orderMoney;
 
