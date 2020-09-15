@@ -2692,13 +2692,22 @@ class OrderService extends BaseService
     }
 
     public
-    function used($order_id)
+    function used($order_id, $consumptionType)
     {
-        $order = OrderT::update([
-            'used' => CommonEnum::STATE_IS_OK,
-            'used_time' => date('Y-m-d H:i:s')
-        ],
-            ['id' => $order_id]);
+        if ($consumptionType == "one") {
+            $order = OrderT::update([
+                'used' => CommonEnum::STATE_IS_OK,
+                'used_time' => date('Y-m-d H:i:s')
+            ],
+                ['id' => $order_id]);
+        } else {
+            $order = OrderSubT::update([
+                'used' => CommonEnum::STATE_IS_OK,
+                'used_time' => date('Y-m-d H:i:s')
+            ],
+                ['id' => $order_id]);
+        }
+
         if (!$order) {
             throw new UpdateException();
         }

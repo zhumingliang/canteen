@@ -26,7 +26,7 @@ class Department extends BaseValidate
         'save' => ['name', 'parent_id'],
         'update' => ['name', 'id'],
         'delete' => ['id'],
-        'addStaff' => ['company_id', 'canteens', 'd_id', 't_id', 'username', 'code', 'phone', 'card_num'],
+        'addStaff' => ['company_id', 'canteens', 'd_id', 't_id', 'username', 'code', 'phone'],
         'updateStaff' => ['id'],
         'handleStaff' => ['id', 'state'],
         'uploadStaffs' => ['c_id'],

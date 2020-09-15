@@ -155,9 +155,11 @@ class Takeout extends BaseController
      * @apiDescription 微信端-外卖管理-确认送达订单
      * @apiExample {post}  请求样例:
      *    {
-     *       "id": 1
+     *       "id": 1,
+     *       "consumption_type": "one"
      *     }
-     * @apiParam (请求参数说明) {string} ids  订单id
+     * @apiParam (请求参数说明) {string} id  订单id
+     * @apiParam (请求参数说明) {string} consumption_type  订单类型：one 一次扣费；more 多次扣费
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
@@ -166,7 +168,8 @@ class Takeout extends BaseController
     public function used()
     {
         $order_id = Request::param('id');
-        (new OrderService())->used($order_id);
+        $consumptionType = Request::param('consumption_type');
+        (new OrderService())->used($order_id,$consumptionType);
         return json(new SuccessMessage());
     }
 
