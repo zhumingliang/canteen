@@ -107,11 +107,17 @@ class TakeoutService
         $sn = (new Printer())->checkPrinter($canteenId, 4);
         if (!empty($oneIDArr)) {
             foreach ($oneIDArr as $k => $v) {
+                if (!$v) {
+                    continue;
+                }
                 (new Printer())->printOutsiderOrderDetail($v, $sn, 'one');
             }
         }
         if (!empty($moreIDArr)) {
             foreach ($moreIDArr as $k => $v) {
+                if (!$v) {
+                    continue;
+                }
                 (new Printer())->printOutsiderOrderDetail($v, $sn, 'more');
             }
         }
