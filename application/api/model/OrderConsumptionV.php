@@ -41,7 +41,8 @@ class OrderConsumptionV extends Model
                 if ($order_type !== 'all') {
                     $query->where('location', $order_type);
                 }
-            })            ->where('consumption_date', '>=', $time_begin)
+            })
+            ->where('consumption_date', '>=', $time_begin)
             ->where('consumption_date', '<=', $time_end)
             ->where(function ($query) use (
                 $status, $department_id,
@@ -272,7 +273,7 @@ class OrderConsumptionV extends Model
                 }
             }
         })
-            ->where( function ($query) use ($order_type) {
+            ->where(function ($query) use ($order_type) {
                 if ($order_type !== 'all') {
                     $query->where('location', $order_type);
                 }
@@ -321,7 +322,7 @@ class OrderConsumptionV extends Model
                     $query->where('company_id', $company_id);
                 }
             }
-        }) ->where( function ($query) use ($order_type) {
+        })->where(function ($query) use ($order_type) {
             if ($order_type !== 'all') {
                 $query->where('location', $order_type);
             }
@@ -373,7 +374,7 @@ class OrderConsumptionV extends Model
                     $query->where('company_id', $company_id);
                 }
             }
-        }) ->where( function ($query) use ($order_type) {
+        })->where(function ($query) use ($order_type) {
             if ($order_type !== 'all') {
                 $query->where('location', $order_type);
             }

@@ -2701,7 +2701,7 @@ class OrderService extends BaseService
             ],
                 ['id' => $order_id]);
         } else {
-            $order = OrderSubT::update([
+            $order = OrderParentT::update([
                 'used' => CommonEnum::STATE_IS_OK,
                 'used_time' => date('Y-m-d H:i:s')
             ],
