@@ -32,7 +32,7 @@ class UploadExcel
         // 有些消息在到达消费者时,可能已经不再需要执行了
         $isJobStillNeedToBeDone = $this->checkDatabaseToSeeIfJobNeedToBeDone($data);
         if (!$isJobStillNeedToBeDone) {
-            $job->delete();
+            $this->clearUploading($data['company_id'], $data['u_id'], $data['type']);            $job->delete();
             return;
         }
         //执行excel导入

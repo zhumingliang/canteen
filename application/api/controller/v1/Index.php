@@ -35,6 +35,7 @@ use app\api\service\WalletService;
 use app\api\service\WeiXinService;
 use app\lib\Date;
 use app\lib\enum\CommonEnum;
+use app\lib\enum\StrategyEnum;
 use app\lib\exception\ParameterException;
 use app\lib\exception\SaveException;
 use app\lib\exception\SuccessMessage;
@@ -115,7 +116,11 @@ Index extends BaseController
     public function test($code = "")
     {
 
-         return json(\app\api\service\Token::getCurrentTokenVar());
+        $orders = OrderingV::getRecordForDayOrderingByPhone("2020-09-17", "午餐", "13794247582");
+        $consumptionCount = array_sum(array_column($orders, 'count'));
+
+        echo $consumptionCount;
+        // return json(\app\api\service\Token::getCurrentTokenVar());
 
         /*        $data = [
                     '朝阳社区' => '6-24,402-418,472,701-705,816-845,857,964-971,988—989,2188-2210,2249-2266,2469-2481',
