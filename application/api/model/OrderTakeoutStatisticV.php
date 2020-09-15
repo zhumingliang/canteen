@@ -176,7 +176,7 @@ class OrderTakeoutStatisticV extends Model
                         ->field('o_id,name,price,count');
                 }
             ])
-            ->field('order_id,province,city,area,address,address_username as username,address_phone as phone,used,count,money,delivery_fee,canteen_id,consumption_type')
+            ->field('order_id,province,city,area,address,address_username as username,address_phone as phone,used,count,money,delivery_fee,canteen_id,consumption_type,receive')
             ->order('used DESC')
             ->paginate($size, false, ['page' => $page])->toArray();
         return $list;
