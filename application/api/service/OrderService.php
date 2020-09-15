@@ -240,7 +240,7 @@ class OrderService extends BaseService
         $dinner = DinnerT::dinnerInfo($dinner_id);
         $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
         $delivery_fee = $this->checkUserOutsider($params['type'], $canteen_id);
-        $orderMoney = $this->checkUserCanOrder($dinner, $ordering_date, $canteen_id, $count, $detail,"person_choice",$ordering_type);
+        $orderMoney = $this->checkUserCanOrder($dinner, $ordering_date, $canteen_id, $count, $detail, "person_choice", $ordering_type);
         $orderMoney['delivery_fee'] = $delivery_fee;
         return $orderMoney;
 
@@ -274,7 +274,6 @@ class OrderService extends BaseService
             //检测该餐次订餐时间是否允许
             $this->checkDinnerForPersonalChoice($dinner, $ordering_date);
             $consumptionType = $this->getConsumptionType($phone, $company_id, $canteen_id, $dinner_id);
-
             //获取订单金额
             $orderMoney = $this->checkOutsiderOrderMoney($dinner_id, $detail);
 
@@ -526,12 +525,14 @@ class OrderService extends BaseService
         $company_id = Token::getCurrentTokenVar('current_company_id');
         //获取用户指定日期订餐数量
         $orders = OrderingV::getRecordForDayOrderingByPhone($day, $dinner->name, $phone);
+        $orderedCount = array_sum(array_column($orders, 'count'));
         $this->checkOrderedAnotherCanteen($canteen_id, $orders);
         if ($consumptionType == StrategyEnum::CONSUMPTION_TIMES_ONE) {
             $consumptionCount = count($orders);
         } else {
-            $consumptionCount = array_sum(array_column($orders, 'count'));
+            $consumptionCount = $orderedCount;
         }
+
         //检测消费策略
         $t_id = (new UserService())->getUserStaffTypeByPhone($phone, $company_id);
         //获取指定用户消费策略
@@ -539,6 +540,11 @@ class OrderService extends BaseService
         if (!$strategies) {
             throw new ParameterException(['msg' => '消费策略设置异常']);
         }
+
+        if ($orderedCount + $count > $strategies->ordered_count) {
+            throw new UpdateException(['msg' => '超出最大订餐数量，不能预定']);
+        }
+
         $consumptionType = $strategies->consumption_type;
         //检测打卡模式：一次性消费/逐次消费
         if ($consumptionType == StrategyEnum::CONSUMPTION_TIMES_ONE) {
@@ -2380,7 +2386,7 @@ class OrderService extends BaseService
         $phone = Token::getCurrentPhone();
         $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
         $company_id = Token::getCurrentTokenVar('current_company_id');
-        $records = ConsumptionRecordsV::recordsByPhone($phone, $canteen_id, $consumption_time, $page, $size);
+        $records = ConsumptionRecordsV::recordsByPhone($phone, $canteen_id, $company_id, $consumption_time, $page, $size);
         $records['data'] = $this->prefixConsumptionRecords($records['data']);
         $consumptionMoney = ConsumptionRecordsV::monthConsumptionMoneyByPhone($phone, $consumption_time);
         return [
@@ -2842,6 +2848,7 @@ class OrderService extends BaseService
         }
         $data['sub'] = $dataList;
         $data['foods'] = $order->foods;
+        $data['address'] = $order->address;
         return $data;
     }
 
