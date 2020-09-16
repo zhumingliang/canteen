@@ -2983,7 +2983,7 @@ class OrderService extends BaseService
                             $returnMoney['money'] = $meal_money;
                             $returnMoney['sub_money'] = $meal_sub_money;
                         }
-                        if ($orderFixed == CommonEnum::STATE_IS_FAIL) {
+                        if ($orderType == OrderEnum::ORDERING_CHOICE && $orderFixed == CommonEnum::STATE_IS_FAIL) {
                             $returnMoney['money'] = $foodMoney;
                             $returnMoney['meal_money'] = $foodMoney;
                         }

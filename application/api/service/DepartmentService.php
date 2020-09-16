@@ -259,7 +259,6 @@ class DepartmentService
         }
 
         if (count($success)) {
-            print_r($success);
             $all = (new CompanyStaffT())->saveAll($success);
             if (!$all) {
                 throw  new SaveException();
