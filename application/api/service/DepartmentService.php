@@ -264,18 +264,6 @@ class DepartmentService
                 throw  new SaveException();
             }
 
-            /*  $info = $this->getUploadStaffQrcodeAndCanteenInfo($all);
-              $qrcodeInfo = $info['qrcode'];
-              $canteenInfo = $info['canteen'];
-              $qrcods = (new StaffQrcodeT())->saveAll($qrcodeInfo);
-              if (!$qrcods) {
-                  throw  new SaveException();
-              }
-              $canteens = (new StaffCanteenT())->saveAll($canteenInfo);
-              if (!$canteens) {
-                  throw  new SaveException();
-              }*/
-
         }
         return [
             'fail' => $fail

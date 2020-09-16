@@ -1492,7 +1492,7 @@ class OrderService extends BaseService
                 throw new UpdateException(['msg' => '取消子订单失败']);
             }
             //更新其它订单排序
-            $strategy=(new CanteenService())->getStaffConsumptionStrategy($order->canteen_id, $order->dinner_id, $order->staff_type_id);
+            $strategy = (new CanteenService())->getStaffConsumptionStrategy($order->canteen_id, $order->dinner_id, $order->staff_type_id);
             $this->prefixOrderSortWhenUpdateOrder($strategy, $order->dinner_id, $order->phone, $order->ordering_date);
         }
     }
@@ -1725,16 +1725,16 @@ class OrderService extends BaseService
 
                 }
             }
-                $order->count = $updateCount;
-                $order->update_time = date('Y-m-d H:i:s');
-                $res = $order->save();
-                if (!$res) {
-                    throw new UpdateException();
-                }
-                //$this->updateParentOrderMoney($id);
-                //更新其它订单排序
-                $this->prefixOrderSortWhenUpdateOrder($strategy, $order->dinner_id, $order->phone, $order->ordering_date);
-                Db::commit();
+            $order->count = $updateCount;
+            $order->update_time = date('Y-m-d H:i:s');
+            $res = $order->save();
+            if (!$res) {
+                throw new UpdateException();
+            }
+            //$this->updateParentOrderMoney($id);
+            //更新其它订单排序
+            $this->prefixOrderSortWhenUpdateOrder($strategy, $order->dinner_id, $order->phone, $order->ordering_date);
+            Db::commit();
         } catch
         (Exception $e) {
             Db::rollback();
@@ -2925,6 +2925,9 @@ class OrderService extends BaseService
             return true;
         }
         $detail = $strategy->detail;
+        if (empty($detail)) {
+            throw new ParameterException(['msg' => "消费策略设置异常"]);
+        }
         $consumptionCount = 1;
         $updateParentOrderData = [];
         $updateSubOrderData = [];
@@ -2948,9 +2951,6 @@ class OrderService extends BaseService
                 ->order('id')
                 ->select();
             foreach ($subOrders as $k2 => $v2) {
-                if (empty($detail)) {
-                    throw new ParameterException(['msg' => "消费策略设置异常"]);
-                }
                 //获取消费策略中：订餐未就餐的标准金额和附加金额
                 $no_meal_money = 0;
                 $no_meal_sub_money = 0;
@@ -2958,7 +2958,7 @@ class OrderService extends BaseService
                 $meal_sub_money = 0;
                 foreach ($detail as $k3 => $v3) {
                     $returnMoney = [];
-                    if (($consumptionCount) == $v3['number']) {
+                    if ($consumptionCount == $v3['number']) {
                         $strategy = $v3['strategy'];
                         foreach ($strategy as $k4 => $v4) {
                             if ($v4['status'] == "no_meals_ordered") {
@@ -2992,8 +2992,8 @@ class OrderService extends BaseService
                         array_push($updateSubOrderData, $returnMoney);
 
                     }
-                    $consumptionCount++;
                 }
+                $consumptionCount++;
 
             }
             array_push($updateParentOrderData, [
