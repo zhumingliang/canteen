@@ -33,7 +33,7 @@ class OrderUsersStatisticV extends Model
             })
             ->where(function ($query) use ($key) {
                 if ($key) {
-                    $query->where('username|order_num|phone|sort_code|parent_order_num', 'like', "%$key%");
+                    $query->where('parent_id|username|order_num|phone|sort_code|parent_order_num', 'like', "%$key%");
                 }
             })
             ->with([

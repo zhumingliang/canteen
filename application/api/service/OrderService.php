@@ -2920,7 +2920,6 @@ class OrderService extends BaseService
         $consumptionCount = 1;
         foreach ($orders as $k => $v) {
             $parentId = $v['id'];
-            $consumptionType = $v['consumption_type'];
             $orderType = $v['type'];
             $orderFixed = $v['fixed'];
             if ($v['used'] == CommonEnum::STATE_IS_OK) {
@@ -2928,12 +2927,16 @@ class OrderService extends BaseService
             }
             if ($orderType == OrderEnum::ORDERING_CHOICE && $orderFixed == CommonEnum::STATE_IS_FAIL) {
                 //个人选菜且动态消费-获取订单菜品金额
-                if ($consumptionType == "one") {
-                    $foods=OrderDetailT::detail();
+                $foods = SubFoodT::detail($parentId);
+                $foodMoney = array_sum(array_column($foods, 'money'));
+            }
+            //获取子订单
+            $subOrders = OrderSubT::where('order_id', $parentId)
+                ->where('state', CommonEnum::STATE_IS_OK)
+                ->order('id')
+                ->select();
+            foreach ($subOrders as $k2 => $v2) {
 
-                }else{
-
-                }
             }
 
 
