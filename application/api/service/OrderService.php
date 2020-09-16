@@ -2852,7 +2852,7 @@ class OrderService extends BaseService
             $status = $this->getOrderStatus($v['state'], $v['used'], $order->ordering_date, $dinner['meal_time_end']);
             $consumptionStatus = $this->getConsumptionStatus($booking, $v['used']);
             $detail = [
-                'number' => $v['order_sort'],
+                'number' => $v['consumption_sort'],
                 'order_id' => $v['id'],
                 'money' => round($v['money'], 2),
                 'sub_money' => round($v['sub_money'], 2),
