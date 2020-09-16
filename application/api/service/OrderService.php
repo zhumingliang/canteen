@@ -1724,6 +1724,7 @@ class OrderService extends BaseService
                     throw new UpdateException(['msg' => '修改子订单数量失败']);
 
                 }
+            }
                 $order->count = $updateCount;
                 $order->update_time = date('Y-m-d H:i:s');
                 $res = $order->save();
@@ -1734,7 +1735,6 @@ class OrderService extends BaseService
                 //更新其它订单排序
                 $this->prefixOrderSortWhenUpdateOrder($strategy, $order->dinner_id, $order->phone, $order->ordering_date);
                 Db::commit();
-            }
         } catch
         (Exception $e) {
             Db::rollback();
