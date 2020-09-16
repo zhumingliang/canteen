@@ -2934,7 +2934,7 @@ class OrderService extends BaseService
         foreach ($orders as $k => $v) {
             $parentMoney = 0;
             $parentId = $v['id'];
-            $orderType = $v['type'];
+            $orderType = $v['ordering_type'];
             $orderFixed = $v['fixed'];
             if ($v['used'] == CommonEnum::STATE_IS_OK) {
                 throw  new ParameterException(['msg' => '订单已经消费不能修改']);
@@ -2942,7 +2942,7 @@ class OrderService extends BaseService
             $foodMoney = 0;
             if ($orderType == OrderEnum::ORDERING_CHOICE && $orderFixed == CommonEnum::STATE_IS_FAIL) {
                 //个人选菜且动态消费-获取订单菜品金额
-                $foods = SubFoodT::detail($parentId);
+                $foods = SubFoodT::detailMoney($parentId);
                 $foodMoney = array_sum(array_column($foods, 'money'));
             }
             //获取子订单
@@ -2990,7 +2990,7 @@ class OrderService extends BaseService
                         $returnMoney['id'] = $v2['id'];
                         $returnMoney['number'] = $consumptionCount;
                         $returnMoney['order_sort'] = $consumptionCount;
-                        $parentMoney += $returnMoney['money'];
+                        $parentMoney += ($returnMoney['money'] + $returnMoney['sub_money']);
                         array_push($updateSubOrderData, $returnMoney);
 
                     }

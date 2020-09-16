@@ -21,7 +21,7 @@ class SubFoodT extends Model
     {
         $detail = self::where('o_id', $order_id)
             ->where('state', CommonEnum::STATE_IS_OK)
-            ->field("price*count as moeny")
+            ->field("price*count as money")
             ->select()->toArray();
         return $detail;
     }
