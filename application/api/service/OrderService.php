@@ -2918,6 +2918,8 @@ class OrderService extends BaseService
             return true;
         }
         $consumptionCount = 1;
+        $updateParentOrderData = [];
+        $updateSubOrderData = [];
         foreach ($orders as $k => $v) {
             $parentId = $v['id'];
             $orderType = $v['type'];

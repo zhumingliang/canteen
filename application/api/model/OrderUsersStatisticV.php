@@ -33,7 +33,8 @@ class OrderUsersStatisticV extends Model
             })
             ->where(function ($query) use ($key) {
                 if ($key) {
-                    $query->where('parent_id|username|order_num|phone|sort_code|parent_order_num', 'like', "%$key%");
+                    $key=(string)$key;
+                    $query->where('username|phone|sort_code|parent_id', 'like', $key);
                 }
             })
             ->with([
@@ -44,7 +45,7 @@ class OrderUsersStatisticV extends Model
             ])
             ->field('order_id as id,username,order_num,phone,sum(count) as count,strategy_type as consumption_type')
             ->group('order_id')
-            ->paginate($size, false, ['page' => $page]);
+           ->paginate($size, false, ['page' => $page]);
         return $users;
     }
 
