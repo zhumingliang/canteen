@@ -1236,7 +1236,6 @@ class OrderService extends BaseService
             } else {
                 if (Token::getCurrentTokenVar('type') == 'official') {
                     $moreIdArr = explode(',', $id);
-
                     $this->cancelParentConsumptionTimeMore($moreIdArr);
                 } else {
                     $this->cancelConsumptionTimesMoreOrder($id);
@@ -1492,6 +1491,9 @@ class OrderService extends BaseService
             if (!$subUpdate) {
                 throw new UpdateException(['msg' => '取消子订单失败']);
             }
+            //更新其它订单排序
+            $strategy=(new CanteenService())->getStaffConsumptionStrategy($order->canteen_id, $order->dinner_id, $order->staff_type_id);
+            $this->prefixOrderSortWhenUpdateOrder($strategy, $order->dinner_id, $order->phone, $order->ordering_date);
         }
     }
 
@@ -1686,11 +1688,11 @@ class OrderService extends BaseService
             $this->checkConsumptionTimesOrderCanUpdate($id);
             $this->checkOrderCanHandel($order->dinner_id, $order->ordering_date);
             //检测订单修改数量是否合法
+            $strategy = (new CanteenService())->getStaffConsumptionStrategy($order->canteen_id, $order->dinner_id, $order->staff_type_id);
             $orderCount = $order->count;
             if ($updateCount > $orderCount) {
                 $orderedCount = OrderingV::getOrderingCountByWithDinnerID($order->ordering_date, $order->dinner_id, $order->phone);
                 $checkCount = $orderedCount - $order->count + $updateCount;
-                $strategy = (new CanteenService())->getStaffConsumptionStrategy($order->canteen_id, $order->dinner_id, $order->staff_type_id);
                 if (!$strategy) {
                     throw new ParameterException(['msg' => '当前用户消费策略不存在']);
                 }
@@ -1715,7 +1717,6 @@ class OrderService extends BaseService
 
             } elseif ($updateCount < $orderCount) {
                 //减少子订单数量
-
                 $updateSub = OrderSubT::where('order_id', $id)
                     ->where('order_sort', '>', $updateCount)
                     ->update(['state' => CommonEnum::STATE_IS_FAIL]);
@@ -1729,7 +1730,9 @@ class OrderService extends BaseService
                 if (!$res) {
                     throw new UpdateException();
                 }
-                $this->updateParentOrderMoney($id);
+                //$this->updateParentOrderMoney($id);
+                //更新其它订单排序
+                $this->prefixOrderSortWhenUpdateOrder($strategy, $order->dinner_id, $order->phone, $order->ordering_date);
                 Db::commit();
             }
         } catch
@@ -1935,6 +1938,11 @@ class OrderService extends BaseService
                     $updateFoodsMoney = $this->getOrderFoodsMoney($id);
                 }
             }
+
+            $strategy = (new CanteenService())->getStaffConsumptionStrategy($order->canteen_id, $order->dinner_id, $order->staff_type_id);
+            if (!$strategy) {
+                throw new ParameterException(['msg' => '当前用户消费策略不存在']);
+            }
             //检测订单数量
             $orderCount = $order->count;
             $updateCount = $params['count'];
@@ -1951,10 +1959,7 @@ class OrderService extends BaseService
                     }
                 }
             } else {
-                $strategy = (new CanteenService())->getStaffConsumptionStrategy($order->canteen_id, $order->dinner_id, $order->staff_type_id);
-                if (!$strategy) {
-                    throw new ParameterException(['msg' => '当前用户消费策略不存在']);
-                }
+
                 //检测订单修改数量是否合法
                 if ($updateCount > $orderCount) {
                     $orderedCount = OrderingV::getOrderingCountByWithDinnerID($order->ordering_date, $order->dinner_id, $order->phone);
@@ -1997,8 +2002,10 @@ class OrderService extends BaseService
             if (!empty($detail)) {
                 $this->prefixUpdateOrderDetail($id, $detail, 'more');
             }
+            //更新其它订单排序
+            $this->prefixOrderSortWhenUpdateOrder($strategy, $order->dinner_id, $order->phone, $order->ordering_date);
 
-            $this->updateParentOrderMoney($id);
+            //$this->updateParentOrderMoney($id);
             Db::commit();
         } catch
         (Exception $e) {
@@ -2910,7 +2917,7 @@ class OrderService extends BaseService
         return $parent;
     }
 
-    public function prefixOrderSortWhenCancelOrder($strategy, $dinnerId, $phone, $orderingDate)
+    public function prefixOrderSortWhenUpdateOrder($strategy, $dinnerId, $phone, $orderingDate)
     {
         //1.获取用户所有订单
         $orders = OrderingV::getOrderingByWithDinnerID($orderingDate, $dinnerId, $phone);
@@ -2921,12 +2928,14 @@ class OrderService extends BaseService
         $updateParentOrderData = [];
         $updateSubOrderData = [];
         foreach ($orders as $k => $v) {
+            $parentMoney = 0;
             $parentId = $v['id'];
             $orderType = $v['type'];
             $orderFixed = $v['fixed'];
             if ($v['used'] == CommonEnum::STATE_IS_OK) {
                 throw  new ParameterException(['msg' => '订单已经消费不能修改']);
             }
+            $foodMoney = 0;
             if ($orderType == OrderEnum::ORDERING_CHOICE && $orderFixed == CommonEnum::STATE_IS_FAIL) {
                 //个人选菜且动态消费-获取订单菜品金额
                 $foods = SubFoodT::detail($parentId);
@@ -2947,21 +2956,20 @@ class OrderService extends BaseService
                 $no_meal_sub_money = 0;
                 $meal_money = 0;
                 $meal_sub_money = 0;
-                $i = 1;
-                foreach ($detail as $k => $v) {
+                foreach ($detail as $k3 => $v3) {
                     $returnMoney = [];
-                    if (($consumptionCount) == $v['number']) {
-                        $strategy = $v['strategy'];
-                        foreach ($strategy as $k2 => $v2) {
-                            if ($v2['status'] == "no_meals_ordered") {
-                                $no_meal_money = $v2['money'];
-                                $no_meal_sub_money = $v2['sub_money'];
-                            } else if ($v2['status'] == "ordering_meals") {
-                                $meal_money = $v2['money'];
-                                $meal_sub_money = $v2['sub_money'];
+                    if (($consumptionCount) == $v3['number']) {
+                        $strategy = $v3['strategy'];
+                        foreach ($strategy as $k4 => $v4) {
+                            if ($v4['status'] == "no_meals_ordered") {
+                                $no_meal_money = $v4['money'];
+                                $no_meal_sub_money = $v4['sub_money'];
+                            } else if ($v4['status'] == "ordering_meals") {
+                                $meal_money = $v4['money'];
+                                $meal_sub_money = $v4['sub_money'];
                             }
                         }
-                        $returnMoney['number'] = $consumptionCount + $i;
+                        $returnMoney['number'] = $consumptionCount;
                         $returnMoney['meal_money'] = $meal_money;
                         $returnMoney['meal_sub_money'] = $meal_sub_money;
                         $returnMoney['no_meal_money'] = $no_meal_money;
@@ -2975,18 +2983,33 @@ class OrderService extends BaseService
                             $returnMoney['money'] = $meal_money;
                             $returnMoney['sub_money'] = $meal_sub_money;
                         }
-                        array_push($returnMoneyList, $returnMoney);
+                        if ($orderFixed == CommonEnum::STATE_IS_OK) {
+                            $returnMoney['money'] = $foodMoney;
+                            $returnMoney['meal_money'] = $foodMoney;
+                        }
+                        $returnMoney['id'] = $v2['id'];
+                        $parentMoney += $returnMoney['money'];
+                        array_push($updateSubOrderData, $returnMoney);
 
                     }
                     $consumptionCount++;
                 }
 
             }
-
+            array_push($updateParentOrderData, [
+                'id' => $parentId,
+                'money' => $parentMoney
+            ]);
 
         }
-
-
+        $parent = (new OrderParentT())->saveAll($updateParentOrderData);
+        if (!$parent) {
+            throw new UpdateException(['msg' => '更新总订单失败']);
+        }
+        $sub = (new OrderSubT())->saveAll($updateSubOrderData);
+        if (!$sub) {
+            throw new UpdateException(['msg' => '更新子订单失败']);
+        }
     }
 
 }
