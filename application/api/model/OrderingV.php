@@ -48,7 +48,8 @@ class OrderingV extends Model
             ->count();
         return $record;
     }
- public static function getOrderingCountByWithDinnerID($orderingDate, $dinnerID, $phone)
+
+    public static function getOrderingCountByWithDinnerID($orderingDate, $dinnerID, $phone)
     {
         $record = self::where('phone', $phone)
             ->where('ordering_date', $orderingDate)
@@ -56,6 +57,18 @@ class OrderingV extends Model
             ->where('pay', PayEnum::PAY_SUCCESS)
             ->where('d_id', $dinnerID)
             ->sum('count');
+        return $record;
+    }
+
+    public static function getOrderingByWithDinnerID($orderingDate, $dinnerID, $phone)
+    {
+        $record = self::where('phone', $phone)
+            ->where('ordering_date', $orderingDate)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->where('pay', PayEnum::PAY_SUCCESS)
+            ->where('d_id', $dinnerID)
+            ->order('create_time')
+            ->select();
         return $record;
     }
 
@@ -95,7 +108,7 @@ class OrderingV extends Model
             ->where('state', CommonEnum::STATE_IS_OK)
             ->field('id,canteen as address,if(type=1,"食堂","外卖") as type,create_time,dinner,money,ordering_date,count,c_id as canteen_id,canteen,consumption_type')
             ->where('type', $type)
-             ->paginate($size, false, ['page' => $page]);
+            ->paginate($size, false, ['page' => $page]);
         return $orderings;
     }
 

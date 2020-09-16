@@ -321,7 +321,6 @@ class DepartmentService
                     'res' => false,
                     'info' => $fail
                 ];
-                break;
             }
         }
 
@@ -380,6 +379,17 @@ class DepartmentService
             $fail = [
                 'name' => $name,
                 'msg' => '系统中不存在该人员类型：' . $staffType
+            ];
+            return [
+                'res' => false,
+                'info' => $fail
+            ];
+        }
+        //判断填写了卡号，生日必填
+        if (strlen($code) && !strlen($birthday)) {
+            $fail = [
+                'name' => $name,
+                'msg' => '卡号：' . $department."填写但是生日未填写"
             ];
             return [
                 'res' => false,

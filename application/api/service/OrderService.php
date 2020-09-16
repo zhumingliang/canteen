@@ -2910,4 +2910,35 @@ class OrderService extends BaseService
         return $parent;
     }
 
+    public function prefixOrderSortWhenCancelOrder($strategy, $dinnerId, $phone, $orderingDate)
+    {
+        //1.获取用户所有订单
+        $orders = OrderingV::getOrderingByWithDinnerID($orderingDate, $dinnerId, $phone);
+        if (!count($orders)) {
+            return true;
+        }
+        $consumptionCount = 1;
+        foreach ($orders as $k => $v) {
+            $parentId = $v['id'];
+            $consumptionType = $v['consumption_type'];
+            $orderType = $v['type'];
+            $orderFixed = $v['fixed'];
+            if ($v['used'] == CommonEnum::STATE_IS_OK) {
+                throw  new ParameterException(['msg' => '订单已经消费不能修改']);
+            }
+            if ($orderType == OrderEnum::ORDERING_CHOICE && $orderFixed == CommonEnum::STATE_IS_FAIL) {
+                //个人选菜且动态消费-获取订单菜品金额
+                if ($consumptionType == "one") {
+
+                }else{
+
+                }
+            }
+
+
+        }
+
+
+    }
+
 }
