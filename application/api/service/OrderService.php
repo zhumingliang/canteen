@@ -2924,6 +2924,7 @@ class OrderService extends BaseService
         if (!count($orders)) {
             return true;
         }
+        $detail = $strategy->detail;
         $consumptionCount = 1;
         $updateParentOrderData = [];
         $updateSubOrderData = [];
@@ -2947,7 +2948,6 @@ class OrderService extends BaseService
                 ->order('id')
                 ->select();
             foreach ($subOrders as $k2 => $v2) {
-                $detail = $strategy->detail;
                 if (empty($detail)) {
                     throw new ParameterException(['msg' => "消费策略设置异常"]);
                 }
