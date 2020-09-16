@@ -56,7 +56,7 @@ class OrderUsersStatisticV extends Model
             ->where('ordering_date', $consumption_time)
             ->where(function ($query) use ($key) {
                 if ($key) {
-                    $query->where('username|order_num|phone|sort_code', 'like', "%$key%");
+                    $query->where('username|parent_id|phone|sort_code', 'like', "$key");
                 }
             })
             ->field('dinner_id as d_id,used,booking,sum(count) as count')

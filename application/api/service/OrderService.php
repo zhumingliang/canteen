@@ -2938,6 +2938,48 @@ class OrderService extends BaseService
                 ->order('id')
                 ->select();
             foreach ($subOrders as $k2 => $v2) {
+                $detail = $strategy->detail;
+                if (empty($detail)) {
+                    throw new ParameterException(['msg' => "消费策略设置异常"]);
+                }
+                //获取消费策略中：订餐未就餐的标准金额和附加金额
+                $no_meal_money = 0;
+                $no_meal_sub_money = 0;
+                $meal_money = 0;
+                $meal_sub_money = 0;
+                $i = 1;
+                foreach ($detail as $k => $v) {
+                    $returnMoney = [];
+                    if (($consumptionCount) == $v['number']) {
+                        $strategy = $v['strategy'];
+                        foreach ($strategy as $k2 => $v2) {
+                            if ($v2['status'] == "no_meals_ordered") {
+                                $no_meal_money = $v2['money'];
+                                $no_meal_sub_money = $v2['sub_money'];
+                            } else if ($v2['status'] == "ordering_meals") {
+                                $meal_money = $v2['money'];
+                                $meal_sub_money = $v2['sub_money'];
+                            }
+                        }
+                        $returnMoney['number'] = $consumptionCount + $i;
+                        $returnMoney['meal_money'] = $meal_money;
+                        $returnMoney['meal_sub_money'] = $meal_sub_money;
+                        $returnMoney['no_meal_money'] = $no_meal_money;
+                        $returnMoney['no_meal_sub_money'] = $no_meal_sub_money;
+                        if (($no_meal_money + $no_meal_sub_money) > ($meal_money + $meal_sub_money)) {
+                            $returnMoney['consumption_type'] = 'no_meals_ordered';
+                            $returnMoney['money'] = $no_meal_money;
+                            $returnMoney['sub_money'] = $no_meal_sub_money;
+                        } else {
+                            $returnMoney['consumption_type'] = 'ordering_meals';
+                            $returnMoney['money'] = $meal_money;
+                            $returnMoney['sub_money'] = $meal_sub_money;
+                        }
+                        array_push($returnMoneyList, $returnMoney);
+
+                    }
+                    $consumptionCount++;
+                }
 
             }
 
