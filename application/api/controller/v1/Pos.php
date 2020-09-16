@@ -160,7 +160,7 @@ class Pos extends BaseController
         } else {
             $data2 = db('staff_card_t')->where('staff_id', $uId)->find();
             $cardCode = $data2['card_code'];
-            return json(new SuccessMessageWithData(['data' => ['username' => $username, 'card_code' => $cardCode,'state' =>$state]]));
+            return json(new SuccessMessageWithData(['data' => ['username' => $username, 'card_code' => $cardCode, 'state' => $state]]));
         }
     }
 
@@ -308,15 +308,30 @@ class Pos extends BaseController
         if ($type == 'refund') {
             $lastData = db('shop_order_t')
                 ->where('staff_id', $staff_id)
-                ->where('money' > 0)
+                ->whereExp('money', '>0')
                 ->order('id desc')
                 ->limit(1)
-                ->field('money')
+                ->field('id,money')
                 ->find();
             $lastMoney = $lastData['money'];
+            $id = $lastData['id'];
             $refundMoney = str_replace("-", "", $money);
             if ($refundMoney > $lastMoney) {
                 throw  new AuthException(['msg' => '退款金额必须小于或等于上一笔金额']);
+            }
+            $refundData = db('shop_order_t')
+                ->where('staff_id', $staff_id)
+                ->whereExp('id', '>' . $id)
+                ->whereExp('money', '<0')
+                ->order('id desc')
+                ->field('money')
+                ->sum('money');
+//            echo PHP_EOL;
+            if (!empty($refundData)) {
+                $refundSumMoney = str_replace("-", "", $refundData);
+                if ($refundMoney + $refundSumMoney > $lastMoney) {
+                    throw  new AuthException(['msg' => '累计退款金额大于上一笔扣费金额']);
+                }
             }
         }
         if ($type == 'consume') {
@@ -385,7 +400,7 @@ class Pos extends BaseController
         }
         $staff_id = $user['id'];
 
-        $sql = "select id from canteen_staff_card_t where state = 1 and (staff_id = '".$staff_id."' or card_code = '".$card_code."')";
+        $sql = "select id from canteen_staff_card_t where state = 1 and (staff_id = '" . $staff_id . "' or card_code = '" . $card_code . "')";
         $cardInfo = Db::query($sql);
 
         if (!empty($cardInfo)) {
