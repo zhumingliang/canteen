@@ -198,7 +198,7 @@ class OrderService extends BaseService
                 'ordering_date' => $ordering_date,
                 'consumption_sort' => $v['number'],
                 'count' => 1,
-                'order_sort' => $v['number'],
+                'order_sort' => $v['order_sort'],
                 'money' => $v['money'],
                 'order_num' => makeOrderNo(),
                 'sub_money' => $v['sub_money'],
@@ -796,6 +796,7 @@ class OrderService extends BaseService
                     }
                 }
                 $returnMoney['number'] = $consumptionCount + $i;
+                $returnMoney['order_sort'] = $i;
                 $returnMoney['meal_money'] = $meal_money;
                 $returnMoney['meal_sub_money'] = $meal_sub_money;
                 $returnMoney['no_meal_money'] = $no_meal_money;
@@ -2989,7 +2990,7 @@ class OrderService extends BaseService
                         }
                         $returnMoney['id'] = $v2['id'];
                         $returnMoney['number'] = $consumptionCount;
-                        $returnMoney['order_sort'] = $consumptionCount;
+                        $returnMoney['order_sort'] = $k2 + 1;
                         $parentMoney += ($returnMoney['money'] + $returnMoney['sub_money']);
                         array_push($updateSubOrderData, $returnMoney);
 

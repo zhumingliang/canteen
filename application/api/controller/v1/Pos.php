@@ -183,16 +183,14 @@ class Pos extends BaseController
         } else {
             $sql = "update canteen_staff_card_t set state = 1,update_time = '" . $date . "' where staff_id =" . $uId;
             $date = Db::execute($sql);
-            $sql2 = db('company_staff_t')
+           /* $sql2 = db('company_staff_t')
                 ->where('phone', $phone)
                 ->where('birthday', $birthday)
                 ->where('company_id', $companyId)
-                ->update(['state' => '2']);
+                ->update(['state' => '2']);*/
 
             if ($date > 0) {
                 return json(new SuccessMessage());
-
-
             }
         }
     }
