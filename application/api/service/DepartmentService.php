@@ -296,7 +296,7 @@ class DepartmentService
     private function validateParams($company_id, $param_key, $data, $types, $canteens, $departments, $birthday, $len = 8)
     {
         $state = ['启用', '停用'];
-        foreach ($data as $k => $v) {
+     /*   foreach ($data as $k => $v) {
             if ($k >= $len) {
                 break;
             }
@@ -310,7 +310,7 @@ class DepartmentService
                     'info' => $fail
                 ];
             }
-        }
+        }*/
 
         $canteen = trim($data[0]);
         $department = trim($data[1]);

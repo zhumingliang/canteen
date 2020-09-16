@@ -2988,6 +2988,8 @@ class OrderService extends BaseService
                             $returnMoney['meal_money'] = $foodMoney;
                         }
                         $returnMoney['id'] = $v2['id'];
+                        $returnMoney['number'] = $consumptionCount;
+                        $returnMoney['order_sort'] = $consumptionCount;
                         $parentMoney += $returnMoney['money'];
                         array_push($updateSubOrderData, $returnMoney);
 
