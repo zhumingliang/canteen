@@ -15,7 +15,7 @@ class Department extends BaseValidate
         'username' => 'require|isNotEmpty',
         'code' => 'require|isNotEmpty',
         'phone' => 'require|isMobile',
-        'state' => 'require|in:1,2',
+        'state' => 'require|in:1,2,3',
         'card_num' => 'require|isNotEmpty',
         'name' => 'require|isNotEmpty',
         'canteens' => 'require|isNotEmpty',

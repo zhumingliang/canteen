@@ -2929,6 +2929,7 @@ class OrderService extends BaseService
             if ($orderType == OrderEnum::ORDERING_CHOICE && $orderFixed == CommonEnum::STATE_IS_FAIL) {
                 //个人选菜且动态消费-获取订单菜品金额
                 if ($consumptionType == "one") {
+                    $foods=OrderDetailT::detail();
 
                 }else{
 
