@@ -107,7 +107,7 @@ class WalletService
 
     private function checkUploading($company_id, $u_id, $type)
     {
-        $set = "uploadingExcel";
+        $set = "uploadExcel";
         $code = "$company_id:$u_id:$type";
         $check = Redis::instance()->sIsMember($set, $code);
         if ($check) {
