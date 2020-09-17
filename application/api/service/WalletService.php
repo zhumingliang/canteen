@@ -69,15 +69,15 @@ class WalletService
             array_push($newStaffs, $v['username'] . '&' . $v['phone']);
         }
         $fail = [];
-        print_r($data);
         foreach ($data as $k => $v) {
             if ($k < 2) {
                 continue;
             }
-            if (!in_array($v[0] . '&' . $v[1], $newStaffs) ) {
+            if (!in_array($v[0] . '&' . $v[1], $newStaffs)) {
                 array_push($fail, '第' . $k . '行数据有问题');
             }
-            if ($v[3]==''){
+            $money = trim($v[3]);
+            if ($money == '') {
                 array_push($fail, '第' . $k . '行数据有问题');
             }
         }
@@ -102,7 +102,7 @@ class WalletService
         $isPushed = Queue::push($jobHandlerClassName, $jobData, $jobQueueName);
         //将该任务推送到消息队列
         if ($isPushed == false) {
-            (new UploadExcel())->clearUploading($company_id,$u_id,$type);
+            (new UploadExcel())->clearUploading($company_id, $u_id, $type);
             throw new SaveException(['msg' => '上传excel失败']);
         }
     }
