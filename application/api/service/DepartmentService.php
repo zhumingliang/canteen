@@ -92,7 +92,7 @@ class DepartmentService
     {
         try {
             Db::startTrans();
-            $this->checkStaffExits($params['company_id'], $params['phone']);
+            $this->checkStaffExits($params['company_id'], $params['phone'], $params["face_code"]);
             $params['state'] = CommonEnum::STATE_IS_OK;
             $staff = CompanyStaffT::create($params);
             if (!$staff) {
@@ -109,14 +109,20 @@ class DepartmentService
         }
     }
 
-    private function checkStaffExits($company_id, $phone)
+    public function checkStaffExits($company_id, $phone, $face_code)
     {
         $staff = CompanyStaffT::where('company_id', $company_id)
-            ->where('phone', $phone)
+            ->where(function ($query) use ($phone, $face_code) {
+                if (empty($face_code)) {
+                    $query->where('phone', $phone);
+                } else {
+                    $query->whereOr('phone', $phone)->whereOr('face_code', $face_code);
+                }
+            })
             ->where('state', CommonEnum::STATE_IS_OK)
             ->count('id');
         if ($staff) {
-            throw  new SaveException(['msg' => '该用户已存在']);
+            throw  new SaveException(['msg' => '手机号或者人脸识别ID已存在']);
         }
 
     }
@@ -223,7 +229,9 @@ class DepartmentService
         $types = (new AdminService())->allTypes();
         $canteens = (new CanteenService())->companyCanteens($company_id);
         $departments = $this->companyDepartments($company_id);
-        $phones = $this->getCompanyStaffsPhone($company_id);
+        $staffs = $this->getCompanyStaffs($company_id);
+        $phones = $staffs['phones'];
+        $faceCodes = $staffs['faceCodes'];
         $fail = array();
         $success = array();
         $param_key = array();
@@ -248,6 +256,17 @@ class DepartmentService
                 } else {
                     array_push($phones, $v[5]);
                 }
+                //检测人脸识别id是否存在
+                $faceCode = trim($v[9]);
+                if (!empty($faceCode) && in_array($faceCode, $faceCodes)) {
+                    $fail[] = "第" . $k . "数据有问题：人脸识别ID" . $faceCode . "系统已经存在";
+                    break;
+                } else {
+                    if (!empty($faceCode)) {
+                        array_push($faceCodes, $faceCode);
+                    }
+                }
+
                 $check = $this->validateParams($company_id, $param_key, $data[$k], $types, $canteens, $departments, $v[8]);
                 if (!$check['res']) {
                     $fail[] = "第" . $k . "数据有问题：" . $check['info']['msg'];
@@ -283,34 +302,40 @@ class DepartmentService
         }
     }
 
-    private function getCompanyStaffsPhone($company_id)
+    private function getCompanyStaffs($company_id)
     {
         $staffs = CompanyStaffT::staffs($company_id);
         $staffsPhone = [];
+        $staffsFaceCode = [];
         foreach ($staffs as $k => $v) {
             array_push($staffsPhone, $v['phone']);
+            array_push($staffsFaceCode, $v['face_code']);
         }
-        return $staffsPhone;
+        return [
+            'phones' => $staffsPhone,
+            'faceCodes' => $staffsFaceCode
+        ];
     }
+
 
     private function validateParams($company_id, $param_key, $data, $types, $canteens, $departments, $birthday, $len = 8)
     {
         $state = ['启用', '停用'];
-     /*   foreach ($data as $k => $v) {
-            if ($k >= $len) {
-                break;
-            }
-            if (!strlen($v)) {
-                $fail = [
-                    'name' => $data[4],
-                    'msg' => "参数：$param_key[$k]" . " 为空"
-                ];
-                return [
-                    'res' => false,
-                    'info' => $fail
-                ];
-            }
-        }*/
+        /*   foreach ($data as $k => $v) {
+               if ($k >= $len) {
+                   break;
+               }
+               if (!strlen($v)) {
+                   $fail = [
+                       'name' => $data[4],
+                       'msg' => "参数：$param_key[$k]" . " 为空"
+                   ];
+                   return [
+                       'res' => false,
+                       'info' => $fail
+                   ];
+               }
+           }*/
 
         $canteen = trim($data[0]);
         $department = trim($data[1]);
@@ -319,6 +344,7 @@ class DepartmentService
         $name = trim($data[4]);
         $phone = trim($data[5]);
         $card_num = trim($data[6]);
+        $face_code = trim($data[9]);
         $canteen_ids = [];
 
         if (!in_array($data[7], $state)) {
@@ -377,7 +403,7 @@ class DepartmentService
         if (strlen($code) && !strlen($birthday)) {
             $fail = [
                 'name' => $name,
-                'msg' => '卡号：' . $department."填写但是生日未填写"
+                'msg' => '卡号：' . $department . "填写但是生日未填写"
             ];
             return [
                 'res' => false,
@@ -409,7 +435,7 @@ class DepartmentService
                 'company_id' => $company_id,
                 'canteen_ids' => implode(',', $canteen_ids),
                 'birthday' => gmdate("Y-m-d", ($birthday - 25569) * 86400)
-                ,
+                , 'face_code' => $face_code,
                 'state' => $state
             ]
         ];
@@ -615,7 +641,7 @@ class DepartmentService
     {
         $staffs = CompanyStaffV::exportStaffs($company_id, $department_id);
         $staffs = $this->prefixExportStaff($staffs);
-        $header = ['企业', '部门', '人员状态', '人员类型', '员工编号', '姓名', '手机号码', '卡号', '归属饭堂'];
+        $header = ['企业', '部门', '人员状态', '人员类型', '员工编号', '姓名', '手机号码', '卡号', '归属饭堂','人脸识别ID'];
         $file_name = "企业员工导出";
         $url = (new ExcelService())->makeExcel($header, $staffs, $file_name);
         return [

@@ -181,7 +181,7 @@ class Pos extends BaseController
         if (empty($data)) {
             throw new AuthException(['msg' => '输入信息错误，挂失失败']);
         } else {
-            $sql = "update canteen_staff_card_t set state = 1,update_time = '" . $date . "' where staff_id =" . $uId;
+            $sql = "update canteen_staff_card_t set state = 2,update_time = '" . $date . "' where staff_id =" . $uId;
             $date = Db::execute($sql);
            /* $sql2 = db('company_staff_t')
                 ->where('phone', $phone)
