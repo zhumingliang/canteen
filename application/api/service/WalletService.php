@@ -69,7 +69,6 @@ class WalletService
             array_push($newStaffs, $v['username'] . '&' . $v['phone']);
         }
         $fail = [];
-        print_r($data);
         foreach ($data as $k => $v) {
             if ($k < 2) {
                 continue;
