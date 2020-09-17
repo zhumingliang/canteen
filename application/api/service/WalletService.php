@@ -97,7 +97,7 @@ class WalletService
             'u_id' => $u_id,
             'fileName' => $fileName,
         ];//当前任务的业务数据
-        $isPushed = Queue::puh($jobHandlerClassName, $jobData, $jobQueueName);
+        $isPushed = Queue::push($jobHandlerClassName, $jobData, $jobQueueName);
         //将该任务推送到消息队列
         if ($isPushed == false) {
             throw new SaveException(['msg' => '上传excel失败']);
