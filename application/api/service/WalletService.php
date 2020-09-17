@@ -4,6 +4,7 @@
 namespace app\api\service;
 
 
+use app\api\job\UploadExcel;
 use app\api\model\CompanyStaffT;
 use app\api\model\DinnerV;
 use app\api\model\OrderParentT;
@@ -100,6 +101,7 @@ class WalletService
         $isPushed = Queue::push($jobHandlerClassName, $jobData, $jobQueueName);
         //将该任务推送到消息队列
         if ($isPushed == false) {
+            (new UploadExcel())->clearUploading($company_id,$u_id,$type);
             throw new SaveException(['msg' => '上传excel失败']);
         }
     }
