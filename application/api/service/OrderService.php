@@ -2114,7 +2114,7 @@ class OrderService extends BaseService
         foreach ($check_data as $k3 => $v3) {
             $updateMoney += $v3['price'] * $v3['count'];
         }
-        return 0;
+        return $updateMoney;
     }
 
     private
