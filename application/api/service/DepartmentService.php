@@ -641,7 +641,7 @@ class DepartmentService
     {
         $staffs = CompanyStaffV::exportStaffs($company_id, $department_id);
         $staffs = $this->prefixExportStaff($staffs);
-        $header = ['企业', '部门', '人员状态', '人员类型', '员工编号', '姓名', '手机号码', '卡号', '归属饭堂','人脸识别ID'];
+        $header = ['企业', '部门', '人员状态', '人员类型', '员工编号', '姓名', '手机号码', '卡号', '归属饭堂',"出生日期",'人脸识别ID'];
         $file_name = "企业员工导出";
         $url = (new ExcelService())->makeExcel($header, $staffs, $file_name);
         return [

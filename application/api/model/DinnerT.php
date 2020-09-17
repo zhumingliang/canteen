@@ -42,7 +42,7 @@ class DinnerT extends Model
             ->where('state', CommonEnum::STATE_IS_OK)
             ->field('id,name')
             ->order('create_time')
-            ->select();
+            ->select()->toArray();
         return $info;
     }
 

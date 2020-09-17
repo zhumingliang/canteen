@@ -155,11 +155,12 @@ class OrderStatisticService
 
     private function prefixExportOrderSettlement($data)
     {
+        ($data);
         $dataList = [];
         if (count($data)) {
             foreach ($data as $k => $v) {
                 if ($v['consumption_type'] == OrderEnum::EAT_OUTSIDER) {
-                    $consumption_type = "外卖";
+                    $data[$k]['consumption_type'] = "外卖";
                 } else {
                     if ($v['type'] == 'recharge') {
                         $data[$k]['consumption_type'] = "系统补充";
@@ -172,7 +173,7 @@ class OrderStatisticService
                             $data[$k]['consumption_type'] = "小卖部退款";
                         }
 
-                    } else if ($v['type'] == 'order') {
+                    } else if ($v['type'] == 'canteen') {
                         if ($v['booking'] == CommonEnum::STATE_IS_OK) {
                             $data[$k]['consumption_type'] = $v['used'] == CommonEnum::STATE_IS_OK ? "订餐就餐" : "订餐未就餐";
                         } else {
@@ -181,7 +182,6 @@ class OrderStatisticService
                     }
                 }
 
-
                 array_push($dataList, [
                     'number' => $k + 1,
                     'used_time' => $v['used_time'],
@@ -189,7 +189,7 @@ class OrderStatisticService
                     'username' => $v['username'],
                     'phone' => $v['phone'],
                     'canteen' => $v['canteen'],
-                    'consumption_type' => $consumption_type,
+                    'consumption_type' => $data[$k]['consumption_type'],
                     'dinner' => $v['dinner'],
                     'money' => $v['money'],
                     'remark' => $v['remark']
