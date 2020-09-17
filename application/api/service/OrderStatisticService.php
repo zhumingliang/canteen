@@ -219,7 +219,7 @@ class OrderStatisticService
                             $data[$k]['consumption_type'] = "小卖部退款";
                         }
 
-                    } else if ($v['type'] == 'order') {
+                    } else if ($v['type'] == 'canteen') {
                         if ($v['booking'] == CommonEnum::STATE_IS_OK) {
                             $data[$k]['consumption_type'] = $v['used'] == CommonEnum::STATE_IS_OK ? "订餐就餐" : "订餐未就餐";
                         } else {
