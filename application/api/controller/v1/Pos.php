@@ -183,12 +183,6 @@ class Pos extends BaseController
         } else {
             $sql = "update canteen_staff_card_t set state = 2,update_time = '" . $date . "' where staff_id =" . $uId;
             $date = Db::execute($sql);
-           /* $sql2 = db('company_staff_t')
-                ->where('phone', $phone)
-                ->where('birthday', $birthday)
-                ->where('company_id', $companyId)
-                ->update(['state' => '2']);*/
-
             if ($date > 0) {
                 return json(new SuccessMessage());
             }
@@ -214,16 +208,8 @@ class Pos extends BaseController
         } else {
             $sql = "update canteen_staff_card_t set state = 3,update_time = '" . $date . "' where staff_id =" . $uId;
             $date = Db::execute($sql);
-            $sql2 = db('company_staff_t')
-                ->where('phone', $phone)
-                ->where('birthday', $birthday)
-                ->where('company_id', $companyId)
-                ->update(['state' => '1']);
-
             if ($date > 0) {
                 return json(new SuccessMessage());
-
-
             }
         }
     }
@@ -247,11 +233,6 @@ class Pos extends BaseController
         } else {
             $sql = "update canteen_staff_card_t set state = 1,update_time = '" . $date . "' where staff_id =" . $uId;
             $date = Db::execute($sql);
-            $sql2 = db('company_staff_t')
-                ->where('phone', $phone)
-                ->where('birthday', $birthday)
-                ->where('company_id', $companyId)
-                ->update(['state' => '1']);
             if ($date > 0) {
                 return json(new SuccessMessage());
             }
@@ -397,8 +378,7 @@ class Pos extends BaseController
             throw new AuthException(['msg' => '账号已经停用。请在挂失功能中启用账号或注销卡号，再重新绑定']);
         }
         $staff_id = $user['id'];
-
-        $sql = "select id from canteen_staff_card_t where (state = 1 or state  = 2) and (staff_id = '" . $staff_id . "' or card_code = '" . $card_code . "')";
+        $sql = "select id from canteen_staff_card_t where (state = 1 or state = 2) and (staff_id = '" . $staff_id . "' or card_code = '" . $card_code . "')";
         $cardInfo = Db::query($sql);
 
         if (!empty($cardInfo)) {

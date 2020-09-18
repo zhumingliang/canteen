@@ -54,6 +54,7 @@ class OrderParentT extends Model
             ->where('ordering_date', $ordering_date)
             ->where('canteen_id', $canteen_id)
             ->where('dinner_id', $dinner_id)
+            ->where('ordering_type', 'online')
             ->where('state', CommonEnum::STATE_IS_OK)
             ->find();
         return $order;

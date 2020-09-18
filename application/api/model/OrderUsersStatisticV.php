@@ -19,7 +19,11 @@ class OrderUsersStatisticV extends Model
 
     public static function orderUsers($dinner_id, $consumption_time, $consumption_type, $key, $page, $size)
     {
-        $users = self::where('dinner_id', $dinner_id)
+        $users = self::where(function ($query) use ($dinner_id) {
+            if ($dinner_id) {
+                $query->where('dinner_id', $dinner_id);
+            }
+        })
             ->where('ordering_date', $consumption_time)
             ->where(function ($query) use ($consumption_type) {
                 if ($consumption_type == 'used') {
@@ -33,7 +37,7 @@ class OrderUsersStatisticV extends Model
             })
             ->where(function ($query) use ($key) {
                 if ($key) {
-                    $key=(string)$key;
+                    $key = (string)$key;
                     $query->where('username|phone|sort_code|parent_id', 'like', $key);
                 }
             })
@@ -45,7 +49,7 @@ class OrderUsersStatisticV extends Model
             ])
             ->field('order_id as id,username,order_num,phone,sum(count) as count,strategy_type as consumption_type')
             ->group('order_id')
-           ->paginate($size, false, ['page' => $page]);
+            ->paginate($size, false, ['page' => $page]);
         return $users;
     }
 

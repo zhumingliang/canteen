@@ -126,7 +126,7 @@ class OrderStatisticV extends Model
                 }
             })
             ->field('order_id,consumption_type,ordering_date,username,canteen,department,phone,count,dinner,type,ordering_type,order_money,1 as status,state,meal_time_end,used,fixed')
-            ->order('order_id DESC')
+            ->order('ordering_date DESC')
             ->paginate($size, false, ['page' => $page]);
         return $list;
 

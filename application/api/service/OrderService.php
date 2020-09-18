@@ -550,18 +550,34 @@ class OrderService extends BaseService
         if ($consumptionType == StrategyEnum::CONSUMPTION_TIMES_ONE) {
             $strategyMoney = $this->checkConsumptionStrategy($strategies, $count, $consumptionCount);
         } else {
-            $strategyMoney = $this->checkConsumptionStrategyTimesMore($strategies, $count, $consumptionCount);
+            $strategyMoney = $this->checkConsumptionStrategyTimesMore($strategies, $count, $consumptionCount, $ordering_type);
         }
         $orderMoneyFixed = $dinner->fixed;
         if ($ordering_type == "person_choice") {
             //检测菜单数据是否合法并返回订单金额
             $detailMoney = $this->checkMenu($dinner->id, $detail);
-            if ($orderMoneyFixed == CommonEnum::STATE_IS_FAIL) {
-                if ($consumptionType == StrategyEnum::CONSUMPTION_TIMES_ONE) {
+            if ($consumptionType == StrategyEnum::CONSUMPTION_TIMES_ONE) {
+                if ($orderMoneyFixed == CommonEnum::STATE_IS_FAIL) {
                     $strategyMoney['money'] = $detailMoney * $count;
-                } else {
+                    if ($strategyMoney['meal_sub_money'] > $strategyMoney['no_meal_sub_money'] ){
+                        $strategyMoney['sub_money'] = $strategyMoney['meal_sub_money'];
+                        $strategyMoney['consumption_type'] = 'ordering_meals';
+                    }else{
+                        $strategyMoney['sub_money'] = $strategyMoney['no_meal_sub_money'];
+                        $strategyMoney['consumption_type'] = 'no_meals_ordered';
+                    }
+                }
+            } else {
+                if ($orderMoneyFixed == CommonEnum::STATE_IS_FAIL) {
                     foreach ($strategyMoney as $k => $v) {
                         $strategyMoney[$k]['money'] = $detailMoney;
+                        if ($v['meal_sub_money'] > $v['no_meal_sub_money'] ){
+                            $strategyMoney[$k]['sub_money'] = $v['meal_sub_money'];
+                            $strategyMoney[$k]['consumption_type'] = 'ordering_meals';
+                        }else{
+                            $strategyMoney[$k]['sub_money'] = $v['no_meal_sub_money'];
+                            $strategyMoney[$k]['consumption_type'] = 'no_meals_ordered';
+                        }
                     }
                 }
             }
@@ -773,13 +789,13 @@ class OrderService extends BaseService
         }
         //获取消费策略中：订餐未就餐的标准金额和附加金额
         $returnMoneyList = [];
-        $no_meal_money = 0;
-        $no_meal_sub_money = 0;
-        $meal_money = 0;
-        $meal_sub_money = 0;
         $i = 1;
         foreach ($detail as $k => $v) {
             $returnMoney = [];
+            $no_meal_money = 0;
+            $no_meal_sub_money = 0;
+            $meal_money = 0;
+            $meal_sub_money = 0;
             if ($i > $orderCount) {
                 break;
             }
@@ -801,6 +817,7 @@ class OrderService extends BaseService
                 $returnMoney['meal_sub_money'] = $meal_sub_money;
                 $returnMoney['no_meal_money'] = $no_meal_money;
                 $returnMoney['no_meal_sub_money'] = $no_meal_sub_money;
+
                 if (($no_meal_money + $no_meal_sub_money) > ($meal_money + $meal_sub_money)) {
                     $returnMoney['consumption_type'] = 'no_meals_ordered';
                     $returnMoney['money'] = $no_meal_money;
@@ -2986,6 +3003,7 @@ class OrderService extends BaseService
                         if ($orderType == OrderEnum::ORDERING_CHOICE && $orderFixed == CommonEnum::STATE_IS_FAIL) {
                             $returnMoney['money'] = $foodMoney;
                             $returnMoney['meal_money'] = $foodMoney;
+                            $returnMoney['meal_sub_money'] = $meal_sub_money > $no_meal_sub_money ? $meal_sub_money : $no_meal_sub_money;
                         }
                         $returnMoney['consumption_sort'] = $consumptionCount;
                         $returnMoney['id'] = $v2['id'];
