@@ -398,7 +398,7 @@ class Pos extends BaseController
         }
         $staff_id = $user['id'];
 
-        $sql = "select id from canteen_staff_card_t where state = 1 and (staff_id = '" . $staff_id . "' or card_code = '" . $card_code . "')";
+        $sql = "select id from canteen_staff_card_t where (state = 1 or state  = 2) and (staff_id = '" . $staff_id . "' or card_code = '" . $card_code . "')";
         $cardInfo = Db::query($sql);
 
         if (!empty($cardInfo)) {
