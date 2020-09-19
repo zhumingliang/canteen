@@ -760,7 +760,7 @@ class CanteenService
         try {
             Db::startTrans();
             if (!empty($params['consumption_type'])) {
-                if (!in_array([1, 2], $params['consumption_type'])) {
+                if (!in_array($params['consumption_type'], [1, 2])) {
                     throw new ParameterException(['msg' => '扣费类型异常']);
                 }
             }
