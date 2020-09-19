@@ -441,6 +441,7 @@ class Canteen extends BaseController
      *       "belong_id": 6,
      *       "machine_type": "canteen",
      *       "name": "1号设备",
+     *       "face_id": 12,
      *       "number": "001",
      *       "code": "dadas12121",
      *       "pwd": "a111",
@@ -450,6 +451,7 @@ class Canteen extends BaseController
      * @apiParam (请求参数说明) {string} name  设备名称
      * @apiParam (请求参数说明) {int} company_id  企业id
      * @apiParam (请求参数说明) {int} belong_id  设备归属id
+     * @apiParam (请求参数说明) {int} face_id  消费机关联人脸识别机的id
      * @apiParam (请求参数说明) {string} number  编号
      * @apiParam (请求参数说明) {string} machine_type  设备类别 canteen:饭堂id；shop：小卖部id
      * @apiParam (请求参数说明) {string} code  设备号
@@ -498,6 +500,7 @@ class Canteen extends BaseController
      * @apiExample {post}  请求样例:
      *    {
      *       "id": 1,
+     *       "face_id": 1,
      *       "name": "1号设备",
      *       "number": "001",
      *       "code": "dadas12121",
@@ -506,6 +509,7 @@ class Canteen extends BaseController
      *       "sort_code": 1
      *     }
      * @apiParam (请求参数说明) {int} id  设备id
+     * @apiParam (请求参数说明) {int} face_id  消费机关联人脸识别机的id
      * @apiParam (请求参数说明) {string} name  设备名称
      * @apiParam (请求参数说明) {string} number  编号
      * @apiParam (请求参数说明) {string} code  设备号
@@ -657,6 +661,7 @@ class Canteen extends BaseController
      * @apiSuccess (返回参数说明) {string} number 设备序号
      * @apiSuccess (返回参数说明) {string} code 设备硬件号
      * @apiSuccess (返回参数说明) {string} name 设备硬件名称
+     * @apiSuccess (返回参数说明) {int} face_id  消费机关联人脸识别机的id
      * @apiSuccess (返回参数说明) {int} out  设备使用类别：1：外部食堂；2 ：内部食堂;3 无
      * @apiSuccess (返回参数说明) {int} sort_code  是否接收排队序列 1： 接收；2 ： 不接收
      * @apiSuccess (返回参数说明) {int} state 状态：1|正常；2|异常
@@ -692,6 +697,7 @@ class Canteen extends BaseController
      * @apiSuccess (返回参数说明) {string} number 设备序号
      * @apiSuccess (返回参数说明) {string} code 设备硬件号
      * @apiSuccess (返回参数说明) {string} name 设备硬件名称
+     * @apiSuccess (返回参数说明) {int} face_id  消费机关联人脸识别机的id
      * @apiSuccess (返回参数说明) {int} state 状态：1|正常；2|异常
      */
     public function companyMachines($page = 1, $size = 20)

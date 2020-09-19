@@ -739,7 +739,7 @@ class OrderStatisticService
         $allCount = 0;
         if (count($statistic)) {
             foreach ($statistic as $k => $v) {
-                $orderMoney = $status ? abs($v['order_money']) : $v['order_money'];
+                $orderMoney = $v['order_money'];//$status ? abs($v['order_money']) : $v['order_money'];
                 $orderCount = $v['order_count'];
                 $allMoney += $orderMoney;
                 $allCount += $orderCount;
@@ -749,6 +749,7 @@ class OrderStatisticService
                 array_push($fieldArr, $v[$field]);
 
             }
+
             foreach ($fieldArr as $k => $v) {
                 $dinnerStatistic = [];
                 foreach ($statistic as $k2 => $v2) {
@@ -757,6 +758,7 @@ class OrderStatisticService
                             'dinner_id' => $v2['dinner_id'],
                             'dinner' => $v2['dinner'],
                             'order_count' => $v2['order_count'],
+                            //'order_money' => $status ? abs($v2['order_money']) : $v2['order_money']]);
                             'order_money' => $v2['order_money']
                         ]);
                     }
@@ -831,7 +833,7 @@ class OrderStatisticService
             $dinnerStatistic = [];
             foreach ($statistic as $k2 => $v2) {
 
-                $statistic[$k2]['order_money'] = $status ? abs($statistic[$k2]['order_money']) : $statistic[$k2]['order_money'];
+               // $statistic[$k2]['order_money'] = $status ? abs($statistic[$k2]['order_money']) : $statistic[$k2]['order_money'];
                 if ($v['staff_id'] == $v2['staff_id']) {
                     array_push($dinnerStatistic, $statistic[$k2]);
                     unset($statistic[$k2]);
@@ -846,7 +848,7 @@ class OrderStatisticService
             $time_end, $company_id);
         return [
             'statistic' => $users,
-            'allMoney' => $status ? abs($statistic['order_money']) : $statistic['order_money'],
+            'allMoney' => $statistic['order_money'],// $status ? abs($statistic['order_money']) : $statistic['order_money'],
             'allCount' => $statistic['order_count']
         ];
     }
