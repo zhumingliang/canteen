@@ -921,7 +921,7 @@ class OrderService extends BaseService
             } else {
                 throw new ParameterException(['msg' => "消费策略中扣费类型异常"]);
             }
-            // Db::commit();
+             Db::commit();
         } catch (Exception $e) {
             Db::rollback();
             throw $e;

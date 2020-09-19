@@ -181,6 +181,9 @@ class Pos extends BaseController
         if (empty($data)) {
             throw new AuthException(['msg' => '输入信息错误，挂失失败']);
         } else {
+            if ($data['state'] != 1) {
+                throw new AuthException(['msg' => '挂失失败，账号已停用']);
+            }
             $sql = "update canteen_staff_card_t set state = 2,update_time = '" . $date . "' where staff_id =" . $uId;
             $date = Db::execute($sql);
             if ($date > 0) {
@@ -206,6 +209,9 @@ class Pos extends BaseController
         if (empty($data)) {
             throw new AuthException(['msg' => '输入信息错误，注销失败']);
         } else {
+            if ($data['state'] != 1) {
+                throw new AuthException(['msg' => '注销失败，账号已停用']);
+            }
             $sql = "update canteen_staff_card_t set state = 3,update_time = '" . $date . "' where staff_id =" . $uId;
             $date = Db::execute($sql);
             if ($date > 0) {
@@ -231,6 +237,9 @@ class Pos extends BaseController
         if (empty($data)) {
             throw new AuthException(['msg' => '输入信息错误，恢复失败']);
         } else {
+            if ($data['state'] != 1) {
+                throw new AuthException(['msg' => '恢复失败，账号已停用']);
+            }
             $sql = "update canteen_staff_card_t set state = 1,update_time = '" . $date . "' where staff_id =" . $uId;
             $date = Db::execute($sql);
             if ($date > 0) {
@@ -375,7 +384,7 @@ class Pos extends BaseController
             throw new AuthException(['msg' => '绑卡失败，出生日期与手机号码不匹配']);
         }
         if ($user['state'] != 1) {
-            throw new AuthException(['msg' => '账号已经停用。请在挂失功能中启用账号或注销卡号，再重新绑定']);
+            throw new AuthException(['msg' => '绑卡失败，账号已停用']);
         }
         $staff_id = $user['id'];
         $sql = "select id from canteen_staff_card_t where (state = 1 or state = 2) and (staff_id = '" . $staff_id . "' or card_code = '" . $card_code . "')";
