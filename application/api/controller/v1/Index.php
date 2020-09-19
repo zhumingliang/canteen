@@ -116,12 +116,7 @@ Index extends BaseController
     public function test($param = "")
     {
 
-        //获取餐次信息
-        $dinner = DinnerT::dinnerInfo(218);
-        $detail = json_decode($param, true);
-        $strategyMoney = (new OrderService())->checkUserCanOrder($dinner, "2020-09-19", 190, 2, $detail, 'person_choice', 2);
-        return json($strategyMoney);
-        // return json(\app\api\service\Token::getCurrentTokenVar());
+        return json(\app\api\service\Token::getCurrentTokenVar());
 
         /*        $data = [
                     '朝阳社区' => '6-24,402-418,472,701-705,816-845,857,964-971,988—989,2188-2210,2249-2266,2469-2481',
