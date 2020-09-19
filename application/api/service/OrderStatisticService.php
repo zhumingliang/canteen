@@ -620,14 +620,17 @@ class OrderStatisticService
         $header = ['序号', '统计变量', '开始时间', '结束时间', '姓名', '部门'];
         //获取饭堂对应的餐次设置
         $dinner = DinnerT::dinnerNames($canteen_id);
-        array_push($dinner, [
-            'id' => 0,
-            'name' => "小卖部消费"
-        ]);
-        array_push($dinner, [
-            'id' => 0,
-            'name' => "小卖部退款"
-        ]);
+        if ($order_type != "canteen") {
+            array_push($dinner, [
+                'id' => 0,
+                'name' => "小卖部消费"
+            ]);
+            array_push($dinner, [
+                'id' => 0,
+                'name' => "小卖部退款"
+            ]);
+        }
+
 
         $header = $this->addDinnerToHeader($header, $dinner);
         $reports = $this->prefixConsumptionStatistic($statistic, $dinner);
@@ -833,7 +836,7 @@ class OrderStatisticService
             $dinnerStatistic = [];
             foreach ($statistic as $k2 => $v2) {
 
-               // $statistic[$k2]['order_money'] = $status ? abs($statistic[$k2]['order_money']) : $statistic[$k2]['order_money'];
+                // $statistic[$k2]['order_money'] = $status ? abs($statistic[$k2]['order_money']) : $statistic[$k2]['order_money'];
                 if ($v['staff_id'] == $v2['staff_id']) {
                     array_push($dinnerStatistic, $statistic[$k2]);
                     unset($statistic[$k2]);
