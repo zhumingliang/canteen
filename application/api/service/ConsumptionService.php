@@ -478,7 +478,6 @@ class ConsumptionService
             ]);
         }
         $sortCode = $this->saveRedisOrderCode($canteenID, $returnDinnerID, $orderID);
-        1;
         //推送消息给显示器
         $this->sortTask($canteenID, $outsider, $orderID, $sortCode, $consumptionType);
         //启动打印机打印信息

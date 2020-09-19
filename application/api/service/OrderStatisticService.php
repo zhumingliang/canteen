@@ -636,10 +636,10 @@ class OrderStatisticService
         $reports = $this->prefixConsumptionStatistic($statistic, $dinner);
         $reportName = $fileNameArr[$status];
         $file_name = $reportName . "(" . $time_begin . "-" . $time_end . ")";
-        $url = (new ExcelService())->makeExcel($header, $reports, $file_name);
+       /* $url = (new ExcelService())->makeExcel($header, $reports, $file_name);
         return [
             'url' => config('setting.domain') . $url
-        ];
+        ];*/
 
     }
 
@@ -670,9 +670,10 @@ class OrderStatisticService
     private
     function prefixConsumptionStatistic($statistic, $dinner)
     {
+        print_r($statistic);
         $dataList = [];
         if (!empty($statistic)) {
-            $endData = $this->addDinnerToStatistic($dinner);;
+            $endData = $this->addDinnerToStatistic($dinner);
             foreach ($statistic as $k => $v) {
                 $dinner_statistic = array_key_exists('dinnerStatistic', $v) ? $v['dinnerStatistic'] : $v['dinner_statistic'];
                 $data = $this->addDinnerToStatistic($dinner);
@@ -688,7 +689,7 @@ class OrderStatisticService
                         $data[$v2['dinner_id'] . $v2['dinner'] . 'count'] = $v2['order_count'];
                         $endData[$v2['dinner_id'] . $v2['dinner'] . 'count'] += $v2['order_count'];
                     }
-                    if (key_exists($v2['dinner_id'] . 'money', $data)) {
+                    if (key_exists($v2['dinner_id'] .$v2['dinner']. 'money', $data)) {
                         $data[$v2['dinner_id'] . $v2['dinner'] . 'money'] = $v2['order_money'];
                         $endData[$v2['dinner_id'] . $v2['dinner'] . 'money'] += $v2['order_money'];
                     }
