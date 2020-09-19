@@ -344,6 +344,7 @@ class CanteenService
                                     'unordered_meals' => 1,
                                     'consumption_count' => 1,
                                     'ordered_count' => 1,
+                                    'consumption_type' => 1,
                                     'state' => CommonEnum::STATE_IS_OK
                                 ];
                             }
@@ -758,6 +759,11 @@ class CanteenService
     {
         try {
             Db::startTrans();
+            if (!empty($params['consumption_type'])) {
+                if (!in_array([1, 2], $params['consumption_type'])) {
+                    throw new ParameterException(['msg' => '扣费类型异常']);
+                }
+            }
             $strategy = ConsumptionStrategyT::update($params);
             if (!$strategy) {
                 throw new UpdateException();
@@ -769,7 +775,7 @@ class CanteenService
             }
             if (!empty($params['consumption_type'])) {
                 ConsumptionStrategyT::update(['consumption_type' => $params['consumption_type']],
-                    ['c_id'=>$strategy->c_id]);
+                    ['c_id' => $strategy->c_id]);
             }
             Db::commit();
         } catch (Exception $e) {

@@ -559,10 +559,10 @@ class OrderService extends BaseService
             if ($consumptionType == StrategyEnum::CONSUMPTION_TIMES_ONE) {
                 if ($orderMoneyFixed == CommonEnum::STATE_IS_FAIL) {
                     $strategyMoney['money'] = $detailMoney * $count;
-                    if ($strategyMoney['meal_sub_money'] > $strategyMoney['no_meal_sub_money'] ){
+                    if ($strategyMoney['meal_sub_money'] > $strategyMoney['no_meal_sub_money']) {
                         $strategyMoney['sub_money'] = $strategyMoney['meal_sub_money'];
                         $strategyMoney['consumption_type'] = 'ordering_meals';
-                    }else{
+                    } else {
                         $strategyMoney['sub_money'] = $strategyMoney['no_meal_sub_money'];
                         $strategyMoney['consumption_type'] = 'no_meals_ordered';
                     }
@@ -571,10 +571,10 @@ class OrderService extends BaseService
                 if ($orderMoneyFixed == CommonEnum::STATE_IS_FAIL) {
                     foreach ($strategyMoney as $k => $v) {
                         $strategyMoney[$k]['money'] = $detailMoney;
-                        if ($v['meal_sub_money'] > $v['no_meal_sub_money'] ){
+                        if ($v['meal_sub_money'] > $v['no_meal_sub_money']) {
                             $strategyMoney[$k]['sub_money'] = $v['meal_sub_money'];
                             $strategyMoney[$k]['consumption_type'] = 'ordering_meals';
-                        }else{
+                        } else {
                             $strategyMoney[$k]['sub_money'] = $v['no_meal_sub_money'];
                             $strategyMoney[$k]['consumption_type'] = 'no_meals_ordered';
                         }
@@ -918,8 +918,10 @@ class OrderService extends BaseService
                 $this->handleOnlineConsumptionTimesMore($detail, $strategies, $company_id, $canteen_id, $phone, $u_id,
                     $type, $address_id, $delivery_fee, $staff_type_id, $department_id,
                     $staff_id, '');
+            } else {
+                throw new ParameterException(['msg' => "消费策略中扣费类型异常"]);
             }
-            Db::commit();
+            // Db::commit();
         } catch (Exception $e) {
             Db::rollback();
             throw $e;
@@ -931,7 +933,7 @@ class OrderService extends BaseService
     {
         $data = $this->prefixOnlineOrderingData($address_id, $type, $u_id, $canteen_id, $detail, $delivery_fee, $strategies, $company_id, $phone, $staff_type_id, $department_id, $staff_id);
         $money = $data['all_money'];
-        $pay_way = $this->checkBalance($u_id, $canteen_id, $money);
+        $pay_way = $this->checkBalance($u_id, $canteen_id, $money, $company_id, $phone);
         if (!$pay_way) {
             throw new SaveException(['errorCode' => 49000, 'msg' => '余额不足']);
         }
@@ -1090,6 +1092,9 @@ class OrderService extends BaseService
             $ordering_data = $v['ordering'];
             $dinner = DinnerT::dinnerInfo($v['d_id']);
             $strategy = $this->getDinnerConsumptionStrategy($strategies, $v['d_id']);
+            if (empty($strategy)) {
+                throw new ParameterException(['msg' => '消费策略不存在']);
+            }
             if (!empty($ordering_data)) {
                 foreach ($ordering_data as $k2 => $v2) {
                     //检测是否可以订餐
