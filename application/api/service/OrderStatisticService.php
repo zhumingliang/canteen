@@ -633,6 +633,7 @@ class OrderStatisticService
 
 
         $header = $this->addDinnerToHeader($header, $dinner);
+       // print_r($header);
         $reports = $this->prefixConsumptionStatistic($statistic, $dinner);
         $reportName = $fileNameArr[$status];
         $file_name = $reportName . "(" . $time_begin . "-" . $time_end . ")";
