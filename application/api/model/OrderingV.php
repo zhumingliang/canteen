@@ -60,9 +60,14 @@ class OrderingV extends Model
         return $record;
     }
 
-    public static function getOrderingByWithDinnerID($orderingDate, $dinnerID, $phone)
+    public static function getOrderingByWithDinnerID($orderingDate, $dinnerID, $phone, $orderID)
     {
         $record = self::where('phone', $phone)
+            ->where(function ($query) use ($orderID) {
+                if ($orderID) {
+                    $query->where('id', '>', $orderID);
+                }
+            })
             ->where('ordering_date', $orderingDate)
             ->where('state', CommonEnum::STATE_IS_OK)
             ->where('pay', PayEnum::PAY_SUCCESS)

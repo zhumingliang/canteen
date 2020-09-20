@@ -921,7 +921,7 @@ class OrderService extends BaseService
             } else {
                 throw new ParameterException(['msg' => "消费策略中扣费类型异常"]);
             }
-             Db::commit();
+            Db::commit();
         } catch (Exception $e) {
             Db::rollback();
             throw $e;
@@ -1257,11 +1257,14 @@ class OrderService extends BaseService
                 $this->cancelConsumptionTimesOneOrder($id);
 
             } else {
-                if (Token::getCurrentTokenVar('type') == 'official') {
+                //if (Token::getCurrentTokenVar('type') == 'official') {
+                if (1) {
                     $moreIdArr = explode(',', $id);
                     $this->cancelParentConsumptionTimeMore($moreIdArr);
+
                 } else {
                     $this->cancelConsumptionTimesMoreOrder($id);
+
                 }
             }
             Db::commit();
@@ -1346,12 +1349,10 @@ class OrderService extends BaseService
         }
         $orderParent->count = $orderParent->count - 1;
         $orderParent->save();
-        //调整子订单的顺序和价格
-        $sortSub = $this->sortSubOrder($subOrders, $id);
-        $res = (new OrderSubT())->saveAll($sortSub);
-        if (!$res) {
-            throw new SaveException();
-        }
+
+        //更新其它订单排序
+        $strategy = (new CanteenService())->getStaffConsumptionStrategy($orderParent->canteen_id, $orderParent->dinner_id, $orderParent->staff_type_id);
+        $this->prefixOrderSortWhenUpdateOrder($strategy, $orderParent->dinner_id, $orderParent->phone, $orderParent->ordering_date, $id);
     }
 
     public function sortSubOrder($subOrders, $subId)
@@ -1516,7 +1517,7 @@ class OrderService extends BaseService
             }
             //更新其它订单排序
             $strategy = (new CanteenService())->getStaffConsumptionStrategy($order->canteen_id, $order->dinner_id, $order->staff_type_id);
-            $this->prefixOrderSortWhenUpdateOrder($strategy, $order->dinner_id, $order->phone, $order->ordering_date);
+            $this->prefixOrderSortWhenUpdateOrder($strategy, $order->dinner_id, $order->phone, $order->ordering_date, $v);
         }
     }
 
@@ -2868,6 +2869,7 @@ class OrderService extends BaseService
         $data['delivery_fee'] = $order->delivery_fee;
         $data['ordering_date'] = $order->ordering_date;
         $data['remark'] = $order->remark;
+        $data['receive'] = $order->receive;
         $data['meal_time_end'] = $dinner['meal_time_end'];
         $dataList = [];
         foreach ($sub as $k => $v) {
@@ -2940,10 +2942,11 @@ class OrderService extends BaseService
         return $parent;
     }
 
-    public function prefixOrderSortWhenUpdateOrder($strategy, $dinnerId, $phone, $orderingDate)
+    public function prefixOrderSortWhenUpdateOrder($strategy, $dinnerId, $phone, $orderingDate, $orderID = 0)
     {
         //1.获取用户所有订单
-        $orders = OrderingV::getOrderingByWithDinnerID($orderingDate, $dinnerId, $phone);
+        $orders = OrderingV::getOrderingByWithDinnerID($orderingDate, $dinnerId, $phone, $orderID);
+        print_r($orders);
         if (!count($orders)) {
             return true;
         }

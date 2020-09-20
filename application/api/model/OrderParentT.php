@@ -81,7 +81,7 @@ class OrderParentT extends Model
                 }
 
             ])
-            ->field('id,address_id,create_time,booking,canteen_id,dinner_id,ordering_type,ordering_date,count,delivery_fee,type,count,remark')
+            ->field('id,address_id,create_time,booking,canteen_id,dinner_id,ordering_type,ordering_date,count,delivery_fee,type,count,remark,receive')
             ->find();
         return $order;
     }
@@ -99,7 +99,7 @@ class OrderParentT extends Model
                     $query->field('id,province,city,area,address,name,phone,sex');
                 }
             ])
-            ->field('id,address_id,type as order_type,ordering_type,ordering_date,canteen_id,dinner_id,delivery_fee,booking,outsider')
+            ->field('id,address_id,type as order_type,ordering_type,ordering_date,canteen_id,dinner_id,delivery_fee,booking,outsider,receive')
             ->find();
 
         return $info;
