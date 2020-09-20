@@ -636,10 +636,10 @@ class OrderStatisticService
         $reports = $this->prefixConsumptionStatistic($statistic, $dinner);
         $reportName = $fileNameArr[$status];
         $file_name = $reportName . "(" . $time_begin . "-" . $time_end . ")";
-       /* $url = (new ExcelService())->makeExcel($header, $reports, $file_name);
+        $url = (new ExcelService())->makeExcel($header, $reports, $file_name);
         return [
             'url' => config('setting.domain') . $url
-        ];*/
+        ];
 
     }
 
@@ -670,7 +670,6 @@ class OrderStatisticService
     private
     function prefixConsumptionStatistic($statistic, $dinner)
     {
-        print_r($statistic);
         $dataList = [];
         if (!empty($statistic)) {
             $endData = $this->addDinnerToStatistic($dinner);
