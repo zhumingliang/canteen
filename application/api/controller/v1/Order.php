@@ -1338,10 +1338,12 @@ class Order extends BaseController
      * @apiExample {post}  请求样例:
      *    {
      *       "order_id": 1,
-     *       "address_id":3
+     *       "address_id":3,
+     *       "consumption_type":"one"
      * }
      * @apiParam (请求参数说明) {string} order_id  订单id
      * @apiParam (请求参数说明) {string} address_id  地址id
+     * @apiParam (请求参数说明) {string} consumption_type  消费类型：one 一次扣费；more 多次扣费
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
@@ -1351,7 +1353,8 @@ class Order extends BaseController
     {
         $order_id = Request::param('order_id');
         $address_id = Request::param('address_id');
-        (new OrderService())->changeOrderAddress($order_id, $address_id);
+        $consumption_type = Request::param('consumption_type');
+        (new OrderService())->changeOrderAddress($order_id, $address_id,$consumption_type);
         return json(new SuccessMessage());
     }
 

@@ -2771,9 +2771,14 @@ class OrderService extends BaseService
     }
 
     public
-    function changeOrderAddress($order_id, $address_id)
+    function changeOrderAddress($order_id, $address_id, $consumption_type)
     {
-        $order = OrderT::update(['address_id' => $address_id], ['id' => $order_id]);
+        if ($consumption_type == "one") {
+            $order = OrderT::update(['address_id' => $address_id], ['id' => $order_id]);
+
+        } else if ($consumption_type=="more"){
+            $order = OrderParentT::update(['address_id' => $address_id], ['id' => $order_id]);
+        }
         if (!$order) {
             throw new UpdateException();
         }
