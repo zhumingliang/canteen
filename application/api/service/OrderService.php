@@ -2946,7 +2946,6 @@ class OrderService extends BaseService
     {
         //1.获取用户所有订单
         $orders = OrderingV::getOrderingByWithDinnerID($orderingDate, $dinnerId, $phone, $orderID);
-        print_r($orders);
         if (!count($orders)) {
             return true;
         }
