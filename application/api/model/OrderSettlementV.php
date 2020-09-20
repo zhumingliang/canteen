@@ -10,10 +10,10 @@ use think\Model;
 
 class OrderSettlementV extends Model
 {
-    public function getMoneyAttr($value)
+/*    public function getMoneyAttr($value)
     {
         return abs($value);
-    }
+    }*/
 
     public static function orderSettlement($page, $size,
                                            $name, $phone, $canteen_id, $department_id, $dinner_id,
@@ -74,10 +74,10 @@ class OrderSettlementV extends Model
                         //系统补扣
                         $query->where('type', 'deduction');
                     } else if ($consumption_type == 6) {
-                        //系统补扣
+                        //小卖部消费
                         $query->where('type', 'shop')->where('money', '>', 0);
                     } else if ($consumption_type == 7) {
-                        //系统补扣
+                        //小卖部退款
                         $query->where('type', 'shop')->where('money', '<', 0);
                     }
                 }
