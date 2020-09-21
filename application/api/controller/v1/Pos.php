@@ -33,8 +33,14 @@ class Pos extends BaseController
         if (empty($cardCode)) {
             throw new AuthException(['msg' => '请刷卡登录']);
         }
-        $sql = "select t3.name from canteen_staff_card_t t1 left join canteen_company_staff_t t2 on t1.staff_id=t2.id left join canteen_staff_type_t t3 on t2.t_id=t3.id where t2.company_id='" . $companyId . "' and t1.card_code='" . $cardCode . "' and t2.state=1";
+        $sql = "select t1.state as card_state,t2.state as staff_state,t3.name from canteen_staff_card_t t1 left join canteen_company_staff_t t2 on t1.staff_id=t2.id left join canteen_staff_type_t t3 on t2.t_id=t3.id where t2.company_id='" . $companyId . "' and t1.card_code='" . $cardCode . "' and t2.state=1";
         $name = Db::query($sql);
+        if (empty($name)) {
+            throw new AuthException(['msg' => '找不到管理员信息']);
+        }
+        if ($name[0]['card_state'] != 1) {
+            throw new AuthException(['msg' => '登录失败']);
+        }
         if ($name[0]['name'] == '管理员') {
             return json(new SuccessMessage());
         } else {
