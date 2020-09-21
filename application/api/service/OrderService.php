@@ -330,6 +330,7 @@ class OrderService extends BaseService
             throw new SaveException(['msg' => '新增总订单失败']);
         }
         $orderId = $orderParent->id;
+        $subOrderDataList = [];
         //处理子订单
         for ($i = 0; $i < $count; $i++) {
             $data = [
