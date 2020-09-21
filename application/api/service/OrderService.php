@@ -2570,7 +2570,32 @@ class OrderService extends BaseService
     function orderUsersStatistic($dinner_id, $consumption_time, $consumption_type, $key, $page, $size)
     {
         $statistic = OrderUsersStatisticV::orderUsers($dinner_id, $consumption_time, $consumption_type, $key, $page, $size);
+        $statistic['data'] = $this->prefixUsersStatisticStatus($statistic['data']);
         return $statistic;
+    }
+
+    private function prefixUsersStatisticStatus($data)
+    {
+        if (count($data)) {
+            foreach ($data as $k => $v) {
+                if ($v["booking"] == CommonEnum::STATE_IS_OK) {
+                    if ($v["used"] == CommonEnum::STATE_IS_OK) {
+                        $data[$k]['status'] = "订餐就餐";
+                    } else {
+                        $data[$k]['status'] = "订餐未就餐";
+                    }
+                } else {
+                    if ($v["used"] == CommonEnum::STATE_IS_OK) {
+                        $data[$k]['status'] = "未订餐就餐";
+                    }
+                }
+            }
+            return $data;
+
+        }
+        return $data;
+
+
     }
 
     public

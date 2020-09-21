@@ -17,7 +17,7 @@ class OrderUsersStatisticV extends Model
         return $this->hasMany('OrderDetailT', 'o_id', 'id');
     }
 
-    public static function  orderUsers($dinner_id, $consumption_time, $consumption_type, $key, $page, $size)
+    public static function orderUsers($dinner_id, $consumption_time, $consumption_type, $key, $page, $size)
     {
         $users = self::where(function ($query) use ($dinner_id) {
             if ($dinner_id) {
@@ -47,9 +47,9 @@ class OrderUsersStatisticV extends Model
                         ->field('id as detail_id ,o_id,count,name,price');
                 }
             ])
-            ->field('order_id as id,username,order_num,phone,sum(count) as count,strategy_type as consumption_type,type,dinner_id')
+            ->field('order_id as id,username,order_num,phone,sum(count) as count,strategy_type as consumption_type,type,dinner_id,booking,used')
             ->group('order_id')
-            ->paginate($size, false, ['page' => $page]);
+            ->paginate($size, false, ['page' => $page])->toArray();
         return $users;
     }
 
