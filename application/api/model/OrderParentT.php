@@ -70,7 +70,7 @@ class OrderParentT extends Model
                     $query->field('id,name,meal_time_end');
                 },
                 'sub' => function ($query) {
-                    $query->where('state', CommonEnum::STATE_IS_OK)->field('id,order_id,state,used,state,money,sub_money,used,order_sort,wx_confirm,sort_code,consumption_sort')
+                    $query->field('id,order_id,state,used,state,money,sub_money,used,order_sort,wx_confirm,sort_code,consumption_sort')
                         ->order('order_sort');
                 },
                 'foods' => function ($query) {
