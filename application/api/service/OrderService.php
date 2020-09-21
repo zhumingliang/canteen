@@ -2774,16 +2774,27 @@ class OrderService extends BaseService
     function changeOrderAddress($order_id, $address_id, $consumption_type, $remark)
     {
         if ($consumption_type == "one") {
-            $order = OrderT::update(['address_id' => $address_id, 'remark' => $remark], ['id' => $order_id]);
+            $order = OrderT::where('id', $order_id)->find();
 
         } else if ($consumption_type == "more") {
-            $order = OrderParentT::update(['address_id' => $address_id, 'remark' => $remark], ['id' => $order_id]);
+            $order = OrderParentT::where('id', $order_id)->find();
         } else {
             throw new ParameterException(['msg' => "消费类型异常"]);
         }
         if (!$order) {
-            throw new UpdateException();
+            throw new ParameterException(['msg' => '订单不存在']);
         }
+        if ($order->receive == CommonEnum::STATE_IS_OK) {
+            throw new UpdateException(['msg' => "订单已经接单，不能修改地址"]);
+        }
+        $order->address_id = $address_id;
+        $order->remark = $remark;
+        $res = $order->save();
+        if (!$res) {
+            throw new UpdateException(['msg' => "修改地址失败"]);
+
+        }
+
     }
 
     public

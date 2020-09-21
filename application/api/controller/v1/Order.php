@@ -686,6 +686,8 @@ class Order extends BaseController
      * @apiSuccess (返回参数说明) {string} order_num 订单号
      * @apiSuccess (返回参数说明) {string} phone 手机号
      * @apiSuccess (返回参数说明) {int} count 订餐份数
+     * @apiSuccess (返回参数说明) {int} type 订单类型 1 ：堂吃；2：外卖
+     * @apiSuccess (返回参数说明) {int} dinner_id 餐次id
      */
     public function orderUsersStatistic($page = 1, $size = 20)
     {
