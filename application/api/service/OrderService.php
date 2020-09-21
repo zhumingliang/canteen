@@ -1257,15 +1257,8 @@ class OrderService extends BaseService
                 $this->cancelConsumptionTimesOneOrder($id);
 
             } else {
-                if (Token::getCurrentTokenVar('type') == 'official') {
-                    // if (1) {
-                    $moreIdArr = explode(',', $id);
-                    $this->cancelParentConsumptionTimeMore($moreIdArr);
-
-                } else {
-                    $this->cancelConsumptionTimesMoreOrder($id);
-
-                }
+                $moreIdArr = explode(',', $id);
+                $this->cancelParentConsumptionTimeMore($moreIdArr);
             }
             Db::commit();
         } catch (Exception $e) {

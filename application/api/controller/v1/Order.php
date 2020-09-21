@@ -213,7 +213,7 @@ class Order extends BaseController
      *       "id": 1,
      *       "consumption_type": "one"
      *     }
-     * @apiParam (请求参数说明) {int} id  微信端总订单id，CMS管理端-退回订单，子订单id
+     * @apiParam (请求参数说明) {int} id  总订单id
      * @apiParam (请求参数说明) {string} consumption_type  消费订单类型 one:一次消费；more:逐次消费
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200}
