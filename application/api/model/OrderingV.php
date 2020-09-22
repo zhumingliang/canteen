@@ -11,6 +11,7 @@ namespace app\api\model;
 
 use app\api\service\LogService;
 use app\lib\enum\CommonEnum;
+use app\lib\enum\OrderEnum;
 use app\lib\enum\PayEnum;
 use think\Model;
 
@@ -108,12 +109,17 @@ class OrderingV extends Model
                     $query->where('c_id', $canteen_id);
                 }
             })
+            ->where(function ($query) use ($type) {
+                if ($type == OrderEnum::EAT_CANTEEN) {
+                    $query->where('type', $type)->where('all_used', CommonEnum::STATE_IS_FAIL);
+                } else if ($type == OrderEnum::EAT_OUTSIDER){
+                    $query->where('type', $type) ->where('receive', CommonEnum::STATE_IS_FAIL);
+
+                }
+            })
             ->where('pay', PayEnum::PAY_SUCCESS)
-            ->where('all_used', CommonEnum::STATE_IS_FAIL)
-            ->where('receive', CommonEnum::STATE_IS_FAIL)
             ->where('state', CommonEnum::STATE_IS_OK)
             ->field('id,canteen as address,if(type=1,"食堂","外卖") as type,create_time,dinner,money,ordering_date,count,c_id as canteen_id,canteen,consumption_type')
-            ->where('type', $type)
             ->paginate($size, false, ['page' => $page]);
         return $orderings;
     }
