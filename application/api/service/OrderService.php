@@ -2744,23 +2744,60 @@ class OrderService extends BaseService
     public
     function used($order_id, $consumptionType)
     {
-        if ($consumptionType == "one") {
-            $order = OrderT::update([
-                'used' => CommonEnum::STATE_IS_OK,
-                'used_time' => date('Y-m-d H:i:s')
-            ],
-                ['id' => $order_id]);
-        } else {
-            $order = OrderParentT::update([
-                'used' => CommonEnum::STATE_IS_OK,
-                'used_time' => date('Y-m-d H:i:s')
-            ],
-                ['id' => $order_id]);
+        try {
+            Db::startTrans();
+            if ($consumptionType == "one") {
+                $order = OrderT::get($order_id);
+                if ($order->consumption_type == 'no_meals_ordered' && ($order->fixed == CommonEnum::STATE_IS_OK || $order->ordering_type == "online")) {
+                    $order->money = $order->meal_money;
+                }
+                $order->sub_money = $order->meal_sub_money;
+                $order->used = CommonEnum::STATE_IS_OK;
+                $order->used_time = date('Y-m-d H:i:s');
+                $res = $order->save();
+                if (!$res) {
+                    throw new UpdateException();
+                }
+            } else {
+                $allMoney = 0;
+                $subList = [];
+                $subOrder = OrderSubT::where('order_id', $order_id)
+                    ->where('state', CommonEnum::STATE_IS_OK)
+                    ->select();
+                $parentOrder = OrderParentT::get($order_id);
+                foreach ($subOrder as $k => $v) {
+                    $mealMoney = $v['money'];
+                    if ($v['consumption_type'] == 'no_meals_ordered' && ($parentOrder->fixed == CommonEnum::STATE_IS_OK || $parentOrder->ordering_type == "online")) {
+                        $mealMoney = $v['meal_money'];
+                    }
+                    $allMoney += ($mealMoney + $v['meal_sub_money']);
+                    array_push($subList, [
+                        'id' => $v['id'],
+                        'money' => $v['meal_money'],
+                        'sub_money' => $v['meal_sub_money'],
+                        'used' => CommonEnum::STATE_IS_OK,
+                        'used_time' => date('Y-m-d H:i:s')
+                    ]);
+                }
+                $updateSub = (new OrderSubT())->saveAll($subList);
+                if (!$updateSub) {
+                    throw new UpdateException(['msg' => "更新子订单失败"]);
+                }
+                $parentOrder->money = $allMoney;
+                $parentOrder->used = CommonEnum::STATE_IS_OK;
+                $parentOrder->all_used = CommonEnum::STATE_IS_OK;
+                $updateParent = $parentOrder->save();
+                if (!$updateParent) {
+                    throw new UpdateException(['msg' => "更新总订单失败"]);
+                }
+
+            }
+            Db::commit();
+        } catch (Exception $e) {
+            Db::rollback();
+            throw $e;
         }
 
-        if (!$order) {
-            throw new UpdateException();
-        }
 
     }
 
