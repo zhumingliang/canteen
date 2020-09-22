@@ -193,7 +193,7 @@ class Takeout extends BaseController
      * @apiSuccess (返回参数说明) {obj} foods 菜品信息
      * @apiSuccess (返回参数说明) {int} count 数量
      * @apiSuccess (返回参数说明) {obj} sub 子订单信息
-     * @apiSuccess (返回参数说明) {int} order_sort 份数排序
+     * @apiSuccess (返回参数说明) {int} consumption_sort 份数排序
      * @apiSuccess (返回参数说明) {int} money 子订单基本金额
      * @apiSuccess (返回参数说明) {int} sub_money 子订单附加金额
      * @apiSuccess (返回参数说明) {string} name 名称
