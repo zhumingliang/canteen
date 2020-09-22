@@ -119,7 +119,7 @@ class OrderParentT extends Model
                 },
                 'sub' => function ($query) {
                     $query->where('state', CommonEnum::STATE_IS_OK)
-                        ->field('id,order_id,order_sort,count,money,sub_money');
+                        ->field('id,order_id,consumption_sort as order_sort,count,money,sub_money');
                 },
                 'dinner' => function ($query) {
                     $query->field('id,name');
