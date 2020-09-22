@@ -110,6 +110,7 @@ class OrderingV extends Model
             })
             ->where('pay', PayEnum::PAY_SUCCESS)
             ->where('all_used', CommonEnum::STATE_IS_FAIL)
+            ->where('receive', CommonEnum::STATE_IS_FAIL)
             ->where('state', CommonEnum::STATE_IS_OK)
             ->field('id,canteen as address,if(type=1,"食堂","外卖") as type,create_time,dinner,money,ordering_date,count,c_id as canteen_id,canteen,consumption_type')
             ->where('type', $type)
