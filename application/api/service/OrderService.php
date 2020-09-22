@@ -2773,7 +2773,7 @@ class OrderService extends BaseService
                     $allMoney += ($mealMoney + $v['meal_sub_money']);
                     array_push($subList, [
                         'id' => $v['id'],
-                        'money' => $v['meal_money'],
+                        'money' =>$mealMoney,
                         'sub_money' => $v['meal_sub_money'],
                         'used' => CommonEnum::STATE_IS_OK,
                         'used_time' => date('Y-m-d H:i:s')
