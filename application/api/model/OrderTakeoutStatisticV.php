@@ -84,7 +84,7 @@ class OrderTakeoutStatisticV extends Model
             })
             ->where('pay', PayEnum::PAY_SUCCESS)
             ->hidden(['create_time', 'canteen_id', 'company_id', 'dinner_id', 'state', 'receive', 'used', 'pay'])
-            ->order('dinner_id,order_id')
+            ->order('dinner,order_id')
             ->paginate($size, false, ['page' => $page])->toArray();
         return $list;
     }
