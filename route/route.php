@@ -304,3 +304,7 @@ Route::rule('api/:version/service/printer', 'api/:version.Service/printer');
 Route::post('api/:version/outsider/save', 'api/:version.Outsider/saveCanteen');
 Route::get('api/:version/outsiders', 'api/:version.Outsider/outsiders');
 Route::get('api/:version/outsider', 'api/:version.Outsider/outsider');
+
+Route::post('api/:version/face/receiveFaceData', 'api/:version.Face/receiveFaceData');
+Route::get('api/:version/face/getFaceData', 'api/:version.Face/getFaceData');
+Route::get('api/:version/face/exportFaceData', 'api/:version.Face/exportFaceData');
