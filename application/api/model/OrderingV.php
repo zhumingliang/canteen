@@ -113,7 +113,7 @@ class OrderingV extends Model
                 if ($type == OrderEnum::EAT_CANTEEN) {
                     $query->where('type', $type)->where('all_used', CommonEnum::STATE_IS_FAIL);
                 } else if ($type == OrderEnum::EAT_OUTSIDER){
-                    $query->where('type', $type) ->where('receive', CommonEnum::STATE_IS_FAIL);
+                    $query->where('type', $type) ->where('used', CommonEnum::STATE_IS_FAIL);
 
                 }
             })
