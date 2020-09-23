@@ -234,13 +234,18 @@ class OrderService extends BaseService
     {
         $dinner_id = $params['dinner_id'];
         $ordering_date = $params['ordering_date'];
-        $ordering_type = $params['ordering_type'];
         $count = $params['count'];
         $detail = json_decode($params['detail'], true);
         $dinner = DinnerT::dinnerInfo($dinner_id);
         $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
+        $phone = Token::getCurrentTokenVar('phone');
+        $company_id = Token::getCurrentTokenVar('current_company_id');
+        $consumptionType = $this->getConsumptionType($phone, $company_id, $canteen_id, $dinner_id);
+        //检测用户是否可以订餐并返回订单金额
+        $orderMoney = $this->checkUserCanOrder($dinner, $ordering_date, $canteen_id, $count, $detail, 'person_choice', $consumptionType);
+        //$orderMoney = $strategyMoney['strategyMoney'];
         $delivery_fee = $this->checkUserOutsider($params['type'], $canteen_id);
-        $orderMoney = $this->checkUserCanOrder($dinner, $ordering_date, $canteen_id, $count, $detail, "person_choice", $ordering_type);
+       // $orderMoney = $this->checkUserCanOrder($dinner, $ordering_date, $canteen_id, $count, $detail, "person_choice", $ordering_type);
         $orderMoney['delivery_fee'] = $delivery_fee;
         return $orderMoney;
 
