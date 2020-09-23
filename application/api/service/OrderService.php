@@ -2773,7 +2773,7 @@ class OrderService extends BaseService
                     $allMoney += ($mealMoney + $v['meal_sub_money']);
                     array_push($subList, [
                         'id' => $v['id'],
-                        'money' =>$mealMoney,
+                        'money' => $mealMoney,
                         'sub_money' => $v['meal_sub_money'],
                         'used' => CommonEnum::STATE_IS_OK,
                         'used_time' => date('Y-m-d H:i:s')
@@ -2788,7 +2788,7 @@ class OrderService extends BaseService
                 $parentOrder->all_used = CommonEnum::STATE_IS_OK;
                 $updateParent = $parentOrder->save();
                 if (!$updateParent) {
-                    throw new UpdateException(['msg' => "更新总订单失败"]);
+                    throw new UpdateException(['msg' => "更新子订单失败"]);
                 }
 
             }
