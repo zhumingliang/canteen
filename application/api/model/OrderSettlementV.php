@@ -10,10 +10,10 @@ use think\Model;
 
 class OrderSettlementV extends Model
 {
-/*    public function getMoneyAttr($value)
+    public function getMoneyAttr($value)
     {
         return abs($value);
-    }*/
+    }
 
     public static function orderSettlement($page, $size,
                                            $name, $phone, $canteen_id, $department_id, $dinner_id,
@@ -86,7 +86,7 @@ class OrderSettlementV extends Model
             ->field('order_id,used_time,username,phone,canteen,department,dinner,booking,used,type,ordering_date,money,consumption_type')
             ->order('ordering_date DESC,phone')
             //->fetchSql(true)->select();
-        ->paginate($size, false, ['page' => $page])->toArray();
+            ->paginate($size, false, ['page' => $page])->toArray();
         return $list;
 
     }
@@ -148,7 +148,7 @@ class OrderSettlementV extends Model
                     } else if ($consumption_type == 5) {
                         //系统补扣
                         $query->where('type', 'deduction');
-                    }else if ($consumption_type == 6) {
+                    } else if ($consumption_type == 6) {
                         //系统补扣
                         $query->where('type', 'shop')->where('money', '>', 0);
                     } else if ($consumption_type == 7) {
