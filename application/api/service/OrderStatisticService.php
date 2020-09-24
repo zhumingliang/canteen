@@ -218,6 +218,7 @@ class OrderStatisticService
                         } else {
                             $data[$k]['consumption_type'] = "小卖部退款";
                         }
+                        $data[$k]['money'] = abs($v['money']);
 
                     } else if ($v['type'] == 'canteen') {
                         if ($v['booking'] == CommonEnum::STATE_IS_OK) {
@@ -633,7 +634,7 @@ class OrderStatisticService
 
 
         $header = $this->addDinnerToHeader($header, $dinner);
-       // print_r($header);
+        // print_r($header);
         $reports = $this->prefixConsumptionStatistic($statistic, $dinner);
         $reportName = $fileNameArr[$status];
         $file_name = $reportName . "(" . $time_begin . "-" . $time_end . ")";
@@ -689,7 +690,7 @@ class OrderStatisticService
                         $data[$v2['dinner_id'] . $v2['dinner'] . 'count'] = $v2['order_count'];
                         $endData[$v2['dinner_id'] . $v2['dinner'] . 'count'] += $v2['order_count'];
                     }
-                    if (key_exists($v2['dinner_id'] .$v2['dinner']. 'money', $data)) {
+                    if (key_exists($v2['dinner_id'] . $v2['dinner'] . 'money', $data)) {
                         $data[$v2['dinner_id'] . $v2['dinner'] . 'money'] = $v2['order_money'];
                         $endData[$v2['dinner_id'] . $v2['dinner'] . 'money'] += $v2['order_money'];
                     }

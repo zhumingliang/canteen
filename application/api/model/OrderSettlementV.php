@@ -10,10 +10,6 @@ use think\Model;
 
 class OrderSettlementV extends Model
 {
-    public function getMoneyAttr($value)
-    {
-        return abs($value);
-    }
 
     public static function orderSettlement($page, $size,
                                            $name, $phone, $canteen_id, $department_id, $dinner_id,
