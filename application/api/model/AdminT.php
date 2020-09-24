@@ -41,7 +41,7 @@ class AdminT extends Model
         ])
             ->where(function ($query) use ($key) {
                 if (strlen($key)) {
-                    $query->where('role', 'like', '%' . $key . '%');
+                    $query->where('role|account', 'like', '%' . $key . '%');
                 }
             })
             ->where(function ($query) use ($state) {
