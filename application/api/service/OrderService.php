@@ -1266,7 +1266,7 @@ class OrderService extends BaseService
                 $moreIdArr = explode(',', $id);
                 $this->cancelParentConsumptionTimeMore($moreIdArr);
             }
-            // Db::commit();
+             Db::commit();
         } catch (Exception $e) {
             Db::rollback();
             throw $e;
