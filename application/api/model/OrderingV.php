@@ -61,7 +61,7 @@ class OrderingV extends Model
         return $record;
     }
 
-    public static function getOrderingByWithDinnerID($orderingDate, $dinnerID, $phone, $orderID)
+    public static function getOrderingByWithDinnerID($orderingDate, $dinnerID, $phone, $orderID=0)
     {
         $record = self::where('phone', $phone)
             ->where(function ($query) use ($orderID) {

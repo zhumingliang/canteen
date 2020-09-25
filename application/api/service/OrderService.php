@@ -245,7 +245,7 @@ class OrderService extends BaseService
         $orderMoney = $this->checkUserCanOrder($dinner, $ordering_date, $canteen_id, $count, $detail, 'person_choice', $consumptionType);
         //$orderMoney = $strategyMoney['strategyMoney'];
         $delivery_fee = $this->checkUserOutsider($params['type'], $canteen_id);
-       // $orderMoney = $this->checkUserCanOrder($dinner, $ordering_date, $canteen_id, $count, $detail, "person_choice", $ordering_type);
+        // $orderMoney = $this->checkUserCanOrder($dinner, $ordering_date, $canteen_id, $count, $detail, "person_choice", $ordering_type);
         $orderMoney['delivery_fee'] = $delivery_fee;
         return $orderMoney;
 
@@ -1266,7 +1266,7 @@ class OrderService extends BaseService
                 $moreIdArr = explode(',', $id);
                 $this->cancelParentConsumptionTimeMore($moreIdArr);
             }
-            Db::commit();
+            // Db::commit();
         } catch (Exception $e) {
             Db::rollback();
             throw $e;
@@ -3024,7 +3024,7 @@ class OrderService extends BaseService
     public function prefixOrderSortWhenUpdateOrder($strategy, $dinnerId, $phone, $orderingDate, $orderID = 0)
     {
         //1.获取用户所有订单
-        $orders = OrderingV::getOrderingByWithDinnerID($orderingDate, $dinnerId, $phone, $orderID);
+        $orders = OrderingV::getOrderingByWithDinnerID($orderingDate, $dinnerId, $phone);
         if (!count($orders)) {
             return true;
         }
@@ -3108,6 +3108,7 @@ class OrderService extends BaseService
             ]);
 
         }
+       // print_r($updateSubOrderData);
         $parent = (new OrderParentT())->saveAll($updateParentOrderData);
         if (!$parent) {
             throw new UpdateException(['msg' => '更新总订单失败']);

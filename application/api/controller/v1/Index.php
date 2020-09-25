@@ -13,8 +13,10 @@ use app\api\model\ConsumptionStrategyT;
 use app\api\model\DinnerT;
 use app\api\model\OrderConsumptionV;
 use app\api\model\OrderingV;
+use app\api\model\OrderParentT;
 use app\api\model\OrderSubT;
 use app\api\model\OrderT;
+use app\api\model\OrderUnusedV;
 use app\api\model\PayT;
 use app\api\model\RechargeCashT;
 use app\api\model\RechargeV;
@@ -116,7 +118,76 @@ Index extends BaseController
     public function test($param = "")
     {
 
-        return json(\app\api\service\Token::getCurrentTokenVar());
+        Db::startTrans();
+        $consumption_time = date('Y-m-d');
+        $oneDataList = [];
+        $moreDataList = [];
+        $parentDataList = [];
+        $orders = (new  OrderUnusedV())->orders($consumption_time);
+        if (count($orders)) {
+            foreach ($orders as $k => $v) {
+                if ($v['strategy_type'] == 'one') {
+                    OrderT::update(['consumption_type' => 'no_meals_ordered',
+                        'money' => 0,
+                        'unused_handel' => CommonEnum::STATE_IS_OK,
+                        'sub_money' => $v['no_meal_sub_money']], ['id' => $v['id']]);
+
+                }
+                else {
+
+                    OrderSubT::update([
+                        'consumption_type' => 'no_meals_ordered',
+                        'money' => 0,
+                        'unused_handel' => CommonEnum::STATE_IS_OK,
+                        'sub_money' => $v['no_meal_sub_money']
+                    ], ['id' => $v['id']]);
+
+                    OrderParentT::update(['money' => $v['parent_money'] - $v['order_money'] - $v['order_sub_money'] + $v['no_meal_sub_money'],
+                    ], ['id' => $v['order_id']]);
+
+                }
+
+
+                /* array_push($oneDataList, [
+                   'id' => $v['id'],
+                   'consumption_type' => 'no_meals_ordered',
+                   'money' => 0,
+                   'unused_handel' => CommonEnum::STATE_IS_OK,
+                   'sub_money' => $v['no_meal_sub_money']
+               ]);*/
+
+                /*   array_push($moreDataList, [
+             'id' => $v['id'],
+             'consumption_type' => 'no_meals_ordered',
+             'money' => 0,
+             'unused_handel' => CommonEnum::STATE_IS_OK,
+             'sub_money' => $v['no_meal_sub_money']
+         ]);
+
+         array_push($parentDataList, [
+             'id' => $v['order_id'],
+             'money' => $v['parent_money'] - $v['order_money'] - $v['order_sub_money'] + $v['no_meal_sub_money'],
+         ]);*/
+
+
+            }
+            //print_r($oneDataList);
+            print_r($moreDataList);
+            if (count($oneDataList)) {
+                (new OrderT())->saveAll($oneDataList);
+            }
+            if (count($moreDataList)) {
+                $res = (new OrderSubT())->saveAll($oneDataList);
+                var_dump($res);
+            }
+            if (count($parentDataList)) {
+                (new OrderParentT())->saveAll($oneDataList);
+            }
+        }
+        Db::commit();
+
+
+        // return json(\app\api\service\Token::getCurrentTokenVar());
 
         /*        $data = [
                     '朝阳社区' => '6-24,402-418,472,701-705,816-845,857,964-971,988—989,2188-2210,2249-2266,2469-2481',
