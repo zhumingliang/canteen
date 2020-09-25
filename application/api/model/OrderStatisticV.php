@@ -93,7 +93,8 @@ class OrderStatisticV extends Model
                                   $phone, $canteen_id, $department_id,
                                   $dinner_id, $type)
     {
-        $list = self::whereBetweenTime('ordering_date', $time_begin, $time_end)
+        $list = self::where('ordering_date', ">=", $time_begin)
+            ->where('ordering_date', "<=", $time_end)
             ->where(function ($query) use ($name, $phone, $department_id) {
                 if (strlen($name)) {
                     $query->where('username', 'like', '%' . $name . '%');
