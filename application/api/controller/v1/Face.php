@@ -214,7 +214,7 @@ class Face extends BaseController
                 }
             })
             ->field('t1.id,t1.passTime,t2.name as company_name,t3.name as canteen_name,t1.meal_name,t4.username,t4.phone,t5.name as department_name,t1.temperature,(case when t1.temperatureResult = 1 then \'正常\' when t1.temperatureResult=2 then \'异常\' end) state')
-            ->order('id DESC')
+            ->order('id asc')
             ->paginate($size, false, ['page' => $page]);
         return $list;
     }
@@ -255,7 +255,7 @@ class Face extends BaseController
                     }
                 }
             })
-            ->field('t1.id,t1.passTime,t3.name as canteen_name,t1.meal_name,t4.username,t4.phone,t5.name as department_name,t1.temperature,(case when t1.temperatureResult = 1 then \'正常\' when t1.temperatureResult=2 then \'异常\' end) state')
+            ->field('t1.id,t1.passTime,t3.name as canteen_name,t1.meal_name,t5.name as department_name,t4.username,t4.phone,t1.temperature,(case when t1.temperatureResult = 1 then \'正常\' when t1.temperatureResult=2 then \'异常\' end) state')
             ->order('id DESC')
             ->select();
         return $list;
