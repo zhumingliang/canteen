@@ -308,3 +308,11 @@ Route::get('api/:version/outsider', 'api/:version.Outsider/outsider');
 Route::post('api/:version/face/receiveFaceData', 'api/:version.Face/receiveFaceData');
 Route::get('api/:version/face/getFaceData', 'api/:version.Face/getFaceData');
 Route::get('api/:version/face/exportFaceData', 'api/:version.Face/exportFaceData');
+
+ Route::post('api/:version/notice2/userNotices', 'api/:version.Notice2/userNotices');
+Route::get('api/:version/notice2/notify', 'api/:version.Notice2/notify');
+Route::post('api/:version/notice2/upload', 'api/:version.Notice2/upload');
+Route::post('api/:version/notice2/saveNotice', 'api/:version.Notice2/saveNotice');
+Route::get('api/:version/notice2/receiver', 'api/:version.Notice2/receiver');
+Route::get('api/:version/notice2/Notice', 'api/:version.Notice2/Notice');
+Route::post('api/:version/notice2/updateNotice', 'api/:version.Notice2/updateNotice');
