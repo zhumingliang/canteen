@@ -231,10 +231,7 @@ class OrderStatisticService
     {
         if (count($data)) {
             foreach ($data as $k => $v) {
-                if ($v['consumption_type'] == OrderEnum::EAT_OUTSIDER) {
-                    $data[$k]['consumption_type'] = "外卖";
 
-                } else {
                     if ($v['type'] == 'recharge') {
                         $data[$k]['consumption_type'] = "系统补充";
                     } else if ($v['type'] == 'deduction') {
@@ -256,9 +253,6 @@ class OrderStatisticService
                     }
 
                 }
-
-            }
-
         }
         return $data;
     }
