@@ -177,7 +177,7 @@ class OrderStatisticV extends Model
                         ->field('o_id,count,name');
                 }
             ])
-            ->field('order_id,ordering_date,username,canteen,department,dinner,type,ordering_type,state,meal_time_end,used')
+            ->field('order_id,ordering_date,username,canteen,department,dinner,type,ordering_type,state,meal_time_end,used,phone,count,money')
             ->order('order_id DESC')
             ->select()->toArray();
         return $list;
