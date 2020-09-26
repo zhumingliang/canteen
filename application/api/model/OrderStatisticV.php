@@ -139,7 +139,8 @@ class OrderStatisticV extends Model
                                         $dinner_id, $type)
     {
         $time_end = addDay(1, $time_end);
-        $list = self::whereBetweenTime('ordering_date', $time_begin, $time_end)
+        $list = self::where('ordering_date', ">=", $time_begin)
+            ->where('ordering_date', "<=", $time_end)
             ->where(function ($query) use ($name, $phone, $department_id) {
                 if (strlen($name)) {
                     $query->where('username', 'like', '%' . $name . '%');
@@ -171,13 +172,7 @@ class OrderStatisticV extends Model
                     $query->where('type', $type);
                 }
             })
-            ->with([
-                'foods' => function ($query) {
-                    $query->where('state', CommonEnum::STATE_IS_OK)
-                        ->field('o_id,count,name');
-                }
-            ])
-            ->field('order_id,ordering_date,username,canteen,department,dinner,type,ordering_type,state,meal_time_end,used,phone,count,money')
+            ->field('order_id,ordering_date,username,canteen,department,dinner,type,ordering_type,state,meal_time_end,used,phone,count,order_money,consumption_type')
             ->order('order_id DESC')
             ->select()->toArray();
         return $list;

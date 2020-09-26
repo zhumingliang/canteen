@@ -12,6 +12,7 @@ use app\api\model\MaterialReportDetailT;
 use app\api\model\MaterialReportDetailV;
 use app\api\model\MaterialReportT;
 use app\api\model\OrderConsumptionV;
+use app\api\model\OrderDetailT;
 use app\api\model\OrderMaterialV;
 use app\api\model\OrderParentT;
 use app\api\model\OrderSettlementV;
@@ -20,6 +21,7 @@ use app\api\model\OrderT;
 use app\api\model\OrderTakeoutStatisticV;
 use app\api\model\ShopT;
 use app\api\model\StaffCanteenV;
+use app\api\model\SubFoodT;
 use app\lib\enum\CommonEnum;
 use app\lib\enum\OrderEnum;
 use app\lib\exception\ParameterException;
@@ -76,7 +78,7 @@ class OrderStatisticService
             $phone, $canteen_id, $department_id,
             $dinner_id, $type);
         $list = $this->prefixOrderStatisticDetail($list);
-        $header = ['订单ID', '订餐日期', '消费地点', '部门', '姓名', '餐次','号码','份数','金额', '订餐类型', '订餐状态', '明细'];
+        $header = ['订单ID', '订餐日期', '消费地点', '部门', '姓名', '餐次', '号码', '份数', '金额', '订餐类型', '订餐状态', '明细'];
         $file_name = "订餐明细报表(" . $time_begin . "-" . $time_end . ")";
         $url = (new ExcelService())->makeExcel($header, $list, $file_name);
         return [
@@ -97,18 +99,40 @@ class OrderStatisticService
             $data['dinner'] = $v['dinner'];
             $data['phone'] = $v['phone'];
             $data['count'] = $v['count'];
-            $data['money'] = $v['money'];
+            $data['money'] = $v['order_money'];
             $data['type'] = $v['type'];
             $data['status'] = $this->getStatus($v['ordering_date'], $v['state'], $v['meal_time_end'], $v['used']);
-            $foods = $v['foods'];
+            $foods = $this->getOrderFoods($v['order_id'], $v['ordering_type'], $v['consumption_type']);
             $detail = [];
-            foreach ($foods as $k2 => $v2) {
-                array_push($detail, $v2['name'] . '*' . $v2['count']);
+            if (count($foods)) {
+                foreach ($foods as $k2 => $v2) {
+                    array_push($detail, $v2['name'] . '*' . $v2['count']);
+                }
             }
+
             $data['foods'] = implode('  ', $detail);
             array_push($dataList, $data);
         }
         return $dataList;
+    }
+
+    private function getOrderFoods($orderId, $orderingType, $consumptionType)
+    {
+        if ($orderingType != "person_choice") {
+            return [];
+        }
+        if ($consumptionType == 'one') {
+            return OrderDetailT::where('o_id', $orderId)
+                ->where('state', CommonEnum::STATE_IS_OK)
+                ->select();
+        } else if ($consumptionType == 'more') {
+            return SubFoodT::where('o_id', $orderId)
+                ->where('state', CommonEnum::STATE_IS_OK)
+                ->select();
+
+        }
+        return [];
+
     }
 
     private function getStatus($ordering_date, $state, $meal_time_end, $used)
