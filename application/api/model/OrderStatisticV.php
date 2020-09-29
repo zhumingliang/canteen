@@ -173,7 +173,7 @@ class OrderStatisticV extends Model
                 }
             })
             ->field('order_id,ordering_date,username,canteen,department,dinner,type,ordering_type,state,meal_time_end,used,phone,count,order_money,consumption_type')
-            ->order('order_id DESC')
+            ->order('ordering_date DESC')
             ->select()->toArray();
         return $list;
 
