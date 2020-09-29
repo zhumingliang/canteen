@@ -17,6 +17,7 @@ use app\api\model\OrderMaterialV;
 use app\api\model\OrderParentT;
 use app\api\model\OrderSettlementV;
 use app\api\model\OrderStatisticV;
+use app\api\model\OrderSubT;
 use app\api\model\OrderT;
 use app\api\model\OrderTakeoutStatisticV;
 use app\api\model\ShopT;
@@ -78,7 +79,7 @@ class OrderStatisticService
             $phone, $canteen_id, $department_id,
             $dinner_id, $type);
         $list = $this->prefixOrderStatisticDetail($list);
-        $header = ['订单ID', '订餐日期', '消费地点', '部门', '姓名', '餐次', '号码', '份数', '金额', '订餐类型', '订餐状态', '明细'];
+        $header = ['订单ID', '订餐日期', '消费地点', '部门', '姓名', '号码', '餐次', '订餐类型', '份数', '金额', '订餐状态', '明细', '合计'];
         $file_name = "订餐明细报表(" . $time_begin . "-" . $time_end . ")";
         $url = (new ExcelService())->makeExcel($header, $list, $file_name);
         return [
@@ -89,36 +90,80 @@ class OrderStatisticService
 
     private function prefixOrderStatisticDetail($list)
     {
+        $sort = [
+            1 => '一',
+            2 => '二',
+            3 => '三',
+            4 => '四',
+            5 => '五',
+            6 => '六',
+            7 => '七',
+            8 => '八',
+            9 => '九',
+            10 => '十',
+        ];
         $dataList = [];
         foreach ($list as $k => $v) {
-            $data['order_id'] = $v['order_id'];
-            $data['ordering_date'] = $v['ordering_date'];
-            $data['canteen'] = $v['canteen'];
-            $data['department'] = $v['department'];
-            $data['username'] = $v['username'];
-            $data['dinner'] = $v['dinner'];
-            $data['phone'] = $v['phone'];
-            $data['count'] = $v['count'];
-            $data['money'] = $v['order_money'];
-            $data['type'] = $v['type'];
-            $data['status'] = $this->getStatus($v['ordering_date'], $v['state'], $v['meal_time_end'], $v['used']);
+            $consumptionType = $v['consumption_type'];
             $foods = $this->getOrderFoods($v['order_id'], $v['ordering_type'], $v['consumption_type']);
             $detail = [];
             if (count($foods)) {
-                foreach ($foods as $k2 => $v2) {
-                    array_push($detail, $v2['name'] . '*' . $v2['count']);
+                foreach ($foods as $k3 => $v3) {
+                    array_push($detail, $v3['name'] . '*' . $v3['count']);
                 }
             }
+            $detail = implode('  ', $detail);
+            if ($consumptionType == "one") {
+                $data['order_id'] = $v['order_id'];
+                $data['ordering_date'] = $v['ordering_date'];
+                $data['canteen'] = $v['canteen'];
+                $data['department'] = $v['department'];
+                $data['username'] = $v['username'];
+                $data['phone'] = $v['phone'];
+                $data['dinner'] = $v['dinner'];
+                $data['type'] = $v['type'];
+                $data['count'] = "第一份";
+                $data['money'] = $v['order_money'];
+                $data['status'] = $this->getStatus($v['ordering_date'], $v['state'], $v['meal_time_end'], $v['used']);
+                $data['foods'] = $detail;
+                $data['all'] = $v['order_money'];
+                array_push($dataList, $data);
 
-            $data['foods'] = implode('  ', $detail);
-            array_push($dataList, $data);
+            } else if ($consumptionType == "more") {
+                $subOrder = OrderSubT::where('order_id', $v['order_id'])
+                    ->where('state', CommonEnum::STATE_IS_OK)->select();
+                foreach ($subOrder as $k2 => $v2) {
+                    $data['order_id'] = $v2['id'];
+                    $data['ordering_date'] = $v['ordering_date'];
+                    $data['canteen'] = $v['canteen'];
+                    $data['department'] = $v['department'];
+                    $data['username'] = $v['username'];
+                    $data['phone'] = $v['phone'];
+                    $data['dinner'] = $v['dinner'];
+                    $data['type'] = $v['type'];
+                    $data['count'] = "第" . $sort[$v2['consumption_sort']] . "份";
+                    $data['money'] = $v2['money'] + $v2['sub_money'];
+                    $data['status'] = $this->getStatus($v['ordering_date'], $v['state'], $v['meal_time_end'], $v['used']);
+                    $data['foods'] = $detail;
+                    if ($k2 == count($subOrder) - 1) {
+                        $data['all'] = $v['order_money'];
+                    } else {
+                        $data['all'] = '';
+                    }
+                    array_push($dataList, $data);
+                }
+
+
+            }
+
         }
         return $dataList;
     }
 
+
     private function getOrderFoods($orderId, $orderingType, $consumptionType)
     {
-        if ($orderingType != "person_choice") {
+        if ($orderingType != "personal_choice") {
             return [];
         }
         if ($consumptionType == 'one') {
@@ -232,27 +277,27 @@ class OrderStatisticService
         if (count($data)) {
             foreach ($data as $k => $v) {
 
-                    if ($v['type'] == 'recharge') {
-                        $data[$k]['consumption_type'] = "系统补充";
-                    } else if ($v['type'] == 'deduction') {
-                        $data[$k]['consumption_type'] = "系统补扣";
-                    } else if ($v['type'] == 'shop') {
-                        if ($v['money'] > 0) {
-                            $data[$k]['consumption_type'] = "小卖部消费";
-                        } else {
-                            $data[$k]['consumption_type'] = "小卖部退款";
-                        }
-                        $data[$k]['money'] = abs($v['money']);
-
-                    } else if ($v['type'] == 'canteen') {
-                        if ($v['booking'] == CommonEnum::STATE_IS_OK) {
-                            $data[$k]['consumption_type'] = $v['used'] == CommonEnum::STATE_IS_OK ? "订餐就餐" : "订餐未就餐";
-                        } else {
-                            $data[$k]['consumption_type'] = "未订餐就餐";
-                        }
+                if ($v['type'] == 'recharge') {
+                    $data[$k]['consumption_type'] = "系统补充";
+                } else if ($v['type'] == 'deduction') {
+                    $data[$k]['consumption_type'] = "系统补扣";
+                } else if ($v['type'] == 'shop') {
+                    if ($v['money'] > 0) {
+                        $data[$k]['consumption_type'] = "小卖部消费";
+                    } else {
+                        $data[$k]['consumption_type'] = "小卖部退款";
                     }
+                    $data[$k]['money'] = abs($v['money']);
 
+                } else if ($v['type'] == 'canteen') {
+                    if ($v['booking'] == CommonEnum::STATE_IS_OK) {
+                        $data[$k]['consumption_type'] = $v['used'] == CommonEnum::STATE_IS_OK ? "订餐就餐" : "订餐未就餐";
+                    } else {
+                        $data[$k]['consumption_type'] = "未订餐就餐";
+                    }
                 }
+
+            }
         }
         return $data;
     }
