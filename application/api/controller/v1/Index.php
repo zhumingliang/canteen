@@ -117,45 +117,9 @@ Index extends BaseController
 
     public function test($param = "")
     {
+        echo date('Y-m-d H:i:s');
         // return json(\app\api\service\Token::getCurrentTokenVar());
 
-        Db::startTrans();
-        $consumption_time = date('Y-m-d');
-        $orders = OrderUnusedV::where('order_id', 33708)->select();
-        $parentMoneyArr = [];
-        if (count($orders)) {
-            foreach ($orders as $k => $v) {
-                if ($v['strategy_type'] == 'one') {
-                    OrderT::update(['consumption_type' => 'no_meals_ordered',
-                        'money' => 0,
-                        'unused_handel' => CommonEnum::STATE_IS_OK,
-                        'sub_money' => $v['no_meal_sub_money']], ['id' => $v['id']]);
-
-                } else {
-                    OrderSubT::update([
-                        'consumption_type' => 'no_meals_ordered',
-                        'money' => 0,
-                        'unused_handel' => CommonEnum::STATE_IS_OK,
-                        'sub_money' => $v['no_meal_sub_money']
-                    ], ['id' => $v['id']]);
-
-                    if (key_exists($v['order_id'], $parentMoneyArr)) {
-                        $parentMoney = $parentMoneyArr[$v['order_id']];
-                    } else {
-                        $parentMoney = $v['parent_money'];
-                    }
-                    $newParentMoney = $parentMoney - $v['order_money'] - $v['order_sub_money'] + $v['no_meal_sub_money'];
-                    OrderParentT::update(['money' => $newParentMoney
-                    ], ['id' => $v['order_id']]);
-
-                    $parentMoneyArr[$v['order_id']] = $newParentMoney;
-                }
-
-                }
-        }
-
-        print_r($parentMoneyArr);
-       // Db::commit();
 
     }
 }

@@ -1266,7 +1266,7 @@ class OrderService extends BaseService
                 $moreIdArr = explode(',', $id);
                 $this->cancelParentConsumptionTimeMore($moreIdArr);
             }
-             Db::commit();
+            Db::commit();
         } catch (Exception $e) {
             Db::rollback();
             throw $e;
@@ -2770,6 +2770,7 @@ class OrderService extends BaseService
                     ->where('state', CommonEnum::STATE_IS_OK)
                     ->select();
                 $parentOrder = OrderParentT::get($order_id);
+                $usedTime = date('Y-m-d H:i:s');
                 foreach ($subOrder as $k => $v) {
                     $mealMoney = $v['money'];
                     if ($v['consumption_type'] == 'no_meals_ordered' && ($parentOrder->fixed == CommonEnum::STATE_IS_OK || $parentOrder->ordering_type == "online")) {
@@ -2781,7 +2782,7 @@ class OrderService extends BaseService
                         'money' => $mealMoney,
                         'sub_money' => $v['meal_sub_money'],
                         'used' => CommonEnum::STATE_IS_OK,
-                        'used_time' => date('Y-m-d H:i:s')
+                        'used_time' =>$usedTime
                     ]);
                 }
                 $updateSub = (new OrderSubT())->saveAll($subList);
@@ -2790,6 +2791,7 @@ class OrderService extends BaseService
                 }
                 $parentOrder->money = $allMoney;
                 $parentOrder->used = CommonEnum::STATE_IS_OK;
+                $parentOrder->used_time = $usedTime;
                 $parentOrder->all_used = CommonEnum::STATE_IS_OK;
                 $updateParent = $parentOrder->save();
                 if (!$updateParent) {
@@ -2797,7 +2799,8 @@ class OrderService extends BaseService
                 }
 
             }
-            Db::commit();
+
+            //Db::commit();
         } catch (Exception $e) {
             Db::rollback();
             throw $e;
@@ -3108,7 +3111,7 @@ class OrderService extends BaseService
             ]);
 
         }
-       // print_r($updateSubOrderData);
+        // print_r($updateSubOrderData);
         $parent = (new OrderParentT())->saveAll($updateParentOrderData);
         if (!$parent) {
             throw new UpdateException(['msg' => '更新总订单失败']);
