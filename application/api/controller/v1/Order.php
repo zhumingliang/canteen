@@ -666,10 +666,11 @@ class Order extends BaseController
      * @apiVersion 3.0.0
      * @apiDescription 微信端-总订餐查询-点击订餐数量获取订餐人员统计（已就餐/未订餐就餐/订餐未就餐）
      * @apiExample {get}  请求样例:
-     * http://canteen.tonglingok.com/api/v1/order/usersStatistic?dinner_id=6&consumption_time=2019-09-07&page=1&size=20&consumption_type=used&key=
+     * http://canteen.tonglingok.com/api/v1/order/usersStatistic?canteen_id=6&dinner_id=6&consumption_time=2019-09-07&page=1&size=20&consumption_type=used&key=
      * @apiParam (请求参数说明) {int} page 当前页码
      * @apiParam (请求参数说明) {int} size 每页多少条数据
      * @apiParam (请求参数说明) {string} key  关键词查询
+     * @apiParam (请求参数说明) {string} canteen_id  饭堂id
      * @apiParam (请求参数说明) {string} dinner_id  餐次id
      * @apiParam (请求参数说明) {string} consumption_time  消费日期
      * @apiParam (请求参数说明) {string} consumption_type  订餐统计类别：used｜订餐就餐；noOrdering｜未订餐就餐；orderingNoMeal｜订餐未就餐
@@ -692,10 +693,11 @@ class Order extends BaseController
     public function orderUsersStatistic($page = 1, $size = 20)
     {
         $dinner_id = Request::param('dinner_id');
+        $canteen_id = Request::param('canteen_id');
         $consumption_time = Request::param('consumption_time');
         $consumption_type = Request::param('consumption_type');
         $key = Request::param('key');
-        $info = (new OrderService())->orderUsersStatistic($dinner_id, $consumption_time, $consumption_type, $key, $page, $size);
+        $info = (new OrderService())->orderUsersStatistic($canteen_id,$dinner_id, $consumption_time, $consumption_type, $key, $page, $size);
         return json(new SuccessMessageWithData(['data' => $info]));
     }
 

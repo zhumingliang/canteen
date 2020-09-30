@@ -2565,9 +2565,9 @@ class OrderService extends BaseService
     }
 
     public
-    function orderUsersStatistic($dinner_id, $consumption_time, $consumption_type, $key, $page, $size)
+    function orderUsersStatistic($canteen_id,$dinner_id, $consumption_time, $consumption_type, $key, $page, $size)
     {
-        $statistic = OrderUsersStatisticV::orderUsers($dinner_id, $consumption_time, $consumption_type, $key, $page, $size);
+        $statistic = OrderUsersStatisticV::orderUsers($canteen_id,$dinner_id, $consumption_time, $consumption_type, $key, $page, $size);
         $statistic['data'] = $this->prefixUsersStatisticStatus($statistic['data']);
         return $statistic;
     }

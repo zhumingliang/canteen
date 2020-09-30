@@ -17,11 +17,15 @@ class OrderUsersStatisticV extends Model
         return $this->hasMany('OrderDetailT', 'o_id', 'id');
     }
 
-    public static function orderUsers($dinner_id, $consumption_time, $consumption_type, $key, $page, $size)
+    public static function orderUsers($canteen_id, $dinner_id, $consumption_time, $consumption_type, $key, $page, $size)
     {
         $users = self::where(function ($query) use ($dinner_id) {
             if ($dinner_id) {
                 $query->where('dinner_id', $dinner_id);
+            }
+        })->where(function ($query) use ($canteen_id) {
+            if ($canteen_id) {
+                $query->where('c_id', $canteen_id);
             }
         })
             ->where('ordering_date', $consumption_time)
@@ -39,10 +43,10 @@ class OrderUsersStatisticV extends Model
                 if ($key) {
                     $keyRes = (int)$key;
                     if ($keyRes == 0) {
-                        $query->where('username|phone|sort_code', 'like', $key);
-
+                        $query->where('username|sort_code', 'like', $key);
                     } else {
-                        $query->where('parent_id', 'like', $keyRes);
+                        $query->whereOr('parent_id', 'like', $keyRes)
+                        ->whereOr('phone', 'like', '%'.$keyRes.'%');
 
                     }
 
@@ -56,7 +60,7 @@ class OrderUsersStatisticV extends Model
             ])
             ->field('order_id as id,username,order_num,phone,sum(count) as count,strategy_type as consumption_type,type,dinner_id,booking,used')
             ->group('order_id')
-//            ->fetchSql(true)->select();
+          // ->fetchSql(true)->select();
             ->paginate($size, false, ['page' => $page])->toArray();
         return $users;
     }
@@ -68,7 +72,15 @@ class OrderUsersStatisticV extends Model
             ->where('ordering_date', $consumption_time)
             ->where(function ($query) use ($key) {
                 if ($key) {
-                    $query->where('username|parent_id|phone|sort_code', 'like', "$key");
+                    $keyRes = (int)$key;
+                    if ($keyRes == 0) {
+                        $query->where('username|sort_code', 'like', $key);
+                    } else {
+                        $query->whereOr('parent_id', 'like', $keyRes)
+                            ->whereOr('phone', 'like', '%'.$keyRes.'%');
+
+                    }
+
                 }
             })
             ->field('dinner_id as d_id,used,booking,sum(count) as count')
