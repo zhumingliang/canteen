@@ -963,9 +963,10 @@ class OrderService extends BaseService
             throw new SaveException(['errorCode' => 49000, 'msg' => '余额不足']);
         }
         foreach ($detail as $k => $v) {
-            //检测该餐次是否在订餐时间范围内
             $ordering_data = $v['ordering'];
             $dinner_id = $v['d_id'];
+            //检测该餐次是否在订餐时间范围内
+            $this->checkOrderCanHandel($v['d_id'],$ordering_data);
             if (!empty($ordering_data)) {
                 foreach ($ordering_data as $k2 => $v2) {
 
@@ -1094,9 +1095,10 @@ class OrderService extends BaseService
         $all_money = 0;
 
         foreach ($detail as $k => $v) {
-            //检测该餐次是否在订餐时间范围内
             $ordering_data = $v['ordering'];
             $dinner = DinnerT::dinnerInfo($v['d_id']);
+            //检测该餐次是否在订餐时间范围内
+            $this->checkOrderCanHandel($v['d_id'],$ordering_data);
             $strategy = $this->getDinnerConsumptionStrategy($strategies, $v['d_id']);
             if (empty($strategy)) {
                 throw new ParameterException(['msg' => '消费策略不存在']);
@@ -2568,9 +2570,9 @@ class OrderService extends BaseService
     }
 
     public
-    function orderUsersStatistic($canteen_id,$dinner_id, $consumption_time, $consumption_type, $key, $page, $size)
+    function orderUsersStatistic($canteen_id, $dinner_id, $consumption_time, $consumption_type, $key, $page, $size)
     {
-        $statistic = OrderUsersStatisticV::orderUsers($canteen_id,$dinner_id, $consumption_time, $consumption_type, $key, $page, $size);
+        $statistic = OrderUsersStatisticV::orderUsers($canteen_id, $dinner_id, $consumption_time, $consumption_type, $key, $page, $size);
         $statistic['data'] = $this->prefixUsersStatisticStatus($statistic['data']);
         return $statistic;
     }
@@ -2784,7 +2786,7 @@ class OrderService extends BaseService
                         'money' => $mealMoney,
                         'sub_money' => $v['meal_sub_money'],
                         'used' => CommonEnum::STATE_IS_OK,
-                        'used_time' =>$usedTime
+                        'used_time' => $usedTime
                     ]);
                 }
                 $updateSub = (new OrderSubT())->saveAll($subList);
