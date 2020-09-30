@@ -2367,7 +2367,6 @@ class OrderService extends BaseService
             if ($consumptionType == "one") {
                 $order = OrderT::orderDetail($id);
             } else {
-
                 if (Token::getCurrentTokenVar('type') == 'cms') {
                     $order = $this->getOrderDetailConsumptionTimeMore($id);
                 } else {

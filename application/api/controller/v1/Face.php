@@ -88,7 +88,8 @@ class Face extends BaseController
             db('face_t')
                 ->data($data)
                 ->insert();
-            if ($params['temperature'] >= 37.3) {
+            $templateData = OfficialTemplateT::template('temperature');
+            if ($params['temperature'] >= $templateData['remark']) {
                 $midInfo = db('canteen_module_t')
                     ->alias('t1')
                     ->leftJoin('canteen_system_canteen_module_t t2', 't1.m_id = t2.id')
