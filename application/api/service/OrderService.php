@@ -1500,6 +1500,9 @@ class OrderService extends BaseService
             if ($order->used == CommonEnum::STATE_IS_OK) {
                 throw new ParameterException(['msg' => '订单已消费，不能取消']);
             }
+            //检查订单是否可以操作
+            $this->checkOrderCanHandel($order->dinner_id, $order->ordering_date);
+
             //判断是不是微信支付订餐
             if ($order->pay_way == PayEnum::PAY_WEIXIN) {
                 //撤回订单
