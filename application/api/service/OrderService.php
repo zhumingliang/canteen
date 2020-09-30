@@ -966,11 +966,12 @@ class OrderService extends BaseService
             $ordering_data = $v['ordering'];
             $dinner_id = $v['d_id'];
             //检测该餐次是否在订餐时间范围内
-            $this->checkOrderCanHandel($v['d_id'],$ordering_data);
             if (!empty($ordering_data)) {
                 foreach ($ordering_data as $k2 => $v2) {
 
                     $orderId = $this->checkOrderParentExits($v2['ordering_date'], $canteen_id, $dinner_id, $phone);
+                    $this->checkOrderCanHandel($v['d_id'],$v2['ordering_date']);
+
                     if (!$orderId) {
                         //处理总订单：1.检测订餐日期餐次是否已经订餐；2.生成订单
                         $orderData = [
