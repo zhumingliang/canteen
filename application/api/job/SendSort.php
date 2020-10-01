@@ -99,7 +99,7 @@ class SendSort
                     ]
                 ];
                 GatewayService::sendToMachine($machine->id, json_encode($sendData));
-
+                LogService::saveJob('成功发送排序：'.json_encode($sendData));
             }
         } catch (Exception $e) {
             LogService::saveJob("发送排序失败：error:" . $e->getMessage(), json_encode($data));

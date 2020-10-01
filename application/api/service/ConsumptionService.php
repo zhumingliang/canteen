@@ -548,10 +548,7 @@ class ConsumptionService
             'sortCode' => $sortCode,
             'websocketCode' => $websocketCode
         ];;//当前任务的业务数据
-        LogService::saveJob(json_encode($jobData));
         $isPushed = Queue::push($jobHandlerClassName, $jobData, $jobQueueName);
-        LogService::saveJob("isPushed:$isPushed");
-
         //将该任务推送到消息队列
         if ($isPushed == false) {
             throw new SaveException(['msg' => '发送webSocket推送失败']);
