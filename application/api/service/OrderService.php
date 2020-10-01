@@ -72,6 +72,7 @@ class OrderService extends BaseService
             //检测用户是否可以订餐并返回订单金额
             $strategyMoney = $this->checkUserCanOrder($dinner, $ordering_date, $canteen_id, $count, $detail, 'person_choice', $consumptionType);
             $orderMoney = $strategyMoney['strategyMoney'];
+
             if ($consumptionType == StrategyEnum::CONSUMPTION_TIMES_ONE) {
                 $orderId = $this->handleConsumptionTimesOne($u_id, $ordering_date, $company_id, $canteen_id,
                     $count, $detail, $delivery_fee, $dinner, $params, $staff, $phone, $orderMoney);
@@ -83,7 +84,7 @@ class OrderService extends BaseService
                 throw new ParameterException(['msg' => '消费策略扣费模式异常']);
             }
             if ($params['type'] == OrderEnum::EAT_OUTSIDER && !empty($params['address_id'])) {
-                (new AddressService())->prefixAddressDefault($params['address_id']);
+              //  (new AddressService())->prefixAddressDefault($params['address_id']);
             }
             Db::commit();
             return [
@@ -153,7 +154,7 @@ class OrderService extends BaseService
             $money += ($v['money'] + $v['sub_money']);
         }
         $checkMoney = $money + $delivery_fee;
-        $pay_way = $this->checkBalance($u_id, $canteen_id, $checkMoney);
+        $pay_way = $this->checkBalance($u_id, $canteen_id, $checkMoney,$company_id,$phone);
         if (!$pay_way) {
             throw new SaveException(['errorCode' => 49000, 'msg' => '余额不足']);
         }
@@ -576,6 +577,7 @@ class OrderService extends BaseService
             } else {
                 if ($orderMoneyFixed == CommonEnum::STATE_IS_FAIL) {
                     foreach ($strategyMoney as $k => $v) {
+                        $strategyMoney[$k]['meal_money'] = $detailMoney;
                         $strategyMoney[$k]['money'] = $detailMoney;
                         if ($v['meal_sub_money'] > $v['no_meal_sub_money']) {
                             $strategyMoney[$k]['sub_money'] = $v['meal_sub_money'];

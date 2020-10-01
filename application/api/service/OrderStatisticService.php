@@ -47,7 +47,7 @@ class OrderStatisticService
     public function exportStatistic($time_begin, $time_end, $company_ids, $canteen_id)
     {
         $list = OrderStatisticV::exportStatistic($time_begin, $time_end, $company_ids, $canteen_id);
-        $header = ['日期', '公司', '消费地点', '餐次', '消费人数'];
+        $header = ['日期', '公司', '消费地点', '餐次', '消费份数'];
         $file_name = "订餐统计报表(" . $time_begin . "-" . $time_end . ")";
         $url = (new ExcelService())->makeExcel($header, $list, $file_name);
         return [
