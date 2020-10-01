@@ -8,6 +8,7 @@ use app\api\model\OrderParentT;
 use app\api\model\OrderSubT;
 use app\api\model\OrderT;
 use app\api\model\PrinterT;
+use app\api\service\LogService;
 use app\api\service\OrderService;
 use app\api\service\OrderStatisticService;
 use app\api\service\TakeoutService;
@@ -154,6 +155,8 @@ class Printer extends PrinterBase
         //print_r($printRes);
         if ($printRes['msg'] == 'ok' && $printRes['ret'] == 0) {
             return true;
+        }else {
+            LogService::save('打印机打印异常：' . json_encode($printRes));
         }
         return false;
 
@@ -427,7 +430,7 @@ class Printer extends PrinterBase
             foreach ($sub as $k5 => $v5) {
                 $name = "第 " . $v5['order_sort'] . "份";
                 $price = $v5['money'];
-               // $num = $v5['order_sort'];
+                // $num = $v5['order_sort'];
                 $num = '';
                 $prices = $v5['sub_money'];
                 $kw3 = '';
