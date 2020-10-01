@@ -46,7 +46,7 @@ class OrderUsersStatisticV extends Model
                         $query->where('username|sort_code', 'like', $key);
                     } else {
                         $query->whereOr('parent_id', 'like', $keyRes)
-                        ->whereOr('phone', 'like', '%'.$keyRes.'%');
+                            ->whereOr('phone', 'like', '%' . $keyRes . '%');
 
                     }
 
@@ -60,8 +60,9 @@ class OrderUsersStatisticV extends Model
             ])
             ->field('order_id as id,username,order_num,phone,sum(count) as count,strategy_type as consumption_type,type,dinner_id,booking,used')
             ->group('order_id')
-          // ->fetchSql(true)->select();
-            ->paginate($size, false, ['page' => $page])->toArray();
+            //->fetchSql(true)->select();
+            ->paginate($size, false, ['page' => $page])
+            ->toArray();
         return $users;
     }
 
@@ -77,7 +78,7 @@ class OrderUsersStatisticV extends Model
                         $query->where('username|sort_code', 'like', $key);
                     } else {
                         $query->whereOr('parent_id', 'like', $keyRes)
-                            ->whereOr('phone', 'like', '%'.$keyRes.'%');
+                            ->whereOr('phone', 'like', '%' . $keyRes . '%');
 
                     }
 

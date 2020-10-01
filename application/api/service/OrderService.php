@@ -970,7 +970,7 @@ class OrderService extends BaseService
                 foreach ($ordering_data as $k2 => $v2) {
 
                     $orderId = $this->checkOrderParentExits($v2['ordering_date'], $canteen_id, $dinner_id, $phone);
-                    $this->checkOrderCanHandel($v['d_id'],$v2['ordering_date']);
+                    $this->checkOrderCanHandel($v['d_id'], $v2['ordering_date']);
 
                     if (!$orderId) {
                         //处理总订单：1.检测订餐日期餐次是否已经订餐；2.生成订单
@@ -1099,7 +1099,7 @@ class OrderService extends BaseService
             $ordering_data = $v['ordering'];
             $dinner = DinnerT::dinnerInfo($v['d_id']);
             //检测该餐次是否在订餐时间范围内
-            $this->checkOrderCanHandel($v['d_id'],$ordering_data);
+            $this->checkOrderCanHandel($v['d_id'], $ordering_data);
             $strategy = $this->getDinnerConsumptionStrategy($strategies, $v['d_id']);
             if (empty($strategy)) {
                 throw new ParameterException(['msg' => '消费策略不存在']);
