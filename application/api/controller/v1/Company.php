@@ -210,4 +210,49 @@ class Company extends BaseController
         return json(new SuccessMessageWithData(['data' => $url]));
     }
 
+    /**
+     * @api {GET} /api/v1/company/consumptionType CMS管理端--企业管理-获取企业消费方式
+     * @apiGroup  CMS
+     * @apiVersion 3.0.0
+     * @apiDescription CMS管理端--企业管理-获取企业消费方式
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/company/consumptionType?company_id=74
+     * @apiParam (请求参数说明) {int} company_id  企业id
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"consumptionType":"qrcode,card"}}
+     * @apiSuccess (返回参数说明) {string} consumptionType 消费方式：qrcode： 二维码；card：刷卡；face：刷脸，多种类型逗号分隔
+     */
+    public function consumptionType()
+    {
+        $company_id = Request::param('company_id');
+        $config = (new CompanyService())->consumptionType($company_id);
+        return json(new SuccessMessageWithData(['data' => $config]));
+
+    }
+
+    /**
+     * @api {POST} /api/v1/company/consumptionType/update CMS管理端--企业管理--修改企业消费方式
+     * @apiGroup   CMS
+     * @apiVersion 3.0.0
+     * @apiDescription    CMS管理端--企业管理--修改企业消费方式
+     * @apiExample {post}  请求样例:
+     *    {
+     *       "company_id": 1,
+     *       "consumption_type": "qrcode,face"
+     *     }
+     * @apiParam (请求参数说明) {int} company_id  企业id
+     * @apiParam (请求参数说明) {string} consumption_type  消费方式：qrcode： 二维码；card：刷卡；face：刷脸，多种类型逗号分隔
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     */
+    public function updateConsumptionType()
+    {
+        $company_id = Request::param('company_id');
+        $consumption_type = Request::param('consumption_type');
+         (new CompanyService())->updateConsumptionType($company_id,$consumption_type);
+        return json(new SuccessMessage());
+    }
+
 }

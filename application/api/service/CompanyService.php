@@ -17,6 +17,7 @@ use app\lib\exception\SaveException;
 use think\Db;
 use think\Exception;
 use function GuzzleHttp\Promise\each_limit;
+use function GuzzleHttp\Psr7\str;
 
 class CompanyService
 {
@@ -287,6 +288,28 @@ class CompanyService
         $company->out_qrcode = $url;
         $company->save();
         return ['url' => config('setting.image') . $url];
+    }
+
+    public function consumptionType($company_id)
+    {
+        $company = CompanyT::where('id', $company_id)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->find();
+        if (!$company_id) {
+            throw  new AuthException(['msg' => '企业不存在']);
+        }
+        if (!strlen($company->consumption_type)) {
+            $company->consumption_type = "qrcode";
+            $company->save();
+            return ['consumptionType' => "qrcode"];
+        }
+        return ['consumptionType' => $company->consumption_type];
+
+    }
+
+    public function updateConsumptionType($company_id, $consumption_type)
+    {
+        CompanyT::update(['consumption_type' => $consumption_type], ['id' => $company_id]);
     }
 
 
