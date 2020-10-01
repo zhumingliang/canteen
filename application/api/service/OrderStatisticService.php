@@ -650,14 +650,14 @@ class OrderStatisticService
     {
         $locationName = $this->getLocationName($order_type, $canteen_id);
         $fileNameArr = [
-            0 => "$locationName+消费总报表",
-            1 => "订餐就餐+$locationName+总报表",
-            2 => "订餐未就餐+$locationName+总报表",
-            3 => "未订餐就餐+$locationName+总报表",
-            4 => "系统补充+$locationName+总报表",
-            5 => "系统补扣+$locationName+总报表",
-            6 => "小卖部消费+$locationName+总报表",
-            7 => "小卖部退款+$locationName+总报表"
+            0 => $locationName . "消费总报表",
+            1 => $locationName."订餐就餐消费总报表",
+            2 => $locationName."订餐未就餐消费总报表",
+            3 => $locationName."未订餐就餐消费总报表",
+            4 => $locationName."系统补充总报表",
+            5 => $locationName."系统补扣总报表",
+            6 => $locationName."小卖部消费总报表",
+            7 => $locationName."小卖部退款总报表"
         ];
 
         switch ($type) {
@@ -700,7 +700,6 @@ class OrderStatisticService
 
 
         $header = $this->addDinnerToHeader($header, $dinner);
-        // print_r($header);
         $reports = $this->prefixConsumptionStatistic($statistic, $dinner);
         $reportName = $fileNameArr[$status];
         $file_name = $reportName . "(" . $time_begin . "-" . $time_end . ")";
@@ -738,6 +737,7 @@ class OrderStatisticService
     private
     function prefixConsumptionStatistic($statistic, $dinner)
     {
+
         $dataList = [];
         if (!empty($statistic)) {
             $endData = $this->addDinnerToStatistic($dinner);
