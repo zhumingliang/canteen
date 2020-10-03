@@ -312,5 +312,22 @@ class CompanyService
         CompanyT::update(['consumption_type' => $consumption_type], ['id' => $company_id]);
     }
 
+    public function checkConsumptionContainsCard($company_id)
+    {
+        $company = CompanyT::where('id', $company_id)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->find();
+        if (empty($company_id)) {
+            throw  new AuthException(['msg' => '企业不存在']);
+        }
+        if (!strlen($company->consumption_type)) {
+            $company->consumption_type = "qrcode";
+            $company->save();
+            return false;
+        }
+        $arr = explode(',', $company->consumption_type);
+        return in_array('card', $arr);
+    }
+
 
 }

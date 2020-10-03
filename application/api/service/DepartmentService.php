@@ -639,9 +639,16 @@ class DepartmentService
 
     public function exportStaffs($company_id, $department_id)
     {
+        //检测企业是否包含刷卡消费
+        $checkCard = (new CompanyService())->checkConsumptionContainsCard($company_id);
         $staffs = CompanyStaffV::exportStaffs($company_id, $department_id);
-        $staffs = $this->prefixExportStaff($staffs);
-        $header = ['企业', '部门', '人员状态', '人员类型', '员工编号', '姓名', '手机号码', '卡号', '归属饭堂',"出生日期",'人脸识别ID'];
+        $staffs = $this->prefixExportStaff($staffs, $checkCard);
+        if ($checkCard) {
+            $header = ['企业', '部门', '人员状态', '人员类型', '员工编号', '姓名', '手机号码', '卡号', '归属饭堂', "出生日期", '人脸识别ID'];
+
+        } else {
+            $header = ['企业', '部门', '人员状态', '人员类型', '员工编号', '姓名', '手机号码', '归属饭堂', '人脸识别ID'];
+        }
         $file_name = "企业员工导出";
         $url = (new ExcelService())->makeExcel($header, $staffs, $file_name);
         return [
@@ -649,7 +656,7 @@ class DepartmentService
         ];
     }
 
-    private function prefixExportStaff($staffs)
+    private function prefixExportStaff($staffs, $checkCard)
     {
         if (!count($staffs)) {
             return $staffs;
@@ -661,6 +668,10 @@ class DepartmentService
             unset($staffs[$k]['canteens']);
             foreach ($canteens as $k2 => $v2) {
                 array_push($canteen, $v2['info']['name']);
+            }
+            if (!$checkCard) {
+                unset($staffs[$k]['card_num']);
+                unset($staffs[$k]['birthday']);
             }
             $staffs[$k]['canteen'] = implode('|', $canteen);
             $staffs[$k]['state'] = $v['state'] == 1 ? '启用' : '停用';

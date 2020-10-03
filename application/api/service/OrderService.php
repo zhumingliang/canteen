@@ -2807,7 +2807,7 @@ class OrderService extends BaseService
 
             }
 
-            //Db::commit();
+            Db::commit();
         } catch (Exception $e) {
             Db::rollback();
             throw $e;

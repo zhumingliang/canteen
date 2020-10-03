@@ -68,7 +68,7 @@ class Takeout extends BaseController
      * @api {GET} /api/v1/order/takeoutStatistic/official  微信端-外卖管理-订单列表
      * @apiGroup  CMS管理端
      * @apiVersion 3.0.0
-     * @apiDescription CMS管理端-外卖管理-订单列表
+     * @apiDescription 微信端-外卖管理-订单列表
      * @apiExample {get}  请求样例:
      * http://canteen.tonglingok.com/api/v1/order/takeoutStatistic/official?ordering_date=2019-09-07&page=1&size=20&dinner_id=0&status=1
      * @apiParam (请求参数说明) {int} page 当前页码
