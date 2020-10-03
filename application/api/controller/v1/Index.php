@@ -117,8 +117,8 @@ Index extends BaseController
 
     public function test($param = "")
     {
-        echo date('Y-m-d H:i:s');
-        // return json(\app\api\service\Token::getCurrentTokenVar());
+       // echo date('Y-m-d H:i:s');
+         return json(\app\api\service\Token::getCurrentTokenVar());
 
 
     }
