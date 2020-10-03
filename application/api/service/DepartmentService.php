@@ -230,6 +230,9 @@ class DepartmentService
         $canteens = (new CanteenService())->companyCanteens($company_id);
         $departments = $this->companyDepartments($company_id);
         $staffs = $this->getCompanyStaffs($company_id);
+        //获取企业消费方式
+        $consumptionType = (new CompanyService())->consumptionType($company_id);
+        $consumptionTypeArr = explode(',', $consumptionType);
         $phones = $staffs['phones'];
         $faceCodes = $staffs['faceCodes'];
         $fail = array();
@@ -240,9 +243,9 @@ class DepartmentService
         }
 
         foreach ($data as $k => $v) {
-            if ($k == 1) {
+            if ($k == 2) {
                 $param_key = $data[$k];
-            } else if ($k > 1 && !empty($data[$k])) {
+            } else if ($k > 2 && !empty($data[$k])) {
                 if (empty($v[0])) {
                     continue;
                 }
@@ -256,18 +259,20 @@ class DepartmentService
                 } else {
                     array_push($phones, $v[5]);
                 }
-                //检测人脸识别id是否存在
                 $faceCode = trim($v[9]);
-                if (!empty($faceCode) && in_array($faceCode, $faceCodes)) {
-                    $fail[] = "第" . $k . "数据有问题：人脸识别ID" . $faceCode . "系统已经存在";
-                    break;
-                } else {
-                    if (!empty($faceCode)) {
-                        array_push($faceCodes, $faceCode);
+                //检测人脸识别id是否存在
+                if (in_array('face', $consumptionTypeArr)) {
+                    if (!empty($faceCode) && in_array($faceCode, $faceCodes)) {
+                        $fail[] = "第" . $k . "数据有问题：人脸识别ID" . $faceCode . "系统已经存在";
+                        break;
+                    } else {
+                        if (!empty($faceCode)) {
+                            array_push($faceCodes, $faceCode);
+                        }
                     }
-                }
 
-                $check = $this->validateParams($company_id, $param_key, $data[$k], $types, $canteens, $departments, $v[8]);
+                }
+                $check = $this->validateParams($company_id, $param_key, $data[$k], $types, $canteens, $departments, $v[8], $consumptionTypeArr);
                 if (!$check['res']) {
                     $fail[] = "第" . $k . "数据有问题：" . $check['info']['msg'];
                     continue;
@@ -318,25 +323,9 @@ class DepartmentService
     }
 
 
-    private function validateParams($company_id, $param_key, $data, $types, $canteens, $departments, $birthday, $len = 8)
+    private function validateParams($company_id, $param_key, $data, $types, $canteens, $departments, $birthday, $consumptionTypeArr, $len = 8)
     {
         $state = ['启用', '停用'];
-        /*   foreach ($data as $k => $v) {
-               if ($k >= $len) {
-                   break;
-               }
-               if (!strlen($v)) {
-                   $fail = [
-                       'name' => $data[4],
-                       'msg' => "参数：$param_key[$k]" . " 为空"
-                   ];
-                   return [
-                       'res' => false,
-                       'info' => $fail
-                   ];
-               }
-           }*/
-
         $canteen = trim($data[0]);
         $department = trim($data[1]);
         $staffType = trim($data[2]);
@@ -399,17 +388,21 @@ class DepartmentService
                 'info' => $fail
             ];
         }
-        //判断填写了卡号，生日必填
-        if (strlen($code) && !strlen($birthday)) {
-            $fail = [
-                'name' => $name,
-                'msg' => '卡号：' . $department . "填写但是生日未填写"
-            ];
-            return [
-                'res' => false,
-                'info' => $fail
-            ];
+
+        if (in_array('card', $consumptionTypeArr)) {
+            //判断填写了卡号，生日必填
+            if (!strlen($code) && !strlen($birthday)) {
+                $fail = [
+                    'name' => $name,
+                    'msg' => "卡号或者生日未填写"
+                ];
+                return [
+                    'res' => false,
+                    'info' => $fail
+                ];
+            }
         }
+
         //检测部门是否存在
         $d_id = $this->checkParamExits($departments, $department);
         if (!$d_id) {

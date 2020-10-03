@@ -84,7 +84,7 @@ class OrderService extends BaseService
                 throw new ParameterException(['msg' => '消费策略扣费模式异常']);
             }
             if ($params['type'] == OrderEnum::EAT_OUTSIDER && !empty($params['address_id'])) {
-                  (new AddressService())->prefixAddressDefault($params['address_id']);
+                (new AddressService())->prefixAddressDefault($params['address_id']);
             }
             Db::commit();
             return [
@@ -902,7 +902,7 @@ class OrderService extends BaseService
     {
         try {
             Db::startTrans();
-            $this->checkEatingOutsider($type, $address_id);
+            // $this->checkEatingOutsider($type, $address_id);
             $detail = json_decode($detail, true);
             if (empty($detail)) {
                 throw new ParameterException(['msg' => '订餐数据格式错误']);
@@ -915,7 +915,7 @@ class OrderService extends BaseService
             $staff_type_id = $staff->t_id;
             $department_id = $staff->d_id;
             $staff_id = $staff->id;
-            $delivery_fee = $this->checkUserOutsider($type, $canteen_id);
+            $delivery_fee = 1;//$this->checkUserOutsider($type, $canteen_id);
             //获取饭堂消费策略设置-检测消费模式
             $strategies = (new CanteenService())->getStaffAllConsumptionStrategy($canteen_id, $staff_type_id);
             if (empty($strategies)) {
