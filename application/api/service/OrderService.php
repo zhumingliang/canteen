@@ -84,7 +84,7 @@ class OrderService extends BaseService
                 throw new ParameterException(['msg' => '消费策略扣费模式异常']);
             }
             if ($params['type'] == OrderEnum::EAT_OUTSIDER && !empty($params['address_id'])) {
-              //  (new AddressService())->prefixAddressDefault($params['address_id']);
+                  (new AddressService())->prefixAddressDefault($params['address_id']);
             }
             Db::commit();
             return [
@@ -154,7 +154,7 @@ class OrderService extends BaseService
             $money += ($v['money'] + $v['sub_money']);
         }
         $checkMoney = $money + $delivery_fee;
-        $pay_way = $this->checkBalance($u_id, $canteen_id, $checkMoney,$company_id,$phone);
+        $pay_way = $this->checkBalance($u_id, $canteen_id, $checkMoney, $company_id, $phone);
         if (!$pay_way) {
             throw new SaveException(['errorCode' => 49000, 'msg' => '余额不足']);
         }
@@ -696,6 +696,9 @@ class OrderService extends BaseService
     public
     function checkUserCanOrderForOnline($canteen_id, $dinner, $day, $count, $strategies, $phone = '')
     {
+
+        //检测是否可以订餐
+        $this->checkOrderCanHandel($dinner->id, $day, $dinner);
         //获取用户指定日期订餐数量
         if (empty($phone)) {
             $phone = Token::getCurrentPhone();
@@ -1101,14 +1104,12 @@ class OrderService extends BaseService
             $ordering_data = $v['ordering'];
             $dinner = DinnerT::dinnerInfo($v['d_id']);
             //检测该餐次是否在订餐时间范围内
-            $this->checkOrderCanHandel($v['d_id'], $ordering_data);
             $strategy = $this->getDinnerConsumptionStrategy($strategies, $v['d_id']);
             if (empty($strategy)) {
                 throw new ParameterException(['msg' => '消费策略不存在']);
             }
             if (!empty($ordering_data)) {
                 foreach ($ordering_data as $k2 => $v2) {
-                    //检测是否可以订餐
                     $checkOrder = $this->checkUserCanOrderForOnline($canteen_id, $dinner,
                         $v2['ordering_date'],
                         $v2['count'], $strategy, $phone);
@@ -1609,10 +1610,12 @@ class OrderService extends BaseService
 
 
     public
-    function checkOrderCanHandel($d_id, $ordering_date)
+    function checkOrderCanHandel($d_id, $ordering_date, $dinner = [])
     {
         //获取餐次设置
-        $dinner = DinnerT::dinnerInfo($d_id);
+        if (empty($dinner)) {
+            $dinner = DinnerT::dinnerInfo($d_id);
+        }
         $type = $dinner->type;
         $limit_time = $dinner->limit_time;
         $type_number = $dinner->type_number;
