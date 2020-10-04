@@ -13,7 +13,7 @@ class OrderSettlementV extends Model
 
     public function getMoneyAttr($value)
     {
-        return round($value, 2);
+        return  sprintf("%.2f",$value);
 
     }
 
