@@ -47,6 +47,8 @@ Route::get('api/:version/company/qrcode', 'api/:version.Company/getOutQRCode');
 Route::get('api/:version/company/consumptionType', 'api/:version.Company/consumptionType');
 Route::post('api/:version/company/consumptionType/update', 'api/:version.Company/updateConsumptionType');
 
+
+
 Route::post('api/:version/canteen/save', 'api/:version.Canteen/save');
 Route::post('api/:version/canteen/dinner/delete', 'api/:version.Canteen/deleteDinner');
 Route::post('api/:version/canteen/configuration/save', 'api/:version.Canteen/saveConfiguration');
@@ -310,10 +312,12 @@ Route::post('api/:version/face/receiveFaceData', 'api/:version.Face/receiveFaceD
 Route::get('api/:version/face/getFaceData', 'api/:version.Face/getFaceData');
 Route::get('api/:version/face/exportFaceData', 'api/:version.Face/exportFaceData');
 
- Route::post('api/:version/notice2/userNotices', 'api/:version.Notice2/userNotices');
+Route::post('api/:version/notice2/userNotices', 'api/:version.Notice2/userNotices');
 Route::get('api/:version/notice2/notify', 'api/:version.Notice2/notify');
 Route::post('api/:version/notice2/upload', 'api/:version.Notice2/upload');
 Route::post('api/:version/notice2/saveNotice', 'api/:version.Notice2/saveNotice');
 Route::get('api/:version/notice2/receiver', 'api/:version.Notice2/receiver');
 Route::get('api/:version/notice2/Notice', 'api/:version.Notice2/Notice');
 Route::post('api/:version/notice2/updateNotice', 'api/:version.Notice2/updateNotice');
+
+Route::get('api/:version/card/staffs', 'api/:version.CardManager/staffs');

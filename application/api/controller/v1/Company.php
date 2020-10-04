@@ -251,7 +251,7 @@ class Company extends BaseController
     {
         $company_id = Request::param('company_id');
         $consumption_type = Request::param('consumption_type');
-         (new CompanyService())->updateConsumptionType($company_id,$consumption_type);
+        (new CompanyService())->updateConsumptionType($company_id, $consumption_type);
         return json(new SuccessMessage());
     }
 

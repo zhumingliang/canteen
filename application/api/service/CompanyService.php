@@ -8,6 +8,7 @@ use app\api\model\AdminT;
 use app\api\model\CompanyT;
 use app\api\model\PayWxConfigT;
 use app\api\model\ShopT;
+use app\api\model\StaffCardV;
 use app\api\model\StaffV;
 use app\lib\enum\AdminEnum;
 use app\lib\enum\CanteenEnum;
