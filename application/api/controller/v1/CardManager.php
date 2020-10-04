@@ -5,10 +5,10 @@ namespace app\api\controller\v1;
 
 
 use app\api\controller\BaseController;
-use app\api\service\CanteenService;
 use app\api\service\CardService;
-use app\api\service\CompanyService;
+use app\lib\exception\SuccessMessage;
 use app\lib\exception\SuccessMessageWithData;
+use think\facade\Request;
 
 class CardManager extends BaseController
 {
@@ -48,5 +48,58 @@ class CardManager extends BaseController
         return json(new SuccessMessageWithData(['data' => $staffs]));
 
     }
+
+    /**
+     * @api {POST} /api/v1/staff/card/bind CMS管理端-消费卡管理-绑卡操作
+     * @apiGroup   CMS
+     * @apiVersion 3.0.0
+     * @apiDescription    CMS管理端-消费卡管理-绑卡操作
+     * @apiExample {post}  请求样例:
+     *    {
+     *       "staff_id": 1
+     *       "card_code": 123
+     *     }
+     * @apiParam (请求参数说明) {int}  staff_id 员工id
+     * @apiParam (请求参数说明) {string}  card_code 卡号
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     */
+    public function bind()
+    {
+        $staffId = Request::param('staff_id');
+        $cardCode = Request::param("card_code");
+        (new CardService())->bind($staffId, $cardCode);
+        return json(new SuccessMessage());
+    }
+
+    /**
+     * @api {POST} /api/v1/staff/card/handle CMS管理端-消费卡管理-卡状态操作
+     * @apiGroup   CMS
+     * @apiVersion 3.0.0
+     * @apiDescription    CMS管理端-消费卡管理-卡状态操作
+     * @apiExample {post}  请求样例:
+     *    {
+     *       "card_id": 123,
+     *       "state": 2
+     *     }
+     * @apiParam (请求参数说明) {int}  card_id 卡ID
+     * @apiParam (请求参数说明) {int}  state 操作状态：1：恢复；2：挂失；3：注销
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     */
+
+    public function handle()
+    {
+        $cardId = Request::param('card_id');
+        $state = Request::param('state');
+        (new CardService())->handle($cardId,$state);
+        return json(new SuccessMessage());
+
+    }
+
 
 }

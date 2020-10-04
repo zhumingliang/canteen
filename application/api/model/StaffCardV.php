@@ -38,4 +38,16 @@ class StaffCardV extends Model
         return $staffs;
 
     }
+
+    public static function checkCardExits($companyId, $cardCode)
+    {
+        $check = self::where('company_id', $companyId)
+            ->where('card_code', $cardCode)
+            ->whereIn('state', "1,2")
+            ->count('id');
+        return $check;
+
+    }
+
+
 }
