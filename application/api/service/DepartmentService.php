@@ -232,7 +232,7 @@ class DepartmentService
         $staffs = $this->getCompanyStaffs($company_id);
         //获取企业消费方式
         $consumptionType = (new CompanyService())->consumptionType($company_id);
-        $consumptionTypeArr = explode(',', $consumptionType);
+        $consumptionTypeArr = explode(',', $consumptionType['consumptionType']);
         $phones = $staffs['phones'];
         $faceCodes = $staffs['faceCodes'];
         $fail = array();

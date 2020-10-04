@@ -11,12 +11,6 @@ use think\Model;
 class OrderSettlementV extends Model
 {
 
-    public function getMoneyAttr($value)
-    {
-        return  sprintf("%.2f",$value);
-
-    }
-
     public static function orderSettlement($page, $size,
                                            $name, $phone, $canteen_id, $department_id, $dinner_id,
                                            $consumption_type, $time_begin, $time_end, $company_ids, $type)

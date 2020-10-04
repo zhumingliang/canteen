@@ -205,6 +205,7 @@ class OrderStatisticService
         $records = OrderSettlementV::orderSettlement($page, $size,
             $name, $phone, $canteen_id, $department_id, $dinner_id,
             $consumption_type, $time_begin, $time_end, $company_ids, $type);
+
         $records['data'] = $this->prefixSettlementConsumptionType($records['data']);
         return $records;
     }
@@ -263,7 +264,7 @@ class OrderStatisticService
                     'canteen' => $v['canteen'],
                     'consumption_type' => $data[$k]['consumption_type'],
                     'dinner' => $v['dinner'],
-                    'money' => $v['money'],
+                    'money' => sprintf("%.2f",abs($v['money'])),
                     'remark' => $v['remark']
                 ]);
             }
@@ -287,7 +288,7 @@ class OrderStatisticService
                     } else {
                         $data[$k]['consumption_type'] = "小卖部退款";
                     }
-                    $data[$k]['money'] = abs($v['money']);
+                    $data[$k]['money'] = sprintf("%.2f",abs($v['money']));
 
                 } else if ($v['type'] == 'canteen') {
                     if ($v['booking'] == CommonEnum::STATE_IS_OK) {
@@ -651,13 +652,13 @@ class OrderStatisticService
         $locationName = $this->getLocationName($order_type, $canteen_id);
         $fileNameArr = [
             0 => $locationName . "消费总报表",
-            1 => $locationName."订餐就餐消费总报表",
-            2 => $locationName."订餐未就餐消费总报表",
-            3 => $locationName."未订餐就餐消费总报表",
-            4 => $locationName."系统补充总报表",
-            5 => $locationName."系统补扣总报表",
-            6 => $locationName."小卖部消费总报表",
-            7 => $locationName."小卖部退款总报表"
+            1 => $locationName . "订餐就餐消费总报表",
+            2 => $locationName . "订餐未就餐消费总报表",
+            3 => $locationName . "未订餐就餐消费总报表",
+            4 => $locationName . "系统补充总报表",
+            5 => $locationName . "系统补扣总报表",
+            6 => $locationName . "小卖部消费总报表",
+            7 => $locationName . "小卖部退款总报表"
         ];
 
         switch ($type) {
