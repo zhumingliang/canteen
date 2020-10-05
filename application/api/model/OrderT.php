@@ -121,7 +121,7 @@ class OrderT extends Model
             ])
             ->field('id,u_id,type as order_type,ordering_type,ordering_date,count,address_id,state,used,booking,
             c_id as canteen_id,d_id as dinner_id,wx_confirm,sort_code,outsider,1 as consumption_type,money,sub_money,delivery_fee,
-            meal_money, meal_sub_money,no_meal_money,no_meal_sub_money,used_time,receive')
+            meal_money, meal_sub_money,no_meal_money,no_meal_sub_money,used_time,receive,fixed')
             ->find();
         return $info;
     }
@@ -343,7 +343,7 @@ class OrderT extends Model
                         ->field('id as detail_id ,o_id,count,name,price');
                 }
             ])
-            ->field('id,create_time,ordering_type,d_id,ordering_date,state,used,count,money,sub_money,delivery_fee,type,wx_confirm,sort_code,booking,remark')
+            ->field('id,create_time,ordering_type,d_id,ordering_date,state,used,count,money,sub_money,delivery_fee,type,wx_confirm,sort_code,booking,remark,fixed')
             ->find();
         return $order;
 

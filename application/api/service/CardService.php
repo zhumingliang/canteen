@@ -41,6 +41,7 @@ class CardService
             if (!$res) {
                 throw new UpdateException(['msg' => "绑卡失败"]);
             }
+            return true;
         }
         //  //未绑定卡
         $data = [
@@ -52,6 +53,7 @@ class CardService
         if (!$card) {
             throw new SaveException();
         }
+        return true;
     }
 
     public function handle($cardId, $state)

@@ -2912,6 +2912,7 @@ class OrderService extends BaseService
         $data['create_time'] = $order->create_time;
         $data['ordering_type'] = $order->ordering_type;
         $data['type'] = $order->type;
+        $data['fixed'] = $order->fixed;
         $data['money'] = $order->money;
         $data['sub_money'] = $order->sub_money;
         $data['count'] = $order->count;
@@ -2952,6 +2953,7 @@ class OrderService extends BaseService
         $booking = $order->booking;
         $sub = $order->sub;
         $data['type'] = $order->type;
+        $data['fixed'] = $order->fixed;
         $data['order_type'] = $order->type;
         $data['dinner_id'] = $order->dinner_id;
         $data['canteen_id'] = $order->canteen_id;
