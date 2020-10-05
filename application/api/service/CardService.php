@@ -60,13 +60,9 @@ class CardService
         if (!$card) {
             throw new ParameterException(['msg' => '卡号不存在']);
         }
-        if ($state == CommonEnum::STATE_IS_DELETE) {
-            $card->delete();
-        } else {
-            $card->state = $state;
-            if (!$card->save()) {
-                throw new UpdateException(['msg' => '卡状态操作失败']);
-            }
+        $card->state = $state;
+        if (!$card->save()) {
+            throw new UpdateException(['msg' => '卡状态操作失败']);
         }
 
     }

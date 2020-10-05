@@ -4,6 +4,7 @@
 namespace app\api\model;
 
 
+use app\lib\enum\CommonEnum;
 use think\Model;
 
 class StaffCardV extends Model
@@ -12,6 +13,7 @@ class StaffCardV extends Model
     public static function staffs($company_id, $name, $card_code, $status, $page, $size)
     {
         $staffs = self::where('company_id', $company_id)
+            ->whre('state', '<', CommonEnum::STATE_IS_DELETE)
             ->where(function ($query) use ($name) {
                 if (strlen($name)) {
                     $query->where('name', $name);
