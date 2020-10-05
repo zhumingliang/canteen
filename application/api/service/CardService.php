@@ -60,7 +60,7 @@ class CardService
         if (!$card) {
             throw new ParameterException(['msg' => '卡号不存在']);
         }
-        $card->stae =$state;
+        $card->state =$state;
         if (!$card->save()) {
             throw new UpdateException(['msg' => '卡状态操作失败']);
         }
