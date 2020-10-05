@@ -415,22 +415,30 @@ class DepartmentService
                 'info' => $fail
             ];
         }
+        $data = [
+            'd_id' => $d_id,
+            't_id' => $t_id,
+            'code' => $code,
+            'username' => $name,
+            'phone' => $phone,
+            'company_id' => $company_id,
+            'canteen_ids' => implode(',', $canteen_ids),
+            'state' => $state
+        ];
+
+        if (in_array('card', $consumptionTypeArr)){
+            $data['card_num']=$card_num;
+            $data['birthday']=gmdate("Y-m-d", ($birthday - 25569) * 86400);
+        }
+
+        if (in_array('face', $consumptionTypeArr)){
+            $data['face_code']=$face_code;
+
+        }
 
         return [
             'res' => true,
-            'info' => [
-                'd_id' => $d_id,
-                't_id' => $t_id,
-                'code' => $code,
-                'username' => $name,
-                'phone' => $phone,
-                'card_num' => $card_num,
-                'company_id' => $company_id,
-                'canteen_ids' => implode(',', $canteen_ids),
-                'birthday' => gmdate("Y-m-d", ($birthday - 25569) * 86400)
-                , 'face_code' => $face_code,
-                'state' => $state
-            ]
+            'info' => $data
         ];
     }
 
