@@ -28,9 +28,9 @@ class StaffCardV extends Model
                 if ($status) {
                     if ($status == 4) {
                         //未绑定
-                        $query->where('card_code', "=", 0);
+                        $query->where('card_id', "=", 0);
                     } else {
-                        $query->where('card_code', "=", $status);
+                        $query->where('state', "=", $status);
                     }
                 }
 
