@@ -11,7 +11,7 @@
 
 Route::rule('/', 'api/v1.Index/index');
 Route::rule('api/:version/index', 'api/:version.Index/index');
-Route::rule('api/:version/test', 'api/:version.Index/test');
+Route::rule('api/:version/test', 'api/:version.Index/test')->middleware(\app\api\middleware\Auth::class);;
 
 Route::post('api/:version/token/admin', 'api/:version.Token/getAdminToken');
 //Route::rule('api/:version/token/official', 'api/:version.Token/getOfficialToken')->middleware(\Naixiaoxin\ThinkWechat\Middleware\OauthMiddleware::class);
