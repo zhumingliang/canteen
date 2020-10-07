@@ -2038,8 +2038,6 @@ class OrderService extends BaseService
             }
             //更新其它订单排序
             $this->prefixOrderSortWhenUpdateOrder($strategy, $order->dinner_id, $order->phone, $order->ordering_date);
-
-            //$this->updateParentOrderMoney($id);
             Db::commit();
         } catch
         (Exception $e) {
@@ -3039,7 +3037,7 @@ class OrderService extends BaseService
     public function prefixOrderSortWhenUpdateOrder($strategy, $dinnerId, $phone, $orderingDate, $orderID = 0)
     {
         //1.获取用户所有订单
-        $orders = OrderingV::getOrderingByWithDinnerID($orderingDate, $dinnerId, $phone);
+        $orders = OrderingV::getOrderingByWithDinnerID($orderingDate, $dinnerId, $phone,$orderID);
         if (!count($orders)) {
             return true;
         }

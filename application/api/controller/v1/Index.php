@@ -117,8 +117,12 @@ Index extends BaseController
 
     public function test($param = "")
     {
-       // echo date('Y-m-d H:i:s');
-         return json(\app\api\service\Token::getCurrentTokenVar());
+        $order = OrderParentT::where('state', 1)->where("phone", "13794247582")->select();
+        foreach ($order as $k => $v) {
+            OrderSubT::update(['state' => 2], ['order_id' => $v['id']]);
+        }
+        // echo date('Y-m-d H:i:s');
+        // return json(\app\api\service\Token::getCurrentTokenVar());
 
 
     }
