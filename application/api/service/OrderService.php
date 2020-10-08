@@ -1885,7 +1885,7 @@ class OrderService extends BaseService
 
             //检测订单是否可操作
             $old_count = $order->count;
-            //  $this->checkOrderCanHandel($order->d_id, $order->ordering_date);
+              $this->checkOrderCanHandel($order->d_id, $order->ordering_date);
             if (!empty($params['count']) && ($params['count'] != $old_count)) {
                 //检测订单修改数量是否合法
                 $updateCount = $params['count'];
