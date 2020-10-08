@@ -117,11 +117,11 @@ Index extends BaseController
 
     public function test($param = "")
     {
-        $order = OrderParentT::where('state', 1)->where("phone", "13794247582")->select();
-        foreach ($order as $k => $v) {
-            OrderSubT::update(['state' => 2], ['order_id' => $v['id']]);
-        }
-        // echo date('Y-m-d H:i:s');
+        $redis = new \Redis();
+        $redis->connect('121.37.255.12', 6379);
+        $redis->auth('waHqes-nijpi8-ruwqex');
+        $redis->set('a',1);
+       echo $redis->get('a');
         // return json(\app\api\service\Token::getCurrentTokenVar());
 
 

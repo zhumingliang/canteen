@@ -11,7 +11,7 @@
 
 Route::rule('/', 'api/v1.Index/index');
 Route::rule('api/:version/index', 'api/:version.Index/index');
-Route::rule('api/:version/test', 'api/:version.Index/test')->middleware(\app\api\middleware\Auth::class);;
+Route::rule('api/:version/test', 'api/:version.Index/test');
 
 Route::post('api/:version/token/admin', 'api/:version.Token/getAdminToken');
 //Route::rule('api/:version/token/official', 'api/:version.Token/getOfficialToken')->middleware(\Naixiaoxin\ThinkWechat\Middleware\OauthMiddleware::class);
@@ -20,7 +20,7 @@ Route::rule('api/:version/token/machine', 'api/:version.Token/getMachineToken');
 Route::rule('api/:version/token/login/out', 'api/:version.Token/loginOut');
 Route::post('api/:version/token/supplier', 'api/:version.Token/getSupplierToken');
 
-Route::post('api/:version/module/system/save', 'api/:version.Module/saveSystem');
+Route::post('api/:version/module/system/save', 'api/:version.Module/saveSystem');;
 Route::post('api/:version/module/system/canteen/save', 'api/:version.Module/saveSystemCanteen');
 Route::post('api/:version/module/system/shop/save', 'api/:version.Module/saveSystemShop');
 Route::post('api/:version/module/system/handel', 'api/:version.Module/handelSystem');
@@ -42,7 +42,6 @@ Route::get('api/:version/companies', 'api/:version.Company/companies');
 Route::get('api/:version/company/consumptionLocation', 'api/:version.Company/consumptionLocation');
 Route::get('api/:version/manager/companies', 'api/:version.Company/managerCompanies');
 Route::get('api/:version/user/companies', 'api/:version.Company/userCompanies');
-Route::get('api/:version/admin/companies', 'api/:version.Company/adminCompanies');
 Route::get('api/:version/company/qrcode', 'api/:version.Company/getOutQRCode');
 Route::get('api/:version/company/consumptionType', 'api/:version.Company/consumptionType');
 Route::post('api/:version/company/consumptionType/update', 'api/:version.Company/updateConsumptionType');

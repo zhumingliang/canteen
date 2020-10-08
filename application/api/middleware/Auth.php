@@ -16,7 +16,20 @@ class Auth extends Controller
 {
     public function handle($request, \Closure $next)
     {
-        Token::getCurrentTokenVar();
+        $allowAction = [
+            'test',
+            'getadmintoken',
+            'getofficialtoken',
+            'getmachinetoken',
+            'loginout',
+            'getsuppliertoken',
+            'printer'
+        ];
+        $action = $request->action();
+        if (!in_array($action, $allowAction)) {
+           // Token::getCurrentTokenVar();
+        }
+        return $next($request);
     }
 
 
