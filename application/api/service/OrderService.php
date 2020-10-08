@@ -999,7 +999,8 @@ class OrderService extends BaseService
                             'company_id' => $company_id,
                             'booking' => CommonEnum::STATE_IS_OK,
                             'remark' => $remark,
-                            'outsider' => UserEnum::INSIDE
+                            'outsider' => UserEnum::INSIDE,
+                            'fixed' => CommonEnum::STATE_IS_OK
                         ];
                         $orderParent = OrderParentT::create($orderData);
                         if (!$orderParent) {
@@ -1027,7 +1028,6 @@ class OrderService extends BaseService
                             'meal_sub_money' => $v['meal_sub_money'],
                             'no_meal_money' => $v['no_meal_money'],
                             'no_meal_sub_money' => $v['no_meal_sub_money'],
-                            'ordering_type' => 'personal_choice',
                         ];
                         $allMoney += ($v['money'] + $v['sub_money']);
                         array_push($subOrderDataList, $data);
