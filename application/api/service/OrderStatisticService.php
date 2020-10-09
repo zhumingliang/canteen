@@ -192,7 +192,7 @@ class OrderStatisticService
                 if ($used == CommonEnum::STATE_IS_FAIL) {
                     return "已订餐";
                 } else {
-                    return "已取消";
+                    return "已结算";
                 }
             }
         }
@@ -264,7 +264,7 @@ class OrderStatisticService
                     'canteen' => $v['canteen'],
                     'consumption_type' => $data[$k]['consumption_type'],
                     'dinner' => $v['dinner'],
-                    'money' => sprintf("%.2f",abs($v['money'])),
+                    'money' => sprintf("%.2f", abs($v['money'])),
                     'remark' => $v['remark']
                 ]);
             }
@@ -288,7 +288,7 @@ class OrderStatisticService
                     } else {
                         $data[$k]['consumption_type'] = "小卖部退款";
                     }
-                    $data[$k]['money'] = sprintf("%.2f",abs($v['money']));
+                    $data[$k]['money'] = sprintf("%.2f", abs($v['money']));
 
                 } else if ($v['type'] == 'canteen') {
                     if ($v['booking'] == CommonEnum::STATE_IS_OK) {
