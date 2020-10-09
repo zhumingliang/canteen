@@ -307,18 +307,24 @@ class DepartmentService
         }
     }
 
-    private function getCompanyStaffs($company_id)
+    public function getCompanyStaffs($company_id)
     {
         $staffs = CompanyStaffT::staffs($company_id);
         $staffsPhone = [];
         $staffsFaceCode = [];
+        $staffsCardNum = [];
         foreach ($staffs as $k => $v) {
             array_push($staffsPhone, $v['phone']);
             array_push($staffsFaceCode, $v['face_code']);
+            if ($v['card']){
+                array_push($staffsCardNum, $v['card']['card_code']);
+
+            }
         }
         return [
             'phones' => $staffsPhone,
-            'faceCodes' => $staffsFaceCode
+            'faceCodes' => $staffsFaceCode,
+            'cardNum' => $staffsCardNum
         ];
     }
 

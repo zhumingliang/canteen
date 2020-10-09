@@ -130,8 +130,13 @@ class OrderStatisticService
                 array_push($dataList, $data);
 
             } else if ($consumptionType == "more") {
-                $subOrder = OrderSubT::where('order_id', $v['order_id'])
-                    ->where('state', CommonEnum::STATE_IS_OK)->select();
+                if ($v['state'] == CommonEnum::STATE_IS_OK) {
+                    $subOrder = OrderSubT::where('order_id', $v['order_id'])
+                        ->where('state', CommonEnum::STATE_IS_OK)->select();
+                } else {
+                    $subOrder = OrderSubT::where('order_id', $v['order_id'])->select();
+                }
+
                 foreach ($subOrder as $k2 => $v2) {
                     $data['order_id'] = $v2['id'];
                     $data['ordering_date'] = $v['ordering_date'];
@@ -143,7 +148,7 @@ class OrderStatisticService
                     $data['type'] = $v['type'];
                     $data['count'] = "第" . $sort[$v2['consumption_sort']] . "份";
                     $data['money'] = $v2['money'] + $v2['sub_money'];
-                    $data['status'] = $this->getStatus($v['ordering_date'], $v['state'], $v['meal_time_end'], $v['used']);
+                    $data['status'] = $this->getStatus($v['ordering_date'], $v2['state'], $v['meal_time_end'], $v2['used']);
                     $data['foods'] = $detail;
                     if ($k2 == count($subOrder) - 1) {
                         $data['all'] = $v['order_money'];
@@ -155,7 +160,6 @@ class OrderStatisticService
 
 
             }
-
         }
         return $dataList;
     }
