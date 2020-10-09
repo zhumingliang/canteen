@@ -244,10 +244,9 @@ class OrderService extends BaseService
         $consumptionType = $this->getConsumptionType($phone, $company_id, $canteen_id, $dinner_id);
         //检测用户是否可以订餐并返回订单金额
         $orderMoney = $this->checkUserCanOrder($dinner, $ordering_date, $canteen_id, $count, $detail, 'person_choice', $consumptionType);
-        //$orderMoney = $strategyMoney['strategyMoney'];
         $delivery_fee = $this->checkUserOutsider($params['type'], $canteen_id);
-        // $orderMoney = $this->checkUserCanOrder($dinner, $ordering_date, $canteen_id, $count, $detail, "person_choice", $ordering_type);
         $orderMoney['delivery_fee'] = $delivery_fee;
+        $orderMoney['fixed'] = $dinner->fixed;
         return $orderMoney;
 
     }
