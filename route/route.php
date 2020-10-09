@@ -42,10 +42,10 @@ Route::get('api/:version/companies', 'api/:version.Company/companies');
 Route::get('api/:version/company/consumptionLocation', 'api/:version.Company/consumptionLocation');
 Route::get('api/:version/manager/companies', 'api/:version.Company/managerCompanies');
 Route::get('api/:version/user/companies', 'api/:version.Company/userCompanies');
+Route::get('api/:version/admin/companies', 'api/:version.Company/adminCompanies');
 Route::get('api/:version/company/qrcode', 'api/:version.Company/getOutQRCode');
 Route::get('api/:version/company/consumptionType', 'api/:version.Company/consumptionType');
 Route::post('api/:version/company/consumptionType/update', 'api/:version.Company/updateConsumptionType');
-
 
 
 Route::post('api/:version/canteen/save', 'api/:version.Canteen/save');
