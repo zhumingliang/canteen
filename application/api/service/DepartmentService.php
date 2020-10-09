@@ -235,6 +235,7 @@ class DepartmentService
         $consumptionTypeArr = explode(',', $consumptionType['consumptionType']);
         $phones = $staffs['phones'];
         $faceCodes = $staffs['faceCodes'];
+        $cardNums = $staffs['cardNums'];
         $fail = array();
         $success = array();
         $param_key = array();
@@ -272,10 +273,13 @@ class DepartmentService
                     }
 
                 }
-                $check = $this->validateParams($company_id, $param_key, $data[$k], $types, $canteens, $departments, $v[8], $consumptionTypeArr);
+                $check = $this->validateParams($company_id, $param_key, $data[$k], $types, $canteens, $departments, $consumptionTypeArr, $cardNums);
                 if (!$check['res']) {
                     $fail[] = "第" . $k . "数据有问题：" . $check['info']['msg'];
                     continue;
+                }
+                if (in_array('card', $consumptionTypeArr)) {
+                    array_push($cardNums, $v[6]);
                 }
                 $success[] = $check['info'];
             }
@@ -316,7 +320,7 @@ class DepartmentService
         foreach ($staffs as $k => $v) {
             array_push($staffsPhone, $v['phone']);
             array_push($staffsFaceCode, $v['face_code']);
-            if ($v['card']){
+            if ($v['card']) {
                 array_push($staffsCardNum, $v['card']['card_code']);
 
             }
@@ -324,12 +328,12 @@ class DepartmentService
         return [
             'phones' => $staffsPhone,
             'faceCodes' => $staffsFaceCode,
-            'cardNum' => $staffsCardNum
+            'cardNums' => $staffsCardNum
         ];
     }
 
 
-    private function validateParams($company_id, $param_key, $data, $types, $canteens, $departments, $birthday, $consumptionTypeArr, $len = 8)
+    private function validateParams($company_id, $param_key, $data, $types, $canteens, $departments, $consumptionTypeArr, $cardNums)
     {
         $state = ['启用', '停用'];
         $canteen = trim($data[0]);
@@ -340,6 +344,7 @@ class DepartmentService
         $phone = trim($data[5]);
         $card_num = trim($data[6]);
         $face_code = trim($data[9]);
+        $birthday = trim($data[8]);
         $canteen_ids = [];
 
         if (!in_array($data[7], $state)) {
@@ -397,7 +402,17 @@ class DepartmentService
 
         if (in_array('card', $consumptionTypeArr)) {
             //判断填写了卡号，生日必填
-            if (!strlen($code) && !strlen($birthday)) {
+            if (in_array($card_num, $cardNums)) {
+                $fail = [
+                    'name' => $name,
+                    'msg' => "卡号重复"
+                ];
+                return [
+                    'res' => false,
+                    'info' => $fail
+                ];
+            }
+            if (!strlen($card_num) && !strlen($birthday)) {
                 $fail = [
                     'name' => $name,
                     'msg' => "卡号或者生日未填写"
@@ -432,13 +447,13 @@ class DepartmentService
             'state' => $state
         ];
 
-        if (in_array('card', $consumptionTypeArr)){
-            $data['card_num']=$card_num;
-            $data['birthday']=gmdate("Y-m-d", ($birthday - 25569) * 86400);
+        if (in_array('card', $consumptionTypeArr)) {
+            $data['card_num'] = $card_num;
+            $data['birthday'] = gmdate("Y-m-d", ($birthday - 25569) * 86400);
         }
 
-        if (in_array('face', $consumptionTypeArr)){
-            $data['face_code']=$face_code;
+        if (in_array('face', $consumptionTypeArr)) {
+            $data['face_code'] = $face_code;
 
         }
 
