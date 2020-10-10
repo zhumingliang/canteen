@@ -412,7 +412,7 @@ class DepartmentService
                     'info' => $fail
                 ];
             }
-            if (!strlen($card_num) && !strlen($birthday)) {
+            if (!strlen($card_num) || !strlen($birthday)) {
                 $fail = [
                     'name' => $name,
                     'msg' => "卡号或者生日未填写"
