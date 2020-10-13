@@ -12,7 +12,11 @@ use app\api\model\ConsumptionRecordsV;
 use app\api\model\ConsumptionStrategyT;
 use app\api\model\DinnerT;
 use app\api\model\OrderConsumptionV;
+use app\api\model\OrderingV;
+use app\api\model\OrderParentT;
+use app\api\model\OrderSubT;
 use app\api\model\OrderT;
+use app\api\model\OrderUnusedV;
 use app\api\model\PayT;
 use app\api\model\RechargeCashT;
 use app\api\model\RechargeV;
@@ -33,6 +37,7 @@ use app\api\service\WalletService;
 use app\api\service\WeiXinService;
 use app\lib\Date;
 use app\lib\enum\CommonEnum;
+use app\lib\enum\StrategyEnum;
 use app\lib\exception\ParameterException;
 use app\lib\exception\SaveException;
 use app\lib\exception\SuccessMessage;
@@ -110,76 +115,16 @@ Index extends BaseController
          echo implode('|', $user_ids);*/
     }
 
-    public function test()
+    public function test($param = "")
     {
-        $a = 44048;
-
-        /* $data = (new ExcelService())->saveTestExcel();
-         $fail = [];
-         foreach ($data as $k => $v) {
-             if ($k == 1 || empty($v[0])) {
-                 continue;
-             }
-                if ($k >200 && $k <= 300) {
-                //if ( $k <= 100) {
-                    $orderNum = $v[1];
-                    $phone = $v[20];
-                    $staff = CompanyStaffT::where('company_id', $company_id)
-                        ->where('state',CommonEnum::STATE_IS_OK)
-                        ->where('phone', $phone)
-                        ->find();
-                    if (!$staff) {
-                        array_push($fail, [
-                            'ordernumber' => $orderNum,
-                            'phone' => $phone
-                        ]);
-                    }
-                    PayT::update([
-                        'phone' => $phone,
-                        'username' => $staff->username,
-                        'staff_id' => $staff->id
-                    ], ['order_num' => $orderNum, 'company_id' => $company_id]);
-                }
-
-         }
-
-         return json($fail);*/
-
         /*
-                try {
-                    Db::startTrans();
-                    $data = (new ExcelService())->saveTestExcel();
-                    $dataList = [];
-                    foreach ($data as $k => $v) {
-                        if ($k == 1 || empty($v[0])) {
-                            continue;
-                        }
-                        if ($k < 15) {
-                            array_push($dataList, [
-                                'id' => $v[0],
-                                'money' => $v[11],
-                                'sub_money' => $v[12],
-                            ]);
-                        } else {
-                            array_push($dataList, [
-                                'id' => $v[0],
-                                'no_meal_money' => $v[11],
-                                'no_meal_sub_money' => $v[12],
-                            ]);
-                        }
+        $redis = new \Redis();
+        $redis->connect('121.37.255.12', 6379);
+        $redis->auth('waHqes-nijpi8-ruwqex');
+        $redis->set('a',1);
+       echo $redis->get('a');*/
+        // return json(\app\api\service\Token::getCurrentTokenVar());
 
-                    }
 
-                    $res = (new  OrderT())->saveAll($dataList);
-                    if (!$res) {
-                        throw  new SaveException();
-                    }
-                     Db::commit();
-                    return json(new SuccessMessage());
-                } catch (Exception $e) {
-                    Db::rollback();
-                    throw  $e;
-                }*/
     }
-
 }

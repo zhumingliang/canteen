@@ -5,6 +5,7 @@ namespace app\api\service;
 
 
 use app\api\model\OfficialTemplateT;
+use app\api\model\OrderParentT;
 use app\api\model\OrderT;
 use app\lib\enum\CommonEnum;
 use app\lib\enum\OrderEnum;
@@ -21,81 +22,147 @@ class TakeoutService
     const PRINTER = 3;
     const REFUND = 4;
 
-    public function handelOrder($orderID, $type, $canteenID)
+    public function handelOrder($oneId, $moreId, $type, $canteenID)
     {
-        $orderIDArr = explode(',', $orderID);
-        if (!count($orderIDArr)) {
+        $oneIDArr = explode(',', $oneId);
+        $moreIDArr = explode(',', $moreId);
+        if (!count($oneIDArr) && !count($moreIDArr)) {
             throw new ParameterException(['msg' => '订单id异常']);
         }
         switch ($type) {
             case self::RECEIVE :
-                $this->receiveOrders($orderIDArr);
+                $this->receiveOrders($oneIDArr, $moreIDArr);
                 break;
             case self::RECEIVE_PRINTER :
-                $this->receiveAndPrint($orderIDArr, $canteenID);
+                $this->receiveAndPrint($oneIDArr, $moreIDArr, $canteenID);
                 break;
             case self::PRINTER:
-                $this->printOrders($orderIDArr, $canteenID);
+                $this->printOrders($oneIDArr, $moreIDArr, $canteenID);
                 break;
             case self::REFUND:
-                $this->refundOrder($orderIDArr);
+                $this->refundOrder($oneIDArr, $moreIDArr);
                 break;
         }
 
 
     }
 
-    private function receiveOrders($orderIDArr)
+    private function receiveOrders($oneIDArr, $moreIDArr)
     {
-        $dataList = [];
-        foreach ($orderIDArr as $k => $v) {
-            array_push($dataList, [
-                'id' => $v,
-                'receive' => CommonEnum::STATE_IS_OK
-            ]);
+        $oneList = [];
+        $moreList = [];
+        if (count($oneIDArr)) {
+            foreach ($oneIDArr as $k => $v) {
+                if (!$v) {
+                    continue;
+                }
+                array_push($oneList, [
+                    'id' => $v,
+                    'receive' => CommonEnum::STATE_IS_OK
+                ]);
+            }
+            $res = (new OrderT())->saveAll($oneList);
+            if (!$res) {
+                throw new  UpdateException(['msg' => '更新订单失败']);
+            }
         }
-        $res = (new OrderT())->saveAll($dataList);
-        if (!$res) {
-            throw new  UpdateException(['msg' => '更新订单失败']);
+        if (count($moreIDArr)) {
+            foreach ($moreIDArr as $k => $v) {
+                if (!$v) {
+                    continue;
+                }
+                array_push($moreList, [
+                    'id' => $v,
+                    'receive' => CommonEnum::STATE_IS_OK
+                ]);
+            }
+            $res = (new OrderParentT())->saveAll($moreList);
+            if (!$res) {
+                throw new  UpdateException(['msg' => '更新订单失败']);
+            }
         }
         //批量发送模板
-        foreach ($orderIDArr as $k => $v) {
+        foreach ($oneIDArr as $k => $v) {
             $order = OrderT::infoToReceive($v);
+            if ($order) {
+                $this->sendReceiveTemplate($order['user']['openid'], $order['ordering_date'], $order['dinner']['name'], $order['canteen']['name']);
+            }
+        }
+        foreach ($moreIDArr as $k => $v) {
+            $order = OrderParentT::infoToReceive($v);
             if ($order) {
                 $this->sendReceiveTemplate($order['user']['openid'], $order['ordering_date'], $order['dinner']['name'], $order['canteen']['name']);
             }
         }
     }
 
-    private function receiveAndPrint($orderIDArr, $canteenID)
+    private function receiveAndPrint($oneIDArr, $moreIDArr, $canteenID)
     {
-        $this->receiveOrders($orderIDArr);
-        $this->printOrders($orderIDArr, $canteenID);
+        $this->receiveOrders($oneIDArr, $moreIDArr);
+        $this->printOrders($oneIDArr, $moreIDArr, $canteenID);
     }
 
-    private function printOrders($orderIDArr, $canteenId)
+    private function printOrders($oneIDArr, $moreIDArr, $canteenId)
     {
         $sn = (new Printer())->checkPrinter($canteenId, 4);
-        foreach ($orderIDArr as $k => $v) {
-            (new Printer())->printOutsiderOrderDetail($v, $sn);
+        if (!empty($oneIDArr)) {
+            foreach ($oneIDArr as $k => $v) {
+                if (!$v) {
+                    continue;
+                }
+                (new Printer())->printOutsiderOrderDetail($v, $sn, 'one');
+            }
         }
+        if (!empty($moreIDArr)) {
+            foreach ($moreIDArr as $k => $v) {
+                if (!$v) {
+                    continue;
+                }
+                (new Printer())->printOutsiderOrderDetail($v, $sn, 'more');
+            }
+        }
+
     }
 
-    public function refundOrder($orderIDArr)
+    public function refundOrder($oneIDArr, $moreIDArr)
     {
 
-        foreach ($orderIDArr as $k => $v) {
-            $order = OrderT::infoToRefund($v);
-            $order->state = OrderEnum::REFUND;
-            //检测是否需要微信退款
-            if ($order->pay_way == PayEnum::PAY_WEIXIN) {
-                (new OrderService())->refundWxOrder($v);
+        if (count($oneIDArr)) {
+            foreach ($oneIDArr as $k => $v) {
+                if (!$v) {
+                    continue;
+                }
+                $order = OrderT::infoToRefund($v);
+                $order->state = OrderEnum::REFUND;
+                //检测是否需要微信退款
+                if ($order->pay_way == PayEnum::PAY_WEIXIN) {
+                    (new OrderService())->refundWxOrder($v, 'one');
+                }
+                $res = $order->save();
+                if (!$res) {
+                    throw new  UpdateException(['msg' => '更新订单失败']);
+                }
+                $this->sendRefundTemplate($order['user']['openid'], $order['money']);
             }
-            $res = $order->save();
-            if (!$res) {
-                throw new  UpdateException(['msg' => '更新订单失败']);
+        }
+
+        if (count($moreIDArr)) {
+            foreach ($moreIDArr as $k => $v) {
+                if (!$v) {
+                    continue;
+                }
+                $order = OrderParentT::infoToRefund($v);
+                $order->state = OrderEnum::REFUND;
+                //检测是否需要微信退款
+                if ($order->pay_way == PayEnum::PAY_WEIXIN) {
+                    (new OrderService())->refundWxOrder($v, 'more');
+                }
+                $res = $order->save();
+                if (!$res) {
+                    throw new  UpdateException(['msg' => '更新订单失败']);
+                }
+                $this->sendRefundTemplate($order['user']['openid'], $order['money']);
             }
-            $this->sendRefundTemplate($order['user']['openid'], $order['money']);
         }
 
     }

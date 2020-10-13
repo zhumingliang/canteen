@@ -23,6 +23,7 @@ use app\api\model\OutConfigV;
 use app\api\model\OutsiderCompanyT;
 use app\api\model\PrinterT;
 use app\api\model\ReceptionConfigT;
+use app\api\model\ShopT;
 use app\api\model\StaffCanteenV;
 use app\api\model\StaffV;
 use app\api\model\StrategyDetailT;
@@ -343,6 +344,7 @@ class CanteenService
                                     'unordered_meals' => 1,
                                     'consumption_count' => 1,
                                     'ordered_count' => 1,
+                                    'consumption_type' => 1,
                                     'state' => CommonEnum::STATE_IS_OK
                                 ];
                             }
@@ -402,6 +404,25 @@ class CanteenService
         return $canteens;
     }
 
+    public function consumptionPlace($company_id)
+    {
+        if (empty($company_id)) {
+            $company_id = Token::getCurrentTokenVar('company_id');
+        }
+        $canteens = CanteenT::where('c_id', $company_id)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->field('id,name,"canteen" as type')->select()->toArray();
+
+        //获取企业小卖部
+        $shop = ShopT::where('c_id', $company_id)
+            ->field('id,name,"shop" as type')
+            ->find();
+        if ($shop) {
+            array_push($canteens, $shop);
+        }
+        return $canteens;
+    }
+
     public function saveConsumptionStrategy($params)
     {
         $c_id = $params['c_id'];
@@ -451,6 +472,12 @@ class CanteenService
     public function getStaffConsumptionStrategy($c_id, $d_id, $t_id)
     {
         $info = ConsumptionStrategyT::getStaffConsumptionStrategy($c_id, $d_id, $t_id);
+        return $info;
+    }
+
+    public function getStaffAllConsumptionStrategy($c_id, $t_id)
+    {
+        $info = ConsumptionStrategyT::getStaffAllConsumptionStrategy($c_id, $t_id);
         return $info;
     }
 
@@ -732,6 +759,11 @@ class CanteenService
     {
         try {
             Db::startTrans();
+            if (!empty($params['consumption_type'])) {
+                if (!in_array($params['consumption_type'], [1, 2])) {
+                    throw new ParameterException(['msg' => '扣费类型异常']);
+                }
+            }
             $strategy = ConsumptionStrategyT::update($params);
             if (!$strategy) {
                 throw new UpdateException();
@@ -740,6 +772,10 @@ class CanteenService
                 $strategy = ConsumptionStrategyT::get($params['id']);
                 $detail = json_decode($params['detail'], true);
                 $this->prefixStrategyDetail($strategy->id, $strategy->c_id, $strategy->d_id, $strategy->t_id, $detail);
+            }
+            if (!empty($params['consumption_type'])) {
+                ConsumptionStrategyT::update(['consumption_type' => $params['consumption_type']],
+                    ['c_id' => $strategy->c_id]);
             }
             Db::commit();
         } catch (Exception $e) {

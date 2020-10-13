@@ -38,6 +38,14 @@ class OrderT extends Model
         return $this->hasMany('OrderDetailT', 'o_id', 'id');
     }
 
+
+    public
+    function address()
+    {
+        return $this->belongsTo('UserAddressT', 'address_id', 'id');
+
+    }
+
     public
     function dinner()
     {
@@ -50,12 +58,6 @@ class OrderT extends Model
         return $this->belongsTo('CanteenT', 'c_id', 'id');
     }
 
-    public
-    function address()
-    {
-        return $this->belongsTo('UserAddressT', 'address_id', 'id');
-
-    }
 
     public
     function user()
@@ -119,7 +121,7 @@ class OrderT extends Model
             ])
             ->field('id,u_id,type as order_type,ordering_type,ordering_date,count,address_id,state,used,booking,
             c_id as canteen_id,d_id as dinner_id,wx_confirm,sort_code,outsider,1 as consumption_type,money,sub_money,delivery_fee,
-            meal_money, meal_sub_money,no_meal_money,no_meal_sub_money,used_time')
+            meal_money, meal_sub_money,no_meal_money,no_meal_sub_money,used_time,receive,fixed')
             ->find();
         return $info;
     }
@@ -163,7 +165,7 @@ class OrderT extends Model
                     $query->field('id,province,city,area,address,name,phone,sex');
                 }
             ])
-            ->field('id,address_id,d_id,type,count,money,sub_money,delivery_fee,create_time,remark,ordering_type')
+            ->field('id,address_id,company_id,outsider,d_id,fixed,ordering_date,type,count,money,sub_money,delivery_fee,create_time,remark,ordering_type')
             ->find();
 
         return $info;
@@ -217,7 +219,7 @@ class OrderT extends Model
                     $query->field('id,name');
                 }
             ])
-            ->field('id,d_id,order_num,money,sub_money,phone,outsider,company_id,confirm_time,qrcode_url,remark,count,fixed,c_id,outsider,sort_code')
+            ->field('id,d_id,order_num,money,sub_money,phone,company_id,confirm_time,qrcode_url,remark,count,fixed,c_id,outsider,sort_code')
             ->find()->toArray();
         return $info;
     }
@@ -328,6 +330,23 @@ class OrderT extends Model
             ->field('id,order_num,staff_id,phone,count,money,sub_money,delivery_fee,sort_code')
             ->paginate($size, false, ['page' => $page]);
         return $users;
+    }
+
+    public static function infoToStatisticDetail($orderId)
+    {
+        $order = self::where('id', $orderId)
+            ->with([
+                'dinner' => function ($query) {
+                    $query->field('id,name,meal_time_end');
+                }, 'foods' => function ($query) {
+                    $query->where('state', CommonEnum::STATE_IS_OK)
+                        ->field('id as detail_id ,o_id,count,name,price');
+                }
+            ])
+            ->field('id,create_time,ordering_type,d_id,ordering_date,state,used,count,money,sub_money,delivery_fee,type,wx_confirm,sort_code,booking,remark,fixed')
+            ->find();
+        return $order;
+
     }
 
 

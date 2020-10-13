@@ -10,6 +10,7 @@ use app\api\model\CompanyStaffT;
 use app\api\model\CompanyStaffV;
 use app\api\model\DepartmentV;
 use app\api\model\StaffCanteenT;
+use app\api\model\StaffCardT;
 use app\api\model\StaffQrcodeT;
 use app\api\model\StaffV;
 use app\lib\enum\CommonEnum;
@@ -68,7 +69,9 @@ class DepartmentService
         if ($staff) {
             return true;
         }
-        $son = CompanyDepartmentT::where('parent_id', $id)->count('id');
+        $son = CompanyDepartmentT::where('parent_id', $id)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->count('id');
         if ($son) {
             return true;
         }
@@ -89,7 +92,7 @@ class DepartmentService
     {
         try {
             Db::startTrans();
-            $this->checkStaffExits($params['company_id'], $params['phone']);
+            $this->checkStaffExits($params['company_id'], $params['phone'], $params["face_code"]);
             $params['state'] = CommonEnum::STATE_IS_OK;
             $staff = CompanyStaffT::create($params);
             if (!$staff) {
@@ -106,14 +109,20 @@ class DepartmentService
         }
     }
 
-    private function checkStaffExits($company_id, $phone)
+    public function checkStaffExits($company_id, $phone, $face_code)
     {
         $staff = CompanyStaffT::where('company_id', $company_id)
-            ->where('phone', $phone)
+            ->where(function ($query) use ($phone, $face_code) {
+                if (empty($face_code)) {
+                    $query->where('phone', $phone);
+                } else {
+                    $query->whereOr('phone', $phone)->whereOr('face_code', $face_code);
+                }
+            })
             ->where('state', CommonEnum::STATE_IS_OK)
             ->count('id');
         if ($staff) {
-            throw  new SaveException(['msg' => '该用户已存在']);
+            throw  new SaveException(['msg' => '手机号或者人脸识别ID已存在']);
         }
 
     }
@@ -136,11 +145,28 @@ class DepartmentService
             $canteens = empty($params['canteens']) ? [] : json_decode($params['canteens'], true);
             $cancel_canteens = empty($params['cancel_canteens']) ? [] : json_decode($params['cancel_canteens'], true);
             $this->updateStaffCanteen($staff->id, $canteens, $cancel_canteens);
+            //处理卡号
+            if (!empty($params['card_num'])) {
+                $this->updateCard($params['card_num'], $params['id']);
+            }
             Db::commit();
         } catch (Exception $e) {
             Db::rollback();
             throw $e;
         }
+    }
+
+    private function updateCard($cardNum, $staffId)
+    {
+        StaffCardT::destroy(function ($query) use ($staffId) {
+            $query->where('staff_id', $staffId);
+        });
+        StaffCardT::create([
+            'staff_id' => $staffId,
+            'card_code' => $cardNum,
+            'state'
+            => CommonEnum::STATE_IS_OK
+        ]);
     }
 
     private function saveStaffCanteen($staff_id, $canteens)
@@ -203,7 +229,13 @@ class DepartmentService
         $types = (new AdminService())->allTypes();
         $canteens = (new CanteenService())->companyCanteens($company_id);
         $departments = $this->companyDepartments($company_id);
-        $phones = $this->getCompanyStaffsPhone($company_id);
+        $staffs = $this->getCompanyStaffs($company_id);
+        //获取企业消费方式
+        $consumptionType = (new CompanyService())->consumptionType($company_id);
+        $consumptionTypeArr = explode(',', $consumptionType['consumptionType']);
+        $phones = $staffs['phones'];
+        $faceCodes = $staffs['faceCodes'];
+        $cardNums = $staffs['cardNums'];
         $fail = array();
         $success = array();
         $param_key = array();
@@ -212,9 +244,9 @@ class DepartmentService
         }
 
         foreach ($data as $k => $v) {
-            if ($k == 1) {
+            if ($k == 2) {
                 $param_key = $data[$k];
-            } else if ($k > 1 && !empty($data[$k])) {
+            } else if ($k > 2 && !empty($data[$k])) {
                 if (empty($v[0])) {
                     continue;
                 }
@@ -228,10 +260,26 @@ class DepartmentService
                 } else {
                     array_push($phones, $v[5]);
                 }
-                $check = $this->validateParams($company_id, $param_key, $data[$k], $types, $canteens, $departments);
+                $faceCode = trim($v[9]);
+                //检测人脸识别id是否存在
+                if (in_array('face', $consumptionTypeArr)) {
+                    if (!empty($faceCode) && in_array($faceCode, $faceCodes)) {
+                        $fail[] = "第" . $k . "数据有问题：人脸识别ID" . $faceCode . "系统已经存在";
+                        break;
+                    } else {
+                        if (!empty($faceCode)) {
+                            array_push($faceCodes, $faceCode);
+                        }
+                    }
+
+                }
+                $check = $this->validateParams($company_id, $param_key, $data[$k], $types, $canteens, $departments, $consumptionTypeArr, $cardNums);
                 if (!$check['res']) {
                     $fail[] = "第" . $k . "数据有问题：" . $check['info']['msg'];
                     continue;
+                }
+                if (in_array('card', $consumptionTypeArr)) {
+                    array_push($cardNums, $v[6]);
                 }
                 $success[] = $check['info'];
             }
@@ -243,18 +291,6 @@ class DepartmentService
             if (!$all) {
                 throw  new SaveException();
             }
-
-            /*  $info = $this->getUploadStaffQrcodeAndCanteenInfo($all);
-              $qrcodeInfo = $info['qrcode'];
-              $canteenInfo = $info['canteen'];
-              $qrcods = (new StaffQrcodeT())->saveAll($qrcodeInfo);
-              if (!$qrcods) {
-                  throw  new SaveException();
-              }
-              $canteens = (new StaffCanteenT())->saveAll($canteenInfo);
-              if (!$canteens) {
-                  throw  new SaveException();
-              }*/
 
         }
         return [
@@ -275,36 +311,31 @@ class DepartmentService
         }
     }
 
-    private function getCompanyStaffsPhone($company_id)
+    public function getCompanyStaffs($company_id)
     {
         $staffs = CompanyStaffT::staffs($company_id);
         $staffsPhone = [];
+        $staffsFaceCode = [];
+        $staffsCardNum = [];
         foreach ($staffs as $k => $v) {
             array_push($staffsPhone, $v['phone']);
+            array_push($staffsFaceCode, $v['face_code']);
+            if ($v['card']) {
+                array_push($staffsCardNum, $v['card']['card_code']);
+
+            }
         }
-        return $staffsPhone;
+        return [
+            'phones' => $staffsPhone,
+            'faceCodes' => $staffsFaceCode,
+            'cardNums' => $staffsCardNum
+        ];
     }
 
-    private function validateParams($company_id, $param_key, $data, $types, $canteens, $departments, $len = 7)
+
+    private function validateParams($company_id, $param_key, $data, $types, $canteens, $departments, $consumptionTypeArr, $cardNums)
     {
         $state = ['启用', '停用'];
-        foreach ($data as $k => $v) {
-            if ($k >= $len) {
-                break;
-            }
-            if (!strlen($v)) {
-                $fail = [
-                    'name' => $data[4],
-                    'msg' => "参数：$param_key[$k]" . " 为空"
-                ];
-                return [
-                    'res' => false,
-                    'info' => $fail
-                ];
-                break;
-            }
-        }
-
         $canteen = trim($data[0]);
         $department = trim($data[1]);
         $staffType = trim($data[2]);
@@ -312,6 +343,8 @@ class DepartmentService
         $name = trim($data[4]);
         $phone = trim($data[5]);
         $card_num = trim($data[6]);
+        $face_code = trim($data[9]);
+        $birthday = trim($data[8]);
         $canteen_ids = [];
 
         if (!in_array($data[7], $state)) {
@@ -366,6 +399,31 @@ class DepartmentService
                 'info' => $fail
             ];
         }
+
+        if (in_array('card', $consumptionTypeArr)) {
+            //判断填写了卡号，生日必填
+            if (in_array($card_num, $cardNums)) {
+                $fail = [
+                    'name' => $name,
+                    'msg' => "卡号重复"
+                ];
+                return [
+                    'res' => false,
+                    'info' => $fail
+                ];
+            }
+            if (!strlen($card_num) || !strlen($birthday)) {
+                $fail = [
+                    'name' => $name,
+                    'msg' => "卡号或者生日未填写"
+                ];
+                return [
+                    'res' => false,
+                    'info' => $fail
+                ];
+            }
+        }
+
         //检测部门是否存在
         $d_id = $this->checkParamExits($departments, $department);
         if (!$d_id) {
@@ -378,20 +436,30 @@ class DepartmentService
                 'info' => $fail
             ];
         }
+        $data = [
+            'd_id' => $d_id,
+            't_id' => $t_id,
+            'code' => $code,
+            'username' => $name,
+            'phone' => $phone,
+            'company_id' => $company_id,
+            'canteen_ids' => implode(',', $canteen_ids),
+            'state' => $state
+        ];
+
+        if (in_array('card', $consumptionTypeArr)) {
+            $data['card_num'] = $card_num;
+            $data['birthday'] = gmdate("Y-m-d", ($birthday - 25569) * 86400);
+        }
+
+        if (in_array('face', $consumptionTypeArr)) {
+            $data['face_code'] = $face_code;
+
+        }
 
         return [
             'res' => true,
-            'info' => [
-                'd_id' => $d_id,
-                't_id' => $t_id,
-                'code' => $code,
-                'username' => $name,
-                'phone' => $phone,
-                'card_num' => $card_num,
-                'company_id' => $company_id,
-                'canteen_ids' => implode(',', $canteen_ids),
-                'state' => $state
-            ]
+            'info' => $data
         ];
     }
 
@@ -593,9 +661,16 @@ class DepartmentService
 
     public function exportStaffs($company_id, $department_id)
     {
+        //检测企业是否包含刷卡消费
+        $checkCard = (new CompanyService())->checkConsumptionContainsCard($company_id);
         $staffs = CompanyStaffV::exportStaffs($company_id, $department_id);
-        $staffs = $this->prefixExportStaff($staffs);
-        $header = ['企业', '部门', '人员状态', '人员类型', '员工编号', '姓名', '手机号码', '卡号', '归属饭堂'];
+        $staffs = $this->prefixExportStaff($staffs, $checkCard);
+        if ($checkCard) {
+            $header = ['企业', '部门', '人员状态', '人员类型', '员工编号', '姓名', '手机号码', '卡号', '归属饭堂', "出生日期", '人脸识别ID'];
+
+        } else {
+            $header = ['企业', '部门', '人员状态', '人员类型', '员工编号', '姓名', '手机号码', '归属饭堂', '人脸识别ID'];
+        }
         $file_name = "企业员工导出";
         $url = (new ExcelService())->makeExcel($header, $staffs, $file_name);
         return [
@@ -603,7 +678,7 @@ class DepartmentService
         ];
     }
 
-    private function prefixExportStaff($staffs)
+    private function prefixExportStaff($staffs, $checkCard)
     {
         if (!count($staffs)) {
             return $staffs;
@@ -615,6 +690,10 @@ class DepartmentService
             unset($staffs[$k]['canteens']);
             foreach ($canteens as $k2 => $v2) {
                 array_push($canteen, $v2['info']['name']);
+            }
+            if (!$checkCard) {
+                unset($staffs[$k]['card_num']);
+                unset($staffs[$k]['birthday']);
             }
             $staffs[$k]['canteen'] = implode('|', $canteen);
             $staffs[$k]['state'] = $v['state'] == 1 ? '启用' : '停用';

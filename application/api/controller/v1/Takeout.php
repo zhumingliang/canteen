@@ -31,7 +31,7 @@ class Takeout extends BaseController
      * @apiParam (请求参数说明) {string} ordering_date  订餐日期
      * @apiParam (请求参数说明) {int} status  状态：1:已经支付；2：已取消；3：已接单；4:已完成 ;5:已退回 ；6 全部
      * @apiSuccessExample {json}返回样例:
-     * {"msg":"ok","errorCode":0,"code":200,"data":{"total":1,"per_page":"20","current_page":1,"last_page":1,"data":[{"order_id":233,"money":"6.0","used":2,"ordering_date":"2020-02-15","dinner":"午餐","canteen":"11楼饭堂","username":"宁晓晓","phone":"18219112778","province":"广东省","area":"蓬江区","city":"江门市","address":"。。。","department_id":81,"outsider":2,"receive":1,"pay":"paid","state":1,"status":2}]}}
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"total":1,"per_page":"20","current_page":1,"last_page":1,"data":[{"order_id":233,"money":"6.0","used":2,"ordering_date":"2020-02-15","dinner":"午餐","canteen":"11楼饭堂","username":"宁晓晓","phone":"18219112778","province":"广东省","area":"蓬江区","city":"江门市","address":"。。。","department_id":81,"outsider":2,"receive":1,"pay":"paid","state":1,"status":2,"consumption_type":one}]}}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
      * @apiSuccess (返回参数说明) {String} msg 信息描述
      * @apiSuccess (返回参数说明) {int} total 数据总数
@@ -45,6 +45,7 @@ class Takeout extends BaseController
      * @apiSuccess (返回参数说明) {string} phone 用户手机号
      * @apiSuccess (返回参数说明) {float} money 金额
      * @apiSuccess (返回参数说明) {string} dinner 餐次
+     * @apiSuccess (返回参数说明) {string} consumption_type  消费类型：one : 一次性消费;more 逐次消费
      * @apiSuccess (返回参数说明) {string} outsider 是否外来人员订单 1：是；2｜否
      * @apiSuccess (返回参数说明) {int} status 订单状态：1:已经支付；2：已取消；3：已接单；4:已完成 ;5:已退回
      */
@@ -67,7 +68,7 @@ class Takeout extends BaseController
      * @api {GET} /api/v1/order/takeoutStatistic/official  微信端-外卖管理-订单列表
      * @apiGroup  CMS管理端
      * @apiVersion 3.0.0
-     * @apiDescription CMS管理端-外卖管理-订单列表
+     * @apiDescription 微信端-外卖管理-订单列表
      * @apiExample {get}  请求样例:
      * http://canteen.tonglingok.com/api/v1/order/takeoutStatistic/official?ordering_date=2019-09-07&page=1&size=20&dinner_id=0&status=1
      * @apiParam (请求参数说明) {int} page 当前页码
@@ -75,7 +76,7 @@ class Takeout extends BaseController
      * @apiParam (请求参数说明) {string} dinner_id  餐次id：全部传0
      * @apiParam (请求参数说明) {string} department_id  部门id，全部传0
      * @apiParam (请求参数说明) {string} ordering_date  订餐日期
-     * @apiParam (请求参数说明) {int} status  状态：3：已接单；4:已完成 ;6 全部
+     * @apiParam (请求参数说明) {int} status  状态：0 全部；2：未接单；3：已接单；4:已完成 ;
      * @apiSuccessExample {json}返回样例:
      * {"msg":"ok","errorCode":0,"code":200,"data":{"total":1,"per_page":"20","current_page":1,"last_page":1,"data":[{"order_id":233,"province":"广东省","city":"江门市","area":"蓬江区","address":"。。。","username":"小新","phone":"18219112778","used":2,"count":2,"money":"12.00","delivery_fee":"0.00","foods":[{"o_id":233,"name":"肉2","price":"1.0","count":1},{"o_id":233,"name":"肉","price":"1.0","count":1}]}]}}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
@@ -154,9 +155,11 @@ class Takeout extends BaseController
      * @apiDescription 微信端-外卖管理-确认送达订单
      * @apiExample {post}  请求样例:
      *    {
-     *       "id": 1
+     *       "id": 1,
+     *       "consumption_type": "one"
      *     }
-     * @apiParam (请求参数说明) {string} ids  订单id
+     * @apiParam (请求参数说明) {string} id  订单id
+     * @apiParam (请求参数说明) {string} consumption_type  订单类型：one 一次扣费；more 多次扣费
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
@@ -165,7 +168,8 @@ class Takeout extends BaseController
     public function used()
     {
         $order_id = Request::param('id');
-        (new OrderService())->used($order_id);
+        $consumptionType = Request::param('consumption_type');
+        (new OrderService())->used($order_id,$consumptionType);
         return json(new SuccessMessage());
     }
 
@@ -175,20 +179,23 @@ class Takeout extends BaseController
      * @apiVersion 3.0.0
      * @apiDescription  微信端--外卖管理--获取打印订单的信息
      * @apiExample {get}  请求样例:
-     * http://canteen.tonglingok.com/api/v1/order/info/print?order_id=8
+     * http://canteen.tonglingok.com/api/v1/order/info/print?order_id=8&consumption_type=one
      * @apiParam (请求参数说明) {int} order_id 订单id
+     * @apiParam (请求参数说明) {int} consumption_type 消费类型：one 一次性消费；more 逐次消费
      * @apiSuccessExample {json} 返回样例:
-     * {"msg":"ok","errorCode":0,"code":200,"data":{"id":8,"count":2,"address_id":1,"d_id":6,"type":2,"money":2,"sub_money":2,"delivery_fee":2,"create_time":"2019-09-09 16:34:15","hidden":2,"foods":[{"detail_id":5,"o_id":8,"food_id":1,"count":1,"name":"菜品1","price":"5.0"},{"detail_id":6,"o_id":8,"food_id":3,"count":1,"name":"菜品2","price":"5.0"}],"address":{"id":1,"province":"广东省","city":"江门市","area":"蓬江区","address":"江门市白石大道东4号路3栋","name":"张三","phone":"18956225230","sex":1}}}
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"id":33046,"address_id":924,"d_id":239,"type":2,"count":1,"delivery_fee":"0.20","create_time":"2020-08-28 23:02:11","remark":"","ordering_type":"personal_choice","dinner":"午餐","hidden":2,"foods":[{"detail_id":23211,"o_id":33046,"food_id":762,"count":1,"name":"cece","price":"5.01"}],"address":{"id":924,"province":"广东省","city":"广州市","area":"蓬江区","address":"五邑大学","name":"陈思琪","phone":"13794247582","sex":1},"sub":[{"id":33049,"order_id":33046,"order_sort":1,"count":1,"money":"5.01"}]}}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
      * @apiSuccess (返回参数说明) {String} msg 信息描述
      * @apiSuccess (返回参数说明) {int} id 订单id
      * @apiSuccess (返回参数说明) {int} count 订单份数
-     * @apiSuccess (返回参数说明) {int} money 订单基本金额
-     * @apiSuccess (返回参数说明) {int} sub_money 附加金额
      * @apiSuccess (返回参数说明) {int} delivery_fee 配送费
      * @apiSuccess (返回参数说明) {int} hidden 是否隐藏订单明细价格：1｜隐藏；2｜不隐藏
      * @apiSuccess (返回参数说明) {obj} foods 菜品信息
      * @apiSuccess (返回参数说明) {int} count 数量
+     * @apiSuccess (返回参数说明) {obj} sub 子订单信息
+     * @apiSuccess (返回参数说明) {int} consumption_sort 份数排序
+     * @apiSuccess (返回参数说明) {int} money 子订单基本金额
+     * @apiSuccess (返回参数说明) {int} sub_money 子订单附加金额
      * @apiSuccess (返回参数说明) {string} name 名称
      * @apiSuccess (返回参数说明) {int} price 价格
      * @apiSuccess (返回参数说明) {obj} address 地址信息
@@ -204,7 +211,8 @@ class Takeout extends BaseController
     public function infoToPrint()
     {
         $id = Request::param('order_id');
-        $info = (new OrderStatisticService())->infoToPrint($id);
+        $consumptionType = Request::param('consumption_type');
+        $info = (new OrderStatisticService())->infoToPrint($id, $consumptionType);
         return json(new SuccessMessageWithData(['data' => $info]));
     }
 
@@ -215,11 +223,13 @@ class Takeout extends BaseController
      * @apiDescription CMS管理端-外卖管理-订单操作
      * @apiExample {post}  请求样例:
      *    {
-     *       "ids": "1,2,3",
+     *       "one_ids": "1,2,3",
+     *       "more_ids": "1,2,3",
      *       "canteen_id": 1,
      *       "type": 1,
      *     }
-     * @apiParam (请求参数说明) {string} ids  订单id列表，用逗号分隔
+     * @apiParam (请求参数说明) {string} one_ids  一次消费订单id列表，用逗号分隔
+     * @apiParam (请求参数说明) {string} more_ids  逐次消费订单id列表，用逗号分隔
      * @apiParam (请求参数说明) {int} canteen_id  饭堂id
      * @apiParam (请求参数说明) {int} type  操作类型：1：接单；2：接单并打印；3：仅打印；4：退回订单
      * @apiSuccessExample {json} 返回样例:
@@ -229,11 +239,12 @@ class Takeout extends BaseController
      */
     public function handel()
     {
-        $orderId = Request::param('ids');
+        $oneId = Request::param('one_ids');
+        $moreId = Request::param('more_ids');
         $type = Request::param('type');
         $canteenID = Request::param('canteen_id');
 
-        (new  TakeoutService())->handelOrder($orderId, $type,$canteenID);
+        (new  TakeoutService())->handelOrder($oneId,$moreId, $type, $canteenID);
         return json(new SuccessMessage());
     }
 

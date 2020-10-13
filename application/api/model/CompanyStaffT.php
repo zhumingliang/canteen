@@ -14,6 +14,11 @@ class CompanyStaffT extends Model
         return $this->hasOne('StaffQrcodeT', 's_id', 'id');
     }
 
+    public function card()
+    {
+        return $this->hasOne('StaffCardT', 'staff_id', 'id');
+    }
+
     public function canteen()
     {
         return $this->belongsTo('CanteenT', 'c_id', 'id');
@@ -117,6 +122,11 @@ class CompanyStaffT extends Model
     {
         return self::where('company_id', $company_id)
             ->where('state', CommonEnum::STATE_IS_OK)
+            ->with([
+                'card' => function ($query) {
+                    $query->field('id,staff_id,card_code')->whereIn('state', '1,2');
+                }
+            ])
             ->select();
     }
 

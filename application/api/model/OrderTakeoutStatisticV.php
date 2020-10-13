@@ -84,7 +84,7 @@ class OrderTakeoutStatisticV extends Model
             })
             ->where('pay', PayEnum::PAY_SUCCESS)
             ->hidden(['create_time', 'canteen_id', 'company_id', 'dinner_id', 'state', 'receive', 'used', 'pay'])
-            ->order('used DESC')
+            ->order('dinner,order_id')
             ->paginate($size, false, ['page' => $page])->toArray();
         return $list;
     }
@@ -145,7 +145,6 @@ class OrderTakeoutStatisticV extends Model
                                              $ordering_date, $dinner_id, $status, $department_id, $canteen_id)
     {
         $list = self::where('canteen_id', $canteen_id)
-
             ->where('ordering_date', $ordering_date)
             ->where(function ($query) use ($status) {
                 if ($status == OrderEnum::STATUS_RECEIVE) {
@@ -155,10 +154,10 @@ class OrderTakeoutStatisticV extends Model
                         ->where('used', CommonEnum::STATE_IS_FAIL);
                 } elseif ($status == OrderEnum::STATUS_COMPLETE) {
                     $query->where('used', CommonEnum::STATE_IS_OK);
-                } else {
+                } else if ($status == OrderEnum::STATUS_UN_RECEIVE) {
                     $query->where('state', CommonEnum::STATE_IS_OK)
                         ->where('pay', 'paid')
-                        ->where('receive', CommonEnum::STATE_IS_OK);
+                        ->where('receive', CommonEnum::STATE_IS_FAIL);
                 }
             })
             ->where(function ($query) use ($dinner_id) {
@@ -177,7 +176,7 @@ class OrderTakeoutStatisticV extends Model
                         ->field('o_id,name,price,count');
                 }
             ])
-            ->field('order_id,province,city,area,address,address_username as username,address_phone as phone,used,count,money,delivery_fee,used_time,canteen_id')
+            ->field('order_id,province,city,area,address,address_username as username,address_phone as phone,used,count,money,delivery_fee,canteen_id,consumption_type,receive')
             ->order('used DESC')
             ->paginate($size, false, ['page' => $page])->toArray();
         return $list;

@@ -4,8 +4,10 @@
 namespace app\api\service;
 
 
+use app\api\job\UploadExcel;
 use app\api\model\CompanyStaffT;
 use app\api\model\DinnerV;
+use app\api\model\OrderParentT;
 use app\api\model\OrderT;
 use app\api\model\PayT;
 use app\api\model\RechargeCashT;
@@ -74,6 +76,10 @@ class WalletService
             if (!in_array($v[0] . '&' . $v[1], $newStaffs)) {
                 array_push($fail, '第' . $k . '行数据有问题');
             }
+            $money = trim($v[3]);
+            if ($money == '') {
+                array_push($fail, '第' . $k . '行数据有问题');
+            }
         }
         return $fail;
 
@@ -96,6 +102,7 @@ class WalletService
         $isPushed = Queue::push($jobHandlerClassName, $jobData, $jobQueueName);
         //将该任务推送到消息队列
         if ($isPushed == false) {
+            (new UploadExcel())->clearUploading($company_id, $u_id, $type);
             throw new SaveException(['msg' => '上传excel失败']);
         }
     }
@@ -527,12 +534,19 @@ class WalletService
         return $status;
     }
 
-    public function paySuccess($order_id, $order_type)
+    public function paySuccess($order_id, $order_type, $times)
     {
-        if ($order_type == "canteen") {
-            OrderT::update([
+        if ($times == 'one') {
+            if ($order_type == "canteen") {
+                OrderT::update([
+                    'pay' => 'paid'
+                ], ['id' => $order_id]);
+            }
+        } else if ($times == 'more') {
+            OrderParentT::update([
                 'pay' => 'paid'
             ], ['id' => $order_id]);
         }
+
     }
 }

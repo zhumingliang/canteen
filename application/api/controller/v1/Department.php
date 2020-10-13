@@ -154,7 +154,9 @@ class Department extends BaseController
      *       "code": "123456",
      *       "username": "张三",
      *       "phone": "18956225230"
-     *       "card_num": "1212121"
+     *       "card_num": "1212121",
+     *       "birthday": "1990-10-01"
+     *       "face_code":12345
      *     }
      * @apiParam (请求参数说明) {int}  company_id 企业id
      * @apiParam (请求参数说明) {string}  canteens json字符串,归属饭堂id列表
@@ -164,6 +166,8 @@ class Department extends BaseController
      * @apiParam (请求参数说明) {string} username  姓名
      * @apiParam (请求参数说明) {string} phone  手机号
      * @apiParam (请求参数说明) {string} card_num  卡号
+     * @apiParam (请求参数说明) {string} birthday  生日
+     * @apiParam (请求参数说明) {string} face_code  人脸识别id
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
@@ -192,6 +196,8 @@ class Department extends BaseController
      *       "username": "张三",
      *       "phone": "18956225230"
      *       "card_num": "1212121"
+     *       "birthday": "1990-10-01"
+     *       "face_code": "121212"
      *       "expiry_date": "2019-08-03 15:48:03"
      *     }
      * @apiParam (请求参数说明) {int} id 员工id
@@ -202,6 +208,8 @@ class Department extends BaseController
      * @apiParam (请求参数说明) {string} code  员工编号
      * @apiParam (请求参数说明) {string} username  姓名
      * @apiParam (请求参数说明) {string} phone  手机号
+     * @apiParam (请求参数说明) {string} face_code  人脸识别id
+     * @apiParam (请求参数说明) {string} birthday  生日
      * @apiParam (请求参数说说明) {string} expiry_date  二维码有效期
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200}
@@ -210,7 +218,7 @@ class Department extends BaseController
      */
     public function updateStaff()
     {
-        $params = Request::only('id,canteens,cancel_canteens,d_id,t_id,code,username,phone,card_num,expiry_date');
+        $params = Request::only('id,canteens,cancel_canteens,d_id,t_id,code,username,phone,card_num,expiry_date,birthday,card_num,face_code');
         (new DepartmentService())->updateStaff($params);
         return json(new SuccessMessage());
     }
@@ -271,14 +279,19 @@ class Department extends BaseController
      * @apiSuccess (返回参数说明) {string} username 姓名
      * @apiSuccess (返回参数说明) {string} phone 手机号
      * @apiSuccess (返回参数说明) {string} card_num 卡号
+     * @apiSuccess (返回参数说明) {string} birthday 生日
      * @apiSuccess (返回参数说明) {string} expiry_date 二维码有效期
      * @apiSuccess (返回参数说明) {string} url 二维码地址
      * @apiSuccess (返回参数说明) {int} q_id 二维码id
      * @apiSuccess (返回参数说明) {string} create_time 创建时间
      * @apiSuccess (返回参数说明) {obj} canteens  所属饭堂
-     * @apiSuccess (返回参数说明) {obj} canteens|info  饭堂信息
-     * @apiSuccess (返回参数说明) {string} info|id  饭堂id
-     * @apiSuccess (返回参数说明) {string} info|name  饭堂名称
+     * @apiSuccess (返回参数说明) {obj} info  饭堂信息
+     * @apiSuccess (返回参数说明) {string} id  饭堂id
+     * @apiSuccess (返回参数说明) {string} name  饭堂名称
+     * @apiSuccess (返回参数说明) {string} face_code  人脸识别id
+     * @apiSuccess (返回参数说明) {obj} card  会员卡信息
+     * @apiSuccess (返回参数说明) {string} card_num  卡号
+     * @apiSuccess (返回参数说明) {int} state  卡号状态：1:正常；2:挂失；3:注销
      */
     public function staffs($page = 1, $size = 10)
     {
@@ -291,26 +304,29 @@ class Department extends BaseController
     }
 
     /**
-     * @api {POST} /api/v1/department/staff/delete CMS管理端-删除员工
+     * @api {POST} /api/v1/department/staff/handle CMS管理端-员工状态修改
      * @apiGroup   CMS
      * @apiVersion 3.0.0
-     * @apiDescription  CMS管理端-删除员工
+     * @apiDescription  CMS管理端-员工状态修改
      * @apiExample {post}  请求样例:
      *    {
-     *       "id": 1
+     *       "id": 1,
+     *       "state": 1
      *     }
      * @apiParam (请求参数说明) {string} id  员工id
+     * @apiParam (请求参数说明) {string} state  员工状态 :1 启用；2：停用;3 删除
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
      * @apiSuccess (返回参数说明) {string} msg 信息描述
      */
-    public function deleteStaff()
+    public function handleStaff()
     {
         $id = Request::param('id');
-        $staff = CompanyStaffT::update(['state' => CommonEnum::STATE_IS_FAIL], ['id' => $id]);
+        $state = Request::param('state');
+        $staff = CompanyStaffT::update(['state' =>$state], ['id' => $id]);
         if (!$staff) {
-            throw  new DeleteException();
+            throw  new UpdateException();
         }
         return json(new SuccessMessage());
     }

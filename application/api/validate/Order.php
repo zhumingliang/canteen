@@ -46,7 +46,7 @@ class Order extends BaseValidate
         'consumptionRecords' => ['consumption_time'],
         'managerOrders' => ['canteen_id', 'consumption_time'],
         'managerDinnerStatistic' => ['dinner_id', 'consumption_time'],
-        'orderUsersStatistic' => ['dinner_id', 'consumption_time', 'consumption_type'],
+        'orderUsersStatistic' => ['consumption_time'],
         'foodUsersStatistic' => ['dinner_id', 'food_id', 'consumption_time'],
         'handelOrderedNoMeal' => ['dinner_id', 'consumption_time'],
         'orderStatistic' => ['company_ids', 'time_begin', 'time_end'],

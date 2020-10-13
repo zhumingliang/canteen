@@ -53,6 +53,8 @@ class OrderEnum
 
     const STATUS_RECEIVE = 3;
 
+    const STATUS_UN_RECEIVE = 2;
+
     const STATUS_COMPLETE = 4;
 
     const STATUS_REFUND = 5;

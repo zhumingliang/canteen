@@ -19,10 +19,14 @@ class CompanyStaffV extends BaseModel
         return $this->hasMany('StaffCanteenT', 'staff_id', 'id');
     }
 
+    public function card()
+    {
+        return $this->hasOne('StaffCardT', 'staff_id', 'id');
+    }
+
     public static function companyStaffs($page, $size, $c_id, $d_id)
     {
         $list = self::where('company_id', '=', $c_id)
-            ->where('state', CommonEnum::STATE_IS_OK)
             ->where(function ($query) use ($d_id) {
                 if ($d_id) {
                     $query->where('d_id', '=', $d_id);
@@ -35,9 +39,11 @@ class CompanyStaffV extends BaseModel
                     }])
                         ->field('id,staff_id,canteen_id')
                         ->where('state', '=', CommonEnum::STATE_IS_OK);
+                },
+                'card' => function ($query) {
+                    $query->field('id,staff_id,card_code,state');
                 }
             ])
-            ->hidden(['company_id', 'state'])
             ->order('id desc')
             ->paginate($size, false, ['page' => $page]);
         return $list;
@@ -62,7 +68,7 @@ class CompanyStaffV extends BaseModel
                         ->where('state', '=', CommonEnum::STATE_IS_OK);
                 }
             ])
-            ->field('id,company,department,state,type,code,username,phone,card_num')
+            ->field('id,company,department,state,type,code,username,phone,card_num,birthday,face_code')
             ->order('create_time desc')
             ->select()->toArray();
         return $list;
@@ -119,9 +125,11 @@ class CompanyStaffV extends BaseModel
                     }])
                         ->field('id,staff_id,canteen_id')
                         ->where('state', '=', CommonEnum::STATE_IS_OK);
+                }, 'card' => function ($query) {
+                    $query->field('id,staff_id,card_code,state');
                 }
+
             ])
-            ->hidden(['company_id', 'state'])
             ->order('id desc')
             ->paginate($size, false, ['page' => $page]);
         return $list;

@@ -9,6 +9,7 @@ use app\api\model\CompanyStaffT;
 use app\api\model\DinnerT;
 use app\api\model\MachineT;
 use app\api\model\OrderingV;
+use app\api\model\OrderSubT;
 use app\api\model\OrderT;
 use app\api\model\ShopOrderQrcodeT;
 use app\api\model\ShopOrderT;
@@ -440,7 +441,7 @@ class ConsumptionService
         return $dinner;
     }
 
-    public function confirmOrder($orderID)
+    public function confirmOrder($orderID, $consumptionType)
     {
         $phone = Token::getCurrentPhone();
         $canteenID = Token::getCurrentTokenVar('current_canteen_id');
@@ -455,9 +456,17 @@ class ConsumptionService
             'in_takeCode' => $takeCode,
             'in_qrcodeUrl' => $qrcodeUrl,
         ];
-        Db::query('call canteenConsumptionWX(:in_orderID,:in_userPhone,:in_readyCode,
+        if ($consumptionType == 'one') {
+            Db::query('call canteenConsumptionWX(:in_orderID,:in_userPhone,:in_readyCode,
         :in_takeCode,:in_qrcodeUrl,@resCode,@resMessage,@returnDinnerID)',
-            $data);
+                $data);
+        } else {
+
+            Db::query('call canteenConsumptionTimesMoreWX(:in_orderID,:in_userPhone,:in_readyCode,
+        :in_takeCode,:in_qrcodeUrl,@resCode,@resMessage,@returnDinnerID)',
+                $data);
+        }
+
         $resultSet = Db::query('select @resCode,@resMessage,@returnDinnerID');
         $errorCode = $resultSet[0]['@resCode'];
         $resMessage = $resultSet[0]['@resMessage'];
@@ -470,14 +479,19 @@ class ConsumptionService
         }
         $sortCode = $this->saveRedisOrderCode($canteenID, $returnDinnerID, $orderID);
         //推送消息给显示器
-        $this->sortTask($canteenID, $outsider, $orderID, $sortCode);
+        $this->sortTask($canteenID, $outsider, $orderID, $sortCode, $consumptionType);
         //启动打印机打印信息
-        $printRes = (new Printer())->printOrderDetail($canteenID, $orderID, $sortCode);
+        $printRes = (new Printer())->printOrderDetail($canteenID, $orderID, $sortCode, $consumptionType);
         if ($printRes) {
             $updateData = ['print' => CommonEnum::STATE_IS_OK];
         }
         $updateData['sort_code'] = $sortCode;
-        OrderT::update($updateData, ['id' => $orderID]);
+        if ($consumptionType == 'one') {
+            OrderT::update($updateData, ['id' => $orderID]);
+
+        } else {
+            OrderSubT::update($updateData, ['id' => $orderID]);
+        }
         return [
             'sortCode' => $sortCode
         ];
@@ -520,28 +534,8 @@ class ConsumptionService
 
 
     public function sortTask($canteenID, $outsider,
-                             $orderID, $sortCode)
+                             $orderID, $sortCode, $consumptionType)
     {
-
-        /*        $canteenID = $data['canteenID'];
-                $outsider = $data['outsider'];
-                $orderID = $data['orderID'];
-                $sortCode = $data['sortCode'];
-                $websocketCode = $data['websocketCode'];*/
-        /*  $machine = MachineT::getSortMachine($canteenID, $outsider);
-          if ($machine) {
-              $sendData = [
-                  'errorCode' => 0,
-                  'msg' => 'success',
-                  'type' => 'sort',
-                  'data' => [
-                      'orderID' => $orderID,
-                      'sortCode' => $sortCode,
-                      'websocketCode' => 111
-                  ]
-              ];
-              GatewayService::sendToMachine($machine->id, json_encode($sendData));*/
-
 
         $websocketCode = $this->saveRedisSortCode();
         $jobHandlerClassName = 'app\api\job\SendSort';//负责处理队列任务的类
@@ -549,6 +543,7 @@ class ConsumptionService
         $jobData = [
             'canteenID' => $canteenID,
             'outsider' => $outsider,
+            'consumptionType' => $consumptionType,
             'orderID' => $orderID,
             'sortCode' => $sortCode,
             'websocketCode' => $websocketCode

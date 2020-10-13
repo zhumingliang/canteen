@@ -79,12 +79,12 @@ class SendSort
     {
         try {
             $canteenID = $data['canteenID'];
-             $outsider = $data['outsider'];
+            $outsider = $data['outsider'];
             $orderID = $data['orderID'];
             $sortCode = $data['sortCode'];
             $websocketCode = $data['websocketCode'];
-            $order = OrderT::get($orderID);
-            //$outsider = $order->outsider;
+            $consumptionType = $data['consumptionType'];
+
             $machine = MachineT::getSortMachine($canteenID, $outsider);
             if ($machine) {
                 $sendData = [
@@ -94,11 +94,12 @@ class SendSort
                     'data' => [
                         'orderID' => $orderID,
                         'sortCode' => $sortCode,
-                        'websocketCode' => $websocketCode
+                        'websocketCode' => $websocketCode,
+                        'consumptionType' => $consumptionType
                     ]
                 ];
                 GatewayService::sendToMachine($machine->id, json_encode($sendData));
-
+                LogService::saveJob('成功发送排序：'.json_encode($sendData));
             }
         } catch (Exception $e) {
             LogService::saveJob("发送排序失败：error:" . $e->getMessage(), json_encode($data));

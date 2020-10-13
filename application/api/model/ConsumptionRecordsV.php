@@ -43,14 +43,19 @@ class ConsumptionRecordsV extends Model
         return $records;
     }
 
-    public static function recordsByPhone($phone,$canteen_id, $consumption_time, $page, $size)
+    public static function recordsByPhone($phone, $canteen_id, $company_id, $consumption_time, $page, $size)
     {
         $consumption_time = strtotime($consumption_time);
         $consumption_time = Date::mFristAndLast(date('Y', $consumption_time), date('m', $consumption_time));
         $time_begin = $consumption_time['fist'];
         $time_end = $consumption_time['last'];
         $records = self::where('phone', $phone)
-            ->where('location_id', $canteen_id)
+            ->where(function ($query) use ($canteen_id, $company_id) {
+                $query->where('location_id', $canteen_id)
+                    ->whereOr(function ($query2) use ($company_id) {
+                        $query2->where('order_type', 'shop')->where('company_id', $company_id);
+                    });
+            })
             ->where('ordering_date', '>=', $time_begin)
             ->where('ordering_date', '<=', $time_end)
             ->hidden(['u_id', 'location_id', 'dinner_id'])
@@ -82,8 +87,8 @@ class ConsumptionRecordsV extends Model
         $time_end = $consumption_time['last'];
         $money = self::where('phone', $phone)
             ->whereIn('order_type', 'canteen,shop')
-            ->where('ordering_date',">=", $time_begin)
-            ->where('ordering_date',"<=", $time_end)
+            ->where('ordering_date', ">=", $time_begin)
+            ->where('ordering_date', "<=", $time_end)
             ->sum('money');
         return 0 - $money;
 

@@ -8,6 +8,7 @@ use app\api\model\AdminT;
 use app\api\model\CompanyT;
 use app\api\model\PayWxConfigT;
 use app\api\model\ShopT;
+use app\api\model\StaffCardV;
 use app\api\model\StaffV;
 use app\lib\enum\AdminEnum;
 use app\lib\enum\CanteenEnum;
@@ -17,6 +18,7 @@ use app\lib\exception\SaveException;
 use think\Db;
 use think\Exception;
 use function GuzzleHttp\Promise\each_limit;
+use function GuzzleHttp\Psr7\str;
 
 class CompanyService
 {
@@ -288,6 +290,47 @@ class CompanyService
         $company->save();
         return ['url' => config('setting.image') . $url];
     }
+
+    public function consumptionType($company_id)
+    {
+        $company = CompanyT::where('id', $company_id)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->find();
+        if (!$company_id) {
+            throw  new AuthException(['msg' => '企业不存在']);
+        }
+        if (!strlen($company->consumption_type)) {
+            $company->consumption_type = "qrcode";
+            $company->save();
+            return ['consumptionType' => "qrcode"];
+        }
+        return ['consumptionType' => $company->consumption_type];
+
+    }
+
+    public function updateConsumptionType($company_id, $consumption_type)
+    {
+        CompanyT::update(['consumption_type' => $consumption_type], ['id' => $company_id]);
+    }
+
+    public function checkConsumptionContainsCard($company_id)
+    {
+        $company = CompanyT::where('id', $company_id)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->find();
+        if (empty($company_id)) {
+            throw  new AuthException(['msg' => '企业不存在']);
+        }
+        if (!strlen($company->consumption_type)) {
+            $company->consumption_type = "qrcode";
+            $company->save();
+            return false;
+        }
+        $arr = explode(',', $company->consumption_type);
+        return in_array('card', $arr);
+    }
+
+
 
 
 }

@@ -20,7 +20,7 @@ Route::rule('api/:version/token/machine', 'api/:version.Token/getMachineToken');
 Route::rule('api/:version/token/login/out', 'api/:version.Token/loginOut');
 Route::post('api/:version/token/supplier', 'api/:version.Token/getSupplierToken');
 
-Route::post('api/:version/module/system/save', 'api/:version.Module/saveSystem');
+Route::post('api/:version/module/system/save', 'api/:version.Module/saveSystem');;
 Route::post('api/:version/module/system/canteen/save', 'api/:version.Module/saveSystemCanteen');
 Route::post('api/:version/module/system/shop/save', 'api/:version.Module/saveSystemShop');
 Route::post('api/:version/module/system/handel', 'api/:version.Module/handelSystem');
@@ -44,6 +44,9 @@ Route::get('api/:version/manager/companies', 'api/:version.Company/managerCompan
 Route::get('api/:version/user/companies', 'api/:version.Company/userCompanies');
 Route::get('api/:version/admin/companies', 'api/:version.Company/adminCompanies');
 Route::get('api/:version/company/qrcode', 'api/:version.Company/getOutQRCode');
+Route::get('api/:version/company/consumptionType', 'api/:version.Company/consumptionType');
+Route::post('api/:version/company/consumptionType/update', 'api/:version.Company/updateConsumptionType');
+
 
 Route::post('api/:version/canteen/save', 'api/:version.Canteen/save');
 Route::post('api/:version/canteen/dinner/delete', 'api/:version.Canteen/deleteDinner');
@@ -68,6 +71,7 @@ Route::get('api/:version/canteen/check/confirm', 'api/:version.Canteen/checkConf
 Route::get('api/:version/canteen/diningMode', 'api/:version.Canteen/diningMode');
 Route::get('api/:version/machines/company', 'api/:version.Canteen/companyMachines');
 Route::get('api/:version/machines', 'api/:version.Canteen/machines');
+Route::get('api/:version/consumption/place', 'api/:version.Canteen/consumptionPlace');
 
 Route::post('api/:version/printer/save', 'api/:version.Printer/save');
 Route::post('api/:version/printer/update', 'api/:version.Printer/update');
@@ -98,7 +102,7 @@ Route::get('api/:version/department/staffs/recharge', 'api/:version.Department/s
 Route::get('api/:version/admin/departments', 'api/:version.Department/adminDepartments');
 Route::post('api/:version/department/staff/save', 'api/:version.Department/addStaff');
 Route::post('api/:version/department/staff/update', 'api/:version.Department/updateStaff');
-Route::post('api/:version/department/staff/delete', 'api/:version.Department/deleteStaff');
+Route::post('api/:version/department/staff/handle', 'api/:version.Department/handleStaff');
 Route::post('api/:version/department/staff/upload', 'api/:version.Department/uploadStaffs');
 Route::post('api/:version/department/staff/move', 'api/:version.Department/moveStaffDepartment');
 Route::get('api/:version/staffs', 'api/:version.Department/staffs');
@@ -154,6 +158,19 @@ Route::get('api/:version/reception/receptionsForApplyOutput', 'api/:version.Rece
 Route::get('api/:version/reception/applySubmitted', 'api/:version.Reception/applySubmitted');
 Route::get('api/:version/reception/applyDetails', 'api/:version.Reception/applyDetails');
 
+Route::post('api/:version/pos/login', 'api/:version.Pos/login');
+Route::get('api/:version/pos/getTotalRecords', 'api/:version.Pos/getTotalRecords');
+Route::get('api/:version/pos/getStaffInfo', 'api/:version.Pos/getStaffInfo');
+Route::get('api/:version/pos/getAccounts', 'api/:version.Pos/getAccounts');
+Route::post('api/:version/pos/consume', 'api/:version.Pos/consume');
+Route::post('api/:version/pos/refund', 'api/:version.Pos/refund');
+Route::post('api/:version/pos/bindingCard', 'api/:version.Pos/bindingCard');
+Route::get('api/:version/pos/getCardInfo', 'api/:version.Pos/getCardInfo');
+Route::post('api/:version/pos/loss', 'api/:version.Pos/loss');
+Route::post('api/:version/pos/cancel', 'api/:version.Pos/cancel');
+Route::post('api/:version/pos/recover', 'api/:version.Pos/recover');
+Route::get('api/:version/pos/machine', 'api/:version.Pos/machine');
+
 Route::rule('api/:version/weixin/server', 'api/:version.WeiXin/server');
 Route::rule('api/:version/weixin/menu/save', 'api/:version.WeiXin/createMenu');
 
@@ -176,7 +193,9 @@ Route::get('api/:version/order/personalChoice/info', 'api/:version.Order/persona
 Route::post('api/:version/order/cancel', 'api/:version.Order/orderCancel');
 Route::post('api/:version/order/cancel/manager', 'api/:version.Order/managerOrderCancel');
 Route::post('api/:version/order/changeCount', 'api/:version.Order/changeOrderCount');
+Route::post('api/:version/order/changeCount/more', 'api/:version.Order/changeOrderCountToConsumptionMore');
 Route::post('api/:version/order/changeFoods', 'api/:version.Order/changeOrderFoods');
+Route::post('api/:version/order/changeFoods/more', 'api/:version.Order/changeOrderFoodsToConsumptionMore');
 Route::post('api/:version/order/changeAddress', 'api/:version.Order/changeOrderAddress');
 Route::post('api/:version/order/handelOrderedNoMeal', 'api/:version.Order/handelOrderedNoMeal');
 Route::get('api/:version/order/userOrderings', 'api/:version.Order/userOrderings');
@@ -191,6 +210,7 @@ Route::get('api/:version/order/foodUsersStatistic', 'api/:version.Order/foodUser
 Route::get('api/:version/order/orderStatistic', 'api/:version.Order/orderStatistic');
 Route::get('api/:version/order/orderStatistic/export', 'api/:version.Order/exportOrderStatistic');
 Route::get('api/:version/order/orderStatistic/detail', 'api/:version.Order/orderStatisticDetail');
+Route::get('api/:version/order/orderStatistic/detail/info', 'api/:version.Order/orderStatisticDetailInfo');
 Route::get('api/:version/order/orderStatistic/detail/export', 'api/:version.Order/exportOrderStatisticDetail');
 Route::get('api/:version/order/orderSettlement', 'api/:version.Order/orderSettlement');
 Route::get('api/:version/order/orderSettlement/export', 'api/:version.Order/exportOrderSettlement');
@@ -286,3 +306,19 @@ Route::rule('api/:version/service/printer', 'api/:version.Service/printer');
 Route::post('api/:version/outsider/save', 'api/:version.Outsider/saveCanteen');
 Route::get('api/:version/outsiders', 'api/:version.Outsider/outsiders');
 Route::get('api/:version/outsider', 'api/:version.Outsider/outsider');
+
+Route::post('api/:version/face/receiveFaceData', 'api/:version.Face/receiveFaceData');
+Route::get('api/:version/face/getFaceData', 'api/:version.Face/getFaceData');
+Route::get('api/:version/face/exportFaceData', 'api/:version.Face/exportFaceData');
+
+Route::post('api/:version/notice2/userNotices', 'api/:version.Notice2/userNotices');
+Route::get('api/:version/notice2/notify', 'api/:version.Notice2/notify');
+Route::post('api/:version/notice2/upload', 'api/:version.Notice2/upload');
+Route::post('api/:version/notice2/saveNotice', 'api/:version.Notice2/saveNotice');
+Route::get('api/:version/notice2/receiver', 'api/:version.Notice2/receiver');
+Route::get('api/:version/notice2/Notice', 'api/:version.Notice2/Notice');
+Route::post('api/:version/notice2/updateNotice', 'api/:version.Notice2/updateNotice');
+
+Route::get('api/:version/card/staffs', 'api/:version.CardManager/staffs');
+Route::post('api/:version/staff/card/bind', 'api/:version.CardManager/bind');
+Route::post('api/:version/staff/card/handle', 'api/:version.CardManager/handle');
