@@ -42,6 +42,7 @@ use app\lib\exception\ParameterException;
 use app\lib\exception\SaveException;
 use app\lib\exception\SuccessMessage;
 use app\lib\exception\SuccessMessageWithData;
+use app\lib\Num;
 use app\lib\printer\Printer;
 use think\Db;
 use think\db\Where;

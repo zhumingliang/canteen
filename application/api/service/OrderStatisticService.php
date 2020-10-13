@@ -27,6 +27,7 @@ use app\lib\enum\CommonEnum;
 use app\lib\enum\OrderEnum;
 use app\lib\exception\ParameterException;
 use app\lib\exception\SaveException;
+use app\lib\Num;
 use think\Db;
 use think\Exception;
 use think\Model;
@@ -90,18 +91,6 @@ class OrderStatisticService
 
     private function prefixOrderStatisticDetail($list)
     {
-        $sort = [
-            1 => '一',
-            2 => '二',
-            3 => '三',
-            4 => '四',
-            5 => '五',
-            6 => '六',
-            7 => '七',
-            8 => '八',
-            9 => '九',
-            10 => '十',
-        ];
         $dataList = [];
         foreach ($list as $k => $v) {
             $consumptionType = $v['consumption_type'];
@@ -122,7 +111,7 @@ class OrderStatisticService
                 $data['phone'] = $v['phone'];
                 $data['dinner'] = $v['dinner'];
                 $data['type'] = $v['type'];
-                $data['count'] = $sort[$v['count']] . "份";
+                $data['count'] =Num::numToWord($v['count'])."份";
                 $data['money'] = $v['order_money'];
                 $data['status'] = $this->getStatus($v['ordering_date'], $v['state'], $v['meal_time_end'], $v['used']);
                 $data['foods'] = $detail;
@@ -146,7 +135,7 @@ class OrderStatisticService
                     $data['phone'] = $v['phone'];
                     $data['dinner'] = $v['dinner'];
                     $data['type'] = $v['type'];
-                    $data['count'] = "第" . $sort[$v2['consumption_sort']] . "份";
+                    $data['count'] = "第" . Num::numToWord($v2['consumption_sort']) . "份";
                     $data['money'] = $v2['money'] + $v2['sub_money'];
                     $data['status'] = $this->getStatus($v['ordering_date'], $v2['state'], $v['meal_time_end'], $v2['used']);
                     $data['foods'] = $detail;
@@ -236,29 +225,25 @@ class OrderStatisticService
         $dataList = [];
         if (count($data)) {
             foreach ($data as $k => $v) {
-                if ($v['consumption_type'] == OrderEnum::EAT_OUTSIDER) {
-                    $data[$k]['consumption_type'] = "外卖";
-                } else {
-                    if ($v['type'] == 'recharge') {
-                        $data[$k]['consumption_type'] = "系统补充";
-                    } else if ($v['type'] == 'deduction') {
-                        $data[$k]['consumption_type'] = "系统补扣";
-                    } else if ($v['type'] == 'shop') {
-                        if ($v['money'] > 0) {
-                            $data[$k]['consumption_type'] = "小卖部消费";
-                        } else {
-                            $data[$k]['consumption_type'] = "小卖部退款";
-                        }
+                if ($v['type'] == 'recharge') {
+                    $data[$k]['consumption_type'] = "系统补充";
+                } else if ($v['type'] == 'deduction') {
+                    $data[$k]['consumption_type'] = "系统补扣";
+                } else if ($v['type'] == 'shop') {
+                    if ($v['money'] > 0) {
+                        $data[$k]['consumption_type'] = "小卖部消费";
+                    } else {
+                        $data[$k]['consumption_type'] = "小卖部退款";
+                    }
+                    $data[$k]['money'] = sprintf("%.2f", abs($v['money']));
 
-                    } else if ($v['type'] == 'canteen') {
-                        if ($v['booking'] == CommonEnum::STATE_IS_OK) {
-                            $data[$k]['consumption_type'] = $v['used'] == CommonEnum::STATE_IS_OK ? "订餐就餐" : "订餐未就餐";
-                        } else {
-                            $data[$k]['consumption_type'] = "未订餐就餐";
-                        }
+                } else if ($v['type'] == 'canteen') {
+                    if ($v['booking'] == CommonEnum::STATE_IS_OK) {
+                        $data[$k]['consumption_type'] = $v['used'] == CommonEnum::STATE_IS_OK ? "订餐就餐" : "订餐未就餐";
+                    } else {
+                        $data[$k]['consumption_type'] = "未订餐就餐";
                     }
                 }
-
                 array_push($dataList, [
                     'number' => $k + 1,
                     'used_time' => $v['used_time'],

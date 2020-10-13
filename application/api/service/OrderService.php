@@ -972,9 +972,8 @@ class OrderService extends BaseService
             //检测该餐次是否在订餐时间范围内
             if (!empty($ordering_data)) {
                 foreach ($ordering_data as $k2 => $v2) {
-
                     $orderId = $this->checkOrderParentExits($v2['ordering_date'], $canteen_id, $dinner_id, $phone);
-                    $this->checkOrderCanHandel($v['d_id'], $v2['ordering_date']);
+                    $this->checkOrderCanHandel($dinner_id, $v2['ordering_date']);
 
                     if (!$orderId) {
                         //处理总订单：1.检测订餐日期餐次是否已经订餐；2.生成订单
@@ -2861,6 +2860,7 @@ class OrderService extends BaseService
         }
         $order->address_id = $address_id;
         $order->remark = $remark;
+        $order->update_time=date('Y-m-d H:i:s');
         $res = $order->save();
         if (!$res) {
             throw new UpdateException(['msg' => "修改地址失败"]);
