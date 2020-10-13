@@ -82,7 +82,7 @@ class OrderStatisticV extends Model
             ->field('ordering_date,company,canteen,dinner,sum(count) as count')
             ->where('state', CommonEnum::STATE_IS_OK)
             ->order('ordering_date DESC')
-            ->group('dinner_id')
+            ->group('ordering_date,dinner_id')
             ->select()->toArray();
         return $list;
 

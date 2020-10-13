@@ -111,7 +111,7 @@ class OrderStatisticService
                 $data['phone'] = $v['phone'];
                 $data['dinner'] = $v['dinner'];
                 $data['type'] = $v['type'];
-                $data['count'] =Num::numToWord($v['count'])."份";
+                $data['count'] = Num::numToWord($v['count']) . "份";
                 $data['money'] = $v['order_money'];
                 $data['status'] = $this->getStatus($v['ordering_date'], $v['state'], $v['meal_time_end'], $v['used']);
                 $data['foods'] = $detail;
