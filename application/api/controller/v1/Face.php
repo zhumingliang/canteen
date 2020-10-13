@@ -41,7 +41,7 @@ class Face extends BaseController
             $company_id = $canteenInfo['company_id'];
             $staffID = db('company_staff_t')
                 ->alias('t1')
-                ->leftJoin('canteen_company_department_t t2','t1.d_id = t2.id')
+                ->leftJoin('canteen_company_department_t t2', 't1.d_id = t2.id')
                 ->where('phone', $params['phone'])
                 ->where('company_id', $company_id)
                 ->where('t1.state', CommonEnum::STATE_IS_OK)
@@ -96,7 +96,7 @@ class Face extends BaseController
                     ->where('t1.c_id', $company_id)
                     ->where('t1.state', CommonEnum::STATE_IS_OK)
                     ->where('t2.state', CommonEnum::STATE_IS_OK)
-                    ->where('t2.name', '总订餐查询')
+                    ->where('t2.name', '体温检测通知')
                     ->field('t1.id as id')
                     ->find();
                 if (!empty($midInfo)) {
@@ -117,14 +117,13 @@ class Face extends BaseController
                                 ->field('openid')
                                 ->find();
                             if (!empty($openidInfo)) {
-                                $res = $this->sendRefundTemplate($openidInfo['openid'],$department,$params['name'],$canteen_name, $passTime, $params['temperature']);
+                                $res = $this->sendRefundTemplate($openidInfo['openid'], $department, $params['name'], $canteen_name, date('Y-m-d H:i:s', strtotime($passTime)), $params['temperature']);
                                 if ($res['errcode'] != 0) {
                                     LogService::save(json_encode($res));
                                 }
                             }
                         }
                     }
-
                 }
             }
             $data = ['errorCode' => '100', 'msg' => '操作成功'];
@@ -134,6 +133,16 @@ class Face extends BaseController
             $data = ['errorCode' => '200', 'msg' => '调用失败'];
         }
         return json($data);
+    }
+
+    /* 毫秒时间戳转换成日期 */
+    private function msecdate($time)
+    {
+        $tag = 'Y-m-d H:i:s';
+        $a = substr($time, 0, 10);
+        $b = substr($time, 10);
+        $date = date($tag, $a) . '.' . $b;
+        return $date;
     }
 
     /**
@@ -259,17 +268,33 @@ class Face extends BaseController
             ->field('t1.id,t1.passTime,t3.name as canteen_name,t1.meal_name,t5.name as department_name,t4.username,t4.phone,t1.temperature,(case when t1.temperatureResult = 1 then \'正常\' when t1.temperatureResult=2 then \'异常\' end) state')
             ->order('id asc')
             ->select();
-        return $list;
+        $dataList = [];
+        if (count($list)) {
+            foreach ($list as $k => $v) {
+                array_push($dataList, [
+                    'id' => $k + 1,
+                    'passTime' => $v['passTime'],
+                    'canteen_name' => $v['canteen_name'],
+                    'meal_name' => $v['meal_name'],
+                    'department_name' => $v['department_name'],
+                    'username' => $v['username'],
+                    'phone' => $v['phone'],
+                    'temperature' => $v['temperature'],
+                    'state' => $v['state']
+                ]);
+            }
+        }
+        return $dataList;
     }
 
     /**
      * 发送微信模板消息
      */
-    private function sendRefundTemplate($openid,$department,$username, $canteen_name, $passTime, $temperature)
+    private function sendRefundTemplate($openid, $department, $username, $canteen_name, $passTime, $temperature)
     {
         $data = [
-            'first' => $department.$username.'于'.$passTime.'在'.$canteen_name."检测体温异常，具体如下：",
-            'keyword1' => $temperature.'°C',
+            'first' => $department . $username . '于' . $passTime . '在' . $canteen_name . "检测体温异常，具体如下：",
+            'keyword1' => $temperature . '°C',
             'keyword2' => '体温异常',
             'remark' => "建议您进一步确认该用户的体温情况。"
         ];
