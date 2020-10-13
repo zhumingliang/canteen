@@ -112,7 +112,7 @@ class OrderStatisticService
                 $data['dinner'] = $v['dinner'];
                 $data['type'] = $v['type'];
                 $data['count'] = Num::numToWord($v['count']) . "份";
-                $data['money'] = $v['order_money'];
+                $data['money'] = $v['order_money'] / $v['count'];
                 $data['status'] = $this->getStatus($v['ordering_date'], $v['state'], $v['meal_time_end'], $v['used']);
                 $data['foods'] = $detail;
                 $data['all'] = $v['order_money'];
