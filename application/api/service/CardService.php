@@ -22,7 +22,7 @@ class CardService
 
     }
 
-    public function bind($staffId, $cardCode)
+    public function bind($staffId, $cardCode, $birthday)
     {
         //检测卡在本企业是否已经存在
         $staff = CompanyStaffT::where('id', $staffId)->find();
@@ -52,6 +52,11 @@ class CardService
         $card = StaffCardT::create($data);
         if (!$card) {
             throw new SaveException();
+        }
+
+        if ($birthday) {
+            $staff->birthday = $birthday;
+            $staff->save();
         }
         return true;
     }
