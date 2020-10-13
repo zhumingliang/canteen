@@ -1010,24 +1010,24 @@ class OrderService extends BaseService
                     //处理子订餐
                     $orderMoney = $v2['orderMoney'];
                     $subOrderDataList = [];
-                    foreach ($orderMoney as $k => $v) {
+                    foreach ($orderMoney as $k3 => $v3) {
                         $data = [
                             'order_id' => $orderId,
                             'ordering_date' => $v2['ordering_date'],
-                            'consumption_sort' => $v['number'],
-                            'order_sort' => $v['number'],
+                            'consumption_sort' => $v3['number'],
+                            'order_sort' => $v3['number'],
                             'count' => 1,
-                            'money' => $v['money'],
+                            'money' => $v3['money'],
                             'ordering_type' => OrderEnum::ORDERING_ONLINE,
                             'order_num' => makeOrderNo(),
-                            'sub_money' => $v['sub_money'],
-                            'consumption_type' => $v['consumption_type'],
-                            'meal_money' => $v['meal_money'],
-                            'meal_sub_money' => $v['meal_sub_money'],
-                            'no_meal_money' => $v['no_meal_money'],
-                            'no_meal_sub_money' => $v['no_meal_sub_money'],
+                            'sub_money' => $v3['sub_money'],
+                            'consumption_type' => $v3['consumption_type'],
+                            'meal_money' => $v3['meal_money'],
+                            'meal_sub_money' => $v3['meal_sub_money'],
+                            'no_meal_money' => $v3['no_meal_money'],
+                            'no_meal_sub_money' => $v3['no_meal_sub_money'],
                         ];
-                        $allMoney += ($v['money'] + $v['sub_money']);
+                        $allMoney += ($v3['money'] + $v3['sub_money']);
                         array_push($subOrderDataList, $data);
                     }
                     $list = (new OrderSubT())->saveAll($subOrderDataList);
@@ -1057,8 +1057,8 @@ class OrderService extends BaseService
                         $v2['ordering_date'],
                         $canteen_id, $v2['count']);
                     $detail[$k]['ordering'][$k2]['orderMoney'] = $orderMoney;
-                    foreach ($orderMoney as $k => $v) {
-                        $allMoney += ($v['money'] + $v['sub_money']);
+                    foreach ($orderMoney as $k3 => $v3) {
+                        $allMoney += ($v3['money'] + $v3['sub_money']);
                     }
                 }
             }
@@ -1883,7 +1883,7 @@ class OrderService extends BaseService
 
             //检测订单是否可操作
             $old_count = $order->count;
-              $this->checkOrderCanHandel($order->d_id, $order->ordering_date);
+            $this->checkOrderCanHandel($order->d_id, $order->ordering_date);
             if (!empty($params['count']) && ($params['count'] != $old_count)) {
                 //检测订单修改数量是否合法
                 $updateCount = $params['count'];
@@ -2860,7 +2860,7 @@ class OrderService extends BaseService
         }
         $order->address_id = $address_id;
         $order->remark = $remark;
-        $order->update_time=date('Y-m-d H:i:s');
+        $order->update_time = date('Y-m-d H:i:s');
         $res = $order->save();
         if (!$res) {
             throw new UpdateException(['msg' => "修改地址失败"]);
