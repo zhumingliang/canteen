@@ -213,14 +213,12 @@ class Face extends BaseController
             ->where(function ($query) use ($company_id, $canteen_id, $dinner_id) {
                 if ($dinner_id != 0) {
                     $query->where('t1.meal_id', $dinner_id);
-                } else {
-                    if ($canteen_id != 0) {
-                        $query->where('t1.canteen_id', $canteen_id);
-                    } else {
-                        if ($company_id != 0) {
-                            $query->where('t1.company_id', $company_id);
-                        }
-                    }
+                }
+                if ($canteen_id != 0) {
+                    $query->where('t1.canteen_id', $canteen_id);
+                }
+                if ($company_id != 0) {
+                    $query->where('t1.company_id', $company_id);
                 }
             })
             ->field('t1.id,t1.passTime,t2.name as company_name,t3.name as canteen_name,t1.meal_name,t4.username,t4.phone,t5.name as department_name,t1.temperature,(case when t1.temperatureResult = 1 then \'正常\' when t1.temperatureResult=2 then \'异常\' end) state')
