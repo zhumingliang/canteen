@@ -124,7 +124,7 @@ Index extends BaseController
         $redis->auth('waHqes-nijpi8-ruwqex');
         $redis->set('a',1);
        echo $redis->get('a');*/
-        // return json(\app\api\service\Token::getCurrentTokenVar());
+         return json(\app\api\service\Token::getCurrentTokenVar());
 
 
     }
