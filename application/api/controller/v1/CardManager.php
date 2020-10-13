@@ -57,10 +57,12 @@ class CardManager extends BaseController
      * @apiExample {post}  请求样例:
      *    {
      *       "staff_id": 1
-     *       "card_code": 123
+     *       "card_code": 123,
+     *       "birthday": "2020-10-01"
      *     }
      * @apiParam (请求参数说明) {int}  staff_id 员工id
      * @apiParam (请求参数说明) {string}  card_code 卡号
+     * @apiParam (请求参数说明) {string}  birthday 生日
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
@@ -70,7 +72,8 @@ class CardManager extends BaseController
     {
         $staffId = Request::param('staff_id');
         $cardCode = Request::param("card_code");
-        (new CardService())->bind($staffId, $cardCode);
+        $birthday = Request::param("birthday");
+        (new CardService())->bind($staffId, $cardCode,$birthday);
         return json(new SuccessMessage());
     }
 
