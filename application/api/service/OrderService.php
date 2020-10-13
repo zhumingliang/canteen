@@ -1958,6 +1958,10 @@ class OrderService extends BaseService
             if (!$order) {
                 throw new ParameterException(['msg' => '订单不存在']);
             }
+            //处理订单明细
+            if (!empty($detail)) {
+                $this->prefixUpdateOrderDetail($id, $detail, 'more');
+            }
             //检测订单是否可操作
             $this->checkOrderCanHandel($order->dinner_id, $order->ordering_date);
             //处理菜品信息
@@ -2264,7 +2268,7 @@ class OrderService extends BaseService
         $new_sub_money = $old_sub_money / $old_count * $count;
         $new_meal_sub_money = $old_meal_sub_money / $old_count * $count;
         if ($new_money > $old_money) {
-            $pay_way = $this->checkBalance($u_id, $canteen_id, $new_money + $new_sub_money - $old_money - $old_sub_money);
+            $pay_way =$this->checkBalance($u_id, $canteen_id, $new_money + $new_sub_money - $old_money - $old_sub_money);
         }
         return [
             'new_money' => $new_money,
@@ -3121,7 +3125,6 @@ class OrderService extends BaseService
             ]);
 
         }
-        // print_r($updateSubOrderData);
         $parent = (new OrderParentT())->saveAll($updateParentOrderData);
         if (!$parent) {
             throw new UpdateException(['msg' => '更新总订单失败']);
