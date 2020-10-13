@@ -26,6 +26,10 @@ class CardService
     {
         //检测卡在本企业是否已经存在
         $staff = CompanyStaffT::where('id', $staffId)->find();
+        if ($birthday) {
+            $staff->birthday = $birthday;
+            $staff->save();
+        }
         if (StaffCardV::checkCardExits($staff->company_id, $cardCode)) {
             throw new ParameterException(['msg' => "卡号已存在，不能重复绑定"]);
         }
@@ -52,11 +56,6 @@ class CardService
         $card = StaffCardT::create($data);
         if (!$card) {
             throw new SaveException();
-        }
-
-        if ($birthday) {
-            $staff->birthday = $birthday;
-            $staff->save();
         }
         return true;
     }
