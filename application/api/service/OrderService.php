@@ -451,16 +451,19 @@ class OrderService extends BaseService
         foreach ($detail as $k => $v) {
             $foods = $v['foods'];
             foreach ($foods as $k2 => $v2) {
-                $data = [
-                    'm_id' => $v['menu_id'],
-                    'f_id' => $v2['food_id'],
-                    'price' => $v2['price'],
-                    'count' => $v2['count'],
-                    'name' => $v2['name'],
-                    'o_id' => $o_id,
-                    'state' => CommonEnum::STATE_IS_OK,
-                ];
-                array_push($data_list, $data);
+                if ($v2['count'] > 0) {
+                    $data = [
+                        'm_id' => $v['menu_id'],
+                        'f_id' => $v2['food_id'],
+                        'price' => $v2['price'],
+                        'count' => $v2['count'],
+                        'name' => $v2['name'],
+                        'o_id' => $o_id,
+                        'state' => CommonEnum::STATE_IS_OK,
+                    ];
+                    array_push($data_list, $data);
+                }
+
             }
         }
         if ($consumptionTimes == 'one') {
@@ -1220,7 +1223,7 @@ class OrderService extends BaseService
     public
     function userOrdering($consumption_time)
     {
-        $phone = Token::getCurrentPhone();
+        $phone = "13794247582";//Token::getCurrentPhone();
         $orderings = OrderingV::userOrdering($phone, $consumption_time);
         return $orderings;
 
@@ -2161,16 +2164,19 @@ class OrderService extends BaseService
             $cancel_foods = empty($v['cancel_foods']) ? '' : $v['cancel_foods'];
             if (!empty($add_foods)) {
                 foreach ($add_foods as $k2 => $v2) {
-                    $data = [
-                        'm_id' => $menu_id,
-                        'f_id' => $v2['food_id'],
-                        'price' => $v2['price'],
-                        'count' => $v2['count'],
-                        'name' => $v2['name'],
-                        'o_id' => $o_id,
-                        'state' => CommonEnum::STATE_IS_OK,
-                    ];
-                    array_push($data_list, $data);
+                    if ($v2['count'] > 0) {
+                        $data = [
+                            'm_id' => $menu_id,
+                            'f_id' => $v2['food_id'],
+                            'price' => $v2['price'],
+                            'count' => $v2['count'],
+                            'name' => $v2['name'],
+                            'o_id' => $o_id,
+                            'state' => CommonEnum::STATE_IS_OK,
+                        ];
+                        array_push($data_list, $data);
+                    }
+
                 }
             }
 
@@ -2268,7 +2274,7 @@ class OrderService extends BaseService
         $new_sub_money = $old_sub_money / $old_count * $count;
         $new_meal_sub_money = $old_meal_sub_money / $old_count * $count;
         if ($new_money > $old_money) {
-            $pay_way =$this->checkBalance($u_id, $canteen_id, $new_money + $new_sub_money - $old_money - $old_sub_money);
+            $pay_way = $this->checkBalance($u_id, $canteen_id, $new_money + $new_sub_money - $old_money - $old_sub_money);
         }
         return [
             'new_money' => $new_money,

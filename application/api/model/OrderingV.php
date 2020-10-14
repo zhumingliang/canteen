@@ -84,6 +84,7 @@ class OrderingV extends Model
             ->where('ordering_month', $consumption_time)
             ->where('state', CommonEnum::STATE_IS_OK)
             ->where('pay', PayEnum::PAY_SUCCESS)
+          //  ->fetchSql(true)
             ->select();
         return $orderings;
     }
