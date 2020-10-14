@@ -80,8 +80,9 @@ class OrderStatisticV extends Model
                     $query->where('canteen_id', $canteen_id);
                 }
             })
-            ->field('ordering_date,company,canteen,dinner,sum(count) as count')
+            ->where('booking',CommonEnum::STATE_IS_OK)
             ->where('state', CommonEnum::STATE_IS_OK)
+            ->field('ordering_date,company,canteen,dinner,sum(count) as count')
             ->order('ordering_date DESC')
             ->group('ordering_date,dinner_id')
             ->select()->toArray();
