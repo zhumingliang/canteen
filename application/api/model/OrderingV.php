@@ -253,7 +253,7 @@ class OrderingV extends Model
             ->leftJoin('canteen_dinner_t c', 'a.dinner_id = c.id')
             ->where(function ($query) use ($orderID) {
                 if ($orderID) {
-                    $query->where('id', '>', $orderID);
+                    $query->where('a.id', '>', $orderID);
                 }
             })
             ->where('a.phone', $phone)
@@ -262,7 +262,7 @@ class OrderingV extends Model
             ->where('a.state', CommonEnum::STATE_IS_OK)
             ->where('a.pay', PayEnum::PAY_SUCCESS)
             ->order('create_time')
-            ->unionAll(function ($query) use ($phone, $orderingDate, $dinnerID) {
+            ->unionAll(function ($query) use ($phone, $orderingDate, $dinnerID, $orderID) {
                 $query->field("`a`.`id` AS `id`,
 	`a`.`u_id` AS `u_id`,
 	`a`.`ordering_type` AS `ordering_type`,
@@ -294,11 +294,17 @@ class OrderingV extends Model
                     ->alias('a')
                     ->leftJoin('canteen_canteen_t b', 'a.c_id = b.id')
                     ->leftJoin('canteen_dinner_t c', 'a.d_id = c.id')
+                    ->where(function ($query) use ($orderID) {
+                        if ($orderID) {
+                            $query->where('a.id', '>', $orderID);
+                        }
+                    })
                     ->where('a.phone', $phone)
-                    ->where('b.id', $dinnerID)
                     ->where('a.ordering_date', $orderingDate)
+                    ->where('b.id', $dinnerID)
                     ->where('a.state', CommonEnum::STATE_IS_OK)
                     ->where('a.pay', PayEnum::PAY_SUCCESS)
+                    ->order('create_time')
                     ->order('create_time');
             })->select();
         return $records;
