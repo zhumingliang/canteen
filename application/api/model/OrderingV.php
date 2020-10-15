@@ -135,7 +135,7 @@ class OrderingV extends Model
                     ->where('a.ordering_date', $ordering_date)
                     ->where('a.state', CommonEnum::STATE_IS_OK)
                     ->where('a.pay', PayEnum::PAY_SUCCESS);
-            })->select();
+            })->select()->toArray();
         return $records;
     }
 
