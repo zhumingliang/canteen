@@ -82,6 +82,7 @@ class OrderingV extends Model
     {
         $orderings = self::where('phone', $phone)
             ->where('ordering_month', $consumption_time)
+            ->where('booking',CommonEnum::STATE_IS_OK)
             ->where('state', CommonEnum::STATE_IS_OK)
             ->where('pay', PayEnum::PAY_SUCCESS)
           //  ->fetchSql(true)

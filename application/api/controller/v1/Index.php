@@ -94,21 +94,19 @@ Index extends BaseController
 
     public function test($param = "")
     {
-        $parent = OrderParentT::where('state', CommonEnum::STATE_IS_OK)
-            ->where('department_id', 361)->select();
-        foreach ($parent as $k => $v) {
-            OrderSubT::update(['state', CommonEnum::STATE_IS_FAIL], ['order_id' => $v['id']]);
-        }
-        OrderParentT::update(['state', CommonEnum::STATE_IS_FAIL], ['department_id' => 361,'state'=>CommonEnum::STATE_IS_OK]);
-
         /*
         $redis = new \Redis();
         $redis->connect('121.37.255.12', 6379);
         $redis->auth('waHqes-nijpi8-ruwqex');
         $redis->set('a',1);
        echo $redis->get('a');*/
-        //return json(\app\api\service\Token::getCurrentTokenVar());
 
+
+    }
+
+    public function token()
+    {
+        return json(\app\api\service\Token::getCurrentTokenVar());
 
     }
 }
