@@ -25,6 +25,18 @@ class Date
             "last" => date('Y-m-d', mktime(23, 59, 59, $m, $d, $y)));
     }
 
+
+
+    public static function mFristAndLast2($data)
+    {
+        $y = date('Y',strtotime($data));
+        $m =date('m',strtotime($data));
+        $d = date('t', strtotime($data));
+        return array(
+            "fist" => date('Y-m-d', strtotime($y . '-' . $m)),
+            "last" => date('Y-m-d', mktime(23, 59, 59, $m, $d, $y)));
+    }
+
     /**
      * 日期加上指定天数
      * @param $count
