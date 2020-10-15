@@ -37,6 +37,8 @@ use app\api\service\WalletService;
 use app\api\service\WeiXinService;
 use app\lib\Date;
 use app\lib\enum\CommonEnum;
+use app\lib\enum\OrderEnum;
+use app\lib\enum\PayEnum;
 use app\lib\enum\StrategyEnum;
 use app\lib\exception\ParameterException;
 use app\lib\exception\SaveException;
@@ -59,48 +61,95 @@ Index extends BaseController
 {
     public function index($sorts)
     {
+        /*
+        *
+        *
+       $redis = new \Redis();
+       $redis->connect('121.37.255.12', 6379);
+       $redis->auth('waHqes-nijpi8-ruwqex');
+       $redis->set('a',1);
+      echo $redis->get('a');*/
 
-        /* $file_name = dirname($_SERVER['SCRIPT_FILENAME']) . '/static/excel/upload/test.xlsx';
-         $data = (new ExcelService())->importExcel($file_name);
-         $fail = (new WalletService())->prefixUploadData(69, 1, $data);
-         return json(new SuccessMessageWithData(['data' => $fail]));*/
-
-        //(new Printer())->printOrderDetail(1,1388,2,'0001');
-// (new  NoticeService())->noticeTask(26,155,'');
-//(new OrderService())->refundWxOrder($id);
-// $this->mailTask($name);
-// $detail = '[{"d_id":122,"ordering":[{"ordering_date":"2020-01-21","count":1}]}]';
-
-// (new OrderService())->orderingOnlineTest($detail, $name);
-        /* $strategy = ConsumptionStrategyT::where('state', CommonEnum::STATE_IS_OK)
-          ->select()->toArray();
-         foreach ($strategy as $k => $v) {
-             if(!empty($v['detail'])){
-                 (new CanteenService())->prefixStrategyDetail($v['id'],$v['c_id'],$v['d_id'],$v['t_id'],$v['detail']);
-             }
-         }*/
-
-        /* $money = UserBalanceV::userBalanceGroupByEffective(3, '15521323081');
-         print_r($money);*/
-
-        /* $user = CanteenT::whereIn('id', "19")
-             ->field('name')->select()->toArray();
-         $user_ids = array();
-         foreach ($user as $k => $v) {
-             array_push($user_ids, $v['name']);
-         }
-         echo implode('|', $user_ids);*/
     }
 
     public function test($param = "")
     {
-        /*
-        $redis = new \Redis();
-        $redis->connect('121.37.255.12', 6379);
-        $redis->auth('waHqes-nijpi8-ruwqex');
-        $redis->set('a',1);
-       echo $redis->get('a');*/
-
+        $count = OrderingV::userOrderings("13794247582", 3, 191, 1, 10);
+        //$count = OrderingV:: getOrderingByWithDinnerID("2020-10-14", 160, "13794247582");
+        return json($count);
+        /* $orderingV = Db::field("`a`.`id` AS `id`,
+     `a`.`u_id` AS `u_id`,
+     `a`.`ordering_type` AS `ordering_type`,
+     `a`.`canteen_id` AS `c_id`,
+     `b`.`name` AS `canteen`,
+     `a`.`dinner_id` AS `d_id`,
+     `c`.`name` AS `dinner`,
+     `a`.`ordering_date` AS `ordering_date`,
+     date_format( `a`.`ordering_date`, '%Y-%m' ) AS `ordering_month`,
+     `a`.`count` AS `count`,
+     `a`.`state` AS `state`,
+     `a`.`used` AS `used`,
+     `a`.`type` AS `type`,
+     `a`.`create_time` AS `create_time`,
+     (
+         ( `a`.`money` + `a`.`sub_money` ) + `a`.`delivery_fee`
+     ) AS `money`,
+     `a`.`phone` AS `phone`,
+     `a`.`company_id` AS `company_id`,
+     `a`.`pay` AS `pay`,
+     `a`.`sub_money` AS `sub_money`,
+     `a`.`delivery_fee` AS `delivery_fee`,
+     'more' AS `consumption_type`,
+     `a`.`fixed` AS `fixed`,
+     `a`.`all_used` AS `all_used`,
+     `a`.`receive` AS `receive`,a.booking ")
+             ->table('canteen_order_parent_t')
+             ->alias('a')
+             ->leftJoin('canteen_canteen_t b', 'a.canteen_id = b.id')
+             ->leftJoin('canteen_dinner_t c', 'a.dinner_id = c.id')
+             ->where('a.phone', "13794247582")
+             //->where('ordering_month', "2020-10")
+             ->where('a.booking', CommonEnum::STATE_IS_OK)
+             ->where('a.state', CommonEnum::STATE_IS_OK)
+             ->where('a.pay', PayEnum::PAY_SUCCESS)
+             ->unionAll(function ($query) {
+                 $query->field("	`a`.`id` AS `id`,
+     `a`.`u_id` AS `u_id`,
+     `a`.`ordering_type` AS `ordering_type`,
+     `a`.`c_id` AS `c_id`,
+     `b`.`name` AS `canteen`,
+     `a`.`d_id` AS `d_id`,
+     `c`.`name` AS `dinner`,
+     `a`.`ordering_date` AS `ordering_date`,
+     date_format( `a`.`ordering_date`, '%Y-%m' ) AS `ordering_month`,
+     `a`.`count` AS `count`,
+     `a`.`state` AS `state`,
+     `a`.`used` AS `used`,
+     `a`.`type` AS `type`,
+     `a`.`create_time` AS `create_time`,
+     (
+         ( `a`.`money` + `a`.`sub_money` ) + `a`.`delivery_fee`
+     ) AS `money`,
+     `a`.`phone` AS `phone`,
+     `a`.`company_id` AS `company_id`,
+     `a`.`pay` AS `pay`,
+     `a`.`sub_money` AS `sub_money`,
+     `a`.`delivery_fee` AS `delivery_fee`,
+     'one' AS `consumption_type`,
+     `a`.`fixed` AS `fixed`,
+     `a`.`used` AS `all_used`,
+     `a`.`receive` AS `receive`,a.booking ")->table('canteen_order_t')
+                     ->alias('a')
+                     ->leftJoin('canteen_canteen_t b', 'a.c_id = b.id')
+                     ->leftJoin('canteen_dinner_t c', 'a.d_id = c.id')
+                     ->where('a.phone', "13794247582")
+                     //->where('ordering_month', "2020-10")
+                     ->where('a.booking', CommonEnum::STATE_IS_OK)
+                     ->where('a.state', CommonEnum::STATE_IS_OK)
+                     ->where('a.pay', PayEnum::PAY_SUCCESS);
+             })
+            ->select();
+         print_r($orderingV);*/
 
     }
 
