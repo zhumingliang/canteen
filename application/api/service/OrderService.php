@@ -1766,9 +1766,9 @@ class OrderService extends BaseService
             if (!$res) {
                 throw new UpdateException();
             }
-            //$this->updateParentOrderMoney($id);
+            $this->updateParentOrderMoney($id);
             //更新其它订单排序
-            $this->prefixOrderSortWhenUpdateOrder($strategy, $order->dinner_id, $order->phone, $order->ordering_date);
+            $this->prefixOrderSortWhenUpdateOrder($strategy, $order->dinner_id, $order->phone, $order->ordering_date,$id);
             Db::commit();
         } catch
         (Exception $e) {
