@@ -59,30 +59,6 @@ Index extends BaseController
 {
     public function index($sorts)
     {
-        //(new TakeoutService())->refundOrder([11283]);
-
-        if (empty($sorts)) {
-            throw new ParameterException(['排队号，不能为空']);
-        }
-        $orders = OrderT::where('sort_code', 'in', $sorts)
-            ->where('ordering_date', \date('Y-m-d'))
-            ->select();
-        $res = [];
-        foreach ($orders as $k => $v) {
-            $canteenID = 179;
-            $orderID = $v['id'];
-            $outsider = 2;
-            $sortCode = $v['sort_code'];
-            $printRes = (new Printer())->printOrderDetail($canteenID, $orderID, $outsider, $sortCode);
-            if ($printRes) {
-                array_push($res, $v['sort_code'] . "补打印成功");
-            } else {
-                array_push($res, $v['sort_code'] . "补打印失败");
-            }
-
-        }
-        return json(new  SuccessMessageWithData(['data' => $res]));
-
 
         /* $file_name = dirname($_SERVER['SCRIPT_FILENAME']) . '/static/excel/upload/test.xlsx';
          $data = (new ExcelService())->importExcel($file_name);
@@ -118,13 +94,20 @@ Index extends BaseController
 
     public function test($param = "")
     {
+        $parent = OrderParentT::where('state', CommonEnum::STATE_IS_OK)
+            ->where('department_id', 361)->select();
+        foreach ($parent as $k => $v) {
+            OrderSubT::update(['state', CommonEnum::STATE_IS_FAIL], ['order_id' => $v['id']]);
+        }
+        OrderParentT::update(['state', CommonEnum::STATE_IS_FAIL], ['department_id' => 361,'state'=>CommonEnum::STATE_IS_OK]);
+
         /*
         $redis = new \Redis();
         $redis->connect('121.37.255.12', 6379);
         $redis->auth('waHqes-nijpi8-ruwqex');
         $redis->set('a',1);
        echo $redis->get('a');*/
-         return json(\app\api\service\Token::getCurrentTokenVar());
+        //return json(\app\api\service\Token::getCurrentTokenVar());
 
 
     }

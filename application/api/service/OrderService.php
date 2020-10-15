@@ -1223,7 +1223,7 @@ class OrderService extends BaseService
     public
     function userOrdering($consumption_time)
     {
-        $phone = "13794247582";//Token::getCurrentPhone();
+        $phone = Token::getCurrentPhone();
         $orderings = OrderingV::userOrdering($phone, $consumption_time);
         return $orderings;
 
