@@ -549,14 +549,8 @@ class OrderingV extends Model
                         }
                     })
                     ->where(function ($query) use ($type) {
-                        if ($type == OrderEnum::EAT_CANTEEN) {
-                            $query->where('a.type', $type)
-                                ->where('a.all_used', CommonEnum::STATE_IS_FAIL);
-                        } else if ($type == OrderEnum::EAT_OUTSIDER) {
-                            $query->where('a.type', $type)
-                                ->where('a.used', CommonEnum::STATE_IS_FAIL);
-
-                        }
+                        $query->where('a.type', $type)
+                            ->where('a.used', CommonEnum::STATE_IS_FAIL);
                     })
                     ->where('a.state', CommonEnum::STATE_IS_OK)
                     ->where('a.pay', PayEnum::PAY_SUCCESS);
