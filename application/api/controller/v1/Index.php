@@ -74,82 +74,13 @@ Index extends BaseController
 
     public function test($param = "")
     {
-        $count = OrderingV::userOrderings("13794247582", 3, 191, 1, 10);
-        //$count = OrderingV:: getOrderingByWithDinnerID("2020-10-14", 160, "13794247582");
-        return json($count);
-        /* $orderingV = Db::field("`a`.`id` AS `id`,
-     `a`.`u_id` AS `u_id`,
-     `a`.`ordering_type` AS `ordering_type`,
-     `a`.`canteen_id` AS `c_id`,
-     `b`.`name` AS `canteen`,
-     `a`.`dinner_id` AS `d_id`,
-     `c`.`name` AS `dinner`,
-     `a`.`ordering_date` AS `ordering_date`,
-     date_format( `a`.`ordering_date`, '%Y-%m' ) AS `ordering_month`,
-     `a`.`count` AS `count`,
-     `a`.`state` AS `state`,
-     `a`.`used` AS `used`,
-     `a`.`type` AS `type`,
-     `a`.`create_time` AS `create_time`,
-     (
-         ( `a`.`money` + `a`.`sub_money` ) + `a`.`delivery_fee`
-     ) AS `money`,
-     `a`.`phone` AS `phone`,
-     `a`.`company_id` AS `company_id`,
-     `a`.`pay` AS `pay`,
-     `a`.`sub_money` AS `sub_money`,
-     `a`.`delivery_fee` AS `delivery_fee`,
-     'more' AS `consumption_type`,
-     `a`.`fixed` AS `fixed`,
-     `a`.`all_used` AS `all_used`,
-     `a`.`receive` AS `receive`,a.booking ")
-             ->table('canteen_order_parent_t')
-             ->alias('a')
-             ->leftJoin('canteen_canteen_t b', 'a.canteen_id = b.id')
-             ->leftJoin('canteen_dinner_t c', 'a.dinner_id = c.id')
-             ->where('a.phone', "13794247582")
-             //->where('ordering_month', "2020-10")
-             ->where('a.booking', CommonEnum::STATE_IS_OK)
-             ->where('a.state', CommonEnum::STATE_IS_OK)
-             ->where('a.pay', PayEnum::PAY_SUCCESS)
-             ->unionAll(function ($query) {
-                 $query->field("	`a`.`id` AS `id`,
-     `a`.`u_id` AS `u_id`,
-     `a`.`ordering_type` AS `ordering_type`,
-     `a`.`c_id` AS `c_id`,
-     `b`.`name` AS `canteen`,
-     `a`.`d_id` AS `d_id`,
-     `c`.`name` AS `dinner`,
-     `a`.`ordering_date` AS `ordering_date`,
-     date_format( `a`.`ordering_date`, '%Y-%m' ) AS `ordering_month`,
-     `a`.`count` AS `count`,
-     `a`.`state` AS `state`,
-     `a`.`used` AS `used`,
-     `a`.`type` AS `type`,
-     `a`.`create_time` AS `create_time`,
-     (
-         ( `a`.`money` + `a`.`sub_money` ) + `a`.`delivery_fee`
-     ) AS `money`,
-     `a`.`phone` AS `phone`,
-     `a`.`company_id` AS `company_id`,
-     `a`.`pay` AS `pay`,
-     `a`.`sub_money` AS `sub_money`,
-     `a`.`delivery_fee` AS `delivery_fee`,
-     'one' AS `consumption_type`,
-     `a`.`fixed` AS `fixed`,
-     `a`.`used` AS `all_used`,
-     `a`.`receive` AS `receive`,a.booking ")->table('canteen_order_t')
-                     ->alias('a')
-                     ->leftJoin('canteen_canteen_t b', 'a.c_id = b.id')
-                     ->leftJoin('canteen_dinner_t c', 'a.d_id = c.id')
-                     ->where('a.phone', "13794247582")
-                     //->where('ordering_month', "2020-10")
-                     ->where('a.booking', CommonEnum::STATE_IS_OK)
-                     ->where('a.state', CommonEnum::STATE_IS_OK)
-                     ->where('a.pay', PayEnum::PAY_SUCCESS);
-             })
-            ->select();
-         print_r($orderingV);*/
+        $parent = OrderParentT::where('state',CommonEnum::STATE_IS_FAIL)->select();
+        $p_id = [];
+        foreach ($parent as $k => $v) {
+            Db::table('canteen_order_sub_t')->where('order_id', $v['id'])->delete();
+            Db::table('canteen_sub_food_t')->where('o_id', $v['id'])->delete();
+            OrderParentT::destroy($v['id']);
+        }
 
     }
 
