@@ -24,7 +24,6 @@ class Face extends BaseController
     {
         try {
             $params = Request::param();
-            $this->pr_log($params, '数据');
             $deviceNo = $params['deviceNo'];
             $passTime = $params['passTime'];
             $canteenInfo = db('machine_t')
@@ -205,7 +204,7 @@ class Face extends BaseController
                     $query->where('t4.phone', 'like', '%' . $phone . '%');
                 }
                 if ($department_id != 0) {
-                    $query->where('t5.department_id', $department_id);
+                    $query->where('t5.id', $department_id);
                 }
                 if ($state != 0) {
                     $query->where('t1.temperatureResult', $state);
@@ -245,7 +244,7 @@ class Face extends BaseController
                     $query->where('t4.phone', 'like', '%' . $phone . '%');
                 }
                 if ($department_id != 0) {
-                    $query->where('t5.department_id', $department_id);
+                    $query->where('t5.id', $department_id);
                 }
                 if ($state != 0) {
                     $query->where('t1.temperatureResult', $state);
