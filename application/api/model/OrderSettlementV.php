@@ -28,7 +28,7 @@ class OrderSettlementV extends Model
                     $query->where('department_id', $department_id);
                 }
             })->where(function ($query) use ($type) {
-                if ($type !== 'all') {
+                if ($type == 'shop') {
                     $query->where('type', $type);
                 }
             })
@@ -81,7 +81,6 @@ class OrderSettlementV extends Model
             })
             ->field('order_id,used_time,username,phone,canteen,department,dinner,booking,used,type,ordering_date,money,consumption_type')
             ->order('ordering_date DESC,phone')
-            //->fetchSql(true)->select();
             ->paginate($size, false, ['page' => $page])->toArray();
         return $list;
 
@@ -105,7 +104,7 @@ class OrderSettlementV extends Model
                 }
             })
             ->where(function ($query) use ($type) {
-                if ($type !== 'all') {
+                if ($type == 'shop') {
                     $query->where('type', $type);
                 }
             })

@@ -55,7 +55,7 @@ class OrderStatisticV extends Model
                     $query->where('canteen_id', $canteen_id);
                 }
             })
-            ->where('booking',CommonEnum::STATE_IS_OK)
+            ->where('booking', CommonEnum::STATE_IS_OK)
             ->where('state', CommonEnum::STATE_IS_OK)
             ->field('ordering_date,company,canteen,dinner,sum(count) as count')
             ->order('ordering_date DESC')
@@ -80,7 +80,7 @@ class OrderStatisticV extends Model
                     $query->where('canteen_id', $canteen_id);
                 }
             })
-            ->where('booking',CommonEnum::STATE_IS_OK)
+            ->where('booking', CommonEnum::STATE_IS_OK)
             ->where('state', CommonEnum::STATE_IS_OK)
             ->field('ordering_date,company,canteen,dinner,sum(count) as count')
             ->order('ordering_date DESC')
@@ -128,7 +128,7 @@ class OrderStatisticV extends Model
                     $query->where('type', $type);
                 }
             })
-            ->where('booking',CommonEnum::STATE_IS_OK)
+            ->where('booking', CommonEnum::STATE_IS_OK)
             ->field('order_id,consumption_type,ordering_date,username,canteen,department,phone,count,dinner,type,ordering_type,order_money,1 as status,state,meal_time_end,used,fixed')
             ->order('ordering_date DESC')
             ->paginate($size, false, ['page' => $page]);
@@ -141,7 +141,7 @@ class OrderStatisticV extends Model
                                         $phone, $canteen_id, $department_id,
                                         $dinner_id, $type)
     {
-        $time_end = addDay(1, $time_end);
+        //$time_end = addDay(1, $time_end);
         $list = self::where('ordering_date', ">=", $time_begin)
             ->where('ordering_date', "<=", $time_end)
             ->where(function ($query) use ($name, $phone, $department_id) {
@@ -182,5 +182,4 @@ class OrderStatisticV extends Model
         return $list;
 
     }
-
 }

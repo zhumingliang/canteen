@@ -86,7 +86,7 @@ class OrderUsersStatisticV extends Model
             })
             ->field('dinner_id as d_id,used,booking,sum(count) as count')
             ->group('dinner_id,used,booking')
-            ->select()->toArray();
+           ->select()->toArray();
         return $statistic;
     }
 

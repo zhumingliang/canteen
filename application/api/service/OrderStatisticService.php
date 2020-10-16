@@ -48,7 +48,7 @@ class OrderStatisticService
     public function exportStatistic($time_begin, $time_end, $company_ids, $canteen_id)
     {
         $list = OrderStatisticV::exportStatistic($time_begin, $time_end, $company_ids, $canteen_id);
-        $header = ['日期', '公司', '消费地点', '餐次', '消费份数'];
+        $header = ['日期', '公司', '消费地点', '餐次', '订餐份数'];
         $file_name = "订餐统计报表(" . $time_begin . "-" . $time_end . ")";
         $url = (new ExcelService())->makeExcel($header, $list, $file_name);
         return [
@@ -690,7 +690,7 @@ class OrderStatisticService
 
 
         $header = $this->addDinnerToHeader($header, $dinner);
-        $reports = $this->prefixConsumptionStatistic($statistic, $dinner);
+        $reports = $this->prefixConsumptionStatistic($statistic, $dinner,$time_begin,$time_end);
         $reportName = $fileNameArr[$status];
         $file_name = $reportName . "(" . $time_begin . "-" . $time_end . ")";
         $url = (new ExcelService())->makeExcel($header, $reports, $file_name);
@@ -725,7 +725,7 @@ class OrderStatisticService
     }
 
     private
-    function prefixConsumptionStatistic($statistic, $dinner)
+    function prefixConsumptionStatistic($statistic, $dinner,$time_begin,$time_end)
     {
 
         $dataList = [];
@@ -733,7 +733,7 @@ class OrderStatisticService
             $endData = $this->addDinnerToStatistic($dinner);
             foreach ($statistic as $k => $v) {
                 $dinner_statistic = array_key_exists('dinnerStatistic', $v) ? $v['dinnerStatistic'] : $v['dinner_statistic'];
-                $data = $this->addDinnerToStatistic($dinner);
+                $data = $this->addDinnerToStatistic($dinner,$time_begin,$time_end);
                 $data['number'] = $k + 1;
                 $data['statistic'] = $v['statistic'];
                 $data['username'] = empty($v['username']) ? '' : $v['username'];
@@ -760,13 +760,13 @@ class OrderStatisticService
     }
 
     private
-    function addDinnerToStatistic($dinner)
+    function addDinnerToStatistic($dinner,$time_begin,$time_end)
     {
         $data = [
             'number' => '合计',
             'statistic' => '',
-            'time_begin' => '/',
-            'time_end' => '/',
+            'time_begin' => $time_begin,
+            'time_end' => $time_end,
             'username' => '',
             'department' => '',
         ];
