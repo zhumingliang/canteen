@@ -730,7 +730,7 @@ class OrderStatisticService
 
         $dataList = [];
         if (!empty($statistic)) {
-            $endData = $this->addDinnerToStatistic($dinner);
+            $endData = $this->addDinnerToStatistic($dinner,$time_begin,$time_end);
             foreach ($statistic as $k => $v) {
                 $dinner_statistic = array_key_exists('dinnerStatistic', $v) ? $v['dinnerStatistic'] : $v['dinner_statistic'];
                 $data = $this->addDinnerToStatistic($dinner,$time_begin,$time_end);
