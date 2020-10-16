@@ -24,6 +24,7 @@ class Face extends BaseController
     {
         try {
             $params = Request::param();
+            $this->pr_log($params, '数据');
             $deviceNo = $params['deviceNo'];
             $passTime = $params['passTime'];
             $canteenInfo = db('machine_t')
