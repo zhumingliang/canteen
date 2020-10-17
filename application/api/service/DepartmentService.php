@@ -141,8 +141,10 @@ class DepartmentService
                     throw new UpdateException(['msg' => '更新二维码有效期失败']);
                 }
             }
-            $staff = CompanyStaffT::update($params);
-            if (!$staff) {
+            $staff = CompanyStaffT::get($params['id']);
+            $companyID = $staff->company_id;
+            $update = CompanyStaffT:: update($params);
+            if (!$update) {
                 throw new UpdateException();
             }
             //更新用户饭堂绑定关系
@@ -152,532 +154,531 @@ class DepartmentService
             //处理卡号
             if (!empty($params['card_num'])) {
 
-                if (StaffCardV::checkCardExits($staff->company_id, $params['card_num'])) {
+                if (StaffCardV::checkCardExits($companyID, $params['card_num'])) {
                     throw new ParameterException(['msg' => "卡号已存在，不能重复绑定"]);
                 }
-            $this->updateCard($params['card_num'], $params['id']);
-        }
+                $this->updateCard($params['card_num'], $params['id']);
+            }
             Db::commit();
-        } catch (Exception $e)
-{
-Db::rollback();
-throw $e;
-}
-}
-
-private
-function updateCard($cardNum, $staffId)
-{
-    StaffCardT::destroy(function ($query) use ($staffId) {
-        $query->where('staff_id', $staffId);
-    });
-    StaffCardT::create([
-        'staff_id' => $staffId,
-        'card_code' => $cardNum,
-        'state'
-        => CommonEnum::STATE_IS_OK
-    ]);
-}
-
-private
-function saveStaffCanteen($staff_id, $canteens)
-{
-    $canteens = json_decode($canteens, true);
-    if (empty($canteens)) {
-        throw new ParameterException(['msg' => '字段饭堂id，参数格式错误']);
-    }
-    $data_list = [];
-    foreach ($canteens as $k => $v) {
-        $data_list[] = [
-            'staff_id' => $staff_id,
-            'canteen_id' => $v['canteen_id'],
-            'state' => CommonEnum::STATE_IS_OK
-        ];
-    }
-    $res = (new StaffCanteenT())->saveAll($data_list);
-    if (!$res) {
-        throw new SaveException(['msg' => '添加饭堂用户关系失败']);
+        } catch (Exception $e) {
+            Db::rollback();
+            throw $e;
+        }
     }
 
-}
+    private
+    function updateCard($cardNum, $staffId)
+    {
+        StaffCardT::destroy(function ($query) use ($staffId) {
+            $query->where('staff_id', $staffId);
+        });
+        StaffCardT::create([
+            'staff_id' => $staffId,
+            'card_code' => $cardNum,
+            'state'
+            => CommonEnum::STATE_IS_OK
+        ]);
+    }
 
-private
-function updateStaffCanteen($staff_id, $canteens, $cancel_canteens)
-{
-    $data_list = [];
-    if (!empty($canteens)) {
+    private
+    function saveStaffCanteen($staff_id, $canteens)
+    {
+        $canteens = json_decode($canteens, true);
+        if (empty($canteens)) {
+            throw new ParameterException(['msg' => '字段饭堂id，参数格式错误']);
+        }
+        $data_list = [];
         foreach ($canteens as $k => $v) {
             $data_list[] = [
                 'staff_id' => $staff_id,
-                'canteen_id' => $v,
+                'canteen_id' => $v['canteen_id'],
                 'state' => CommonEnum::STATE_IS_OK
             ];
         }
-    }
-    if (!empty($cancel_canteens)) {
-        foreach ($cancel_canteens as $k => $v) {
-            $data_list[] = [
-                'id' => $v,
-                'state' => CommonEnum::STATE_IS_FAIL
-            ];
-        }
-    }
-    $res = (new StaffCanteenT())->saveAll($data_list);
-    if (!$res) {
-        throw new SaveException(['msg' => '更新饭堂用户关系失败']);
-    }
-
-}
-
-public
-function uploadStaffs($company_id, $staffs_excel)
-{
-    $date = (new ExcelService())->saveExcel($staffs_excel);
-    $res = $this->prefixStaffs($company_id, $date);
-    return $res;
-}
-
-private
-function prefixStaffs($company_id, $data)
-{
-    $types = (new AdminService())->allTypes();
-    $canteens = (new CanteenService())->companyCanteens($company_id);
-    $departments = $this->companyDepartments($company_id);
-    $staffs = $this->getCompanyStaffs($company_id);
-    //获取企业消费方式
-    $consumptionType = (new CompanyService())->consumptionType($company_id);
-    $consumptionTypeArr = explode(',', $consumptionType['consumptionType']);
-    $phones = $staffs['phones'];
-    $faceCodes = $staffs['faceCodes'];
-    $cardNums = $staffs['cardNums'];
-    $fail = array();
-    $success = array();
-    $param_key = array();
-    if (count($data) < 2) {
-        return [];
-    }
-
-    foreach ($data as $k => $v) {
-        if ($k == 2) {
-            $param_key = $data[$k];
-        } else if ($k > 2 && !empty($data[$k])) {
-            if (empty($v[0])) {
-                continue;
-            }
-            //检测手机号是否已经存在
-            if (in_array($v[5], $phones)) {
-                $fail[] = "第" . $k . "数据有问题：手机号" . $v[5] . "系统已经存在";
-                break;
-            } else if (!$this->isMobile($v[5])) {
-                $fail[] = "第" . $k . "数据有问题：手机号格式错误";
-                break;
-            } else {
-                array_push($phones, $v[5]);
-            }
-            $faceCode = trim($v[9]);
-            //检测人脸识别id是否存在
-            if (in_array('face', $consumptionTypeArr)) {
-                if (!empty($faceCode) && in_array($faceCode, $faceCodes)) {
-                    $fail[] = "第" . $k . "数据有问题：人脸识别ID" . $faceCode . "系统已经存在";
-                    break;
-                } else {
-                    if (!empty($faceCode)) {
-                        array_push($faceCodes, $faceCode);
-                    }
-                }
-
-            }
-            $check = $this->validateParams($company_id, $param_key, $data[$k], $types, $canteens, $departments, $consumptionTypeArr, $cardNums);
-            if (!$check['res']) {
-                $fail[] = "第" . $k . "数据有问题：" . $check['info']['msg'];
-                continue;
-            }
-            if (in_array('card', $consumptionTypeArr)) {
-                array_push($cardNums, $v[6]);
-            }
-            $success[] = $check['info'];
+        $res = (new StaffCanteenT())->saveAll($data_list);
+        if (!$res) {
+            throw new SaveException(['msg' => '添加饭堂用户关系失败']);
         }
 
     }
 
-    if (count($success)) {
-        $all = (new CompanyStaffT())->saveAll($success);
-        if (!$all) {
-            throw  new SaveException();
-        }
-
-    }
-    return [
-        'fail' => $fail
-    ];
-
-
-}
-
-private
-function isMobile($value)
-{
-    $rule = '^1[0-9][0-9]\d{8}$^';
-    $result = preg_match($rule, $value);
-    if ($result) {
-        return true;
-    } else {
-        return false;
-    }
-}
-
-public
-function getCompanyStaffs($company_id)
-{
-    $staffs = CompanyStaffT::staffs($company_id);
-    $staffsPhone = [];
-    $staffsFaceCode = [];
-    $staffsCardNum = [];
-    foreach ($staffs as $k => $v) {
-        array_push($staffsPhone, $v['phone']);
-        array_push($staffsFaceCode, $v['face_code']);
-        if ($v['card']) {
-            array_push($staffsCardNum, $v['card']['card_code']);
-
-        }
-    }
-    return [
-        'phones' => $staffsPhone,
-        'faceCodes' => $staffsFaceCode,
-        'cardNums' => $staffsCardNum
-    ];
-}
-
-
-private
-function validateParams($company_id, $param_key, $data, $types, $canteens, $departments, $consumptionTypeArr, $cardNums)
-{
-    $state = ['启用', '停用'];
-    $canteen = trim($data[0]);
-    $department = trim($data[1]);
-    $staffType = trim($data[2]);
-    $code = trim($data[3]);
-    $name = trim($data[4]);
-    $phone = trim($data[5]);
-    $card_num = trim($data[6]);
-    $face_code = trim($data[9]);
-    $birthday = trim($data[8]);
-    $canteen_ids = [];
-
-    if (!in_array($data[7], $state)) {
-        $fail = [
-            'name' => $name,
-            'msg' => '状态错误'
-        ];
-        return [
-            'res' => false,
-            'info' => $fail
-        ];
-    }
-    $state = trim($data[7]) == "启用" ? 1 : 2;
-    //判断饭堂是否存在
-    $canteen_arr = explode('|', $canteen);
-    if (empty($canteen_arr)) {
-        $fail = [
-            'name' => $name,
-            'msg' => '饭堂字段为空'
-        ];
-        return [
-            'res' => false,
-            'info' => $fail
-        ];
-    }
-
-    foreach ($canteen_arr as $k => $v) {
-        $c_id = $this->checkParamExits($canteens, $v);
-        if (!$c_id) {
-            $fail = [
-                'name' => $name,
-                'msg' => '企业中不存在该饭堂：' . $v
-            ];
-            return [
-                'res' => false,
-                'info' => $fail
-            ];
-            break;
-        }
-        array_push($canteen_ids, $c_id);
-    }
-
-    //判断人员类型是否存在
-    $t_id = $this->checkParamExits($types, $staffType);
-    if (!$t_id) {
-        $fail = [
-            'name' => $name,
-            'msg' => '系统中不存在该人员类型：' . $staffType
-        ];
-        return [
-            'res' => false,
-            'info' => $fail
-        ];
-    }
-
-    if (in_array('card', $consumptionTypeArr)) {
-        //判断填写了卡号，生日必填
-        if (in_array($card_num, $cardNums)) {
-            $fail = [
-                'name' => $name,
-                'msg' => "卡号重复"
-            ];
-            return [
-                'res' => false,
-                'info' => $fail
-            ];
-        }
-        if (!strlen($birthday)) {
-            $fail = [
-                'name' => $name,
-                'msg' => "生日未填写"
-            ];
-            return [
-                'res' => false,
-                'info' => $fail
-            ];
-        }
-    }
-
-    //检测部门是否存在
-    $d_id = $this->checkParamExits($departments, $department);
-    if (!$d_id) {
-        $fail = [
-            'name' => $name,
-            'msg' => '企业中不存在该部门：' . $department
-        ];
-        return [
-            'res' => false,
-            'info' => $fail
-        ];
-    }
-    $data = [
-        'd_id' => $d_id,
-        't_id' => $t_id,
-        'code' => $code,
-        'username' => $name,
-        'phone' => $phone,
-        'company_id' => $company_id,
-        'canteen_ids' => implode(',', $canteen_ids),
-        'state' => $state
-    ];
-
-    if (in_array('card', $consumptionTypeArr)) {
-        $data['card_num'] = $card_num;
-        $data['birthday'] = gmdate("Y-m-d", ($birthday - 25569) * 86400);
-    }
-
-    if (in_array('face', $consumptionTypeArr)) {
-        $data['face_code'] = $face_code;
-
-    }
-
-    return [
-        'res' => true,
-        'info' => $data
-    ];
-}
-
-private
-function checkParamExits($list, $current_data)
-{
-    if (!count($list)) {
-        return 0;
-    }
-    foreach ($list as $k => $v) {
-        if ($v['name'] == $current_data) {
-            return $v['id'];
-        }
-    }
-    return 0;
-
-}
-
-private
-function companyDepartments($company_id)
-{
-    $departs = CompanyDepartmentT::where('c_id', $company_id)
-        ->where('state', CommonEnum::STATE_IS_OK)
-        ->field('id,name')
-        ->select()->toArray();
-    return $departs;
-}
-
-private
-function getUploadStaffQrcodeAndCanteenInfo($staffs)
-{
-    $list = array();
-    $staff_canteen_list = array();
-    foreach ($staffs as $k => $v) {
-        $code = getRandChar(12);
-        $url = sprintf(config("setting.qrcode_url"), 'canteen', $code);
-        $qrcode_url = (new QrcodeService())->qr_code($url);
-        $list[] = [
-            'code' => $code,
-            's_id' => $v->id,
-            'expiry_date' => date('Y-m-d H:i:s', strtotime('+' . config("setting.qrcode_expire_in") . 'minute')),
-            'url' => $qrcode_url
-        ];
-
-        $canteen_ids = $v->canteen_ids;
-        $canteen_arr = explode(',', $canteen_ids);
-        if (!empty($canteen_arr)) {
-            foreach ($canteen_arr as $k2 => $v2) {
-                $staff_canteen_list[] = [
-                    'staff_id' => $v->id,
-                    'canteen_id' => $v2,
+    private
+    function updateStaffCanteen($staff_id, $canteens, $cancel_canteens)
+    {
+        $data_list = [];
+        if (!empty($canteens)) {
+            foreach ($canteens as $k => $v) {
+                $data_list[] = [
+                    'staff_id' => $staff_id,
+                    'canteen_id' => $v,
                     'state' => CommonEnum::STATE_IS_OK
                 ];
             }
         }
+        if (!empty($cancel_canteens)) {
+            foreach ($cancel_canteens as $k => $v) {
+                $data_list[] = [
+                    'id' => $v,
+                    'state' => CommonEnum::STATE_IS_FAIL
+                ];
+            }
+        }
+        $res = (new StaffCanteenT())->saveAll($data_list);
+        if (!$res) {
+            throw new SaveException(['msg' => '更新饭堂用户关系失败']);
+        }
+
     }
-    return [
-        'qrcode' => $list,
-        'canteen' => $staff_canteen_list
-    ];
 
-}
-
-public
-function saveQrcode($s_id)
-{
-    $code = QRcodeNUmber();
-    $url = sprintf(config("setting.qrcode_url"), 'canteen', $code);
-    $qrcode_url = (new QrcodeService())->qr_code($url);
-    $expiry_date = date('Y-m-d H:i:s', strtotime("+" . config("setting.qrcode_expire_in") . "minute", time()));
-    $data = [
-        'code' => $code,
-        's_id' => $s_id,
-        'minute' => config("setting.qrcode_expire_in"),
-        'expiry_date' => $expiry_date,
-        'url' => $qrcode_url
-    ];
-    $qrcode = StaffQrcodeT::create($data);
-    if (!$qrcode) {
-        throw new SaveException();
+    public
+    function uploadStaffs($company_id, $staffs_excel)
+    {
+        $date = (new ExcelService())->saveExcel($staffs_excel);
+        $res = $this->prefixStaffs($company_id, $date);
+        return $res;
     }
-    return $qrcode_url;
-}
+
+    private
+    function prefixStaffs($company_id, $data)
+    {
+        $types = (new AdminService())->allTypes();
+        $canteens = (new CanteenService())->companyCanteens($company_id);
+        $departments = $this->companyDepartments($company_id);
+        $staffs = $this->getCompanyStaffs($company_id);
+        //获取企业消费方式
+        $consumptionType = (new CompanyService())->consumptionType($company_id);
+        $consumptionTypeArr = explode(',', $consumptionType['consumptionType']);
+        $phones = $staffs['phones'];
+        $faceCodes = $staffs['faceCodes'];
+        $cardNums = $staffs['cardNums'];
+        $fail = array();
+        $success = array();
+        $param_key = array();
+        if (count($data) < 2) {
+            return [];
+        }
+
+        foreach ($data as $k => $v) {
+            if ($k == 2) {
+                $param_key = $data[$k];
+            } else if ($k > 2 && !empty($data[$k])) {
+                if (empty($v[0])) {
+                    continue;
+                }
+                //检测手机号是否已经存在
+                if (in_array($v[5], $phones)) {
+                    $fail[] = "第" . $k . "数据有问题：手机号" . $v[5] . "系统已经存在";
+                    break;
+                } else if (!$this->isMobile($v[5])) {
+                    $fail[] = "第" . $k . "数据有问题：手机号格式错误";
+                    break;
+                } else {
+                    array_push($phones, $v[5]);
+                }
+                $faceCode = trim($v[9]);
+                //检测人脸识别id是否存在
+                if (in_array('face', $consumptionTypeArr)) {
+                    if (!empty($faceCode) && in_array($faceCode, $faceCodes)) {
+                        $fail[] = "第" . $k . "数据有问题：人脸识别ID" . $faceCode . "系统已经存在";
+                        break;
+                    } else {
+                        if (!empty($faceCode)) {
+                            array_push($faceCodes, $faceCode);
+                        }
+                    }
+
+                }
+                $check = $this->validateParams($company_id, $param_key, $data[$k], $types, $canteens, $departments, $consumptionTypeArr, $cardNums);
+                if (!$check['res']) {
+                    $fail[] = "第" . $k . "数据有问题：" . $check['info']['msg'];
+                    continue;
+                }
+                if (in_array('card', $consumptionTypeArr)) {
+                    array_push($cardNums, $v[6]);
+                }
+                $success[] = $check['info'];
+            }
+
+        }
+
+        if (count($success)) {
+            $all = (new CompanyStaffT())->saveAll($success);
+            if (!$all) {
+                throw  new SaveException();
+            }
+
+        }
+        return [
+            'fail' => $fail
+        ];
 
 
-public
-function saveQrcode2($s_id)
-{
-    $code = QRcodeNUmber();
-    $url = sprintf(config("setting.qrcode_url"), 'canteen', $code);
-    $qrcode_url = (new QrcodeService())->qr_code($url);
-    $expiry_date = date('Y-m-d H:i:s', strtotime("+" . config("setting.qrcode_expire_in") . "minute", time()));
-    $data = [
-        'code' => $code,
-        's_id' => $s_id,
-        'minute' => config("setting.qrcode_expire_in"),
-        'expiry_date' => $expiry_date,
-        'url' => $qrcode_url
-    ];
-    $qrcode = StaffQrcodeT::create($data);
-    if (!$qrcode) {
-        throw new SaveException();
     }
-    return [
-        'url' => $qrcode->url,
-        'create_time' => $qrcode->create_time,
-        'expiry_date' => $qrcode->expiry_date
-    ];
-}
 
-
-public
-function updateQrcode2($params)
-{
-    $code = QRcodeNUmber();
-    $staff_id = $params['id'];
-    unset($params['id']);
-    $url = sprintf(config("setting.qrcode_url"), 'canteen', $code);
-    $qrcode_url = (new QrcodeService())->qr_code($url);
-    $params['code'] = $code;
-    $params['url'] = $qrcode_url;
-    $expiry_date = date('Y-m-d H:i:s', time());
-    $params['create_time'] = $expiry_date;
-    $params['expiry_date'] = $this->prefixQrcodeExpiryDate($expiry_date, $params);
-    $staffQRCode = StaffQrcodeT::where('s_id', $staff_id)->find();
-    if ($staffQRCode) {
-        $qrcode = StaffQrcodeT::update($params, ['s_id' => $staff_id]);
-    } else {
-        $params['s_id'] = $staff_id;
-        $qrcode = StaffQrcodeT::create($params);
+    private
+    function isMobile($value)
+    {
+        $rule = '^1[0-9][0-9]\d{8}$^';
+        $result = preg_match($rule, $value);
+        if ($result) {
+            return true;
+        } else {
+            return false;
+        }
     }
-    if (!$qrcode) {
-        throw new SaveException();
+
+    public
+    function getCompanyStaffs($company_id)
+    {
+        $staffs = CompanyStaffT::staffs($company_id);
+        $staffsPhone = [];
+        $staffsFaceCode = [];
+        $staffsCardNum = [];
+        foreach ($staffs as $k => $v) {
+            array_push($staffsPhone, $v['phone']);
+            array_push($staffsFaceCode, $v['face_code']);
+            if ($v['card']) {
+                array_push($staffsCardNum, $v['card']['card_code']);
+
+            }
+        }
+        return [
+            'phones' => $staffsPhone,
+            'faceCodes' => $staffsFaceCode,
+            'cardNums' => $staffsCardNum
+        ];
     }
-    $staff = CompanyStaffT::get($staff_id);
-    return [
-        'usernmae' => $staff->username,
-        'url' => $qrcode->url,
-        'create_time' => $qrcode->create_time,
-        'expiry_date' => $qrcode->expiry_date
-    ];
-}
 
 
-public
-function updateQrcode($params)
-{
-    $code = QRcodeNUmber();
-    $url = sprintf(config("setting.qrcode_url"), 'canteen', $code, $params['s_id']);
-    $qrcode_url = (new QrcodeService())->qr_code($url);
-    $s_id = $params['id'];
-    $params['code'] = $code;
-    $params['url'] = $qrcode_url;
-    $expiry_date = date('Y-m-d H:i:s', time());
-    $params['create_time'] = $expiry_date;
-    $params['expiry_date'] = $this->prefixQrcodeExpiryDate($expiry_date, $params);
-    $qrcode = StaffQrcodeT::update($params);
-    if (!$qrcode) {
-        throw new SaveException();
+    private
+    function validateParams($company_id, $param_key, $data, $types, $canteens, $departments, $consumptionTypeArr, $cardNums)
+    {
+        $state = ['启用', '停用'];
+        $canteen = trim($data[0]);
+        $department = trim($data[1]);
+        $staffType = trim($data[2]);
+        $code = trim($data[3]);
+        $name = trim($data[4]);
+        $phone = trim($data[5]);
+        $card_num = trim($data[6]);
+        $face_code = trim($data[9]);
+        $birthday = trim($data[8]);
+        $canteen_ids = [];
+
+        if (!in_array($data[7], $state)) {
+            $fail = [
+                'name' => $name,
+                'msg' => '状态错误'
+            ];
+            return [
+                'res' => false,
+                'info' => $fail
+            ];
+        }
+        $state = trim($data[7]) == "启用" ? 1 : 2;
+        //判断饭堂是否存在
+        $canteen_arr = explode('|', $canteen);
+        if (empty($canteen_arr)) {
+            $fail = [
+                'name' => $name,
+                'msg' => '饭堂字段为空'
+            ];
+            return [
+                'res' => false,
+                'info' => $fail
+            ];
+        }
+
+        foreach ($canteen_arr as $k => $v) {
+            $c_id = $this->checkParamExits($canteens, $v);
+            if (!$c_id) {
+                $fail = [
+                    'name' => $name,
+                    'msg' => '企业中不存在该饭堂：' . $v
+                ];
+                return [
+                    'res' => false,
+                    'info' => $fail
+                ];
+                break;
+            }
+            array_push($canteen_ids, $c_id);
+        }
+
+        //判断人员类型是否存在
+        $t_id = $this->checkParamExits($types, $staffType);
+        if (!$t_id) {
+            $fail = [
+                'name' => $name,
+                'msg' => '系统中不存在该人员类型：' . $staffType
+            ];
+            return [
+                'res' => false,
+                'info' => $fail
+            ];
+        }
+
+        if (in_array('card', $consumptionTypeArr)) {
+            //判断填写了卡号，生日必填
+            if (in_array($card_num, $cardNums)) {
+                $fail = [
+                    'name' => $name,
+                    'msg' => "卡号重复"
+                ];
+                return [
+                    'res' => false,
+                    'info' => $fail
+                ];
+            }
+            if (!strlen($birthday)) {
+                $fail = [
+                    'name' => $name,
+                    'msg' => "生日未填写"
+                ];
+                return [
+                    'res' => false,
+                    'info' => $fail
+                ];
+            }
+        }
+
+        //检测部门是否存在
+        $d_id = $this->checkParamExits($departments, $department);
+        if (!$d_id) {
+            $fail = [
+                'name' => $name,
+                'msg' => '企业中不存在该部门：' . $department
+            ];
+            return [
+                'res' => false,
+                'info' => $fail
+            ];
+        }
+        $data = [
+            'd_id' => $d_id,
+            't_id' => $t_id,
+            'code' => $code,
+            'username' => $name,
+            'phone' => $phone,
+            'company_id' => $company_id,
+            'canteen_ids' => implode(',', $canteen_ids),
+            'state' => $state
+        ];
+
+        if (in_array('card', $consumptionTypeArr)) {
+            $data['card_num'] = $card_num;
+            $data['birthday'] = gmdate("Y-m-d", ($birthday - 25569) * 86400);
+        }
+
+        if (in_array('face', $consumptionTypeArr)) {
+            $data['face_code'] = $face_code;
+
+        }
+
+        return [
+            'res' => true,
+            'info' => $data
+        ];
     }
-    $staff = CompanyStaffT::get($s_id);
-    return [
-        'usernmae' => $staff->username,
-        'url' => $qrcode->url,
-        'create_time' => $qrcode->create_time,
-        'expiry_date' => $qrcode->expiry_date
-    ];
-}
 
-public
-function updateQrcode3($params)
-{
-    $code = QRcodeNUmber();
-    $url = sprintf(config("setting.qrcode_url"), 'canteen', $code, $params['s_id']);
-    $qrcode_url = (new QrcodeService())->qr_code($url);
-    $s_id = $params['staff_id'];
-    $params['code'] = $code;
-    $params['url'] = $qrcode_url;
-    $expiry_date = date('Y-m-d H:i:s', time());
-    $params['create_time'] = $expiry_date;
-    $params['expiry_date'] = $this->prefixQrcodeExpiryDate($expiry_date, $params);
-    $qrcode = StaffQrcodeT::update($params);
-    if (!$qrcode) {
-        throw new SaveException();
+    private
+    function checkParamExits($list, $current_data)
+    {
+        if (!count($list)) {
+            return 0;
+        }
+        foreach ($list as $k => $v) {
+            if ($v['name'] == $current_data) {
+                return $v['id'];
+            }
+        }
+        return 0;
+
     }
-    $staff = CompanyStaffT::get($s_id);
-    return [
-        'usernmae' => $staff->username,
-        'url' => $qrcode->url,
-        'create_time' => $qrcode->create_time,
-        'expiry_date' => $qrcode->expiry_date
-    ];
-}
+
+    private
+    function companyDepartments($company_id)
+    {
+        $departs = CompanyDepartmentT::where('c_id', $company_id)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->field('id,name')
+            ->select()->toArray();
+        return $departs;
+    }
+
+    private
+    function getUploadStaffQrcodeAndCanteenInfo($staffs)
+    {
+        $list = array();
+        $staff_canteen_list = array();
+        foreach ($staffs as $k => $v) {
+            $code = getRandChar(12);
+            $url = sprintf(config("setting.qrcode_url"), 'canteen', $code);
+            $qrcode_url = (new QrcodeService())->qr_code($url);
+            $list[] = [
+                'code' => $code,
+                's_id' => $v->id,
+                'expiry_date' => date('Y-m-d H:i:s', strtotime('+' . config("setting.qrcode_expire_in") . 'minute')),
+                'url' => $qrcode_url
+            ];
+
+            $canteen_ids = $v->canteen_ids;
+            $canteen_arr = explode(',', $canteen_ids);
+            if (!empty($canteen_arr)) {
+                foreach ($canteen_arr as $k2 => $v2) {
+                    $staff_canteen_list[] = [
+                        'staff_id' => $v->id,
+                        'canteen_id' => $v2,
+                        'state' => CommonEnum::STATE_IS_OK
+                    ];
+                }
+            }
+        }
+        return [
+            'qrcode' => $list,
+            'canteen' => $staff_canteen_list
+        ];
+
+    }
+
+    public
+    function saveQrcode($s_id)
+    {
+        $code = QRcodeNUmber();
+        $url = sprintf(config("setting.qrcode_url"), 'canteen', $code);
+        $qrcode_url = (new QrcodeService())->qr_code($url);
+        $expiry_date = date('Y-m-d H:i:s', strtotime("+" . config("setting.qrcode_expire_in") . "minute", time()));
+        $data = [
+            'code' => $code,
+            's_id' => $s_id,
+            'minute' => config("setting.qrcode_expire_in"),
+            'expiry_date' => $expiry_date,
+            'url' => $qrcode_url
+        ];
+        $qrcode = StaffQrcodeT::create($data);
+        if (!$qrcode) {
+            throw new SaveException();
+        }
+        return $qrcode_url;
+    }
 
 
-public
-function companyStaffs($page, $size, $c_id, $d_id)
-{
-    $staffs = CompanyStaffV::companyStaffs($page, $size, $c_id, $d_id);
-    return $staffs;
-}
+    public
+    function saveQrcode2($s_id)
+    {
+        $code = QRcodeNUmber();
+        $url = sprintf(config("setting.qrcode_url"), 'canteen', $code);
+        $qrcode_url = (new QrcodeService())->qr_code($url);
+        $expiry_date = date('Y-m-d H:i:s', strtotime("+" . config("setting.qrcode_expire_in") . "minute", time()));
+        $data = [
+            'code' => $code,
+            's_id' => $s_id,
+            'minute' => config("setting.qrcode_expire_in"),
+            'expiry_date' => $expiry_date,
+            'url' => $qrcode_url
+        ];
+        $qrcode = StaffQrcodeT::create($data);
+        if (!$qrcode) {
+            throw new SaveException();
+        }
+        return [
+            'url' => $qrcode->url,
+            'create_time' => $qrcode->create_time,
+            'expiry_date' => $qrcode->expiry_date
+        ];
+    }
+
+
+    public
+    function updateQrcode2($params)
+    {
+        $code = QRcodeNUmber();
+        $staff_id = $params['id'];
+        unset($params['id']);
+        $url = sprintf(config("setting.qrcode_url"), 'canteen', $code);
+        $qrcode_url = (new QrcodeService())->qr_code($url);
+        $params['code'] = $code;
+        $params['url'] = $qrcode_url;
+        $expiry_date = date('Y-m-d H:i:s', time());
+        $params['create_time'] = $expiry_date;
+        $params['expiry_date'] = $this->prefixQrcodeExpiryDate($expiry_date, $params);
+        $staffQRCode = StaffQrcodeT::where('s_id', $staff_id)->find();
+        if ($staffQRCode) {
+            $qrcode = StaffQrcodeT::update($params, ['s_id' => $staff_id]);
+        } else {
+            $params['s_id'] = $staff_id;
+            $qrcode = StaffQrcodeT::create($params);
+        }
+        if (!$qrcode) {
+            throw new SaveException();
+        }
+        $staff = CompanyStaffT::get($staff_id);
+        return [
+            'usernmae' => $staff->username,
+            'url' => $qrcode->url,
+            'create_time' => $qrcode->create_time,
+            'expiry_date' => $qrcode->expiry_date
+        ];
+    }
+
+
+    public
+    function updateQrcode($params)
+    {
+        $code = QRcodeNUmber();
+        $url = sprintf(config("setting.qrcode_url"), 'canteen', $code, $params['s_id']);
+        $qrcode_url = (new QrcodeService())->qr_code($url);
+        $s_id = $params['id'];
+        $params['code'] = $code;
+        $params['url'] = $qrcode_url;
+        $expiry_date = date('Y-m-d H:i:s', time());
+        $params['create_time'] = $expiry_date;
+        $params['expiry_date'] = $this->prefixQrcodeExpiryDate($expiry_date, $params);
+        $qrcode = StaffQrcodeT::update($params);
+        if (!$qrcode) {
+            throw new SaveException();
+        }
+        $staff = CompanyStaffT::get($s_id);
+        return [
+            'usernmae' => $staff->username,
+            'url' => $qrcode->url,
+            'create_time' => $qrcode->create_time,
+            'expiry_date' => $qrcode->expiry_date
+        ];
+    }
+
+    public
+    function updateQrcode3($params)
+    {
+        $code = QRcodeNUmber();
+        $url = sprintf(config("setting.qrcode_url"), 'canteen', $code, $params['s_id']);
+        $qrcode_url = (new QrcodeService())->qr_code($url);
+        $s_id = $params['staff_id'];
+        $params['code'] = $code;
+        $params['url'] = $qrcode_url;
+        $expiry_date = date('Y-m-d H:i:s', time());
+        $params['create_time'] = $expiry_date;
+        $params['expiry_date'] = $this->prefixQrcodeExpiryDate($expiry_date, $params);
+        $qrcode = StaffQrcodeT::update($params);
+        if (!$qrcode) {
+            throw new SaveException();
+        }
+        $staff = CompanyStaffT::get($s_id);
+        return [
+            'usernmae' => $staff->username,
+            'url' => $qrcode->url,
+            'create_time' => $qrcode->create_time,
+            'expiry_date' => $qrcode->expiry_date
+        ];
+    }
+
+
+    public
+    function companyStaffs($page, $size, $c_id, $d_id)
+    {
+        $staffs = CompanyStaffV::companyStaffs($page, $size, $c_id, $d_id);
+        return $staffs;
+    }
 
     public
     function exportStaffs($company_id, $department_id)
@@ -687,7 +688,7 @@ function companyStaffs($page, $size, $c_id, $d_id)
         //检测企业是否包含刷脸消费
         $checkFace = (new CompanyService())->checkConsumptionContainsFace($company_id);
         $staffs = CompanyStaffV::exportStaffs($company_id, $department_id);
-        $staffs = $this->prefixExportStaff($staffs, $checkCard,$checkFace);
+        $staffs = $this->prefixExportStaff($staffs, $checkCard, $checkFace);
         if ($checkCard && $checkFace) {
             $header = ['企业', '部门', '人员状态', '人员类型', '员工编号', '姓名', '手机号码', '卡号', '出生日期', '人脸识别ID', '归属饭堂'];
         } else
@@ -708,7 +709,7 @@ function companyStaffs($page, $size, $c_id, $d_id)
     }
 
     private
-    function prefixExportStaff($staffs, $checkCard,$checkFace)
+    function prefixExportStaff($staffs, $checkCard, $checkFace)
     {
         if (!count($staffs)) {
             return $staffs;
@@ -725,8 +726,7 @@ function companyStaffs($page, $size, $c_id, $d_id)
                 unset($staffs[$k]['card_num']);
                 unset($staffs[$k]['birthday']);
             }
-            if(!$checkFace)
-            {
+            if (!$checkFace) {
                 unset($staffs[$k]['face_code']);
             }
             if (!$checkCard && !$checkFace) {
@@ -740,82 +740,83 @@ function companyStaffs($page, $size, $c_id, $d_id)
         return $staffs;
 
     }
-private
-function prefixQrcodeExpiryDate($expiry_date, $params)
-{
-    $type = ['minute', 'hour', 'day', 'month', 'year'];
-    $exit = 0;
-    foreach ($type as $k => $v) {
-        if (key_exists($v, $params) && !empty($params[$v])) {
-            $exit = 1;
-            $expiry_date = date('Y-m-d H:i:s', strtotime("+" . $params[$v] . "$v", strtotime($expiry_date)));
+
+    private
+    function prefixQrcodeExpiryDate($expiry_date, $params)
+    {
+        $type = ['minute', 'hour', 'day', 'month', 'year'];
+        $exit = 0;
+        foreach ($type as $k => $v) {
+            if (key_exists($v, $params) && !empty($params[$v])) {
+                $exit = 1;
+                $expiry_date = date('Y-m-d H:i:s', strtotime("+" . $params[$v] . "$v", strtotime($expiry_date)));
+            }
         }
+        if (!$exit) {
+            $expiry_date = date('Y-m-d H:i:s', strtotime("+" . config("setting.qrcode_expire_in") . "minute", strtotime($expiry_date)));
+
+        }
+        return $expiry_date;
     }
-    if (!$exit) {
-        $expiry_date = date('Y-m-d H:i:s', strtotime("+" . config("setting.qrcode_expire_in") . "minute", strtotime($expiry_date)));
+
+    public
+    function departmentStaffs($d_ids)
+    {
+        $staffs = CompanyStaffT::departmentStaffs($d_ids);
+        return $staffs;
+    }
+
+    public
+    function getStaffWithPhone($phone, $company_id)
+    {
+        $staff = CompanyStaffT::getStaffWithPhone($phone, $company_id);
+        return $staff;
 
     }
-    return $expiry_date;
-}
 
-public
-function departmentStaffs($d_ids)
-{
-    $staffs = CompanyStaffT::departmentStaffs($d_ids);
-    return $staffs;
-}
+    public
+    function getCompanyStaffCounts($company_id)
+    {
+        $count = CompanyStaffT::getCompanyStaffCounts($company_id);
+        return $count;
+    }
 
-public
-function getStaffWithPhone($phone, $company_id)
-{
-    $staff = CompanyStaffT::getStaffWithPhone($phone, $company_id);
-    return $staff;
+    public
+    function adminDepartments()
+    {
+        if (Token::getCurrentTokenVar('type') == 'official') {
+            $company_id = Token::getCurrentTokenVar('current_company_id');
 
-}
+        } else {
+            $company_id = Token::getCurrentTokenVar('company_id');
 
-public
-function getCompanyStaffCounts($company_id)
-{
-    $count = CompanyStaffT::getCompanyStaffCounts($company_id);
-    return $count;
-}
+        }
+        $departments = CompanyDepartmentT::adminDepartments($company_id);
+        return $departments;
+    }
 
-public
-function adminDepartments()
-{
-    if (Token::getCurrentTokenVar('type') == 'official') {
-        $company_id = Token::getCurrentTokenVar('current_company_id');
-
-    } else {
+    public
+    function departmentsForRecharge()
+    {
         $company_id = Token::getCurrentTokenVar('company_id');
-
+        $departments = CompanyDepartmentT::adminDepartments($company_id);
+        return $departments;
     }
-    $departments = CompanyDepartmentT::adminDepartments($company_id);
-    return $departments;
-}
 
-public
-function departmentsForRecharge()
-{
-    $company_id = Token::getCurrentTokenVar('company_id');
-    $departments = CompanyDepartmentT::adminDepartments($company_id);
-    return $departments;
-}
+    public
+    function staffsForRecharge($page, $size, $department_id, $key)
+    {
+        $company_id = Token::getCurrentTokenVar('company_id');
+        $staffs = CompanyStaffV:: staffsForRecharge($page, $size, $department_id, $key, $company_id);
+        return $staffs;
+    }
 
-public
-function staffsForRecharge($page, $size, $department_id, $key)
-{
-    $company_id = Token::getCurrentTokenVar('company_id');
-    $staffs = CompanyStaffV:: staffsForRecharge($page, $size, $department_id, $key, $company_id);
-    return $staffs;
-}
-
-public
-function searchStaff($page, $size, $company_id, $department_id, $key)
-{
-    $staffs = CompanyStaffV::searchStaffs($page, $size, $company_id, $department_id, $key);
-    return $staffs;
-}
+    public
+    function searchStaff($page, $size, $company_id, $department_id, $key)
+    {
+        $staffs = CompanyStaffV::searchStaffs($page, $size, $company_id, $department_id, $key);
+        return $staffs;
+    }
 
 
 }
