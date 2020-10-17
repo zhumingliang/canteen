@@ -429,10 +429,10 @@ function validateParams($company_id, $param_key, $data, $types, $canteens, $depa
                 'info' => $fail
             ];
         }
-        if (!strlen($card_num) || !strlen($birthday)) {
+        if (!strlen($birthday)) {
             $fail = [
                 'name' => $name,
-                'msg' => "卡号或者生日未填写"
+                'msg' => "生日未填写"
             ];
             return [
                 'res' => false,
