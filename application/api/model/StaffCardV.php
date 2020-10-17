@@ -16,8 +16,7 @@ class StaffCardV extends Model
          //   ->whre('state', '<', CommonEnum::STATE_IS_DELETE)
             ->where(function ($query) use ($name) {
                 if (strlen($name)) {
-                    $query->where('name', $name);
-                }
+                    $query->where('name', 'like', '%' . $name . '%');                }
             })
             ->where(function ($query) use ($card_code) {
                 if (strlen($card_code)) {
