@@ -142,13 +142,16 @@ class Notice2
             }
         }
         foreach ($staffs as $staffs2){
-            NoticeUserT::create([
+            $data = [
                 's_id' => $staffs2,
-                'read' => '2',
+                'read' => 2,
                 'n_id' => $id['id'],
                 'create_time' => date('Y-m-d H:i:s'),
                 'update_time' => date('Y-m-d H:i:s')
-            ]);
+            ];
+            db('notice_user_t')
+                ->data($data)
+                ->insert();
         }
         if ($save) {
             return json(new SuccessMessage());
@@ -175,20 +178,29 @@ class Notice2
     public function receiver()
     {
         $id = Request::param('id');
+//        $company_id = 69;
         $company_id = Token::getCurrentTokenVar('current_company_id');
-        $s_id = Db::table('canteen_notice_t')
+        $staff_info = Db::table('canteen_notice_t')
             ->whereIn('id', $id)
-            ->field('s_ids')
+            ->field('s_ids,d_ids')
             ->select();
+        if($staff_info->isEmpty())
+        {
+            throw new AuthException(['msg' => '未找到人员信息']);
+        }
+        $s_ids = $staff_info[0]['s_ids'];
+        $d_ids = $staff_info[0]['d_ids'];
+        if(empty($s_ids))
+        {
+            $s_ids = 0;
+        }
+        if(empty($d_ids))
+        {
+            $d_ids = 0;
+        }
+        $dtResult = Db::query("select username from canteen_company_staff_t where state = 1 and company_id = ".$company_id." and id in (".$s_ids.") or d_id in(".$d_ids.")");
 
-        $data = $s_id[0]['s_ids'];
-        $Uname = Db::table('canteen_company_staff_t')
-            ->where('state', 1)
-            ->whereIn('id', $data)
-            ->whereIn('company_id', $company_id)
-            ->field('username')
-            ->select();
-        $Username = array_column($Uname, 'username');
+        $Username = array_column($dtResult, 'username');
         return json(new SuccessMessageWithData(['data' => $Username]));
     }
 
