@@ -74,12 +74,11 @@ Index extends BaseController
 
     public function test($param = "")
     {
-        $parent = OrderParentT::where('state',CommonEnum::STATE_IS_FAIL)->select();
-        $p_id = [];
+        $parent = OrderParentT::where('state', CommonEnum::STATE_IS_FAIL)
+            ->where('phone',"13267686837")
+            ->select();
         foreach ($parent as $k => $v) {
-            Db::table('canteen_order_sub_t')->where('order_id', $v['id'])->delete();
-            Db::table('canteen_sub_food_t')->where('o_id', $v['id'])->delete();
-            OrderParentT::destroy($v['id']);
+            OrderSubT::update(['state' => 2], ['order_id' => $v['id']]);
         }
 
     }
