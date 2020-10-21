@@ -920,8 +920,12 @@ class OrderService extends BaseService
             $delivery_fee = $this->checkUserOutsider($type, $canteen_id);
             //获取饭堂消费策略设置-检测消费模式
             $strategies = (new CanteenService())->getStaffAllConsumptionStrategy($canteen_id, $staff_type_id);
-            if (empty($strategies)) {
+            if (!$strategies) {
                 throw new ParameterException(['msg' => '消费策略未设置']);
+            }
+            if (empty( $strategies[0]['consumption_type'])){
+                throw new ParameterException(['msg' => '消费策略未设置异常']);
+
             }
             $consumptionType = $strategies[0]['consumption_type'];
             if ($consumptionType == StrategyEnum::CONSUMPTION_TIMES_ONE) {
