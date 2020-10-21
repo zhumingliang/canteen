@@ -343,7 +343,7 @@ class WalletService
             array_push($dataList, [
                 'admin_id' => $admin_id,
                 'company_id' => $company_id,
-                'staff_id' => $newStaffs[$v[3]],
+                'staff_id' => $newStaffs[$v[1]],
                 'source' => 'upload',
                 //'code' => $v[0],
                 'code' => '',
