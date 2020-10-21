@@ -292,7 +292,8 @@ class WalletService
         }
         $newStaffs = [];
         foreach ($staffs as $k => $v) {
-            array_push($newStaffs, $v['code'] . '&' . $v['username'] . '&' . $v['card_num'] . '&' . $v['phone']);
+           // array_push($newStaffs, $v['code'] . '&' . $v['username'] . '&' . $v['card_num'] . '&' . $v['phone']);
+            array_push($newStaffs,  $v['username'] . '&' . $v['phone']);
         }
         $fail = [];
         $data = (new ExcelService())->importExcel($fileName);
@@ -300,9 +301,9 @@ class WalletService
             if ($k < 2) {
                 continue;
             }
-            $checkData = $v[0] . '&' . $v[1] . '&' . $v[2] . '&' . $v[3];
+            $checkData = $v[0] . '&' . $v[1];
             if (!in_array($checkData, $newStaffs) ||
-                !in_array($v[4], $newCanteen) || !$this->checkDinnerInCanteen($v[4], $v[6], $dinners)) {
+                !in_array($v[2], $newCanteen) || !$this->checkDinnerInCanteen($v[2], $v[4], $dinners)) {
                 array_push($fail, '第' . $k . '行数据有问题');
             }
         }
@@ -344,17 +345,19 @@ class WalletService
                 'company_id' => $company_id,
                 'staff_id' => $newStaffs[$v[3]],
                 'source' => 'upload',
-                'code' => $v[0],
-                'username' => $v[1],
-                'card_num' => $v[2],
-                'phone' => $v[3],
-                'canteen' => $v[4],
-                'canteen_id' => $newCanteen[$v[4]],
-                'consumption_date' => $this->getConsumptionDate($v[5]),
-                'dinner_id' => $this->getDinnerID($dinners, $newCanteen[$v[4]], $v[6]),
-                'dinner' => $v[6],
-                'type' => $v[7] == "补扣" ? 2 : 1,
-                'money' => $v[7] == "补扣" ? 0 - $v[8] : $v[8]
+                //'code' => $v[0],
+                'code' => '',
+                'username' => $v[0],
+                //'card_num' => $v[2],
+                'card_num' => '',
+                'phone' => $v[1],
+                'canteen' => $v[2],
+                'canteen_id' => $newCanteen[$v[2]],
+                'consumption_date' => $this->getConsumptionDate($v[3]),
+                'dinner_id' => $this->getDinnerID($dinners, $newCanteen[$v[2]], $v[4]),
+                'dinner' => $v[4],
+                'type' => $v[5] == "补扣" ? 2 : 1,
+                'money' => $v[5] == "补扣" ? 0 - $v[6] : $v[6]
             ]);
         }
 
