@@ -307,7 +307,7 @@ class WalletService
                 array_push($fail, '第' . $k . '行数据有问题');
                 break;
             }
-            if (strtotime($v[3]) > time() || $v[6] < 0) {
+            if (strtotime($v[3]) > strtotime(\date('Y-m-d')) || $v[6] < 0) {
                 array_push($fail, '第' . $k . '行数据有问题');
                 break;
             }

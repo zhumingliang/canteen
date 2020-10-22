@@ -74,12 +74,15 @@ Index extends BaseController
 
     public function test($param = "")
     {
-        $parent = OrderParentT::where('state', CommonEnum::STATE_IS_FAIL)
-            ->where('phone',"13267686837")
-            ->select();
-        foreach ($parent as $k => $v) {
-            OrderSubT::update(['state' => 2], ['order_id' => $v['id']]);
-        }
+        $season = ceil(date('n') /3); //获取月份的季度
+echo                  date('Y-m-d H:i:s', mktime(23, 59, 59, $season * 3, date('t', mktime(0, 0, 0, $season * 3, 1, date("Y"))), date('Y')));
+;
+        /* $parent = OrderParentT::where('state', CommonEnum::STATE_IS_FAIL)
+             ->where('phone',"13267686837")
+             ->select();
+         foreach ($parent as $k => $v) {
+             OrderSubT::update(['state' => 2], ['order_id' => $v['id']]);
+         }*/
 
     }
 

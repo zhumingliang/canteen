@@ -32,8 +32,8 @@ class Notice2
                 'data' => array()
             ];
         }
-        $page2=($page-1)*$size;
-        $s_id=$staff['id'];
+        $page2 = ($page - 1) * $size;
+        $s_id = $staff['id'];
         $notices = "SELECT
         `a`.`id` AS `id`,
         `a`.`s_id` AS `s_id`,
@@ -50,9 +50,9 @@ class Notice2
         
     FROM
         ( `canteen_notice_user_t` `a` LEFT JOIN `canteen_notice_t` `b` ON ( ( `a`.`n_id` = `b`.`id` ) ) )
-    WHERE `a`.`s_id` = ".$s_id." 
-    LIMIT ".$page2.",".$size;
-        $notice=Db::query($notices);
+    WHERE `a`.`s_id` = " . $s_id . " 
+    LIMIT " . $page2 . "," . $size;
+        $notice = Db::query($notices);
         return json(new SuccessMessageWithData(['data' => $notice]));
     }
 
@@ -68,8 +68,11 @@ class Notice2
             ->where($where)
             ->select();
         if (count($notice) > 0) {
-            return json(new SuccessMessageWithData(['data' => $notice]));
+            $data = ['isRead' => false];
+        } else {
+            $data = ['isRead' => true];
         }
+        return json(new SuccessMessageWithData(['data' => $data]));
     }
 
     //上传图片
@@ -94,7 +97,7 @@ class Notice2
     public function saveNotice()
     {
         $param = Request::param();
-        $param['img_path']=Request::param('imgUrl');
+        $param['img_path'] = Request::param('imgUrl');
         if (empty($param['title'])) {
             throw new AuthException(['msg' => '请输入标题']);
         }
@@ -120,28 +123,28 @@ class Notice2
         }
         $notice = new NoticeT();
         $save = $notice->save($param);
-        $id=Db::table('canteen_notice_t')
-            ->order('create_time','desc')
+        $id = Db::table('canteen_notice_t')
+            ->order('create_time', 'desc')
             ->field('id')
             ->find();
-        $staffs=array();
-        if(!empty($param['d_ids'])){
-            $d_id=explode(',',$param['d_ids']);
-            $staff=Db::table('canteen_company_staff_t')
-                ->whereIn('d_id',$d_id)
+        $staffs = array();
+        if (!empty($param['d_ids'])) {
+            $d_id = explode(',', $param['d_ids']);
+            $staff = Db::table('canteen_company_staff_t')
+                ->whereIn('d_id', $d_id)
                 ->field('id')
                 ->select();
-            foreach ($staff as $staff2){
-                array_push($staffs,$staff2['id']);
+            foreach ($staff as $staff2) {
+                array_push($staffs, $staff2['id']);
             }
         }
-        if (!empty($param['s_ids'])){
-            $s_id=explode(',',$param['s_ids']);
-            foreach ($s_id as $s_id2){
-                array_push($staffs,$s_id2);
+        if (!empty($param['s_ids'])) {
+            $s_id = explode(',', $param['s_ids']);
+            foreach ($s_id as $s_id2) {
+                array_push($staffs, $s_id2);
             }
         }
-        foreach ($staffs as $staffs2){
+        foreach ($staffs as $staffs2) {
             $data = [
                 's_id' => $staffs2,
                 'read' => 2,
@@ -184,21 +187,18 @@ class Notice2
             ->whereIn('id', $id)
             ->field('s_ids,d_ids')
             ->select();
-        if($staff_info->isEmpty())
-        {
+        if ($staff_info->isEmpty()) {
             throw new AuthException(['msg' => '未找到人员信息']);
         }
         $s_ids = $staff_info[0]['s_ids'];
         $d_ids = $staff_info[0]['d_ids'];
-        if(empty($s_ids))
-        {
+        if (empty($s_ids)) {
             $s_ids = 0;
         }
-        if(empty($d_ids))
-        {
+        if (empty($d_ids)) {
             $d_ids = 0;
         }
-        $dtResult = Db::query("select username from canteen_company_staff_t where state = 1 and company_id = ".$company_id." and id in (".$s_ids.") or d_id in(".$d_ids.")");
+        $dtResult = Db::query("select username from canteen_company_staff_t where state = 1 and company_id = " . $company_id . " and id in (" . $s_ids . ") or d_id in(" . $d_ids . ")");
 
         $Username = array_column($dtResult, 'username');
         return json(new SuccessMessageWithData(['data' => $Username]));
