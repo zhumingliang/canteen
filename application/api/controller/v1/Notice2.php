@@ -40,7 +40,7 @@ class Notice2
             ->alias('a')
             ->leftJoin('canteen_notice_t b', 'a.n_id = b.id')
             ->where('a.s_id', $s_id)
-            ->field('a.id,a.s_id,a.read,b.title,b.content,b.equity_url,b.equity_title,b.create_time,b.author,b.type,b.state,b.img_path')
+            ->field('b.id,a.s_id,a.read,b.title,b.content,b.equity_url,b.equity_title,b.create_time,b.author,b.type,b.state,b.img_path')
             ->order('b.create_time desc')
             ->paginate($size, false, ['page' => $page]);
         return json(new SuccessMessageWithData(['data' => $notices]));
@@ -199,11 +199,11 @@ class Notice2
     {
         $s_id = Request::param('s_id');
         $n_id = Request::param('n_id');
-        $read = Db::table('canteen_notice_user_t')
+        Db::table('canteen_notice_user_t')
             ->whereIn('n_id', $n_id)
             ->whereIn('s_id', $s_id)
             ->where('read', '2')
-            ->data(['read' => '1'])
+            ->data(['read' => '1','update_time' => date('Y-m-d H:i:s')])
             ->update();
         return json(new SuccessMessage());
     }

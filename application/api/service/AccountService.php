@@ -62,6 +62,16 @@ class AccountService
 
     }
 
+    public function account($id)
+    {
+
+    }
+
+    public function accounts()
+    {
+
+    }
+
     private function getNextClearTime($clear, $clearType, $first, $end, $dayCount, $time_begin)
     {
         if ($clear == $this->clearNo) {

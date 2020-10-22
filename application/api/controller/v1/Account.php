@@ -7,6 +7,7 @@ namespace app\api\controller\v1;
 use app\api\controller\BaseController;
 use app\api\service\AccountService;
 use app\lib\exception\SuccessMessage;
+use app\lib\exception\SuccessMessageWithData;
 use think\facade\Request;
 
 class Account extends BaseController
@@ -62,6 +63,8 @@ class Account extends BaseController
 
     public function account()
     {
-
+        $id = Request::param('id');
+        $account = (new AccountService())->account($id);
+        return json(new SuccessMessageWithData(['data' => $account]));
     }
 }
