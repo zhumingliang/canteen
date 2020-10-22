@@ -106,6 +106,14 @@ class AccountService
                         date("Y"))), date('Y')));
             }
 
+        } else if ($clearType == "year") {
+            $nextYearBegin = date('Y-01-01', strtotime('+1 year'));
+
+            if ($first == CommonEnum::STATE_IS_OK) {
+                return $nextYearBegin . ' ' . "00:01";
+            } else if ($end == CommonEnum::STATE_IS_OK) {
+                return reduceDay(1, $nextYearBegin) . ' ' . "23:59";
+            }
         }
 
 

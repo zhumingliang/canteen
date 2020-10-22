@@ -74,9 +74,8 @@ Index extends BaseController
 
     public function test($param = "")
     {
-        $season = ceil(date('n') /3); //获取月份的季度
-echo                  date('Y-m-d H:i:s', mktime(23, 59, 59, $season * 3, date('t', mktime(0, 0, 0, $season * 3, 1, date("Y"))), date('Y')));
-;
+        $day = date('Y-01-01', strtotime('+1 year'));
+      echo  reduceDay(1,$day);
         /* $parent = OrderParentT::where('state', CommonEnum::STATE_IS_FAIL)
              ->where('phone',"13267686837")
              ->select();

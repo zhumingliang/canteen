@@ -323,3 +323,5 @@ Route::post('api/:version/notice2/updateNotice', 'api/:version.Notice2/updateNot
 Route::get('api/:version/card/staffs', 'api/:version.CardManager/staffs');
 Route::post('api/:version/staff/card/bind', 'api/:version.CardManager/bind');
 Route::post('api/:version/staff/card/handle', 'api/:version.CardManager/handle');
+
+Route::post('api/:version/account/save', 'api/:version.Account/save');

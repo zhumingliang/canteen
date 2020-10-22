@@ -22,6 +22,8 @@ class Notice2
     {
         $phone = Token::getCurrentPhone();
         $company_id = Token::getCurrentTokenVar('current_company_id');
+//        $phone = '15018891369';
+//        $company_id = 69;
         $staff = (new DepartmentService())->getStaffWithPhone($phone, $company_id);
         if (empty($staff)) {
             return [
@@ -34,26 +36,14 @@ class Notice2
         }
         $page2 = ($page - 1) * $size;
         $s_id = $staff['id'];
-        $notices = "SELECT
-        `a`.`id` AS `id`,
-        `a`.`s_id` AS `s_id`,
-        `a`.`read` AS `read`,
-        `b`.`title` AS `title`,
-        `b`.`content` AS `content`,
-        `b`.`equity_url` AS `equity_url`,
-        `b`.`equity_title` AS `equity_title`,
-        `b`.`create_time` AS `create_time`,
-        `b`.`author` AS `author`,
-        `b`.`type` AS `type`,
-        `b`.`state` AS `state` ,
-        `b`.`img_path` AS `img_path` 
-        
-    FROM
-        ( `canteen_notice_user_t` `a` LEFT JOIN `canteen_notice_t` `b` ON ( ( `a`.`n_id` = `b`.`id` ) ) )
-    WHERE `a`.`s_id` = " . $s_id . " 
-    LIMIT " . $page2 . "," . $size;
-        $notice = Db::query($notices);
-        return json(new SuccessMessageWithData(['data' => $notice]));
+        $notices = db('notice_user_t')
+            ->alias('a')
+            ->leftJoin('canteen_notice_t b', 'a.n_id = b.id')
+            ->where('a.s_id', $s_id)
+            ->field('a.id,a.s_id,a.read,b.title,b.content,b.equity_url,b.equity_title,b.create_time,b.author,b.type,b.state,b.img_path')
+            ->order('b.create_time desc')
+            ->paginate($size, false, ['page' => $page]);
+        return json(new SuccessMessageWithData(['data' => $notices]));
     }
 
     //通知提醒
