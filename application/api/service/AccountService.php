@@ -4,9 +4,12 @@
 namespace app\api\service;
 
 
+use app\api\controller\v1\Account;
 use app\api\model\AccountDepartmentT;
 use app\api\model\CompanyAccountT;
+use app\api\model\PayNonghangConfigT;
 use app\lib\enum\CommonEnum;
+use app\lib\exception\ParameterException;
 use app\lib\exception\SaveException;
 use app\lib\exception\UpdateException;
 use think\Db;
@@ -40,18 +43,7 @@ class AccountService
             }
             if (!empty($params['departments'])) {
                 $departments = $params['departments'];
-                $data = [];
-                foreach ($departments as $k => $v) {
-                    array_push($data, [
-                        'account_id' => $account->id,
-                        'department_id' => $v,
-                        'state' => CommonEnum::STATE_IS_OK
-                    ]);
-                }
-                $accountDepartment = (new AccountDepartmentT())->saveAll($data);
-                if (!$accountDepartment) {
-                    throw new SaveException();
-                }
+                $this->saveDepartments($account->id, $departments);
             }
             Db::commit();
         } catch (Exception $e) {
@@ -62,12 +54,141 @@ class AccountService
 
     }
 
+
+    private function saveDepartments($accountId, $add, $cancel = [])
+    {
+        $data = [];
+        if (!empty($add)) {
+            foreach ($add as $k => $v) {
+                array_push($data, [
+                    'account_id' => $accountId,
+                    'department_id' => $v,
+                    'state' => CommonEnum::STATE_IS_OK
+                ]);
+            }
+        }
+
+        if (!empty($cancel)) {
+            foreach ($cancel as $k => $v) {
+                array_push($data, [
+                    'id' => $v,
+                    'state' => CommonEnum::STATE_IS_FAIL
+                ]);
+            }
+        }
+
+        $accountDepartment = (new AccountDepartmentT())->saveAll($data);
+        if (!$accountDepartment) {
+            throw new SaveException();
+        }
+    }
+
     public function account($id)
     {
+        $account = CompanyAccountT::account($id);
+        if (!$account) {
+            throw new ParameterException(['msg' => '订单不存在']);
+        }
+        $allAccount = CompanyAccountT::accountsWithSorts($account->company_id);
+        $account['allSort'] = $allAccount;
+        return $account;
 
     }
 
     public function accounts()
+    {
+        //检测是否有基本账户：个人账户和农行账户
+        //1.查看是否有基本户
+        //1.查看是否有农行
+        $companyId = Token::getCurrentTokenVar('company_id');
+        $accounts = CompanyAccountT::accounts($companyId);
+
+        if ($accounts->isEmpty()) {
+            $this->saveFixedAccount($companyId, 1);
+            //检测是否开通农行
+            if ($this->checkNongHang($companyId)) {
+                $this->saveFixedAccount($companyId, 2);
+            }
+
+        } else {
+            $fixedPerson = false;
+            $fixedNongHang = false;
+            foreach ($accounts as $k => $v) {
+                if ($v['fixed_type'] == 1) {
+                    $fixedPerson = true;
+                }
+
+                if ($v['fixed_type'] == 2) {
+                    $fixedNongHang = true;
+                }
+            }
+
+            if (!$fixedPerson) {
+                $this->saveFixedAccount($companyId, 1);
+            }
+            if ($this->checkNongHang($companyId) && !$fixedNongHang) {
+                $this->saveFixedAccount($companyId, 2);
+            }
+        }
+
+        $accounts = CompanyAccountT::accounts($companyId);
+        return $accounts;
+
+    }
+
+    private function checkNongHang($companyId)
+    {
+        $config = PayNonghangConfigT::config($companyId);
+        if ($config) {
+            return true;
+        }
+        return false;
+
+    }
+
+    private function saveFixedAccount($companyId, $fixedType)
+    {
+        $accountName = [
+            1 => '个人账户',
+            2 => '农行账户'
+        ];
+        $data = [
+            'company_id' => $companyId,
+            'type' => 1,
+            'department_all' => 1,
+            'name' => $accountName[$fixedType],
+            'fixed_type' => $fixedType,
+            'clear' => CommonEnum::STATE_IS_FAIL,
+            'sort' => $fixedType,
+            'state' => CommonEnum::STATE_IS_OK
+        ];
+        if (!CompanyAccountT::create($data)) {
+            throw new SaveException(['msg' => "新增基本账户失败"]);
+        }
+
+    }
+
+    public function handle($id, $state)
+    {
+        $account = CompanyAccountT::get($id);
+        if (!$account) {
+            throw new ParameterException(['msg' => '账户不存在']);
+        }
+        if ($account->type == 1) {
+            throw new UpdateException(['msg' => '基本账户不能修改']);
+        }
+        if ($state == CommonEnum::STATE_IS_FAIL) {
+            $this->checkAccountBalance($id);
+        }
+        $account->state = $state;
+        $account->update_time = date('Y-m-d H:i:s');
+        $res = $account->save();
+        if (!$res) {
+            throw new UpdateException();
+        }
+    }
+
+    private function checkAccountBalance($accountId)
     {
 
     }
@@ -129,4 +250,39 @@ class AccountService
 
     }
 
+    public function update($params)
+    {
+        Db::startTrans();
+        try {
+            $account = CompanyAccountT::update($params);
+            if (!$account) {
+                throw new UpdateException();
+            }
+            if (empty($params['departments'])) {
+                $departments = json_encode($params['departments'], true);
+                $add = [];
+                $cancel = [];
+                if (!empty($departments['add'])) {
+                    $add = $departments['add'];
+                }
+                if (!empty($departments['cancel'])) {
+                    $cancel = $departments['cancel'];
+                }
+                $this->saveDepartments($params['id'], $add, $cancel);
+            }
+
+            if (!empty($params['account_sort'])) {
+                $accountSort = $params['account_sort'];
+                $update = CompanyAccountT::update($accountSort);
+                if (!$update) {
+                    throw new UpdateException();
+                }
+            }
+
+        } catch (Exception $e) {
+            Db::rollback();
+            throw $e;
+        }
+        Db::commit();
+    }
 }
