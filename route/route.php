@@ -39,6 +39,9 @@ Route::post('api/:version/canteen/module/category', 'api/:version.Module/canteen
 
 Route::post('api/:version/company/save', 'api/:version.Company/save');
 Route::post('api/:version/company/wxConfig/save', 'api/:version.Company/saveCompanyWxConfig');
+Route::get('api/:version/company/wxConfig', 'api/:version.Company/wxConfig');
+Route::post('api/:version/company/nhConfig/save', 'api/:version.Company/saveCompanyNHConfig');
+Route::get('api/:version/company/nhConfig', 'api/:version.Company/nhConfig');
 Route::get('api/:version/companies', 'api/:version.Company/companies');
 Route::get('api/:version/company/consumptionLocation', 'api/:version.Company/consumptionLocation');
 Route::get('api/:version/manager/companies', 'api/:version.Company/managerCompanies');

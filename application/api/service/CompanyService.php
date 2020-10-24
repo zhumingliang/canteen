@@ -6,6 +6,7 @@ namespace app\api\service;
 
 use app\api\model\AdminT;
 use app\api\model\CompanyT;
+use app\api\model\PayNonghangConfigT;
 use app\api\model\PayWxConfigT;
 use app\api\model\ShopT;
 use app\api\model\StaffCardV;
@@ -347,5 +348,30 @@ class CompanyService
         return in_array('face', $arr);
     }
 
+    public function saveCompanyNHConfig($params)
+    {
+
+        $config = PayNonghangConfigT::config($params['company_id']);
+        if ($config) {
+            throw new SaveException(['msg' => '该企业配置已创建']);
+        }
+        $params['state'] = CommonEnum::STATE_IS_OK;
+        $config = PayNonghangConfigT::create($params);
+        if ($config) {
+            throw new SaveException();
+        }
+    }
+
+    public function wxConfig($companyId)
+    {
+        $config = PayWxConfigT::info($companyId);
+        return $config;
+    }
+
+    public function nhConfig($companyId)
+    {
+        $config = PayNonghangConfigT::config($companyId);
+        return $config;
+    }
 
 }

@@ -11,7 +11,7 @@ class PayNonghangConfigT extends Model
 {
     public static function config($companyId)
     {
-        $config = PayNonghangConfigT::where('company_id', $companyId)
+        $config = self::where('company_id', $companyId)
             ->where('state', CommonEnum::STATE_IS_OK)
             ->find();
         return $config;

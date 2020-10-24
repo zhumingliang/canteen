@@ -113,9 +113,14 @@ class DepartmentService
         }
     }
 
-    public function checkStaffExits($company_id, $phone, $face_code)
+    public function checkStaffExits($company_id, $phone, $face_code, $staff_id = 0)
     {
         $staff = CompanyStaffT::where('company_id', $company_id)
+            ->where(function ($query) use ($staff_id) {
+                if (empty(!$staff_id)) {
+                    $query->where('staff_id', '<>', $staff_id);
+                }
+            })
             ->where(function ($query) use ($phone, $face_code) {
                 if (empty($face_code)) {
                     $query->where('phone', $phone);
@@ -143,6 +148,11 @@ class DepartmentService
             }
             $staff = CompanyStaffT::get($params['id']);
             $companyID = $staff->company_id;
+            if (!empty($params['phone'])) {
+                $this->checkStaffExits($companyID, $params['phone'], '', $staff->id);
+
+            }
+
             $update = CompanyStaffT:: update($params);
             if (!$update) {
                 throw new UpdateException();
