@@ -118,7 +118,7 @@ class DepartmentService
         $staff = CompanyStaffT::where('company_id', $company_id)
             ->where(function ($query) use ($staff_id) {
                 if (empty(!$staff_id)) {
-                    $query->where('staff_id', '<>', $staff_id);
+                    $query->where('id', '<>', $staff_id);
                 }
             })
             ->where(function ($query) use ($phone, $face_code) {
