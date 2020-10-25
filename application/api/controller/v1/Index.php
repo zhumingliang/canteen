@@ -74,8 +74,15 @@ Index extends BaseController
 
     public function test($param = "")
     {
-        $day = date('Y-01-01', strtotime('+1 year'));
-      echo  reduceDay(1,$day);
+        $a = '';
+        $arr = explode('|',$a);
+        print_r($arr);
+        if (!count($arr)){
+            echo 1;
+        }else{
+            echo 2;
+        }
+
         /* $parent = OrderParentT::where('state', CommonEnum::STATE_IS_FAIL)
              ->where('phone',"13267686837")
              ->select();

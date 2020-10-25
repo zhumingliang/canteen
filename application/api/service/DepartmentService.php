@@ -387,8 +387,7 @@ class DepartmentService
         }
         $state = trim($data[7]) == "启用" ? 1 : 2;
         //判断饭堂是否存在
-        $canteen_arr = explode('|', $canteen);
-        if (empty($canteen_arr)) {
+        if (!strlen($canteen)) {
             $fail = [
                 'name' => $name,
                 'msg' => '饭堂字段为空'
@@ -398,6 +397,7 @@ class DepartmentService
                 'info' => $fail
             ];
         }
+        $canteen_arr = explode('|', $canteen);
 
         foreach ($canteen_arr as $k => $v) {
             $c_id = $this->checkParamExits($canteens, $v);
