@@ -278,9 +278,7 @@ class DepartmentService
             if ($k == 2) {
                 $param_key = $data[$k];
             } else if ($k > 2 && !empty($data[$k])) {
-                if (empty($v[0])) {
-                    continue;
-                }
+
                 //检测手机号是否已经存在
                 if (in_array($v[5], $phones)) {
                     $fail[] = "第" . $k . "数据有问题：手机号" . $v[5] . "系统已经存在";
@@ -317,13 +315,13 @@ class DepartmentService
 
         }
 
-        if (count($success)) {
+       /* if (count($success)) {
             $all = (new CompanyStaffT())->saveAll($success);
             if (!$all) {
                 throw  new SaveException();
             }
 
-        }
+        }*/
         return [
             'fail' => $fail
         ];
