@@ -315,13 +315,13 @@ class DepartmentService
 
         }
 
-       /* if (count($success)) {
+        if (count($success)) {
             $all = (new CompanyStaffT())->saveAll($success);
             if (!$all) {
                 throw  new SaveException();
             }
 
-        }*/
+        }
         return [
             'fail' => $fail
         ];
