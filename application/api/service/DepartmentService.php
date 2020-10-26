@@ -125,13 +125,19 @@ class DepartmentService
                 if (empty($face_code)) {
                     $query->where('phone', $phone);
                 } else {
-                    $query->whereOr('phone', $phone)->whereOr('face_code', $face_code);
+                    $query->whereOr('phone', $phone)
+                        ->whereOr('face_code', $face_code);
                 }
             })
             ->where('state', CommonEnum::STATE_IS_OK)
             ->count('id');
         if ($staff) {
-            throw  new SaveException(['msg' => '手机号或者人脸识别ID已存在']);
+            if (empty($face_code)) {
+                throw  new SaveException(['msg' => '手机号已存在']);
+            } else {
+                throw  new SaveException(['msg' => '手机号或者人脸识别ID已存在']);
+
+            }
         }
 
     }
