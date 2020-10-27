@@ -69,17 +69,18 @@ Index extends BaseController
        $redis->auth('waHqes-nijpi8-ruwqex');
        $redis->set('a',1);
       echo $redis->get('a');*/
+        echo \app\api\service\Token::getCurrentUid();
 
     }
 
     public function test($param = "")
     {
         $a = '';
-        $arr = explode('|',$a);
+        $arr = explode('|', $a);
         print_r($arr);
-        if (!count($arr)){
+        if (!count($arr)) {
             echo 1;
-        }else{
+        } else {
             echo 2;
         }
 
