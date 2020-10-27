@@ -101,7 +101,7 @@ class Notice2
             $param['create_time'] = date('Y-m-d H:i:s');
             $param['update_time'] = date('Y-m-d H:i:s');
         }
-        $params['u_id'] = Token::getCurrentUid();
+        $param['u_id'] = Token::getCurrentUid();
         $notice = NoticeT::create($param);
         if (!$notice) {
             throw new SaveException();
@@ -200,5 +200,4 @@ class Notice2
             ->update();
         return json(new SuccessMessage());
     }
-
 }
