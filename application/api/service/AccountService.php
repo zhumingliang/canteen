@@ -285,4 +285,38 @@ class AccountService
         }
         Db::commit();
     }
+
+    public function accountsForSearch($companyId)
+    {
+        //检测是否有基本账户：个人账户
+        //1.查看是否有基本户
+        if (empty($companyId)) {
+            $companyId = Token::getCurrentTokenVar('company_id');
+        }
+        $accounts = CompanyAccountT::accountForSearch($companyId);
+
+        if ($accounts->isEmpty()) {
+            $this->saveFixedAccount($companyId, 1);
+            //检测是否开通农行
+            if ($this->checkNongHang($companyId)) {
+                $this->saveFixedAccount($companyId, 2);
+            }
+
+        } else {
+            $fixedPerson = false;
+            foreach ($accounts as $k => $v) {
+                if ($v['fixed_type'] == 1) {
+                    $fixedPerson = true;
+                }
+            }
+
+            if (!$fixedPerson) {
+                $this->saveFixedAccount($companyId, 1);
+            }
+        }
+
+        $accounts = CompanyAccountT::accountForSearch($companyId);
+        return $accounts;
+    }
+
 }

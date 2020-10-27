@@ -206,4 +206,24 @@ class Account extends BaseController
         (new AccountService())->update($params);
         return json(new SuccessMessage());
     }
+
+    /**
+     * @api {GET} /api/v1/accounts/search  CMS管理端-获取账户信息-筛选条件
+     * @apiGroup  CMS
+     * @apiVersion 3.0.0
+     * @apiDescription  CMS管理端-获取账户信息-筛选条件
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/account/search?company_id=95
+     * @apiParam (请求参数说明) {int} company_id  指定企业：系统管理员获取时传入，企业内部无需传入
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":[{"id":17,"fixed_type":1,"name":"个人账户"}]}     * @apiSuccess (返回参数说明) {int} id  账号id
+     * @apiSuccess (返回参数说明) {string} name  账号名称
+     */
+    public function accountsForSearch()
+    {
+        $company_id = Request::param('company_id');
+        $account = (new AccountService())->accountsForSearch($company_id);
+        return json(new SuccessMessageWithData(['data' => $account]));
+    }
+
 }

@@ -34,7 +34,6 @@ class Notice2
                 'data' => array()
             ];
         }
-        $page2 = ($page - 1) * $size;
         $s_id = $staff['id'];
         $notices = db('notice_user_t')
             ->alias('a')
@@ -94,9 +93,7 @@ class Notice2
         if (empty($param['author'])) {
             throw new AuthException(['msg' => '请输入发布者姓名']);
         }
-        if (empty($param['content'])) {
-            throw new AuthException(['msg' => '请输入内容']);
-        }
+
         if (empty($param['d_ids']) && empty($param['s_ids'])) {
             throw new AuthException(['msg' => '请输入通知部门或人员ID']);
         }
@@ -104,28 +101,22 @@ class Notice2
             $param['create_time'] = date('Y-m-d H:i:s');
             $param['update_time'] = date('Y-m-d H:i:s');
         }
-        if (empty($param['u_id'])) {
-            $uid = db::table('canteen_user_t')
-                ->where('nickname', $param['author'])
-                ->field('id')
-                ->find();
-            $param['u_id'] = $uid['id'];
+        $params['u_id'] = Token::getCurrentUid();
+        $notice = NoticeT::create($param);
+        if (!$notice) {
+            throw new SaveException();
         }
-        $notice = new NoticeT();
-        $save = $notice->save($param);
-        $id = Db::table('canteen_notice_t')
-            ->order('create_time', 'desc')
-            ->field('id')
-            ->find();
+        $n_id = $notice->id;
         $staffs = array();
         if (!empty($param['d_ids'])) {
-            $d_id = explode(',', $param['d_ids']);
             $staff = Db::table('canteen_company_staff_t')
-                ->whereIn('d_id', $d_id)
+                ->whereIn('d_id', $param['d_ids'])
                 ->field('id')
                 ->select();
-            foreach ($staff as $staff2) {
-                array_push($staffs, $staff2['id']);
+            if (!empty($staff)) {
+                foreach ($staff as $staff_id) {
+                    array_push($staffs, $staff_id['id']);
+                }
             }
         }
         if (!empty($param['s_ids'])) {
@@ -138,11 +129,11 @@ class Notice2
             $data = [
                 's_id' => $staffs2,
                 'read' => 2,
-                'n_id' => $id['id'],
+                'n_id' => $n_id,
                 'create_time' => date('Y-m-d H:i:s'),
                 'update_time' => date('Y-m-d H:i:s')
             ];
-            db('notice_user_t')
+            $save = db('notice_user_t')
                 ->data($data)
                 ->insert();
         }
@@ -156,10 +147,12 @@ class Notice2
     //展示公告
     public function Notice($page = 1, $size = 10)
     {
+        $u_id = Token::getCurrentUid();
         $data = Db::table('canteen_notice_t')
             ->where([
                 'state' => '1',
-                'type' => '1'
+                'type' => '1',
+                'u_id' => $u_id
             ])
             ->field(['id', 'title', 'content', 'create_time', 'author', 'img_path'])
             ->order('create_time', 'desc')
@@ -203,7 +196,7 @@ class Notice2
             ->whereIn('n_id', $n_id)
             ->whereIn('s_id', $s_id)
             ->where('read', '2')
-            ->data(['read' => '1','update_time' => date('Y-m-d H:i:s')])
+            ->data(['read' => '1', 'update_time' => date('Y-m-d H:i:s')])
             ->update();
         return json(new SuccessMessage());
     }

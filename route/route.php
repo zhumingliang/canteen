@@ -331,4 +331,5 @@ Route::post('api/:version/account/save', 'api/:version.Account/save');
 Route::post('api/:version/account/handle', 'api/:version.Account/handle');
 Route::post('api/:version/account/update', 'api/:version.Account/update');
 Route::get('api/:version/accounts', 'api/:version.Account/accounts');
+Route::get('api/:version/accounts/search', 'api/:version.Account/accountsForSearch');
 Route::get('api/:version/account', 'api/:version.Account/account');

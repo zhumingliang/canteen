@@ -54,6 +54,16 @@ class CompanyAccountT extends Model
         return $accounts;
     }
 
+    public static function accountForSearch($companyId)
+    {
+        $accounts = self::where('company_id', $companyId)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->where('fixed_type', '<>', 2)
+            ->field('id,fixed_type,name')
+            ->select();
+        return $accounts;
+    }
+
     public static function account($id)
     {
         $accounts = self::where('id', $id)
@@ -68,7 +78,7 @@ class CompanyAccountT extends Model
                         ->where('state', CommonEnum::STATE_IS_OK)->field('id,account_id,department_id');
                 }
             ])
-            ->hidden(['create_time','update_time','admin_id'])
+            ->hidden(['create_time', 'update_time', 'admin_id'])
             ->find();
         return $accounts;
     }
