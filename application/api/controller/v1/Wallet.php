@@ -24,10 +24,12 @@ class Wallet extends BaseController
      * @apiDescription     CMS管理端--充值管理--现金充值
      * @apiExample {post}  请求样例:
      *    {
+     *       "account_id": 1,
      *       "money": 200,
      *       "remark": '备注',
      *       "detail":[{"staff_id":1},{"staff_id":2}]
      *     }
+     * @apiParam (请求参数说明) {int} account_id 账户ID：如果企业没有开通账户管理可以不用传
      * @apiParam (请求参数说明) {int} money 充值金额
      * @apiParam (请求参数说明) {int} remark 备注
      * @apiParam (请求参数说明) {obj} detail  充值人员信息json字符串

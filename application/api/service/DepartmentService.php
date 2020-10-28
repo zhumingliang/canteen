@@ -389,6 +389,17 @@ class DepartmentService
                 'info' => $fail
             ];
         }
+
+        if (!strlen( $name)) {
+            $fail = [
+                'name' => $name,
+                'msg' => '姓名为空'
+            ];
+            return [
+                'res' => false,
+                'info' => $fail
+            ];
+        }
         $state = trim($data[7]) == "启用" ? 1 : 2;
         //判断饭堂是否存在
         if (!strlen($canteen)) {

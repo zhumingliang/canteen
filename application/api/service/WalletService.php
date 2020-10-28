@@ -35,7 +35,8 @@ class WalletService
         }
         $company_id = Token::getCurrentTokenVar('company_id');
         $admin_id = Token::getCurrentUid();
-        $data = $this->prefixDetail($company_id, $admin_id, $detail, $params['money'], $params['remark']);
+        $account_id = empty($params['account_id']) ? 0 : $params['account_id'];
+        $data = $this->prefixDetail($company_id, $admin_id, $detail, $account_id, $params['money'], $params['remark']);
         $cash = (new RechargeCashT())->saveAll($data);
         if (!$cash) {
             throw new SaveException();
@@ -147,15 +148,15 @@ class WalletService
 
     }
 
-    private function prefixDetail($company_id, $admin_id, $detail, $money, $remark)
+    private function prefixDetail($company_id, $admin_id, $detail, $account_id, $money, $remark)
     {
         $dataList = [];
         foreach ($detail as $k => $v) {
             $data = [];
             $data['company_id'] = $company_id;
+            $data['account_id'] = $account_id;
             $data['money'] = $money;
             $data['staff_id'] = $v['staff_id'];
-            // $data['card_num'] = $v['card_num'];
             $data['state'] = CommonEnum::STATE_IS_OK;
             $data['admin_id'] = $admin_id;
             $data['remark'] = $remark;

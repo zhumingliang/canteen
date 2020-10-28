@@ -294,7 +294,6 @@ class AccountService
             $companyId = Token::getCurrentTokenVar('company_id');
         }
         $accounts = CompanyAccountT::accountForSearch($companyId);
-
         if ($accounts->isEmpty()) {
             $this->saveFixedAccount($companyId, 1);
             //检测是否开通农行
@@ -304,14 +303,22 @@ class AccountService
 
         } else {
             $fixedPerson = false;
+            $fixedNongHang = false;
             foreach ($accounts as $k => $v) {
                 if ($v['fixed_type'] == 1) {
                     $fixedPerson = true;
+                }
+
+                if ($v['fixed_type'] == 2) {
+                    $fixedNongHang = true;
                 }
             }
 
             if (!$fixedPerson) {
                 $this->saveFixedAccount($companyId, 1);
+            }
+            if ($this->checkNongHang($companyId) && !$fixedNongHang) {
+                $this->saveFixedAccount($companyId, 2);
             }
         }
 
