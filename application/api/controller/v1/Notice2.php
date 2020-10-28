@@ -164,7 +164,7 @@ class Notice2
     public function receiver()
     {
         $id = Request::param('id');
-//        $company_id = 69;
+//        $company_id = 87;
         $company_id = Token::getCurrentTokenVar('current_company_id');
         $staff_info = Db::table('canteen_notice_t')
             ->whereIn('id', $id)
@@ -181,7 +181,7 @@ class Notice2
         if (empty($d_ids)) {
             $d_ids = 0;
         }
-        $dtResult = Db::query("select username from canteen_company_staff_t where state = 1 and company_id = " . $company_id . " and id in (" . $s_ids . ") or d_id in(" . $d_ids . ")");
+        $dtResult = Db::query("select username from canteen_company_staff_t where state = 1 and company_id = " . $company_id . " and (id in (" . $s_ids . ") or d_id in(" . $d_ids . "))");
 
         $Username = array_column($dtResult, 'username');
         return json(new SuccessMessageWithData(['data' => $Username]));
