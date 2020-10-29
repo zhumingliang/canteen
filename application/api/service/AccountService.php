@@ -87,7 +87,7 @@ class AccountService
     {
         $account = CompanyAccountT::account($id);
         if (!$account) {
-            throw new ParameterException(['msg' => '订单不存在']);
+            throw new ParameterException(['msg' => '账户不存在']);
         }
         $allAccount = CompanyAccountT::accountsWithSorts($account->company_id);
         $account['allSort'] = $allAccount;
@@ -146,7 +146,7 @@ class AccountService
 
     }
 
-    private function saveFixedAccount($companyId, $fixedType)
+    public function saveFixedAccount($companyId, $fixedType)
     {
         $accountName = [
             1 => '个人账户',

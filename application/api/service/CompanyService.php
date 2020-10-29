@@ -40,6 +40,8 @@ class CompanyService
             $c_id = $company->id;
             //新增默认饭堂
             (new CanteenService())->saveDefault($c_id, CanteenEnum::DEFAULT_NAME);
+            //新增企业个人账户
+            (new AccountService())->saveFixedAccount($c_id, 1);
             //新增默认企业超级管理员账号
             //新增企业默认功能模块
             (new CanteenService())->saveDefaultCanteen($c_id);
@@ -59,6 +61,7 @@ class CompanyService
         }
 
     }
+
 
     private function checkCompany($name)
     {
@@ -360,6 +363,8 @@ class CompanyService
         if ($config) {
             throw new SaveException();
         }
+        //生成企业农行账户
+        (new AccountService())->saveFixedAccount($params['company_id'], 2);
     }
 
     public function wxConfig($companyId)

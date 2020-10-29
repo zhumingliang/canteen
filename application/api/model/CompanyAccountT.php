@@ -93,4 +93,13 @@ class CompanyAccountT extends Model
         return $accounts;
     }
 
+    public static function accountsWithoutNonghang($companyId)
+    {
+        $accounts = self::where('company_id', $companyId)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->field('id,name')
+            ->select();
+        return $accounts;
+    }
+
 }

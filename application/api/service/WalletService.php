@@ -5,6 +5,7 @@ namespace app\api\service;
 
 
 use app\api\job\UploadExcel;
+use app\api\model\CompanyAccountT;
 use app\api\model\CompanyStaffT;
 use app\api\model\DinnerV;
 use app\api\model\OrderParentT;
@@ -65,10 +66,18 @@ class WalletService
     {
         $data = (new ExcelService())->importExcel($fileName);
         $staffs = CompanyStaffT::staffs($company_id);
+        $accounts = CompanyAccountT::accountsWithoutNonghang($company_id);
         $newStaffs = [];
+        $accountsArr = [];
         foreach ($staffs as $k => $v) {
             array_push($newStaffs, $v['username'] . '&' . $v['phone']);
         }
+        if (count($accounts)) {
+            foreach ($accounts as $k => $v) {
+                array_push($accountsArr, $v['name']);
+            }
+        }
+
         $fail = [];
         foreach ($data as $k => $v) {
             if ($k < 2) {
@@ -77,7 +86,13 @@ class WalletService
             if (!in_array($v[0] . '&' . $v[1], $newStaffs)) {
                 array_push($fail, '第' . $k . '行数据有问题');
             }
-            $money = trim($v[3]);
+
+            if (count($accountsArr) && !in_array($v[2], $accountsArr)) {
+                array_push($fail, '第' . $k . '行数据有问题');
+
+            }
+
+            $money = trim($v[4]);
             if ($money == '') {
                 array_push($fail, '第' . $k . '行数据有问题');
             }
@@ -125,9 +140,14 @@ class WalletService
     {
         $dataList = [];
         $staffs = CompanyStaffT::staffs($company_id);
+        $accounts = CompanyAccountT::accountsWithoutNonghang($company_id);
         $newStaffs = [];
+        $newAccounts = [];
         foreach ($staffs as $k => $v) {
             $newStaffs[$v['phone']] = $v['id'];
+        }
+        foreach ($accounts as $k => $v) {
+            $newAccounts [$v['name']] = $v['id'];
         }
         foreach ($data as $k => $v) {
             if ($k == 1 || empty($v[0])) {
@@ -137,11 +157,12 @@ class WalletService
                 'admin_id' => $admin_id,
                 'company_id' => $company_id,
                 'staff_id' => $newStaffs[$v[1]],
+                'account_id' => count($newAccounts) ? $newAccounts[$v[2]] : 0,
                 'username' => $v[0],
                 'phone' => $v[1],
-                'card_num' => $v[2],
-                'money' => $v[3],
-                'remark' => $v[4]
+                'card_num' => $v[3],
+                'money' => $v[4],
+                'remark' => $v[5]
             ]);
         }
         return $dataList;
