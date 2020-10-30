@@ -5,6 +5,7 @@ namespace app\api\model;
 
 
 use app\lib\enum\CommonEnum;
+use app\lib\enum\PayEnum;
 use think\Model;
 
 class CompanyStaffT extends Model
@@ -28,6 +29,12 @@ class CompanyStaffT extends Model
     public function canteens()
     {
         return $this->hasMany('StaffCanteenT', 'staff_id', 'id');
+
+    }
+
+    public function account()
+    {
+        return $this->hasMany('AccountRecordsT', 'staff_id', 'id');
 
     }
 
@@ -137,6 +144,45 @@ class CompanyStaffT extends Model
             ->group('t_id')
             ->paginate($size, false, ['page' => $page])->toArray();
         return $types;
+
+    }
+
+    public static function staffsForBalance($page, $size, $department_id, $user, $phone, $company_id)
+    {
+        $users = self::where('company_id', $company_id)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->where(function ($query) use ($department_id) {
+                if (!empty($department_id)) {
+                    $query->where('d_id', $department_id);
+                }
+            })
+            ->where(function ($query) use ($phone) {
+                if (!empty($phone)) {
+                    $query->where('phone', $phone);
+                }
+            })
+            ->where(function ($query) use ($user) {
+                if (!empty($user)) {
+                    $query->where('username|code|card_num', 'like', '%' . $user . '%');
+                }
+            })
+            ->with([
+                'department' => function ($query) {
+                    $query->field('id,name');
+                },
+                'account' => function ($query) {
+                    $query->where('state', CommonEnum::STATE_IS_OK)
+                        ->field('staff_id,account_id,sum(money) as money')->group('account_id');
+                },
+                'pay' => function ($query) {
+                    $query->where('status',PayEnum::PAY_SUCCESS)
+                        ->where('refund',CommonEnum::STATE_IS_FAIL)
+                        ->field('staff_id,method_id,sum(money) as money')->group('method_id');
+                }
+            ])
+            ->field('id,d_id,username,code,card_num,phone,department')
+            ->paginate($size, false, ['page' => $page]);
+        return $users;
 
     }
 

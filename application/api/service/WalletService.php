@@ -200,7 +200,7 @@ class WalletService
     {
         $company_id = Token::getCurrentTokenVar('company_id');
         $records = RechargeV::exportRechargeRecords($time_begin, $time_end, $type, $admin_id, $username, $company_id);
-        $header = ['创建时间', '姓名', '充值金额', '充值途径', '充值人员', '备注'];
+        $header = ['创建时间', '姓名', '充值金额', '账户名称', '充值途径', '充值人员', '备注'];
         $file_name = $time_begin . "-" . $time_end . "-充值记录明细";
         $url = (new ExcelService())->makeExcel($header, $records, $file_name);
         return [
@@ -209,10 +209,11 @@ class WalletService
 
     }
 
-    public function usersBalance($page, $size, $department_id, $user, $phone)
+    public function usersBalance($page, $size, $department_id, $user, $phone, $time_begin, $time_end)
     {
         $company_id = Token::getCurrentTokenVar('company_id');
-        $users = UserBalanceV::usersBalance($page, $size, $department_id, $user, $phone, $company_id);
+        $users = CompanyStaffT::staffsForBalance($page, $size, $department_id, $user, $phone, $company_id);
+        //$users = UserBalanceV::usersBalance($page, $size, $department_id, $user, $phone, $company_id);
         return $users;
     }
 
@@ -271,7 +272,8 @@ class WalletService
                 'staff_id' => $v,
                 'consumption_date' => $params['consumption_date'],
                 'remark' => empty($params['remark']) ? '' : $params['remark'],
-                'dinner_id' => $params['dinner_id']
+                'dinner_id' => $params['dinner_id'],
+                'account_id' => $params['account_id']
             ];
             array_push($dataList, $data);
         }
@@ -306,6 +308,14 @@ class WalletService
         $canteens = (new CanteenService())->companyCanteens($company_id);
         $dinners = DinnerV::companyDinners($company_id);
         $staffs = CompanyStaffT::staffs($company_id);
+        $accounts = CompanyAccountT::accountsWithoutNonghang($company_id);
+        $accountsArr = [];
+        if (count($accounts)) {
+            foreach ($accounts as $k => $v) {
+                array_push($accountsArr, $v['name']);
+            }
+        }
+
         foreach ($canteens as $k => $v) {
             array_push($newCanteen, $v['name']);
         }
@@ -329,7 +339,11 @@ class WalletService
                 array_push($fail, '第' . $k . '行数据有问题');
                 break;
             }
-            if (strtotime($v[3]) > strtotime(\date('Y-m-d')) || $v[6] < 0) {
+            if (count($accountsArr) && !in_array($v[6], $accountsArr)) {
+                array_push($fail, '第' . $k . '行数据有问题');
+
+            }
+            if (strtotime($v[3]) > strtotime(\date('Y-m-d')) || $v[7] < 0) {
                 array_push($fail, '第' . $k . '行数据有问题');
                 break;
             }
@@ -356,8 +370,16 @@ class WalletService
         $canteens = (new CanteenService())->companyCanteens($company_id);
         $dinners = DinnerV::companyDinners($company_id);
         $staffs = CompanyStaffT::staffs($company_id);
+        $accounts = CompanyAccountT::accountsWithoutNonghang($company_id);
+
         $newStaffs = [];
         $newCanteen = [];
+        $newAccounts = [];
+
+        foreach ($accounts as $k => $v) {
+            $newAccounts [$v['name']] = $v['id'];
+        }
+
         foreach ($staffs as $k => $v) {
             $newStaffs[$v['phone']] = $v['id'];
         }
@@ -372,6 +394,7 @@ class WalletService
                 'admin_id' => $admin_id,
                 'company_id' => $company_id,
                 'staff_id' => $newStaffs[$v[1]],
+                'account_id' => count($newAccounts) ? $newAccounts[$v[6]] : 0,
                 'source' => 'upload',
                 //'code' => $v[0],
                 'code' => '',
@@ -385,7 +408,7 @@ class WalletService
                 'dinner_id' => $this->getDinnerID($dinners, $newCanteen[$v[2]], $v[4]),
                 'dinner' => $v[4],
                 'type' => $v[5] == "补扣" ? 2 : 1,
-                'money' => $v[5] == "补扣" ? 0 - $v[6] : $v[6]
+                'money' => $v[5] == "补扣" ? 0 - $v[7] : $v[7]
             ]);
         }
 
