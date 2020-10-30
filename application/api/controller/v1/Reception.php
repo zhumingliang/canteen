@@ -484,10 +484,11 @@ class Reception extends BaseController
             ->where('state', CommonEnum::STATE_IS_OK)
             ->find();
         $money = $receptionMoney['money'];
+        $approval = $receptionMoney['approval'];
         if (empty($receptionMoney)) {
             throw  new  AuthException(['msg' => '该饭堂未配置接待票']);
         }
-        $data = ['money' => $money];
+        $data = ['money' => $money,'approval'=>$approval];
         return json(new SuccessMessageWithData(['data' => $data]));
     }
 
