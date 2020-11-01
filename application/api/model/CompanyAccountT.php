@@ -59,7 +59,7 @@ class CompanyAccountT extends Model
         $accounts = self::where('company_id', $companyId)
             ->where('state', CommonEnum::STATE_IS_OK)
             ->where('fixed_type', '<>', 2)
-            ->field('id,fixed_type,name')
+            ->field('id,sort,fixed_type,name')
             ->select();
         return $accounts;
     }

@@ -67,7 +67,8 @@ class Account extends BaseController
      * @apiVersion 3.0.0
      * @apiDescription  CMS管理端-获取账户信息
      * @apiExample {get}  请求样例:
-     * http://canteen.tonglingok.com/account
+     * http://canteen.tonglingok.com/account?id=1
+     * @apiParam (请求参数说明) {int} id  账户id
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200,"data":{"id":17,"company_id":95,"type":1,"department_all":1,"name":"个人账户","clear":2,"state":1,"clear_type":0,"first":2,"end":2,"day_count":0,"time_begin":"0000-00-00","sort":1,"next_time":"0000-00-00 00:00:00","fixed_type":1,"allSort":[{"id":17,"name":"个人账户","sort":1},{"id":18,"name":"农行账户","sort":2}],"company":{"id":95,"name":"汕尾人民医院"},"departments":[{"id":1,"account_id":17,"department_id":59,"department":{"id":59,"name":"部门1"}}]}}     * @apiSuccess (返回参数说明) {int} id 账户id
      * @apiSuccess (返回参数说明) {int} company_id 企业id
@@ -213,11 +214,14 @@ class Account extends BaseController
      * @apiVersion 3.0.0
      * @apiDescription  CMS管理端-获取账户信息-筛选条件
      * @apiExample {get}  请求样例:
-     * http://canteen.tonglingok.com/api/v1/account/search?company_id=95
+     * http://canteen.tonglingok.com/api/v1/accounts/search?company_id=95
      * @apiParam (请求参数说明) {int} company_id  指定企业：系统管理员获取时传入，企业内部无需传入
      * @apiSuccessExample {json} 返回样例:
-     * {"msg":"ok","errorCode":0,"code":200,"data":[{"id":17,"fixed_type":1,"name":"个人账户"}]}     * @apiSuccess (返回参数说明) {int} id  账号id
+     * {"msg":"ok","errorCode":0,"code":200,"data":[{"id":17,"sort":1,"fixed_type":1,"name":"个人账户"}]}
+     * @apiSuccess (返回参数说明) {int} id  账号id
      * @apiSuccess (返回参数说明) {string} name  账号名称
+     * @apiSuccess (返回参数说明) {string} fixed_type  基本户类别：1 ｜ 个人账户 2 ｜ 农行账户
+     * @apiSuccess (返回参数说明) {string} sort  排序
      */
     public function accountsForSearch()
     {
