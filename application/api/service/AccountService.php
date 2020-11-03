@@ -269,10 +269,10 @@ class AccountService
                 $add = [];
                 $cancel = [];
                 if (!empty($departments['add'])) {
-                    $add = $departments['add'];
+                    $add = json_decode($departments['add'],true);
                 }
                 if (!empty($departments['cancel'])) {
-                    $cancel = $departments['cancel'];
+                    $cancel =json_decode($departments['cancel'],true);
                 }
                 $this->saveDepartments($params['id'], $add, $cancel);
             }
