@@ -107,7 +107,8 @@ class Account extends BaseController
      * @apiVersion 3.0.0
      * @apiDescription  CMS管理端-获取账户列表
      * @apiExample {get}  请求样例:
-     * http://canteen.tonglingok.com/accounts
+     * http://canteen.tonglingok.com/accounts?company_id=1
+     * @apiParam (请求参数说明) {int} company_id  企业id
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200,"data":[{"id":17,"admin_id":95,"company_id":95,"type":1,"department_all":1,"name":"个人账户","clear":2,"sort":1,"fixed_type":1,"next_time":"0000-00-00 00:00:00","admin":{"id":95,"role":"系统管理","phone":"15002050878"},"company":{"id":95,"name":"汕尾人民医院"},"departments":[{"id":1,"account_id":17,"department_id":59,"department":{"id":59,"name":"部门1"}}]},{"id":18,"admin_id":0,"company_id":95,"type":1,"department_all":1,"name":"农行账户","clear":2,"sort":2,"fixed_type":2,"next_time":"0000-00-00 00:00:00","admin":null,"company":{"id":95,"name":"汕尾人民医院"},"departments":[]}]}
      * @apiSuccess (返回参数说明) {int} id 账户id
@@ -130,7 +131,8 @@ class Account extends BaseController
      */
     public function accounts()
     {
-        $accounts = (new AccountService())->accounts();
+        $companyId = Request::param('company_id');
+        $accounts = (new AccountService())->accounts($companyId);
         return json(new SuccessMessageWithData(['data' => $accounts]));
     }
 

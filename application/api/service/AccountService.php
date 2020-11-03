@@ -117,14 +117,18 @@ class AccountService
 
     }
 
-    public function accounts()
+    public function accounts($companyId)
     {
         //检测是否有基本账户：个人账户和农行账户
         //1.查看是否有基本户
         //1.查看是否有农行
-        $companyId = Token::getCurrentTokenVar('company_id');
+        if (empty($companyId)) {
+            $companyId = Token::getCurrentTokenVar('company_id');
+        }
+        if (empty($companyId)) {
+            throw new ParameterException(['msg' => "没有归属企业"]);
+        }
         $accounts = CompanyAccountT::accounts($companyId);
-
         if ($accounts->isEmpty()) {
             $this->saveFixedAccount($companyId, 1);
             //检测是否开通农行
