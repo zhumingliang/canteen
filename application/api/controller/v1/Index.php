@@ -65,11 +65,6 @@ Index extends BaseController
 {
     public function index()
     {
-
-    }
-
-    public function test($param = "")
-    {
         /*$company = CompanyT::where('state', CommonEnum::STATE_IS_OK)->select();
         $account = [];
         foreach ($company as $k => $v) {
@@ -102,6 +97,16 @@ Index extends BaseController
         }
 
         (new CompanyAccountT())->saveAll($account);*/
+
+    }
+
+    public function test($param = "")
+    {
+        $company_id = 97;
+        $staff_id = 6277;
+        $accounts = (new AccountService())->accountBalance($company_id, $staff_id);
+        echo array_sum(array_column($accounts,'balance'));
+        return json($accounts);
     }
 
     public function token()

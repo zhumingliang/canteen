@@ -6,12 +6,15 @@ namespace app\api\service;
 
 use app\api\controller\v1\Account;
 use app\api\model\AccountDepartmentT;
+use app\api\model\AccountRecordsT;
 use app\api\model\CompanyAccountT;
 use app\api\model\PayNonghangConfigT;
+use app\api\model\PayT;
 use app\lib\enum\CommonEnum;
 use app\lib\exception\ParameterException;
 use app\lib\exception\SaveException;
 use app\lib\exception\UpdateException;
+use MongoDB\BSON\Type;
 use think\Db;
 use think\Exception;
 
@@ -28,9 +31,14 @@ class AccountService
         try {
             $adminID = Token::getCurrentTokenVar('u_id');
             $params['admin_id'] = $adminID;
-            $params['next_time'] = $this->getNextClearTime($params['clear'], $params['clear_type'], $params['first'], $params['end'],
-                $params['dat_count'], $params['time_begin']);
+            $dayCount = empty($params['day_count']) ? 0 : $params['day_count'];
+            $timeBegin = empty($params['time_begin']) ? 0 : $params['time_begin'];
+            $clearType= empty($params['clear_type']) ? 0 : $params['clear_type'];
+            $params['next_time'] = $this->getNextClearTime($params['clear'], $clearType,
+                $params['first'], $params['end'],
+                $dayCount, $timeBegin);
             $account = CompanyAccountT::create($params);
+
             if (!$account) {
                 throw new SaveException();
             }
@@ -42,13 +50,13 @@ class AccountService
                 }
             }
             if (!empty($params['departments'])) {
-                $departments = $params['departments'];
+                $departments = json_decode($params['departments'],true);
                 $this->saveDepartments($account->id, $departments);
             }
             Db::commit();
         } catch (Exception $e) {
             Db::rollback();
-            throw new SaveException();
+            throw $e;
         }
 
 
@@ -246,8 +254,6 @@ class AccountService
                 return reduceDay(1, $nextYearBegin) . ' ' . "23:59";
             }
         }
-
-
     }
 
     public function update($params)
@@ -324,6 +330,60 @@ class AccountService
 
         $accounts = CompanyAccountT::accountForSearch($companyId);
         return $accounts;
+    }
+
+    public function accountBalance($company_id, $staff_id)
+    {
+        //获取充值信息（微信/农行）1｜ 微信；2｜农行
+        $payBalance = PayT::statistic($staff_id);
+        //消费统计
+        $statistic = AccountRecordsT::statistic($staff_id);
+        $accounts = CompanyAccountT::accountsWithSorts($company_id);
+        foreach ($accounts as $k => $v) {
+            $money = 0;
+            foreach ($statistic as $k2 => $v2) {
+                if ($v2['account_id'] == $v['id']) {
+                    $money = $v2['money'];
+                    break;
+                }
+            }
+            if ($v['type'] == 1) {
+                //基本账户
+                foreach ($payBalance as $k3 => $v3) {
+                    if ($v['fixed_type'] == $v3['method_id']) {
+                        $money += $v3['money'];
+                    }
+                }
+
+            }
+            $accounts[$k]['balance'] = $money;
+        }
+        return $accounts;
+
+    }
+
+    public function saveAccountRecords($accounts, $money, $type, $orderId, $companyId, $staffId)
+    {
+        $data = [];
+        foreach ($accounts as $k => $v) {
+            if ($v['balance'] >= $money) {
+                array_push($data, [
+                    'account_id' => $v['id'],
+                    'company_id' => $companyId,
+                    'staff_id' => $staffId,
+                    'type' => $type,
+                    'order_id' => $orderId,
+                    'money' => $money
+                ]);
+            } else {
+                $money -= $v['balance'];
+            }
+        }
+        $res = (new AccountRecordsT())->saveAll($data);
+        if (!$res) {
+            throw new SaveException(['msg' => '账户明细失败']);
+        }
+
     }
 
 }

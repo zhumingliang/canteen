@@ -31,6 +31,8 @@ class CompanyAccountT extends Model
         return $this->hasMany('AccountDepartmentT', 'account_id', 'id');
     }
 
+
+
     public static function accounts($companyId)
     {
         $accounts = self::where('company_id', $companyId)
@@ -87,9 +89,9 @@ class CompanyAccountT extends Model
     {
         $accounts = self::where('company_id', $companyId)
             ->where('state', CommonEnum::STATE_IS_OK)
-            ->field('id,name,sort')
+            ->field('id,name,sort,type,fixed_type')
             ->order('sort')
-            ->select();
+            ->select()->toArray();
         return $accounts;
     }
 

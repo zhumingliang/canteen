@@ -19,7 +19,7 @@ class Account extends BaseValidate
     ];
 
     protected $scene = [
-        'save' => ['company_id', 'type','department_all','name','clear','clear_type','sort'],
+        'save' => ['company_id', 'type','department_all','name','clear','sort'],
     ];
 
 }
