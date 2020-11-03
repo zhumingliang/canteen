@@ -311,43 +311,6 @@ class AccountService
 
     public function accountsForSearch($companyId)
     {
-        //检测是否有基本账户：个人账户
-        //1.查看是否有基本户
-        if (empty($companyId)) {
-            $companyId =Token::getCurrentTokenVar('company_id');
-        }
-        if (empty($companyId)) {
-            throw new ParameterException(['msg' => "没有归属企业"]);
-        }
-        $accounts = CompanyAccountT::accountForSearch($companyId);
-        if ($accounts->isEmpty()) {
-            $this->saveFixedAccount($companyId, 1);
-            //检测是否开通农行
-            if ($this->checkNongHang($companyId)) {
-                $this->saveFixedAccount($companyId, 2);
-            }
-
-        } else {
-            $fixedPerson = false;
-            $fixedNongHang = false;
-            foreach ($accounts as $k => $v) {
-                if ($v['type']==1 && $v['fixed_type'] == 1) {
-                    $fixedPerson = true;
-                }
-
-                if ($v['type']==1 && $v['fixed_type'] == 2) {
-                    $fixedNongHang = true;
-                }
-            }
-
-            if (!$fixedPerson) {
-                $this->saveFixedAccount($companyId, 1);
-            }
-            if (!$fixedNongHang&&$this->checkNongHang($companyId) ) {
-                $this->saveFixedAccount($companyId, 2);
-            }
-        }
-
         $accounts = CompanyAccountT::accountForSearch($companyId);
         return $accounts;
     }
