@@ -36,7 +36,7 @@ class CompanyAccountT extends Model
     public static function accounts($companyId)
     {
         $accounts = self::where('company_id', $companyId)
-            ->where('state', CommonEnum::STATE_IS_OK)
+            //->where('state', CommonEnum::STATE_IS_OK)
             ->with([
                 'admin' => function ($query) {
                     $query->field('id,role,phone');
@@ -51,7 +51,7 @@ class CompanyAccountT extends Model
                         ->where('state', CommonEnum::STATE_IS_OK)->field('id,account_id,department_id');
                 }
             ])
-            ->field('id,admin_id,company_id,type,department_all,name,clear,sort,fixed_type,next_time,create_time')
+            ->field('id,admin_id,company_id,type,department_all,name,clear,sort,fixed_type,next_time,create_time,state')
             ->select();
         return $accounts;
     }
