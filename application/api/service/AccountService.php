@@ -140,11 +140,11 @@ class AccountService
             $fixedPerson = false;
             $fixedNongHang = false;
             foreach ($accounts as $k => $v) {
-                if ($v['fixed_type'] == 1) {
+                if ($v['type'] == 1 && $v['fixed_type'] == 1) {
                     $fixedPerson = true;
                 }
 
-                if ($v['fixed_type'] == 2) {
+                if ($v['type'] == 1 && $v['fixed_type'] == 2) {
                     $fixedNongHang = true;
                 }
             }
