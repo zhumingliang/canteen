@@ -10,6 +10,7 @@ use app\api\model\AccountRecordsT;
 use app\api\model\CompanyAccountT;
 use app\api\model\PayNonghangConfigT;
 use app\api\model\PayT;
+use app\api\validate\Company;
 use app\lib\enum\CommonEnum;
 use app\lib\exception\ParameterException;
 use app\lib\exception\SaveException;
@@ -29,11 +30,13 @@ class AccountService
     {
         Db::startTrans();
         try {
+            $this->checkExits($params["company_id"], $params["name"]);
             $adminID = Token::getCurrentTokenVar('u_id');
             $params['admin_id'] = $adminID;
+            $params['fixed_type'] = 2;
             $dayCount = empty($params['day_count']) ? 0 : $params['day_count'];
             $timeBegin = empty($params['time_begin']) ? 0 : $params['time_begin'];
-            $clearType= empty($params['clear_type']) ? 0 : $params['clear_type'];
+            $clearType = empty($params['clear_type']) ? 0 : $params['clear_type'];
             $params['next_time'] = $this->getNextClearTime($params['clear'], $clearType,
                 $params['first'], $params['end'],
                 $dayCount, $timeBegin);
@@ -50,13 +53,24 @@ class AccountService
                 }
             }
             if (!empty($params['departments'])) {
-                $departments = json_decode($params['departments'],true);
+                $departments = json_decode($params['departments'], true);
                 $this->saveDepartments($account->id, $departments);
             }
             Db::commit();
         } catch (Exception $e) {
             Db::rollback();
             throw $e;
+        }
+    }
+
+    public function checkExits($companyId, $name, $accountId = 0)
+    {
+        $account = CompanyAccountT::where('company_id', $companyId)
+            ->where('name', $name)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->find();
+        if ($account && $account->id !== $accountId) {
+            throw new UpdateException(['msg' => "账户名已存在"]);
         }
 
 
@@ -269,10 +283,10 @@ class AccountService
                 $add = [];
                 $cancel = [];
                 if (!empty($departments['add'])) {
-                    $add = json_decode($departments['add'],true);
+                    $add = json_decode($departments['add'], true);
                 }
                 if (!empty($departments['cancel'])) {
-                    $cancel =json_decode($departments['cancel'],true);
+                    $cancel = json_decode($departments['cancel'], true);
                 }
                 $this->saveDepartments($params['id'], $add, $cancel);
             }
