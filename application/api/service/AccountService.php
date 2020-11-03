@@ -123,7 +123,7 @@ class AccountService
         //1.查看是否有基本户
         //1.查看是否有农行
         if (empty($companyId)) {
-            $companyId = Token::getCurrentTokenVar('company_id');
+            $companyId =Token::getCurrentTokenVar('company_id');
         }
         if (empty($companyId)) {
             throw new ParameterException(['msg' => "没有归属企业"]);
@@ -143,7 +143,6 @@ class AccountService
                 if ($v['type'] == 1 && $v['fixed_type'] == 1) {
                     $fixedPerson = true;
                 }
-
                 if ($v['type'] == 1 && $v['fixed_type'] == 2) {
                     $fixedNongHang = true;
                 }
@@ -152,7 +151,7 @@ class AccountService
             if (!$fixedPerson) {
                 $this->saveFixedAccount($companyId, 1);
             }
-            if ($this->checkNongHang($companyId) && !$fixedNongHang) {
+            if (!$fixedNongHang && $this->checkNongHang($companyId)) {
                 $this->saveFixedAccount($companyId, 2);
             }
         }
@@ -315,7 +314,10 @@ class AccountService
         //检测是否有基本账户：个人账户
         //1.查看是否有基本户
         if (empty($companyId)) {
-            $companyId = Token::getCurrentTokenVar('company_id');
+            $companyId =Token::getCurrentTokenVar('company_id');
+        }
+        if (empty($companyId)) {
+            throw new ParameterException(['msg' => "没有归属企业"]);
         }
         $accounts = CompanyAccountT::accountForSearch($companyId);
         if ($accounts->isEmpty()) {
@@ -329,11 +331,11 @@ class AccountService
             $fixedPerson = false;
             $fixedNongHang = false;
             foreach ($accounts as $k => $v) {
-                if ($v['fixed_type'] == 1) {
+                if ($v['type']==1 && $v['fixed_type'] == 1) {
                     $fixedPerson = true;
                 }
 
-                if ($v['fixed_type'] == 2) {
+                if ($v['type']==1 && $v['fixed_type'] == 2) {
                     $fixedNongHang = true;
                 }
             }
@@ -341,7 +343,7 @@ class AccountService
             if (!$fixedPerson) {
                 $this->saveFixedAccount($companyId, 1);
             }
-            if ($this->checkNongHang($companyId) && !$fixedNongHang) {
+            if (!$fixedNongHang&&$this->checkNongHang($companyId) ) {
                 $this->saveFixedAccount($companyId, 2);
             }
         }
