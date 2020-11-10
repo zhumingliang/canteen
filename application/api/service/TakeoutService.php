@@ -14,6 +14,7 @@ use app\lib\exception\ParameterException;
 use app\lib\exception\UpdateException;
 use app\lib\printer\Printer;
 use app\lib\weixin\Template;
+use think\Db;
 
 class TakeoutService
 {

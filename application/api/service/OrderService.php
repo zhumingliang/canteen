@@ -10,6 +10,7 @@ namespace app\api\service;
 
 
 use app\api\model\CanteenAccountT;
+use app\api\model\CompanyStaffT;
 use app\api\model\ConsumptionRecordsV;
 use app\api\model\DinnerStatisticV;
 use app\api\model\DinnerT;
@@ -923,7 +924,7 @@ class OrderService extends BaseService
             if (!$strategies) {
                 throw new ParameterException(['msg' => '消费策略未设置']);
             }
-            if (empty( $strategies[0]['consumption_type'])){
+            if (empty($strategies[0]['consumption_type'])) {
                 throw new ParameterException(['msg' => '消费策略未设置异常']);
 
             }
@@ -1772,7 +1773,7 @@ class OrderService extends BaseService
             }
             $this->updateParentOrderMoney($id);
             //更新其它订单排序
-            $this->prefixOrderSortWhenUpdateOrder($strategy, $order->dinner_id, $order->phone, $order->ordering_date,$id);
+            $this->prefixOrderSortWhenUpdateOrder($strategy, $order->dinner_id, $order->phone, $order->ordering_date, $id);
             Db::commit();
         } catch
         (Exception $e) {
@@ -2495,13 +2496,15 @@ class OrderService extends BaseService
         $hidden = $canteenAccount->type;
         $all = 0;
         $effective = 0;
+        $staff = CompanyStaffT::getStaffWithPhone($phone, $company_id);
         if ($hidden == CommonEnum::STATE_IS_FAIL) {
             //不可透支消费，返回用户在该企业余额
-            $money = UserBalanceV::userBalanceGroupByEffective($company_id, $phone);
+            $money = UserBalanceV::userBalanceGroupByEffective2($staff->id);
+            //$money = UserBalanceV::userBalanceGroupByEffective($company_id, $phone);
             foreach ($money as $k => $v) {
                 $all += $v['money'];
                 if ($v['effective'] == CommonEnum::STATE_IS_OK) {
-                    $effective = $v['money'];
+                    $effective += $v['money'];
                 }
             }
 
