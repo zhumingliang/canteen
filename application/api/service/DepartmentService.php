@@ -15,6 +15,7 @@ use app\api\model\StaffCardV;
 use app\api\model\StaffQrcodeT;
 use app\api\model\StaffV;
 use app\lib\enum\CommonEnum;
+use app\lib\enum\UserEnum;
 use app\lib\exception\DeleteException;
 use app\lib\exception\ParameterException;
 use app\lib\exception\SaveException;
@@ -390,7 +391,7 @@ class DepartmentService
             ];
         }
 
-        if (!strlen( $name)) {
+        if (!strlen($name)) {
             $fail = [
                 'name' => $name,
                 'msg' => '姓名为空'
@@ -841,6 +842,18 @@ class DepartmentService
     {
         $staffs = CompanyStaffV::searchStaffs($page, $size, $company_id, $department_id, $key);
         return $staffs;
+    }
+
+    public function handleStaff($id, $state)
+    {
+        $staff = CompanyStaffT::update(['state' => $state], ['id' => $id]);
+        if (!$staff) {
+            throw  new UpdateException();
+        }
+        if ($state == CommonEnum::STATE_IS_DELETE) {
+            //删除用户需要解除卡绑定
+            StaffCardT::update(['state' => $state], ['staff_id' => $id]);
+        }
     }
 
 
