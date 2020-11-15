@@ -102,7 +102,11 @@ Index extends BaseController
 
     public function test($param = "")
     {
-      
+        $pwd ='tljh2868179';
+
+        $mpwd = md5($pwd);
+        echo substr(md5($pwd), 5, 20);
+
     }
 
     public function token()

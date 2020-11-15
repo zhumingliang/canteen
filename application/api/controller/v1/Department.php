@@ -324,7 +324,7 @@ class Department extends BaseController
     {
         $id = Request::param('id');
         $state = Request::param('state');
-        (new DepartmentService())->handelStaff($id,$state);
+        (new DepartmentService())->handleStaff($id,$state);
         return json(new SuccessMessage());
     }
 

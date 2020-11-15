@@ -38,6 +38,12 @@ class CompanyStaffT extends Model
 
     }
 
+    public function pay()
+    {
+        return $this->hasMany('PayT', 'staff_id', 'id');
+
+    }
+
     public function company()
     {
         return $this->belongsTo('CompanyT', 'company_id', 'id');
@@ -172,16 +178,18 @@ class CompanyStaffT extends Model
                 },
                 'account' => function ($query) {
                     $query->where('state', CommonEnum::STATE_IS_OK)
-                        ->field('staff_id,account_id,sum(money) as money')->group('account_id');
+                        ->field('staff_id,account_id,sum(money) as money')
+                        ->group('account_id');
                 },
-                'pay' => function ($query) {
-                    $query->where('status',PayEnum::PAY_SUCCESS)
-                        ->where('refund',CommonEnum::STATE_IS_FAIL)
-                        ->field('staff_id,method_id,sum(money) as money')->group('method_id');
+                'pay' => function ($query){
+                    $query->where('status', PayEnum::PAY_SUCCESS)
+                        ->where('refund', CommonEnum::STATE_IS_FAIL)
+                        ->field('staff_id,method_id,sum(money) as money')
+                        ->group('method_id');
                 }
             ])
-            ->field('id,d_id,username,code,card_num,phone,department')
-            ->paginate($size, false, ['page' => $page]);
+            ->field('id,d_id,username,code,card_num,phone')
+            ->paginate($size, false, ['page' => $page])->toArray();
         return $users;
 
     }

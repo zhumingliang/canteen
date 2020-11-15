@@ -209,12 +209,65 @@ class WalletService
 
     }
 
-    public function usersBalance($page, $size, $department_id, $user, $phone, $time_begin, $time_end)
+    public function usersBalance($page, $size, $department_id, $user, $phone)
     {
-        $company_id = Token::getCurrentTokenVar('company_id');
-        $users = CompanyStaffT::staffsForBalance($page, $size, $department_id, $user, $phone, $company_id);
-        //$users = UserBalanceV::usersBalance($page, $size, $department_id, $user, $phone, $company_id);
-        return $users;
+        $company_id = 129;// Token::getCurrentTokenVar('company_id');
+        $accounts = CompanyAccountT::accountsWithSorts($company_id);
+        $staffs = CompanyStaffT::staffsForBalance($page, $size, $department_id, $user, $phone, $company_id);
+        $staffs['data'] = $this->prefixAccount($staffs['data'], $accounts);
+        return $staffs;
+    }
+
+    public function prefixAccount($staffs, $accounts)
+    {
+        $countData = [];
+        foreach ($accounts as $k => $v) {
+            array_push($countData, [
+                'account_id' => $v['id'],
+                'name' => $v['name'],
+                'type' => $v['type'],
+                'fixed_type' => $v['fixed_type'],
+                'balance' => 0
+            ]);
+        }
+        if (count($staffs)) {
+            foreach ($staffs as $k => $v) {
+                $staffCountData = $countData;
+                $account = $v['account'];
+                if (count($account)) {
+                    foreach ($staffCountData as $k2 => $v2) {
+                        foreach ($account as $k3 => $v3) {
+                            if ($v2['account_id'] == $v3['account_id']) {
+                                $staffCountData[$k2]['balance'] = $v3['money'];
+                                break;
+                            }
+
+                        }
+                    }
+                }
+                $pay = $v['pay'];
+                if (count($pay)) {
+                    foreach ($staffCountData as $k2 => $v2) {
+                        foreach ($pay as $k3 => $v3) {
+                            if ($v3['method_id'] == PayEnum::PAY_METHOD_WX && ($v2['type'] == 1 && $v2['fixed_type'] == 1)) {
+                                $staffCountData[$k2]['balance'] += $v3['money'];
+                                break;
+                            }
+
+                            if ($v3['method_id'] == PayEnum::PAY_METHOD_NH && ($v2['type'] == 1 && $v2['fixed_type'] == 2)) {
+                                $staffCountData[$k2]['balance'] += $v3['money'];
+                                break;
+                            }
+
+                        }
+                    }
+                }
+
+                $staffs[$k]['account'] = $staffCountData;
+            }
+        }
+        return $staffs;
+
     }
 
     public function exportUsersBalance($department_id, $user, $phone)

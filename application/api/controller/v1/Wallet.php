@@ -190,13 +190,11 @@ class Wallet extends BaseController
      * @apiVersion 3.0.0
      * @apiDescription CMS管理端-充值管理-饭卡余额查询
      * @apiExample {get}  请求样例:
-     * http://canteen.tonglingok.com/api/v1/wallet/users/balance?&department_id=0&user&phone=&page=1&size=10&time_begin=2020-10-22&time_end=2020-10-23
+     * http://canteen.tonglingok.com/api/v1/wallet/users/balance?&department_id=0&user&phone=&page=1&size=10
      * @apiParam (请求参数说明) {int} page 当前页码
      * @apiParam (请求参数说明) {int} size 每页多少条数据
      * @apiParam (请求参数说明) {String} user 人员信息
      * @apiParam (请求参数说明) {String} phone 手机号
-     * @apiParam (请求参数说明) {String} time_begin 查询开始时间
-     * @apiParam (请求参数说明) {String} time_end 查询截止时间
      * @apiParam (请求参数说明) {int} department_id 部门id，全部传0
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200,"data":{"total":2,"per_page":20,"current_page":1,"last_page":1,"data":[{"username":"LANGBIN","code":"1996010101","card_num":"1101147822","phone":"15521323081","department":"B1部门","balance":-227},{"username":null,"code":null,"card_num":"123","phone":"18956225230","department":null,"balance":400}]}}
@@ -211,9 +209,9 @@ class Wallet extends BaseController
      * @apiSuccess (返回参数说明) {string} department 部门
      * @apiSuccess (返回参数说明) {int} balance 余额
      */
-    public function usersBalance($page = 1, $size = 20, $department_id = 0, $user = '', $phone = '',$time_begin='',$time_end='')
+    public function usersBalance($page = 1, $size = 20, $department_id = 0, $user = '', $phone ='')
     {
-        $users = (new WalletService())->usersBalance($page, $size, $department_id, $user, $phone,$time_begin,$time_end);
+        $users = (new WalletService())->usersBalance($page, $size, $department_id, $user, $phone);
         return json(new SuccessMessageWithData(['data' => $users]));
 
     }
