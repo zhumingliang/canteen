@@ -852,7 +852,13 @@ class DepartmentService
         }
         if ($state == CommonEnum::STATE_IS_DELETE) {
             //删除用户需要解除卡绑定
-            StaffCardT::update(['state' => $state], ['staff_id' => $id]);
+            $staffCard = StaffCardT::where('staff_id', $id)
+                ->where('state', CommonEnum::STATE_IS_OK)
+                ->find();
+            if ($staffCard){
+                $staffCard->state=CommonEnum::STATE_IS_DELETE;
+                $staffCard->save();
+            }
         }
     }
 
