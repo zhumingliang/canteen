@@ -197,7 +197,7 @@ class Wallet extends BaseController
      * @apiParam (请求参数说明) {String} phone 手机号
      * @apiParam (请求参数说明) {int} department_id 部门id，全部传0
      * @apiSuccessExample {json} 返回样例:
-     * {"msg":"ok","errorCode":0,"code":200,"data":{"total":2,"per_page":20,"current_page":1,"last_page":1,"data":[{"username":"LANGBIN","code":"1996010101","card_num":"1101147822","phone":"15521323081","department":"B1部门","balance":-227},{"username":null,"code":null,"card_num":"123","phone":"18956225230","department":null,"balance":400}]}}
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"total":9,"per_page":"1","current_page":1,"last_page":9,"data":[{"id":6768,"d_id":381,"username":"苏小清","code":"1","card_num":"","phone":"13622577573","department":{"id":381,"name":"饭堂维护"},"account":[{"account_id":79,"name":"个人账户","type":1,"fixed_type":1,"balance":0}]}]}}
      * @apiSuccess (返回参数说明) {int} total 数据总数
      * @apiSuccess (返回参数说明) {int} per_page 每页多少条数据
      * @apiSuccess (返回参数说明) {int} current_page 当前页码
@@ -206,10 +206,13 @@ class Wallet extends BaseController
      * @apiSuccess (返回参数说明) {int} code 编码
      * @apiSuccess (返回参数说明) {string} card_num 卡号
      * @apiSuccess (返回参数说明) {string} phone 手机号
-     * @apiSuccess (返回参数说明) {string} department 部门
-     * @apiSuccess (返回参数说明) {int} balance 余额
+     * @apiSuccess (返回参数说明) {obj} department 部门信息
+     * @apiSuccess (返回参数说明) {string} name 部门名称
+     * @apiSuccess (返回参数说明) {obj} account 账户余额信息
+     * @apiSuccess (返回参数说明) {string} name 账户名称
+     * @apiSuccess (返回参数说明) {float} balance 账户余额
      */
-    public function usersBalance($page = 1, $size = 20, $department_id = 0, $user = '', $phone ='')
+    public function usersBalance($page = 1, $size = 20, $department_id = 0, $user = '', $phone = '')
     {
         $users = (new WalletService())->usersBalance($page, $size, $department_id, $user, $phone);
         return json(new SuccessMessageWithData(['data' => $users]));

@@ -264,6 +264,7 @@ class WalletService
                 }
 
                 $staffs[$k]['account'] = $staffCountData;
+                unset($staffs[$k]['pay']);
             }
         }
         return $staffs;
