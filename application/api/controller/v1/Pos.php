@@ -5,6 +5,7 @@ namespace app\api\controller\v1;
 
 
 use app\api\controller\BaseController;
+use app\api\model\StaffCardV;
 use app\api\service\ShopService;
 use app\api\service\WalletService;
 use app\api\model\UserBalanceV;
@@ -392,13 +393,17 @@ class Pos extends BaseController
         if ($user['state'] != 1) {
             throw new AuthException(['msg' => '绑卡失败，账号已停用']);
         }
-        $staff_id = $user['id'];
-        $sql = "select id from canteen_staff_card_t where (state = 1 or state = 2) and (staff_id = '" . $staff_id . "' or card_code = '" . $card_code . "')";
-        $cardInfo = Db::query($sql);
-
-        if (!empty($cardInfo)) {
-            throw new AuthException(['msg' => '该卡或账号已被绑定，请先注销后再绑卡']);
+//        $staff_id = $user['id'];
+        if(StaffCardV::checkCardExits($company_id,$card_code))
+        {
+            throw new ParameterException(['msg'=>'卡号已经存在，不能重复绑定']);
         }
+//        $sql = "select id from canteen_staff_card_t where (state = 1 or state = 2) and (staff_id = '" . $staff_id . "' or card_code = '" . $card_code . "')";
+//        $cardInfo = Db::query($sql);
+//
+//        if (!empty($cardInfo)) {
+//            throw new AuthException(['msg' => '该卡或账号已被绑定，请先注销后再绑卡']);
+//        }
         db('staff_card_t')
             ->whereOr('staff_id', $user['id'])
             ->whereOr('card_code', $card_code)
