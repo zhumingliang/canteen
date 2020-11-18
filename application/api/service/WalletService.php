@@ -273,7 +273,7 @@ class WalletService
 
     public function exportUsersBalance($department_id, $user, $phone)
     {
-        $company_id = 126;//Token::getCurrentTokenVar('company_id');
+        $company_id = Token::getCurrentTokenVar('company_id');
         $accounts = CompanyAccountT::accountsWithSorts($company_id);
         $staffs = CompanyStaffT::staffsForExportsBalance($department_id, $user, $phone, $company_id);
         $header = ['姓名', '员工编号', '卡号', '手机号码', '部门'];
