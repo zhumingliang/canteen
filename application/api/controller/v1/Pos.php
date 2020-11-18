@@ -366,6 +366,7 @@ class Pos extends BaseController
         if ($save < 0) {
             throw  new  AuthException(['msg' => '扣费失败']);
         }
+
     }
 
     private function usersBindingCard($params)

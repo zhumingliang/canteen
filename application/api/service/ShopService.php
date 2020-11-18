@@ -4,6 +4,7 @@
 namespace app\api\service;
 
 
+use app\api\model\AccountRecordsT;
 use app\api\model\CanteenCommentT;
 use app\api\model\ShopModuleT;
 use app\api\model\ShopOrderDetailT;
@@ -847,5 +848,50 @@ class ShopService
 
     }
 
+    /**
+     * 小卖部取消订单补充金额
+     * @param $orderId 撤销订单id
+     * @param $staffId 用户id
+     * @param $money   撤销订单金额
+     */
+    public function handleReduceOrder($orderId, $staffId, $money)
+    {
+        $money = abs($money);
+        $order = ShopOrderT::where('staff_id', $staffId)->where('state', CommonEnum::STATE_IS_OK)
+            ->where('money', '>', 0)
+            ->order('create_time desc')
+            ->find();
+        if ($order) {
+            //获取本订单账户明细
+            $records = AccountRecordsT::where('order_id', $order->id)
+                ->where('type', 'shop')->order('id desc')
+                ->select();
+            $data = [];
+            if ($records) {
+                foreach ($records as $k => $v) {
+                    if (abs($v['money']) >= $money) {
+                        array_push($data, [
+                            'order_id' => $orderId,
+                            'type' => 'shop',
+                            'status' => 2,
+                            'company_id' => $v['company_id'],
+                            'state' => CommonEnum::STATE_IS_OK,
+                            'staff_id' => $staffId,
+                            'money' => $money,
+                            'account_id' => $v['account_id']
+                        ]);
+                    } else {
+                        $money -= abs($v['money']);
+                    }
+
+                }
+
+            }
+            if (count($data)) {
+                (new AccountRecordsT())->saveAll($data);
+            }
+        }
+
+    }
 
 }
