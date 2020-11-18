@@ -5,6 +5,7 @@ namespace app\api\controller\v1;
 
 
 use app\api\controller\BaseController;
+use app\api\model\ShopOrderT;
 use app\api\model\StaffCardV;
 use app\api\service\ShopService;
 use app\api\service\WalletService;
@@ -321,7 +322,6 @@ class Pos extends BaseController
                 ->order('id desc')
                 ->field('money')
                 ->sum('money');
-//            echo PHP_EOL;
             if (!empty($refundData)) {
                 $refundSumMoney = str_replace("-", "", $refundData);
                 if ($refundMoney + $refundSumMoney > $lastMoney) {
@@ -360,13 +360,15 @@ class Pos extends BaseController
             'phone' => $phone,
             'send' => 1
         ];
-        $save = db('shop_order_t')
-            ->data($data)
-            ->insert();
-        if ($save < 0) {
+        $save = ShopOrderT::create($data);
+        if (!$save) {
             throw  new  AuthException(['msg' => '扣费失败']);
         }
-
+        if($type == 'refund')
+        {
+            $order_id = $save->id;
+            (new ShopService())->handleReduceOrder($order_id, $staff_id, $money);
+        }
     }
 
     private function usersBindingCard($params)
