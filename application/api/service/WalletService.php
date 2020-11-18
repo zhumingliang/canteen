@@ -211,7 +211,7 @@ class WalletService
 
     public function usersBalance($page, $size, $department_id, $user, $phone)
     {
-        $company_id = 129;// Token::getCurrentTokenVar('company_id');
+        $company_id = Token::getCurrentTokenVar('company_id');
         $accounts = CompanyAccountT::accountsWithSorts($company_id);
         $staffs = CompanyStaffT::staffsForBalance($page, $size, $department_id, $user, $phone, $company_id);
         $staffs['data'] = $this->prefixAccount($staffs['data'], $accounts);
