@@ -273,15 +273,79 @@ class WalletService
 
     public function exportUsersBalance($department_id, $user, $phone)
     {
-        $company_id = Token::getCurrentTokenVar('company_id');
-        $users = UserBalanceV::exportUsersBalance($department_id, $user, $phone, $company_id);
-        $header = ['姓名', '员工编号', '卡号', '手机号码', '部门', '余额（元）'];
+        $company_id = 126;//Token::getCurrentTokenVar('company_id');
+        $accounts = CompanyAccountT::accountsWithSorts($company_id);
+        $staffs = CompanyStaffT::staffsForExportsBalance($department_id, $user, $phone, $company_id);
+        $header = ['姓名', '员工编号', '卡号', '手机号码', '部门'];
+        $header = $this->prefixHeader($accounts, $header);
+        $staffs = $this->prefixExportBalance($staffs, $accounts);
         $file_name = "饭卡余额报表";
-        $url = (new ExcelService())->makeExcel($header, $users, $file_name);
+        $url = (new ExcelService())->makeExcel($header, $staffs, $file_name);
         return [
             'url' => config('setting.domain') . $url
         ];
-        return $users;
+    }
+
+    private function prefixHeader($accounts, $header)
+    {
+        foreach ($accounts as $k => $v) {
+            array_push($header, $v['name']);
+        }
+        array_push($header, '总余额（元）');
+        return $header;
+
+    }
+
+    private function prefixExportBalance($staffs, $accounts)
+    {
+        $dataList = [];
+        if (count($staffs)) {
+            foreach ($staffs as $k => $v) {
+                $data = [
+                    'username' => $v['username'],
+                    'code' => $v['code'],
+                    'card_num' => $v['card_num'],
+                    'phone' => $v['phone'],
+                    'department' => $v['department']['name']
+                ];
+                $account = $v['account'];
+                $pay = $v['pay'];
+                $allBalance = 0;
+                foreach ($accounts as $k2 => $v2) {
+                    $accountBalance = 0;
+                    if (count($account)) {
+                        foreach ($account as $k3 => $v3) {
+                            if ($v2['id'] == $v3['account_id']) {
+                                $accountBalance = $v3['money'];
+                                break;
+                            }
+                        }
+
+                    }
+
+                    if (count($pay)) {
+                        foreach ($pay as $k3 => $v3) {
+                            if ($v3['method_id'] == PayEnum::PAY_METHOD_WX && ($v2['type'] == 1 && $v2['fixed_type'] == 1)) {
+                                $accountBalance += $v3['money'];
+                                break;
+                            }
+
+                            if ($v3['method_id'] == PayEnum::PAY_METHOD_NH && ($v2['type'] == 1 && $v2['fixed_type'] == 2)) {
+                                $accountBalance += $v3['money'];
+                                break;
+                            }
+
+                        }
+                    }
+                    $allBalance += $accountBalance;
+                    $data[$v2['name']] = $accountBalance;
+                }
+                $data['总余额'] = $allBalance;
+                array_push($dataList, $data);
+            }
+        }
+        return $dataList;
+
     }
 
     public function getUserBalance($company_id, $phone)
