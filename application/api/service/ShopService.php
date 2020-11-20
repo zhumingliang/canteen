@@ -878,8 +878,10 @@ class ShopService
                             'state' => CommonEnum::STATE_IS_OK,
                             'staff_id' => $staffId,
                             'money' => $money,
-                            'account_id' => $v['account_id']
-                        ]);
+                            'account_id' => $v['account_id'],
+                            'consumption_date' => date('Y-m-d'),
+                            'location_id' => $v['location_id'],
+                            ]);
                     } else {
                         $money -= abs($v['money']);
                     }
