@@ -697,7 +697,7 @@ class Order extends BaseController
         $consumption_time = Request::param('consumption_time');
         $consumption_type = Request::param('consumption_type');
         $key = Request::param('key');
-        $info = (new OrderService())->orderUsersStatistic($canteen_id,$dinner_id, $consumption_time, $consumption_type, $key, $page, $size);
+        $info = (new OrderService())->orderUsersStatistic($canteen_id, $dinner_id, $consumption_time, $consumption_type, $key, $page, $size);
         return json(new SuccessMessageWithData(['data' => $info]));
     }
 
@@ -1361,7 +1361,7 @@ class Order extends BaseController
         $address_id = Request::param('address_id');
         $consumption_type = Request::param('consumption_type');
         $remark = Request::param('remark');
-        (new OrderService())->changeOrderAddress($order_id, $address_id,$consumption_type,$remark);
+        (new OrderService())->changeOrderAddress($order_id, $address_id, $consumption_type, $remark);
         return json(new SuccessMessage());
     }
 
@@ -1450,5 +1450,6 @@ class Order extends BaseController
         $money = (new  OrderService())->getOrderMoney($params);
         return json(new SuccessMessageWithData(['data' => $money]));
     }
+
 
 }

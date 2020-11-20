@@ -4,6 +4,7 @@
 namespace app\api\service;
 
 
+use app\api\model\AccountRecordsV;
 use app\api\model\CanteenT;
 use app\api\model\CompanyStaffT;
 use app\api\model\DinnerT;
@@ -112,7 +113,7 @@ class OrderStatisticService
                 $data['dinner'] = $v['dinner'];
                 $data['type'] = $v['type'];
                 $data['count'] = Num::numToWord($v['count']) . "份";
-                $data['money'] = ($v['order_money']-$v['delivery_fee']) / $v['count'];
+                $data['money'] = ($v['order_money'] - $v['delivery_fee']) / $v['count'];
                 $data['status'] = $this->getStatus($v['ordering_date'], $v['state'], $v['meal_time_end'], $v['used']);
                 $data['foods'] = $detail;
                 $data['all'] = $v['order_money'];
@@ -690,7 +691,7 @@ class OrderStatisticService
 
 
         $header = $this->addDinnerToHeader($header, $dinner);
-        $reports = $this->prefixConsumptionStatistic($statistic, $dinner,$time_begin,$time_end);
+        $reports = $this->prefixConsumptionStatistic($statistic, $dinner, $time_begin, $time_end);
         $reportName = $fileNameArr[$status];
         $file_name = $reportName . "(" . $time_begin . "-" . $time_end . ")";
         $url = (new ExcelService())->makeExcel($header, $reports, $file_name);
@@ -725,15 +726,15 @@ class OrderStatisticService
     }
 
     private
-    function prefixConsumptionStatistic($statistic, $dinner,$time_begin,$time_end)
+    function prefixConsumptionStatistic($statistic, $dinner, $time_begin, $time_end)
     {
 
         $dataList = [];
         if (!empty($statistic)) {
-            $endData = $this->addDinnerToStatistic($dinner,$time_begin,$time_end);
+            $endData = $this->addDinnerToStatistic($dinner, $time_begin, $time_end);
             foreach ($statistic as $k => $v) {
                 $dinner_statistic = array_key_exists('dinnerStatistic', $v) ? $v['dinnerStatistic'] : $v['dinner_statistic'];
-                $data = $this->addDinnerToStatistic($dinner,$time_begin,$time_end);
+                $data = $this->addDinnerToStatistic($dinner, $time_begin, $time_end);
                 $data['number'] = $k + 1;
                 $data['statistic'] = $v['statistic'];
                 $data['username'] = empty($v['username']) ? '' : $v['username'];
@@ -760,7 +761,7 @@ class OrderStatisticService
     }
 
     private
-    function addDinnerToStatistic($dinner,$time_begin,$time_end)
+    function addDinnerToStatistic($dinner, $time_begin, $time_end)
     {
         $data = [
             'number' => '合计',
@@ -787,13 +788,20 @@ class OrderStatisticService
             $username, $staff_type_id, $time_begin,
             $time_end, $company_id, $phone, $order_type);
         $statistic = $this->prefixStatistic($statistic, 'department', $time_begin, $time_end, $status);
-        return $statistic;
+        $accountRecords = AccountRecordsV::consumptionStatisticByDepartment($canteen_id, $status, $department_id,
+            $username, $staff_type_id, $time_begin,
+            $time_end, $company_id, $phone, $order_type);
+        return [
+            'consumptionRecords'=>$statistic,
+            'accountRecords'=>$accountRecords
+        ];
 
     }
 
     private
     function prefixStatistic($statistic, $field, $time_begin, $time_end, $status)
     {
+        //  print_r($statistic);
         $fieldArr = [];
         $data = [];
         $allMoney = 0;
@@ -811,6 +819,7 @@ class OrderStatisticService
 
             }
 
+
             foreach ($fieldArr as $k => $v) {
                 $dinnerStatistic = [];
                 foreach ($statistic as $k2 => $v2) {
@@ -825,6 +834,7 @@ class OrderStatisticService
                     }
                 }
                 array_push($data, [
+                    'statistic_id' => $v2['statistic_id'],
                     'statistic' => $v,
                     'time_begin' => $time_begin,
                     'time_end' => $time_end,
@@ -840,34 +850,6 @@ class OrderStatisticService
             'allCount' => $allCount
         ];
     }
-
-    /*   private function consumptionStatisticByUsername($canteen_id, $status, $department_id,
-                                                       $username, $staff_type_id, $time_begin,
-                                                       $time_end, $company_id, $page, $size)
-       {
-           //获取人员信息
-           $users = StaffCanteenV::getStaffsForStatistic($company_id, $canteen_id, $page, $size, $status, $department_id,
-               $username, $staff_type_id, $time_begin,
-               $time_end);
-           $data = $users['data'];
-           foreach ($data as $k => $v) {
-               $data[$k]['time_begin'] = $time_begin;
-               $data[$k]['time_end'] = $time_end;
-               $data[$k]['dinnerStatistic'] = OrderConsumptionV::userDinnerStatistic($canteen_id, $status, $department_id,
-                   $username, $staff_type_id, $time_begin,
-                   $time_end, $company_id, $page, $size);
-           }
-           $statistic = OrderConsumptionV::consumptionStatisticByUsername($canteen_id, $status, $department_id,
-               $username, $staff_type_id, $time_begin,
-               $time_end, $company_id);
-           $users['data'] = $data;
-           return [
-               'statistic' => $users,
-               'allMoney' => round($statistic['order_money'], 1),
-               'allCount' => $statistic['order_count']
-           ];
-       }
-    */
 
 
     private
@@ -907,9 +889,16 @@ class OrderStatisticService
         $statistic = OrderConsumptionV::consumptionStatisticByUsername($canteen_id, $status, $department_id,
             $username, $staff_type_id, $time_begin,
             $time_end, $company_id);
+
+        $accountRecords = AccountRecordsV::userDinnerStatistic($canteen_id, $status, $department_id,
+            $username, $staff_type_id, $time_begin,
+            $time_end, $company_id, $phone, $order_type);
+
+
         return [
-            'statistic' => $users,
-            'allMoney' => $statistic['order_money'],// $status ? abs($statistic['order_money']) : $statistic['order_money'],
+            'consumptionRecords'=>$users,
+            'accountRecords'=>$accountRecords,
+            'allMoney' => $statistic['order_money'],
             'allCount' => $statistic['order_count']
         ];
     }
@@ -924,7 +913,13 @@ class OrderStatisticService
             $username, $staff_type_id, $time_begin,
             $time_end, $company_id, $phone, $order_type);
         $statistic = $this->prefixStatistic($statistic, 'status', $time_begin, $time_end, $status);
-        return $statistic;
+        $accountRecords = AccountRecordsV::consumptionStatisticByStatus($canteen_id, $status, $department_id,
+            $username, $staff_type_id, $time_begin,
+            $time_end, $company_id, $phone, $order_type);
+        return [
+            'consumptionRecords'=>$statistic,
+            'accountRecords'=>$accountRecords
+        ];
 
     }
 
@@ -937,7 +932,13 @@ class OrderStatisticService
             $username, $staff_type_id, $time_begin,
             $time_end, $company_id, $phone, $order_type);
         $statistic = $this->prefixStatistic($statistic, 'canteen', $time_begin, $time_end, $status);
-        return $statistic;
+        $accountRecords = AccountRecordsV::consumptionStatisticByCanteen($canteen_id, $status, $department_id,
+            $username, $staff_type_id, $time_begin,
+            $time_end, $company_id, $phone, $order_type);
+        return [
+            'consumptionRecords'=>$statistic,
+            'accountRecords'=>$accountRecords
+        ];
 
     }
 
@@ -950,7 +951,13 @@ class OrderStatisticService
             $username, $staff_type_id, $time_begin,
             $time_end, $company_id, $phone, $order_type);
         $statistic = $this->prefixStatistic($statistic, 'staff_type', $time_begin, $time_end, $status);
-        return $statistic;
+        $accountRecords = AccountRecordsV::consumptionStatisticByStaff($canteen_id, $status, $department_id,
+            $username, $staff_type_id, $time_begin,
+            $time_end, $company_id, $phone, $order_type);
+        return [
+            'consumptionRecords'=>$statistic,
+            'accountRecords'=>$accountRecords
+        ];
 
     }
 
