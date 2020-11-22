@@ -58,14 +58,16 @@ class Pos extends BaseController
     {
         //设置查询当天扣款笔数和金额的开始时间,因为当天24点后就是第二天，所以不需要再设置结束时间
         $start = date('Y-m-d');
+        //接收企业id
+        $company_id=Request::param('company_id');
 
         //扣款笔数等于count订餐数量字段总数
-        $sql = "select count(count) as count from canteen_shop_order_t where date_format(create_time,'%Y-%m-%d') ='" . $start . "' and money>0";
+        $sql = "select count(count) as count from canteen_shop_order_t where date_format(create_time,'%Y-%m-%d') ='" . $start . "' and money>0 and company_id='".$company_id."'";
 
         $total = Db::query($sql);
         //金额等于每笔订单的金额大于0的总数
 
-        $SQL = "select ifnull(sum(money),0) as sum from canteen_shop_order_t where date_format(create_time,'%Y-%m-%d') = '" . $start . "'";
+        $SQL = "select ifnull(sum(money),0) as sum from canteen_shop_order_t where date_format(create_time,'%Y-%m-%d') = '" . $start."' and company_id='".$company_id."'";
 
         $money = Db::query($SQL);
         $data = [['count' => $total[0]['count'],
@@ -285,18 +287,19 @@ class Pos extends BaseController
     {
         $money = $params['money'];
         $card_code = $params['card_code'];
+        $company_id = $params['company_id'];
         $cardInfo = db('staff_card_t')
             ->alias('t1')
             ->leftJoin('company_staff_t t2', 't1.staff_id = t2.id')
             ->where('card_code', $card_code)
             ->where('t1.state', CommonEnum::STATE_IS_OK)
             ->where('t2.state', CommonEnum::STATE_IS_OK)
+            ->where('t2.company_id', $company_id)
             ->field('t1.staff_id,t2.d_id,t2.t_id,t2.company_id,t2.phone')
             ->find();
         if (empty($cardInfo)) {
             throw  new  AuthException(['msg' => '找不到该卡或卡已注销']);
         }
-        $company_id = $cardInfo['company_id'];
         $phone = $cardInfo['phone'];
         $staff_id = $cardInfo['staff_id'];
         $d_id = $cardInfo['d_id'];
