@@ -20,4 +20,15 @@ class AccountRecordsT extends Model
 
     }
 
+    public static function companyAccountsBalance($companyId)
+    {
+        $statistic = self::where('company_id', $companyId)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->field('account_id,sum(money) as money')
+            ->group('account_id')
+            ->select()->toArray();
+        return $statistic;
+
+    }
+
 }

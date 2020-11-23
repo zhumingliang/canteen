@@ -12,6 +12,7 @@ use app\api\model\PayNonghangConfigT;
 use app\api\model\PayT;
 use app\api\validate\Company;
 use app\lib\enum\CommonEnum;
+use app\lib\enum\PayEnum;
 use app\lib\exception\ParameterException;
 use app\lib\exception\SaveException;
 use app\lib\exception\UpdateException;
@@ -123,7 +124,7 @@ class AccountService
         //1.查看是否有基本户
         //1.查看是否有农行
         if (empty($companyId)) {
-            $companyId =Token::getCurrentTokenVar('company_id');
+            $companyId = Token::getCurrentTokenVar('company_id');
         }
         if (empty($companyId)) {
             throw new ParameterException(['msg' => "没有归属企业"]);
@@ -345,18 +346,24 @@ class AccountService
 
     }
 
-    public function saveAccountRecords($accounts, $money, $type, $orderId, $companyId, $staffId)
+    public function saveAccountRecords($consumptionDate,$canteenId,$money, $type, $orderId, $companyId, $staffId, $outsider = 2)
     {
+        $accounts = $this->getAccountBalance($companyId, $staffId);
         $data = [];
         foreach ($accounts as $k => $v) {
             if ($v['balance'] >= $money) {
                 array_push($data, [
                     'account_id' => $v['id'],
                     'company_id' => $companyId,
+                    'consumption_date' => $consumptionDate,
+                    'location_id' => $canteenId,
+                    'used' => CommonEnum::STATE_IS_OK,
+                    'status' => CommonEnum::STATE_IS_OK,
                     'staff_id' => $staffId,
                     'type' => $type,
                     'order_id' => $orderId,
-                    'money' => $money
+                    'money' => $money,
+                    'outsider' => $outsider
                 ]);
             } else {
                 $money -= $v['balance'];
@@ -366,6 +373,42 @@ class AccountService
         if (!$res) {
             throw new SaveException(['msg' => '账户明细失败']);
         }
+
+    }
+
+    public function getAccountBalance($companyId, $staffID)
+    {
+        //获取企业所有账户
+        $accounts = CompanyAccountT::accountsWithSorts($companyId);
+        //获取用户账户余额
+        $accountBalance = AccountRecordsT::statistic($staffID);
+        //获取用户（微信/农行）充值记录
+        $recharge = PayT::statistic($staffID);
+        foreach ($accounts as $k => $v) {
+            $balance = 0;
+            foreach ($accountBalance as $k2 => $v2) {
+                if ($v['id'] == $v2['account_id']) {
+                    $balance += $v2['money'];
+                    break;
+                }
+
+            }
+            if ($v['type'] == 1) {
+                //基本账户
+                foreach ($recharge as $k2 => $v2) {
+                    if ($v['fixed_type'] == 1 && $v2['method_id'] == PayEnum::PAY_METHOD_WX) {
+                        //个人账户：添加微信充值
+                        $balance += $v2['money'];
+                    }
+                    if ($v['fixed_type'] == 2 && $v2['method_id'] == PayEnum::PAY_METHOD_NH) {
+                        //农行账户：添加充值
+                        $balance += $v2['money'];
+                    }
+                }
+            }
+            $accounts[$k]['balance'] = $balance;
+        }
+        return $accounts;
 
     }
 

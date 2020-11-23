@@ -2775,6 +2775,11 @@ class OrderService extends BaseService
     {
         try {
             Db::startTrans();
+            $consumptionDate = "";
+            $canteenId = 0;
+            $companyId = 0;
+            $consumptionMoney = 0;
+            $staffId = 0;
             if ($consumptionType == "one") {
                 $order = OrderT::get($order_id);
                 if ($order->consumption_type == 'no_meals_ordered' && ($order->fixed == CommonEnum::STATE_IS_OK || $order->ordering_type == "online")) {
@@ -2787,6 +2792,12 @@ class OrderService extends BaseService
                 if (!$res) {
                     throw new UpdateException();
                 }
+                $consumptionDate = $order->ordering_date;
+                $canteenId = $order->c_id;
+                $companyId = $order->company_id;
+                $consumptionMoney = $order->money + $order->sub_money + $order->delivery_fee;
+                $staffId = $order->staff_id;
+
             } else {
                 $allMoney = 0;
                 $subList = [];
@@ -2821,9 +2832,14 @@ class OrderService extends BaseService
                 if (!$updateParent) {
                     throw new UpdateException(['msg' => "更新子订单失败"]);
                 }
-
+                $consumptionDate = $parentOrder->ordering_date;
+                $canteenId = $parentOrder->canteen_id;
+                $companyId = $parentOrder->company_id;
+                $consumptionMoney =$allMoney + $parentOrder->delivery_fee;
+                $staffId = $parentOrder->staff_id;
             }
-
+            (new AccountService())->saveAccountRecords($consumptionDate, $canteenId,
+                $consumptionMoney, $consumptionType, $order_id, $companyId, $staffId);
             Db::commit();
         } catch (Exception $e) {
             Db::rollback();

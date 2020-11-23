@@ -4,6 +4,7 @@
 namespace app\api\model;
 
 
+use app\lib\enum\CommonEnum;
 use think\Db;
 use think\Model;
 use function GuzzleHttp\Promise\each_limit;
@@ -26,8 +27,19 @@ class AccountRecordsV
                     ->leftJoin('canteen_order_parent_t d', 'b.order_id=d.id')
                     ->leftJoin('canteen_company_staff_t c', 'd.staff_id=c.id')
                     ->leftJoin('canteen_company_account_t e', 'a.account_id=e.id')
-                    ->where('a.type', 'more');
+                    ->where('a.type', 'more')
+                    ->where('a.outsider', CommonEnum::STATE_IS_FAIL);
             })->unionAll(function ($query) {
+                $query->field('a.account_id,a.staff_id,e.name,a.company_id,a.money,c.phone,c.username,d.department_id,d.staff_type_id,d.ordering_date as consumption_date ,1 AS status,"canteen" as location,d.canteen_id as location_id')
+                    ->table('canteen_account_records_t')
+                    ->alias('a')
+                    ->leftJoin('canteen_order_parent_t d', 'a.order_id=d.id')
+                    ->leftJoin('canteen_company_staff_t c', 'd.staff_id=c.id')
+                    ->leftJoin('canteen_company_account_t e', 'a.account_id=e.id')
+                    ->where('a.type', 'more')
+                    ->where('a.outsider', CommonEnum::STATE_IS_OK);
+            })
+            ->unionAll(function ($query) {
                 $query->field('a.account_id,a.staff_id,d.name,a.company_id,a.money,c.phone,c.username,c.d_id as department_id,c.t_id as staff_type_id,b.consumption_date,IF ((b.type=1),4,5) AS status,"recharge" as location,b.canteen_id as location_id')->table('canteen_account_records_t')
                     ->alias('a')
                     ->leftJoin('canteen_recharge_supplement_t b', 'a.order_id=b.id')

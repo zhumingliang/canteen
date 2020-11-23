@@ -244,7 +244,7 @@ class Takeout extends BaseController
         $type = Request::param('type');
         $canteenID = Request::param('canteen_id');
 
-        (new  TakeoutService())->handeflOrder($oneId,$moreId, $type, $canteenID);
+        (new  TakeoutService())->handelOrder($oneId,$moreId, $type, $canteenID);
         return json(new SuccessMessage());
     }
 
