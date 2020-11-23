@@ -13,7 +13,7 @@ class AccountRecordsV
 
     public static function getSql()
     {
-        $sql = Db::field('a.account_id,a.staff_id,d.name,a.company_id,a.money,c.phone,c.username,b.d_id as department_id,b.staff_type_id,b.ordering_date as consumption_date ,IF ((b.booking=2),3,IF ((b.used=2),2,1)) AS status,"canteen" as location,b.c_id as location_id')->table('canteen_account_records_t')
+        $sql = Db::field('a.account_id,a.staff_id,d.name,a.company_id,a.money,c.phone,c.username,b.department_id as department_id,b.staff_type_id,b.ordering_date as consumption_date ,IF ((b.booking=2),3,IF ((b.used=2),2,1)) AS status,"canteen" as location,b.c_id as location_id')->table('canteen_account_records_t')
             ->alias('a')
             ->leftJoin('canteen_order_t b', 'a.order_id=b.id')
             ->leftJoin('canteen_company_staff_t c', 'b.staff_id=c.id')
@@ -53,7 +53,7 @@ class AccountRecordsV
         $sql = self::getSql();
         $statistic = Db::table($sql . ' a')->where(function ($query) use ($company_id, $canteen_id) {
             if (!empty($canteen_id)) {
-                $query->where('canteen_id', $canteen_id);
+                $query->where('location_id', $canteen_id);
             } else {
                 if (strpos($company_id, ',') !== false) {
                     $query->whereIn('company_id', $company_id);
@@ -106,7 +106,7 @@ class AccountRecordsV
         $statistic = Db::table($sql . ' a')
             ->where(function ($query) use ($company_id, $canteen_id) {
                 if (!empty($canteen_id)) {
-                    $query->where('canteen_id', $canteen_id);
+                    $query->where('location_id', $canteen_id);
                 } else {
                     if (strpos($company_id, ',') !== false) {
                         $query->whereIn('company_id', $company_id);
@@ -159,7 +159,7 @@ class AccountRecordsV
         $statistic = Db::table($sql . ' a')
             ->where(function ($query) use ($company_id, $canteen_id) {
                 if (!empty($canteen_id)) {
-                    $query->where('canteen_id', $canteen_id);
+                    $query->where('location_id', $canteen_id);
                 } else {
                     if (strpos($company_id, ',') !== false) {
                         $query->whereIn('company_id', $company_id);
@@ -211,7 +211,7 @@ class AccountRecordsV
         $statistic = Db::table($sql . ' a')
             ->where(function ($query) use ($company_id, $canteen_id) {
                 if (!empty($canteen_id)) {
-                    $query->where('canteen_id', $canteen_id);
+                    $query->where('location_id', $canteen_id);
                 } else {
                     if (strpos($company_id, ',') !== false) {
                         $query->whereIn('company_id', $company_id);
@@ -262,7 +262,7 @@ class AccountRecordsV
         $statistic = Db::table($sql . ' a')
             ->where(function ($query) use ($company_id, $canteen_id) {
                 if (!empty($canteen_id)) {
-                    $query->where('canteen_id', $canteen_id);
+                    $query->where('location_id', $canteen_id);
                 } else {
                     if (strpos($company_id, ',') !== false) {
                         $query->whereIn('company_id', $company_id);

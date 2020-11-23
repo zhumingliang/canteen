@@ -6,6 +6,7 @@ namespace app\api\service;
 
 use app\api\model\AccountRecordsV;
 use app\api\model\CanteenT;
+use app\api\model\CompanyAccountT;
 use app\api\model\CompanyStaffT;
 use app\api\model\DinnerT;
 use app\api\model\MaterialPriceV;
@@ -671,13 +672,16 @@ class OrderStatisticService
                 throw new ParameterException();
         }
         if ($type == OrderEnum::STATISTIC_BY_USERNAME) {
-            $statistic = $info['statistic']['data'];
+            $statistic = $info['consumptionRecords']['statistic']['data'];
         } else {
-            $statistic = $info['statistic'];
+            $statistic = $info['consumptionRecords']['statistic'];
         }
+        $accountRecords = $info['accountRecords'];
+
         $header = ['序号', '统计变量', '开始时间', '结束时间', '姓名', '部门'];
         //获取饭堂对应的餐次设置
         $dinner = DinnerT::dinnerNames($canteen_id);
+        $accounts = CompanyAccountT:: accountsWithSorts($company_id);
         if ($order_type != "canteen") {
             array_push($dinner, [
                 'id' => 0,
@@ -690,9 +694,10 @@ class OrderStatisticService
         }
 
 
-        $header = $this->addDinnerToHeader($header, $dinner);
-        $reports = $this->prefixConsumptionStatistic($statistic, $dinner, $time_begin, $time_end);
-        $reportName = $fileNameArr[$status];
+
+        $header = $this->addDinnerToHeader($header, $dinner, $accounts);
+        $reports = $this->prefixConsumptionStatistic($statistic, $accountRecords, $accounts, $dinner, $time_begin, $time_end);       $reportName = $fileNameArr[$status];
+
         $file_name = $reportName . "(" . $time_begin . "-" . $time_end . ")";
         $url = (new ExcelService())->makeExcel($header, $reports, $file_name);
         return [
@@ -716,25 +721,33 @@ class OrderStatisticService
 
 
     private
-    function addDinnerToHeader($header, $dinner)
+    function addDinnerToHeader($header, $dinner, $accounts)
     {
-        foreach ($dinner as $k => $v) {
-            array_push($header, $v['name'] . "数量", $v['name'] . '金额（元）');
+        if (count($dinner)) {
+            foreach ($dinner as $k => $v) {
+                array_push($header, $v['name'] . "数量", $v['name'] . '金额（元）');
+            }
         }
+
+        if (count($accounts)) {
+            foreach ($accounts as $k => $v) {
+                array_push($header, $v['name'] . '合计（元）');
+            }
+        }
+
         return $header;
 
     }
 
     private
-    function prefixConsumptionStatistic($statistic, $dinner, $time_begin, $time_end)
+    function prefixConsumptionStatistic($statistic, $accountRecords, $accounts, $dinner, $time_begin, $time_end)
     {
-
         $dataList = [];
+        $endData = $this->addDinnerToStatistic($dinner, $time_begin, $time_end, $accounts);
         if (!empty($statistic)) {
-            $endData = $this->addDinnerToStatistic($dinner, $time_begin, $time_end);
             foreach ($statistic as $k => $v) {
                 $dinner_statistic = array_key_exists('dinnerStatistic', $v) ? $v['dinnerStatistic'] : $v['dinner_statistic'];
-                $data = $this->addDinnerToStatistic($dinner, $time_begin, $time_end);
+                $data = $this->addDinnerToStatistic($dinner, $time_begin, $time_end, $accounts);
                 $data['number'] = $k + 1;
                 $data['statistic'] = $v['statistic'];
                 $data['username'] = empty($v['username']) ? '' : $v['username'];
@@ -753,6 +766,21 @@ class OrderStatisticService
                     }
 
                 }
+
+                foreach ($accountRecords as $k2 => $v2) {
+                    if ($v['statistic_id'] == $v2['statistic_id']) {
+                        foreach ($accounts as $k3 => $v3) {
+                            if ($v2['account_id'] == $v3['id']) {
+                                $data[$v3['id'] . $v3['name']] = $v2['money'];
+                                $endData[$v3['id'] . $v3['name']] += $v2['money'];
+                                break;
+                            }
+
+                        }
+
+                    }
+
+                }
                 array_push($dataList, $data);
             }
         }
@@ -761,7 +789,7 @@ class OrderStatisticService
     }
 
     private
-    function addDinnerToStatistic($dinner, $time_begin, $time_end)
+    function addDinnerToStatistic($dinner, $time_begin, $time_end, $accounts)
     {
         $data = [
             'number' => '合计',
@@ -774,6 +802,9 @@ class OrderStatisticService
         foreach ($dinner as $k => $v) {
             $data[$v['id'] . $v['name'] . 'count'] = 0;
             $data[$v['id'] . $v['name'] . 'money'] = 0;
+        }
+        foreach ($accounts as $k => $v) {
+            $data[$v['id'] . $v['name']] = 0;
         }
         return $data;
 
@@ -792,8 +823,8 @@ class OrderStatisticService
             $username, $staff_type_id, $time_begin,
             $time_end, $company_id, $phone, $order_type);
         return [
-            'consumptionRecords'=>$statistic,
-            'accountRecords'=>$accountRecords
+            'consumptionRecords' => $statistic,
+            'accountRecords' => $accountRecords
         ];
 
     }
@@ -801,7 +832,6 @@ class OrderStatisticService
     private
     function prefixStatistic($statistic, $field, $time_begin, $time_end, $status)
     {
-        //  print_r($statistic);
         $fieldArr = [];
         $data = [];
         $allMoney = 0;
@@ -815,10 +845,12 @@ class OrderStatisticService
                 if (in_array($v[$field], $fieldArr)) {
                     continue;
                 }
-                array_push($fieldArr, $v[$field]);
+                if (!key_exists($v['statistic_id'], $fieldArr)) {
+                    $fieldArr[$v['statistic_id']] = $v[$field];
+                }
+               // array_push($fieldArr, $v[$field]);
 
             }
-
 
             foreach ($fieldArr as $k => $v) {
                 $dinnerStatistic = [];
@@ -834,7 +866,7 @@ class OrderStatisticService
                     }
                 }
                 array_push($data, [
-                    'statistic_id' => $v2['statistic_id'],
+                    'statistic_id' => $k,
                     'statistic' => $v,
                     'time_begin' => $time_begin,
                     'time_end' => $time_end,
@@ -896,8 +928,8 @@ class OrderStatisticService
 
 
         return [
-            'consumptionRecords'=>$users,
-            'accountRecords'=>$accountRecords,
+            'consumptionRecords' => $users,
+            'accountRecords' => $accountRecords,
             'allMoney' => $statistic['order_money'],
             'allCount' => $statistic['order_count']
         ];
@@ -917,8 +949,8 @@ class OrderStatisticService
             $username, $staff_type_id, $time_begin,
             $time_end, $company_id, $phone, $order_type);
         return [
-            'consumptionRecords'=>$statistic,
-            'accountRecords'=>$accountRecords
+            'consumptionRecords' => $statistic,
+            'accountRecords' => $accountRecords
         ];
 
     }
@@ -936,8 +968,8 @@ class OrderStatisticService
             $username, $staff_type_id, $time_begin,
             $time_end, $company_id, $phone, $order_type);
         return [
-            'consumptionRecords'=>$statistic,
-            'accountRecords'=>$accountRecords
+            'consumptionRecords' => $statistic,
+            'accountRecords' => $accountRecords
         ];
 
     }
@@ -955,8 +987,8 @@ class OrderStatisticService
             $username, $staff_type_id, $time_begin,
             $time_end, $company_id, $phone, $order_type);
         return [
-            'consumptionRecords'=>$statistic,
-            'accountRecords'=>$accountRecords
+            'consumptionRecords' => $statistic,
+            'accountRecords' => $accountRecords
         ];
 
     }
