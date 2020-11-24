@@ -258,74 +258,83 @@ class DepartmentService
     private
     function prefixStaffs($company_id, $data)
     {
-        $types = (new AdminService())->allTypes();
-        $canteens = (new CanteenService())->companyCanteens($company_id);
-        $departments = $this->companyDepartments($company_id);
-        $staffs = $this->getCompanyStaffs($company_id);
-        //获取企业消费方式
-        $consumptionType = (new CompanyService())->consumptionType($company_id);
-        $consumptionTypeArr = explode(',', $consumptionType['consumptionType']);
-        $phones = $staffs['phones'];
-        $faceCodes = $staffs['faceCodes'];
-        $cardNums = $staffs['cardNums'];
-        $fail = array();
-        $success = array();
-        $param_key = array();
-        if (count($data) < 2) {
-            return [];
-        }
+        try {
+            Db::startTrans();
+            $types = (new AdminService())->allTypes();
+            $canteens = (new CanteenService())->companyCanteens($company_id);
+            $departments = $this->companyDepartments($company_id);
+            $staffs = $this->getCompanyStaffs($company_id);
+            //获取企业消费方式
+            $consumptionType = (new CompanyService())->consumptionType($company_id);
+            $consumptionTypeArr = explode(',', $consumptionType['consumptionType']);
+            $phones = $staffs['phones'];
+            $faceCodes = $staffs['faceCodes'];
+            $cardNums = $staffs['cardNums'];
+            $fail = array();
+            $success = array();
+            $param_key = array();
+            if (count($data) < 2) {
+                return [];
+            }
 
-        foreach ($data as $k => $v) {
-            if ($k == 2) {
-                $param_key = $data[$k];
-            } else if ($k > 2 && !empty($data[$k])) {
+            foreach ($data as $k => $v) {
+                if ($k == 2) {
+                    $param_key = $data[$k];
+                } else if ($k > 2 && !empty($data[$k])) {
 
-                //检测手机号是否已经存在
-                if (in_array($v[5], $phones)) {
-                    $fail[] = "第" . $k . "数据有问题：手机号" . $v[5] . "系统已经存在";
-                    break;
-                } else if (!$this->isMobile($v[5])) {
-                    $fail[] = "第" . $k . "数据有问题：手机号格式错误";
-                    break;
-                } else {
-                    array_push($phones, $v[5]);
-                }
-                $faceCode = trim($v[9]);
-                //检测人脸识别id是否存在
-                if (in_array('face', $consumptionTypeArr)) {
-                    if (!empty($faceCode) && in_array($faceCode, $faceCodes)) {
-                        $fail[] = "第" . $k . "数据有问题：人脸识别ID" . $faceCode . "系统已经存在";
+                    //检测手机号是否已经存在
+                    if (in_array($v[5], $phones)) {
+                        $fail[] = "第" . $k . "数据有问题：手机号" . $v[5] . "系统已经存在";
+                        break;
+                    } else if (!$this->isMobile($v[5])) {
+                        $fail[] = "第" . $k . "数据有问题：手机号格式错误";
                         break;
                     } else {
-                        if (!empty($faceCode)) {
-                            array_push($faceCodes, $faceCode);
-                        }
+                        array_push($phones, $v[5]);
                     }
+                    $faceCode = trim($v[9]);
+                    //检测人脸识别id是否存在
+                    if (in_array('face', $consumptionTypeArr)) {
+                        if (!empty($faceCode) && in_array($faceCode, $faceCodes)) {
+                            $fail[] = "第" . $k . "数据有问题：人脸识别ID" . $faceCode . "系统已经存在";
+                            break;
+                        } else {
+                            if (!empty($faceCode)) {
+                                array_push($faceCodes, $faceCode);
+                            }
+                        }
 
+                    }
+                    $check = $this->validateParams($company_id, $param_key, $data[$k], $types, $canteens, $departments, $consumptionTypeArr, $cardNums);
+                    if (!$check['res']) {
+                        $fail[] = "第" . $k . "数据有问题：" . $check['info']['msg'];
+                        continue;
+                    }
+                    if (in_array('card', $consumptionTypeArr) && strlen($v[6])) {
+                        array_push($cardNums, $v[6]);
+                    }
+                    $success[] = $check['info'];
                 }
-                $check = $this->validateParams($company_id, $param_key, $data[$k], $types, $canteens, $departments, $consumptionTypeArr, $cardNums);
-                if (!$check['res']) {
-                    $fail[] = "第" . $k . "数据有问题：" . $check['info']['msg'];
-                    continue;
-                }
-                if (in_array('card', $consumptionTypeArr) && strlen($v[6])) {
-                    array_push($cardNums, $v[6]);
-                }
-                $success[] = $check['info'];
+
+            }
+            if (count($fail)) {
+                return [
+                    'fail' => $fail
+                ];
             }
 
-        }
-
-        if (count($success)) {
-            $all = (new CompanyStaffT())->saveAll($success);
-            if (!$all) {
-                throw  new SaveException();
+            if (count($success)) {
+                $all = (new CompanyStaffT())->saveAll($success);
+                if (!$all) {
+                    throw  new SaveException();
+                }
             }
+            Db::commit();
 
+        } catch (Exception $e) {
+            Db::rollback();
+            throw $e;
         }
-        return [
-            'fail' => $fail
-        ];
 
 
     }
