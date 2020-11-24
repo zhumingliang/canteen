@@ -103,8 +103,7 @@ Index extends BaseController
 
     public function test($param = "")
     {
-        (new ShopService())->handleReduceOrder(34787,7250,14);
-
+        echo UserBalanceV::userBalance2(118,13929011328);
     }
 
     public function token()

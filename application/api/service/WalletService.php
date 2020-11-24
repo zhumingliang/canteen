@@ -350,7 +350,7 @@ class WalletService
 
     public function getUserBalance($company_id, $phone)
     {
-        $balance = UserBalanceV::userBalance($company_id, $phone);
+        $balance = UserBalanceV::userBalance2($company_id, $phone);
         return $balance;
 
     }

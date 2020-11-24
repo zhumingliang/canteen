@@ -75,6 +75,64 @@ class UserBalanceV extends Model
         return $balance;
     }
 
+    public static function userBalance2($company_id, $phone)
+    {
+        $balance = Db::table('canteen_order_t')
+            ->field('sum(0-money-sub_money-delivery_fee) as money')
+            ->where('phone', $phone)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->where('pay', PayEnum::PAY_SUCCESS)
+            ->unionAll(function ($query) use ($phone,$company_id) {
+                $query->table("canteen_order_parent_t")
+                    ->field('sum(0-money-delivery_fee) as money')
+                    ->where('phone', $phone)
+                    ->where('company_id', $company_id)
+                    ->where('state', CommonEnum::STATE_IS_OK)
+                    ->where('pay', PayEnum::PAY_SUCCESS);
+            })
+            ->unionAll(function ($query) use ($phone,$company_id) {
+                $query->table("canteen_shop_order_t")
+                    ->field('sum(money) as money')
+                    ->where('company_id', $company_id)
+                    ->where('phone', $phone)
+                    ->where('state', CommonEnum::STATE_IS_OK)
+                    ->where('pay', PayEnum::PAY_SUCCESS);
+            })
+            ->unionAll(function ($query) use ($phone,$company_id) {
+                $query->table("canteen_recharge_supplement_t")
+                    ->field('sum(money) as money')
+                    ->where('company_id', $company_id)
+                    ->where('phone', $phone);
+
+            })
+            ->unionAll(function ($query) use ($phone,$company_id) {
+                $query->table("canteen_pay_t")
+                    ->field('sum(money) as money')
+                    ->where('company_id', $company_id)
+                    ->where('phone', $phone)
+                    ->where('status', PayEnum::PAY_SUCCESS)
+                    ->where('refund', CommonEnum::STATE_IS_FAIL);
+
+            })
+            ->unionAll(function ($query) use ($phone,$company_id) {
+                $query->table("canteen_clear_money_t")
+                    ->field('sum(money) as money ')
+                    ->where('company_id', $company_id)
+                    ->where('phone', $phone)
+                    ->where('state', CommonEnum::STATE_IS_OK);
+
+            })
+            ->unionAll(function ($query) use ($phone,$company_id) {
+                $query->table("canteen_recharge_cash_t")
+                    ->field('sum(money) as money')
+                    ->where('company_id', $company_id)
+                    ->where('phone', $phone)
+                    ->where('state', CommonEnum::STATE_IS_OK);
+            })
+            ->select()->toArray();
+        return array_sum(array_column($balance, 'money'));
+    }
+
     public static function userBalanceGroupByEffective($company_id, $phone)
         //public static function userBalanceGroupByEffective($staff_id)
     {

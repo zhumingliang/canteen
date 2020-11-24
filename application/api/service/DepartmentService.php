@@ -308,7 +308,7 @@ class DepartmentService
                     $fail[] = "第" . $k . "数据有问题：" . $check['info']['msg'];
                     continue;
                 }
-                if (in_array('card', $consumptionTypeArr)) {
+                if (in_array('card', $consumptionTypeArr) && strlen($v[6])) {
                     array_push($cardNums, $v[6]);
                 }
                 $success[] = $check['info'];
@@ -855,8 +855,8 @@ class DepartmentService
             $staffCard = StaffCardT::where('staff_id', $id)
                 ->where('state', CommonEnum::STATE_IS_OK)
                 ->find();
-            if ($staffCard){
-                $staffCard->state=CommonEnum::STATE_IS_DELETE;
+            if ($staffCard) {
+                $staffCard->state = CommonEnum::STATE_IS_DELETE;
                 $staffCard->save();
             }
         }
