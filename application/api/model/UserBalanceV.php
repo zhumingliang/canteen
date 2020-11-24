@@ -5,6 +5,7 @@ namespace app\api\model;
 
 
 use app\lib\enum\CommonEnum;
+use app\lib\enum\OrderEnum;
 use app\lib\enum\PayEnum;
 use think\Db;
 use think\Model;
@@ -156,6 +157,7 @@ class UserBalanceV extends Model
                 $query->table("canteen_order_parent_t")
                     ->field('(0-delivery_fee) as money,IF ((used=1),1,2) AS effective')
                     ->where('staff_id', $staff_id)
+                    ->where('type', OrderEnum::EAT_OUTSIDER)
                     ->where('state', CommonEnum::STATE_IS_OK)
                     ->where('pay', PayEnum::PAY_SUCCESS);
             })
@@ -163,8 +165,9 @@ class UserBalanceV extends Model
                 $query->table("canteen_order_sub_t")
                     ->alias('a')
                     ->leftJoin('canteen_order_parent_t b', 'a.order_id = b.id')
-                    ->field('(0-delivery_fee) as money,IF ((a.used=1),1,IF ((a.unused_handel=1),1,2)) AS effective')
+                    ->field('(0-a.money-a.sub_money) as money,IF ((a.used=1),1,IF ((a.unused_handel=1),1,2)) AS effective')
                     ->where('b.staff_id', $staff_id)
+                    ->where('type', OrderEnum::EAT_CANTEEN)
                     ->where('b.state', CommonEnum::STATE_IS_OK)
                     ->where('b.pay', PayEnum::PAY_SUCCESS);
             })
