@@ -7,7 +7,6 @@ namespace app\api\model;
 use app\lib\enum\CommonEnum;
 use think\Db;
 use think\Model;
-use function GuzzleHttp\Promise\each_limit;
 
 class AccountRecordsV
 {

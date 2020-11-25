@@ -114,14 +114,14 @@ class UserBalanceV extends Model
                     ->where('refund', CommonEnum::STATE_IS_FAIL);
 
             })
-            ->unionAll(function ($query) use ($phone,$company_id) {
+            /*->unionAll(function ($query) use ($phone,$company_id) {
                 $query->table("canteen_clear_money_t")
                     ->field('sum(money) as money ')
                     ->where('company_id', $company_id)
                     ->where('phone', $phone)
                     ->where('state', CommonEnum::STATE_IS_OK);
 
-            })
+            })*/
             ->unionAll(function ($query) use ($phone,$company_id) {
                 $query->table("canteen_recharge_cash_t")
                     ->field('sum(money) as money')
@@ -248,13 +248,6 @@ class UserBalanceV extends Model
                     ->where('staff_id', $staff_id)
                     ->where('status', PayEnum::PAY_SUCCESS)
                     ->where('refund', CommonEnum::STATE_IS_FAIL);
-
-            })
-            ->unionAll(function ($query) use ($staff_id) {
-                $query->table("canteen_clear_money_t")
-                    ->field('money,1 as effective')
-                    ->where('staff_id', $staff_id)
-                    ->where('state', CommonEnum::STATE_IS_OK);
 
             })
             ->unionAll(function ($query) use ($staff_id) {

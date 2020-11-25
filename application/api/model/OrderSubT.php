@@ -9,6 +9,11 @@ use think\Model;
 
 class OrderSubT extends Model
 {
+    public function parent()
+    {
+        return $this->belongsTo('OrderParentT', 'order_id', 'id');
+    }
+
     public static function usedOrders($orderID)
     {
         return self::where('order_id', $orderID)
@@ -32,6 +37,15 @@ class OrderSubT extends Model
     {
         $info = self::where('id', $id)
             ->field('id,order_id,money,sub_money,confirm_time,qrcode_url,count,sort_code')
+            ->find();
+        return $info;
+    }
+
+    public
+    static function info($id)
+    {
+        $info = self::where('id', $id)
+            ->field('id,order_id,money,sub_money,used,booking,ordering_date,consumption_sort,sort_code')
             ->find();
         return $info;
     }

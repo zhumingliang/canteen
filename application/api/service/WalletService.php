@@ -348,8 +348,11 @@ class WalletService
 
     }
 
-    public function getUserBalance($company_id, $phone)
+    public function getUserBalance($company_id, $phone, $staff_id = 0)
     {
+       /* if (!$staff_id) {
+
+        }*/
         $balance = UserBalanceV::userBalance2($company_id, $phone);
         return $balance;
 
@@ -367,10 +370,10 @@ class WalletService
         }
         $admin_id = Token::getCurrentUid();
         //调用存储过程，将账户清0
-        $resultSet = Db::query('call clear_money(:in_companyId,:in_adminID)', [
-            'in_companyId' => $company_id,
-            'in_adminID' => $admin_id
-        ]);
+        /* $resultSet = Db::query('call clear_money(:in_companyId,:in_adminID)', [
+             'in_companyId' => $company_id,
+             'in_adminID' => $admin_id
+         ]);*/
     }
 
     public function rechargeSupplement($params)

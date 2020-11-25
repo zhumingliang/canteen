@@ -2431,16 +2431,16 @@ class OrderService extends BaseService
     }
 
 
-//用户查询消费记录
+    //用户查询消费记录
     public
     function consumptionRecords($consumption_time, $page, $size)
     {
         $phone = Token::getCurrentPhone();
         $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
         $company_id = Token::getCurrentTokenVar('current_company_id');
-        $records = ConsumptionRecordsV::recordsByPhone($phone, $canteen_id, $company_id, $consumption_time, $page, $size);
+        $records = ConsumptionRecordsV::recordsByPhone($phone, $company_id, $consumption_time, $page, $size);
         $records['data'] = $this->prefixConsumptionRecords($records['data']);
-        $consumptionMoney = ConsumptionRecordsV::monthConsumptionMoneyByPhone($phone, $consumption_time);
+        $consumptionMoney = ConsumptionRecordsV::monthConsumptionMoneyByPhone($phone, $consumption_time, $company_id);
         return [
             'balance' => $this->getUserBalance($canteen_id, $company_id, $phone),
             'consumptionMoney' => $consumptionMoney,
@@ -2518,12 +2518,12 @@ class OrderService extends BaseService
     }
 
     public
-    function recordsDetail($order_type, $order_id, $consumptionType)
+    function recordsDetail($order_type, $order_id, $consumptionType, $eatingType)
     {
         if ($order_type == "shop") {
             $order = ShopOrderT::orderInfo($order_id);
         } else if ($order_type == "canteen") {
-            $order = $this->orderStatisticDetailInfo($order_id, $consumptionType);
+            $order = $this->orderStatisticDetailInfo($order_id, $consumptionType, $eatingType);
         } else if ($order_type == "recharge") {
             $order = RechargeSupplementT::orderDetail($order_id);
         }
@@ -2835,7 +2835,7 @@ class OrderService extends BaseService
                 $consumptionDate = $parentOrder->ordering_date;
                 $canteenId = $parentOrder->canteen_id;
                 $companyId = $parentOrder->company_id;
-                $consumptionMoney =$allMoney + $parentOrder->delivery_fee;
+                $consumptionMoney = $allMoney + $parentOrder->delivery_fee;
                 $staffId = $parentOrder->staff_id;
             }
             (new AccountService())->saveAccountRecords($consumptionDate, $canteenId,
@@ -2917,12 +2917,17 @@ class OrderService extends BaseService
     }
 
     public
-    function orderStatisticDetailInfo($orderId, $consumptionType)
+    function orderStatisticDetailInfo($orderId, $consumptionType, $eatingType)
     {
         if ($consumptionType == 'one') {
             $info = $this->InfoToConsumptionTimesOne($orderId);
         } else if ($consumptionType == 'more') {
-            $info = $this->InfoToConsumptionTimesMore($orderId);
+            if ($eatingType == OrderEnum::EAT_OUTSIDER) {
+                $info = $this->InfoToConsumptionTimesMore($orderId);
+            } else {
+                //获取子订单的信息
+                $info = $this->getSubOrderInfo($orderId);
+            }
         }
         $info['consumptionType'] = $consumptionType;
         return $info;
@@ -3016,6 +3021,25 @@ class OrderService extends BaseService
         $data['foods'] = $order->foods;
         $data['address'] = $order->address;
         return $data;
+    }
+
+    private function getSubOrderInfo($orderId)
+    {
+        $order = OrderSubT::info($orderId);
+        if (!$order) {
+          throw  new ParameterException(['msg'=>'订单不存在']);
+        }
+        $consumptionStatus = $this->getConsumptionStatus($order['booking'], $order['used']);
+
+        $detail = [
+            'number' => $order['consumption_sort'],
+            'order_id' => $order['id'],
+            'money' => round($order['money'], 2),
+            'sub_money' => round($order['sub_money'], 2),
+            'sort_code' => $order['sort_code'],
+            'consumption_status' => $consumptionStatus,
+        ];
+        return $detail;
     }
 
     private
