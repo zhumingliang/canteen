@@ -136,7 +136,7 @@ class ConsumptionRecordsV extends Model
 
     }
 
-    public static function monthConsumptionMoneyByPhone($phone, $consumption_time,$company_id)
+    public static function monthConsumptionMoneyByPhone($phone, $consumption_time, $company_id)
     {
         $consumption_time = strtotime($consumption_time);
         $consumption_time = Date::mFristAndLast(date('Y', $consumption_time), date('m', $consumption_time));
@@ -151,7 +151,7 @@ class ConsumptionRecordsV extends Model
             ->where('ordering_date', "<=", $time_end)
             ->where('state', CommonEnum::STATE_IS_OK)
             ->where('pay', PayEnum::PAY_SUCCESS)
-            ->unionAll(function ($query) use ($phone, $time_begin, $time_end,$company_id) {
+            ->unionAll(function ($query) use ($phone, $time_begin, $time_end, $company_id) {
                 $query->table("canteen_order_parent_t")
                     ->field('sum(money+sub_money+delivery_fee) as money')
                     ->where('phone', $phone)
@@ -160,7 +160,7 @@ class ConsumptionRecordsV extends Model
                     ->where('ordering_date', "<=", $time_end)
                     ->where('state', CommonEnum::STATE_IS_OK)
                     ->where('pay', PayEnum::PAY_SUCCESS);
-            })->unionAll(function ($query) use ($phone, $time_begin, $time_end,$company_id) {
+            })->unionAll(function ($query) use ($phone, $time_begin, $time_end, $company_id) {
                 $query->table("canteen_shop_order_t")
                     ->field('sum(money) as money')
                     ->where('phone', $phone)
@@ -168,7 +168,7 @@ class ConsumptionRecordsV extends Model
                     ->where('create_time', ">=", $time_begin)
                     ->where('create_time', "<=", $time_end)
                     ->where('state', CommonEnum::STATE_IS_OK);
-            })->unionAll(function ($query) use ($phone, $time_begin, $time_end,$company_id) {
+            })->unionAll(function ($query) use ($phone, $time_begin, $time_end, $company_id) {
                 $query->table("canteen_recharge_supplement_t")
                     ->field('sum(0-money) as money')
                     ->where('phone', $phone)
@@ -178,7 +178,62 @@ class ConsumptionRecordsV extends Model
             })
             ->select()->toArray();
         return array_sum(array_column($statistic, 'money'));
-
     }
+
+
+    public static function fixedRecords($phone, $company_id, $page, $size)
+    {
+        $subQuery = Db::table('canteen_order_t')
+            ->alias('a')
+            ->field("a.id as order_id,a.c_id as location_id,c.name as location,'canteen' as order_type,a.create_time,a.ordering_date,b.name as dinner,
+            (0-a.money-a.sub_money-a.delivery_fee) as money, a.phone,a.count,a.sub_money,a.delivery_fee,a.booking,a.used,a.type as eating_type, 'one' as consumption_type,a.company_id,a.sort_code")
+            ->leftJoin('canteen_dinner_t b', 'a.d_id = b.id')
+            ->leftJoin('canteen_canteen_t c', 'a.c_id = c.id')
+            ->where('a.phone', $phone)
+            ->where('a.company_id', $company_id)
+            ->where('a.used', CommonEnum::STATE_IS_FAIL)
+            ->where('a.unused_handel', CommonEnum::STATE_IS_FAIL)
+            ->where('a.state', CommonEnum::STATE_IS_OK)
+            ->where('a.pay', PayEnum::PAY_SUCCESS)
+            ->unionAll(function ($query) use ($phone, $company_id) {
+                $query->table("canteen_order_parent_t")
+                    ->alias('a')
+                    ->field("a.id as order_id,a.canteen_id as location_id,c.name as location,'canteen' as order_type,a.create_time,a.ordering_date,b.name as dinner,(0-a.money-a.sub_money-a.delivery_fee) as money, a.phone,a.count,a.sub_money,a.delivery_fee,a.booking,a.used,a.type as eating_type,'more' as consumption_type,a.company_id,0 as sort_code")
+                    ->leftJoin('canteen_dinner_t b', 'a.dinner_id = b.id')
+                    ->leftJoin('canteen_canteen_t c', 'a.canteen_id = c.id')
+                    ->where('a.phone', $phone)
+                    ->where('a.company_id', $company_id)
+                    ->where('a.used', CommonEnum::STATE_IS_FAIL)
+                    ->where('a.type', OrderEnum::EAT_OUTSIDER)
+                    ->where('a.state', CommonEnum::STATE_IS_OK)
+                    ->where('a.pay', PayEnum::PAY_SUCCESS);
+            })
+            ->unionAll(function ($query) use ($phone, $company_id) {
+                $query->table("canteen_order_sub_t")
+                    ->alias('a')
+                    ->field("a.id as order_id,d.canteen_id as location_id,c.name as location,'canteen' as order_type,a.create_time,
+                    a.ordering_date,b.name as dinner,(0-a.money-a.sub_money) as money, 
+                    d.phone,a.count,a.sub_money,d.delivery_fee,d.booking,a.used,
+                    d.type as eating_type,'more' as consumption_type,d.company_id, a.sort_code")
+                    ->leftJoin('canteen_order_parent_t d', 'a.order_id = d.id')
+                    ->leftJoin('canteen_dinner_t b', 'd.dinner_id = b.id')
+                    ->leftJoin('canteen_canteen_t c', 'd.canteen_id = c.id')
+                    ->where('d.phone', $phone)
+                    ->where('d.company_id', $company_id)
+                    ->where('d.type', OrderEnum::EAT_CANTEEN)
+                    ->where('a.used', CommonEnum::STATE_IS_FAIL)
+                    ->where('a.unused_handel', CommonEnum::STATE_IS_FAIL)
+                    ->where('a.state', CommonEnum::STATE_IS_OK)
+                    ->where('d.pay', PayEnum::PAY_SUCCESS);
+            })
+            ->buildSql();
+
+        $records = Db::table($subQuery . ' a')
+            ->order('create_time', 'desc')
+            ->paginate($size, false, ['page' => $page])
+            ->toArray();
+        return $records;
+    }
+
 
 }

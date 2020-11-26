@@ -3038,7 +3038,8 @@ class OrderService extends BaseService
             'sub_money' => round($order['sub_money'], 2),
             'sort_code' => $order['sort_code'],
             'consumption_status' => $consumptionStatus,
-            'foods' => $foods];
+            'foods' => $foods
+        ];
         return $detail;
     }
 

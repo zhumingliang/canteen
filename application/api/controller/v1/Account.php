@@ -232,8 +232,59 @@ class Account extends BaseController
         return json(new SuccessMessageWithData(['data' => $account]));
     }
 
+    /**
+     * @api {GET} /api/v1/account/balance  微信端-我的账户
+     * @apiGroup  Official
+     * @apiVersion 3.0.0
+     * @apiDescription   微信端-我的账户
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/account/balance
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"balance":-35.6,"useBalance":0,"accounts":[{"id":73,"name":"个人账户","sort":1,"type":1,"fixed_type":1,"balance":-35.6}]}}
+     * @apiSuccess (返回参数说明) {float} balance  余额
+     * @apiSuccess (返回参数说明) {float} useBalance  可用余额
+     * @apiSuccess (返回参数说明) {obj} accounts  账户信息
+     * @apiSuccess (返回参数说明) {string} name  账户名称
+     * @apiSuccess (返回参数说明) {float} balance  账户余额
+     */
     public function accountBalance()
     {
-        $balance = (new AccountService())->getAccountBalance();
+        $balance = (new AccountService())->staffAccountBalance();
+        return json(new SuccessMessageWithData(['data' => $balance]));
+    }
+
+    /**
+     * @api {GET} /api/v1/account/balance/fixed 微信端-冻结金额
+     * @apiGroup  Official
+     * @apiVersion 3.0.0
+     * @apiDescription 微信端-冻结金额（冻结订单列表）
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/account/balance/fixed?$page=1&size=10
+     * @apiParam (请求参数说明) {int} page 当前页码
+     * @apiParam (请求参数说明) {int} size 每页多少条数据
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"records":{"total":1,"per_page":10,"current_page":1,"last_page":1,"data":[{"order_id":34459,"location_id":240,"location":"A策略饭堂","order_type":"canteen","create_time":"2020-11-20 14:51:09","ordering_date":"2020-11-20","dinner":"午餐","money":"-11.00","phone":"15014335935","count":1,"sub_money":"11.00","delivery_fee":"0.00","booking":1,"used":2,"eating_type":1,"consumption_type":"one","company_id":120,"sort_code":null}]},"balance":11}}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {String} msg 信息描述
+     * @apiSuccess (返回参数说明) {int} total 数据总数
+     * @apiSuccess (返回参数说明) {int} per_page 每页多少条数据
+     * @apiSuccess (返回参数说明) {int} current_page 当前页码
+     * @apiSuccess (返回参数说明) {int} last_page 最后页码
+     * @apiSuccess (返回参数说明) {obj} balance 冻结余额
+     * @apiSuccess (返回参数说明) {obj} records  记录列表
+     * @apiSuccess (返回参数说明) {int} order_id  订单id
+     * @apiSuccess (返回参数说明) {string} location  消费地点
+     * @apiSuccess (返回参数说明) {string} order_type  订单类别
+     * @apiSuccess (返回参数说明) {string} used_type  类型
+     * @apiSuccess (返回参数说明) {string} create_time 消费日期
+     * @apiSuccess (返回参数说明) {string} ordering_date 餐次日期
+     * @apiSuccess (返回参数说明) {string} consumption_type 扣费类型：one 一次性扣费；more 多次扣费
+     * @apiSuccess (返回参数说明) {int} dinner 名称
+     */
+    public function fixedBalance($page = 1, $size = 10)
+    {
+        $info = (new AccountService())->fixedBalance($page, $size);
+        return json(new SuccessMessageWithData(['data' => $info]));
+
     }
 }

@@ -533,7 +533,6 @@ class Order extends BaseController
      * @apiSuccess (返回参数说明) {int} dinner 名称
      * @apiSuccess (返回参数说明) {int} all_money 可用金额
      * @apiSuccess (返回参数说明) {int} effective_money 实际金额
-     * @apiSuccess (返回参数说明) ney 实际金额
      */
     public function consumptionRecords($page = 1, $size = 20)
     {

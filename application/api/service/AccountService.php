@@ -8,8 +8,12 @@ use app\api\controller\v1\Account;
 use app\api\model\AccountDepartmentT;
 use app\api\model\AccountRecordsT;
 use app\api\model\CompanyAccountT;
+use app\api\model\CompanyStaffT;
+use app\api\model\ConsumptionRecordsV;
+use app\api\model\OrderConsumptionV;
 use app\api\model\PayNonghangConfigT;
 use app\api\model\PayT;
+use app\api\model\UserBalanceV;
 use app\api\validate\Company;
 use app\lib\enum\CommonEnum;
 use app\lib\enum\PayEnum;
@@ -346,7 +350,7 @@ class AccountService
 
     }
 
-    public function saveAccountRecords($consumptionDate,$canteenId,$money, $type, $orderId, $companyId, $staffId, $outsider = 2)
+    public function saveAccountRecords($consumptionDate, $canteenId, $money, $type, $orderId, $companyId, $staffId, $outsider = 2)
     {
         $accounts = $this->getAccountBalance($companyId, $staffId);
         $data = [];
@@ -409,6 +413,41 @@ class AccountService
             $accounts[$k]['balance'] = $balance;
         }
         return $accounts;
+
+    }
+
+    public function staffAccountBalance()
+    {
+        $companyId = Token::getCurrentTokenVar('current_company_id');
+        $phone = Token::getCurrentPhone();
+        $staff = CompanyStaffT::staffName($phone, $companyId);
+        $staffId = $staff->id;
+        $accounts = $this->getAccountBalance($companyId, $staffId);
+
+        $fixedBalance = UserBalanceV::userFixedBalance($staffId);
+        $accountBalance = array_sum(array_column($accounts, 'balance'));
+
+        return [
+            'balance' => $accountBalance - $fixedBalance,
+            'useBalance' => $accountBalance - $fixedBalance,
+            'accounts' => $accounts
+        ];
+
+
+    }
+
+    public function fixedBalance($page, $size)
+    {
+        $phone = Token::getCurrentPhone();
+        $companyId = Token::getCurrentTokenVar('current_company_id');
+        $staff = CompanyStaffT::staffName($phone, $companyId);
+        $staffId = $staff->id;
+        $info = ConsumptionRecordsV::fixedRecords($phone, $companyId, $page, $size);
+        $balance = UserBalanceV::userFixedBalance($staffId);
+        return [
+            'records' => $info,
+            'balance' => $balance
+        ];
 
     }
 
