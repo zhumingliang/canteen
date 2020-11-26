@@ -3027,10 +3027,10 @@ class OrderService extends BaseService
     {
         $order = OrderSubT::info($orderId);
         if (!$order) {
-          throw  new ParameterException(['msg'=>'订单不存在']);
+            throw  new ParameterException(['msg' => '订单不存在']);
         }
         $consumptionStatus = $this->getConsumptionStatus($order['booking'], $order['used']);
-
+        $foods = SubFoodT::detail($order['order_id']);
         $detail = [
             'number' => $order['consumption_sort'],
             'order_id' => $order['id'],
@@ -3038,7 +3038,7 @@ class OrderService extends BaseService
             'sub_money' => round($order['sub_money'], 2),
             'sort_code' => $order['sort_code'],
             'consumption_status' => $consumptionStatus,
-        ];
+            'foods' => $foods];
         return $detail;
     }
 

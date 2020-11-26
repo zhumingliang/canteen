@@ -232,4 +232,8 @@ class Account extends BaseController
         return json(new SuccessMessageWithData(['data' => $account]));
     }
 
+    public function accountBalance()
+    {
+        $balance = (new AccountService())->getAccountBalance();
+    }
 }
