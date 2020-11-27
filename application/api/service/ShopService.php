@@ -881,6 +881,7 @@ class ShopService
                             'account_id' => $v['account_id'],
                             'consumption_date' => date('Y-m-d'),
                             'location_id' => $v['location_id'],
+                            'type_name'=>"小卖部退款"
                             ]);
                     } else {
                         $money -= abs($v['money']);

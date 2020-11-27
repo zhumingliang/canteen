@@ -8,6 +8,7 @@ class Wallet extends BaseValidate
 {
     protected $rule = [
         'id' => 'require|isPositiveInteger',
+        'account_id' => 'require|isPositiveInteger',
         'order_id' => 'require|isPositiveInteger',
         'module_id' => 'require|isPositiveInteger',
         'canteen_id' => 'require|isPositiveInteger',
@@ -26,7 +27,7 @@ class Wallet extends BaseValidate
     ];
 
     protected $scene = [
-        'rechargeCash' => ['detail','money'],
+        'rechargeCash' => ['detail','money','account_id'],
         'rechargeSupplement' => ['canteen_id','money','staff_ids','type','consumption_date','dinner_id'],
         'rechargeAdmins' => ['module_id'],
         'rechargeRecords' => ['time_begin','time_end'],

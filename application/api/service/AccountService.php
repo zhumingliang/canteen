@@ -7,6 +7,7 @@ namespace app\api\service;
 use app\api\controller\v1\Account;
 use app\api\model\AccountDepartmentT;
 use app\api\model\AccountRecordsT;
+use app\api\model\AccountRecordsV;
 use app\api\model\CompanyAccountT;
 use app\api\model\CompanyStaffT;
 use app\api\model\ConsumptionRecordsV;
@@ -350,7 +351,7 @@ class AccountService
 
     }
 
-    public function saveAccountRecords($consumptionDate, $canteenId, $money, $type, $orderId, $companyId, $staffId, $outsider = 2)
+    public function saveAccountRecords($consumptionDate, $canteenId, $money, $type, $orderId, $companyId, $staffId, $typeName,$outsider = 2)
     {
         $accounts = $this->getAccountBalance($companyId, $staffId);
         $data = [];
@@ -367,7 +368,8 @@ class AccountService
                     'type' => $type,
                     'order_id' => $orderId,
                     'money' => $money,
-                    'outsider' => $outsider
+                    'outsider' => $outsider,
+                    'type_name'=>$typeName
                 ]);
             } else {
                 $money -= $v['balance'];
@@ -393,7 +395,7 @@ class AccountService
             foreach ($accountBalance as $k2 => $v2) {
                 if ($v['id'] == $v2['account_id']) {
                     $balance += $v2['money'];
-                    break;
+                   // break;
                 }
 
             }
@@ -449,6 +451,11 @@ class AccountService
             'balance' => $balance
         ];
 
+    }
+
+    public function transactionDetails($page, $size, $account_id, $type,$consumptionDate)
+    {
+       // $records=AccountRecordsV::
     }
 
 }

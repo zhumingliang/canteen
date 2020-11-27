@@ -285,6 +285,19 @@ class Account extends BaseController
     {
         $info = (new AccountService())->fixedBalance($page, $size);
         return json(new SuccessMessageWithData(['data' => $info]));
+    }
 
+    public function transactionDetails($page = 1, $size = 10, $account_id = 0, $type = 1)
+    {
+        $consumptionDate = Request::param('consumption_date');
+        $info = (new AccountService())->transactionDetails($page, $size, $account_id, $type,$consumptionDate);
+        return json(new SuccessMessageWithData(['data' => $info]));
+    }
+
+    public function bill($page = 1, $size = 10)
+    {
+        $consumptionDate = Request::param('consumption_date');
+        $info = (new AccountService())->bill($page, $size, $consumptionDate);
+        return json(new SuccessMessageWithData(['data' => $info]));
     }
 }

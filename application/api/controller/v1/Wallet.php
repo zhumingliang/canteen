@@ -367,7 +367,6 @@ class Wallet extends BaseController
     {
         $app = app('wechat.payment');
         $response = $app->handlePaidNotify(function ($message, $fail) {
-            // 使用通知里的 "微信支付订单号" 或者 "商户订单号" 去自己的数据库找到订单
             $order_num = $message['out_trade_no'];
             $order = PayT::where('order_num', $order_num)->find();
 
@@ -399,7 +398,6 @@ class Wallet extends BaseController
             }
 
             $order->save(); // 保存订单
-
             return true; // 返回处理完成
         });
 

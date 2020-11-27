@@ -2775,13 +2775,9 @@ class OrderService extends BaseService
     {
         try {
             Db::startTrans();
-            $consumptionDate = "";
-            $canteenId = 0;
-            $companyId = 0;
-            $consumptionMoney = 0;
-            $staffId = 0;
             if ($consumptionType == "one") {
                 $order = OrderT::get($order_id);
+                $dinnerId = $order->d_id;
                 if ($order->consumption_type == 'no_meals_ordered' && ($order->fixed == CommonEnum::STATE_IS_OK || $order->ordering_type == "online")) {
                     $order->money = $order->meal_money;
                 }
@@ -2805,6 +2801,7 @@ class OrderService extends BaseService
                     ->where('state', CommonEnum::STATE_IS_OK)
                     ->select();
                 $parentOrder = OrderParentT::get($order_id);
+                $dinnerId = $parentOrder->dinner_id;
                 $usedTime = date('Y-m-d H:i:s');
                 foreach ($subOrder as $k => $v) {
                     $mealMoney = $v['money'];
@@ -2838,8 +2835,9 @@ class OrderService extends BaseService
                 $consumptionMoney = $allMoney + $parentOrder->delivery_fee;
                 $staffId = $parentOrder->staff_id;
             }
+            $dinner = DinnerT::dinnerInfo($dinnerId);
             (new AccountService())->saveAccountRecords($consumptionDate, $canteenId,
-                $consumptionMoney, $consumptionType, $order_id, $companyId, $staffId);
+                $consumptionMoney, $consumptionType, $order_id, $companyId, $staffId, $dinner->name, 1);
             Db::commit();
         } catch (Exception $e) {
             Db::rollback();
@@ -2852,6 +2850,7 @@ class OrderService extends BaseService
     public
     function infoForPersonChoiceOnline($day)
     {
+
         $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
         $company_id = Token::getCurrentTokenVar('current_company_id');
         $outsider = Token::getCurrentTokenVar('outsiders');
@@ -2928,6 +2927,18 @@ class OrderService extends BaseService
                 //获取子订单的信息
                 $info = $this->getSubOrderInfo($orderId);
             }
+        }
+        $info['consumptionType'] = $consumptionType;
+        return $info;
+    }
+
+    public
+    function orderStatisticDetailInfo2($orderId, $consumptionType)
+    {
+        if ($consumptionType == 'one') {
+            $info = $this->InfoToConsumptionTimesOne($orderId);
+        } else if ($consumptionType == 'more') {
+            $info = $this->InfoToConsumptionTimesMore($orderId);
         }
         $info['consumptionType'] = $consumptionType;
         return $info;
