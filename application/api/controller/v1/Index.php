@@ -103,7 +103,7 @@ Index extends BaseController
 
     public function test($param = "")
     {
-        echo UserBalanceV::userBalance2(118,13929011328);
+        echo UserBalanceV::userBalance2(7356);
     }
 
     public function token()

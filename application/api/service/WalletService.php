@@ -350,10 +350,11 @@ class WalletService
 
     public function getUserBalance($company_id, $phone, $staff_id = 0)
     {
-       /* if (!$staff_id) {
-
-        }*/
-        $balance = UserBalanceV::userBalance2($company_id, $phone);
+        if (!$staff_id) {
+            $staff = CompanyStaffT::staffName($phone, $company_id);
+            $staff_id=$staff->id;
+        }
+        $balance = UserBalanceV::userBalance2($staff_id);
         return $balance;
 
     }

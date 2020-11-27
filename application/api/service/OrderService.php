@@ -105,7 +105,7 @@ class OrderService extends BaseService
     {
 
         $checkMoney = $orderMoney['money'] + $orderMoney['sub_money'] + $delivery_fee;
-        $pay_way = $this->checkBalance($u_id, $canteen_id, $checkMoney);
+        $pay_way = $this->checkBalance($staff->id, $canteen_id, $checkMoney);
         if (!$pay_way) {
             throw new SaveException(['errorCode' => 49000, 'msg' => '余额不足']);
         }
@@ -155,7 +155,7 @@ class OrderService extends BaseService
             $money += ($v['money'] + $v['sub_money']);
         }
         $checkMoney = $money + $delivery_fee;
-        $pay_way = $this->checkBalance($u_id, $canteen_id, $checkMoney, $company_id, $phone);
+        $pay_way = $this->checkBalance($staff->id, $canteen_id, $checkMoney, $company_id, $phone);
         if (!$pay_way) {
             throw new SaveException(['errorCode' => 49000, 'msg' => '余额不足']);
         }
@@ -478,11 +478,9 @@ class OrderService extends BaseService
     }
 
     public
-    function checkBalance($u_id, $canteen_id, $money, $company_id = '', $phone = '')
+    function checkBalance($staff_id, $canteen_id, $money, $company_id = '', $phone = '')
     {
-        $company_id = empty($company_id) ? Token::getCurrentTokenVar('current_company_id') : $company_id;
-        $phone = empty($phone) ? Token::getCurrentTokenVar('phone') : $phone;
-        $balance = (new WalletService())->getUserBalance($company_id, $phone);
+        $balance = (new WalletService())->getUserBalance($company_id, $phone, $staff_id);
         if ($balance >= $money) {
             return PayEnum::PAY_BALANCE;
         }
@@ -951,7 +949,7 @@ class OrderService extends BaseService
     {
         $data = $this->prefixOnlineOrderingData($address_id, $type, $u_id, $canteen_id, $detail, $delivery_fee, $strategies, $company_id, $phone, $staff_type_id, $department_id, $staff_id);
         $money = $data['all_money'];
-        $pay_way = $this->checkBalance($u_id, $canteen_id, $money, $company_id, $phone);
+        $pay_way = $this->checkBalance($staff_id, $canteen_id, $money, $company_id, $phone);
         if (!$pay_way) {
             throw new SaveException(['errorCode' => 49000, 'msg' => '余额不足']);
         }
@@ -970,7 +968,7 @@ class OrderService extends BaseService
         $prefixData = $this->prefixOrderMoneyConsumptionTimesMore($detail, $canteen_id, $strategies, $phone);
         $detail = $prefixData['detail'];
         $allMoney = $prefixData['allMoney'];
-        $pay_way = $this->checkBalance($u_id, $canteen_id, $allMoney);
+        $pay_way = $this->checkBalance($staff_id, $canteen_id, $allMoney);
         if (!$pay_way) {
             throw new SaveException(['errorCode' => 49000, 'msg' => '余额不足']);
         }
@@ -1836,7 +1834,7 @@ class OrderService extends BaseService
         $new_meal_money = ($old_meal_money / $old_count) * $count;
         $new_meal_sub_money = ($old_meal_sub_money / $old_count) * $count;
         //检测订单金额是否合法
-        $check_res = $this->checkBalance($order->u_id, $order->c_id, ($new_money + $new_sub_money - $old_money - $old_sub_money));
+        $check_res = $this->checkBalance($order->staff_id, $order->c_id, ($new_money + $new_sub_money - $old_money - $old_sub_money));
         if (!$check_res) {
             throw new UpdateException(['msg' => '当前用户可消费余额不足']);
         }
@@ -1910,7 +1908,7 @@ class OrderService extends BaseService
             } else {
                 $updateCount = $old_count;
             }
-            $check_money = $this->checkOrderUpdateMoney($id, $order->u_id, $order->c_id,
+            $check_money = $this->checkOrderUpdateMoney($id, $order->staff_id, $order->c_id,
                 $order->d_id, $order->pay_way, $order->money, $order->sub_money, $order->meal_money, $order->meal_sub_money, $order->count,
                 $updateCount, $detail);
             $order->pay_way = $check_money['pay_way'];
@@ -2220,7 +2218,7 @@ class OrderService extends BaseService
     }
 
     private
-    function checkOrderUpdateMoney($o_id, $u_id, $canteen_id, $dinner_id, $pay_way,
+    function checkOrderUpdateMoney($o_id, $staff_id, $canteen_id, $dinner_id, $pay_way,
                                    $old_money, $old_sub_money, $old_meal_money,
                                    $old_meal_sub_money,
                                    $old_count, $count, $new_detail)
@@ -2279,7 +2277,7 @@ class OrderService extends BaseService
         $new_sub_money = $old_sub_money / $old_count * $count;
         $new_meal_sub_money = $old_meal_sub_money / $old_count * $count;
         if ($new_money > $old_money) {
-            $pay_way = $this->checkBalance($u_id, $canteen_id, $new_money + $new_sub_money - $old_money - $old_sub_money);
+            $pay_way = $this->checkBalance($staff_id, $canteen_id, $new_money + $new_sub_money - $old_money - $old_sub_money);
         }
         return [
             'new_money' => $new_money,
