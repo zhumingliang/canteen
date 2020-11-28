@@ -467,7 +467,7 @@ class Reception extends BaseController
             ->where('c_id', $company_id)
             ->find();
         $deptmentName = $dept['name'];
-        $data = ['staff_id' => $staff_id, 'username' => $username, 'deptmentName' => $deptmentName];
+        $data = ['staff_id' => $staff_id, 'username' => $username, 'phone'=>$phone,'deptmentName' => $deptmentName];
         return json(new SuccessMessageWithData(['data' => $data]));
     }
 
