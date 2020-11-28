@@ -84,9 +84,26 @@ class AccountRecordsT extends Model
 
     public static function info($id)
     {
+
         return self::where('id', $id)->with(['account' => function ($query) {
             $query->field('id,name');
         }])->find();
     }
+
+    public static function billStatistic($staffId, $consumptionDate)
+    {
+        $month = Date::mFristAndLast2($consumptionDate);
+        $begin = $month['fist'];
+        $end = $month['last'];
+        $statistic = self::field('sum(if(money>0,money,0)) as income,sum(if(money<0,money,0)) as expend')
+            ->where('staff_id', $staffId)
+            ->where('consumption_date', '>=', $begin)
+            ->where('consumption_date', '<=', $end)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->select();
+        return $statistic;
+
+    }
+
 
 }

@@ -327,16 +327,16 @@ class Account extends BaseController
     }
 
     /**
-     * @api {GET} /api/v1/account/detail 微信端-我的账户-账单
+     * @api {GET} /api/v1/account/bill 微信端-我的账户-账单
      * @apiGroup  Official
      * @apiVersion 3.0.0
      * @apiDescription 微信端-我的账户-账单
      * @apiExample {get}  请求样例:
-     * http://canteen.tonglingok.com/api/v1/account/detail?consumption_date=2020-11&$page=1&size=10
+     * http://canteen.tonglingok.com/api/v1/account/bill?consumption_date=2020-11&$page=1&size=10
      * @apiParam (请求参数说明) {int} page 当前页码
      * @apiParam (请求参数说明) {int} size 每页多少条数据
      * @apiSuccessExample {json} 返回样例:
-     * {"msg":"ok","errorCode":0,"code":200,"data":{"total":34,"per_page":"1","current_page":1,"last_page":34,"data":[{"id":528,"account_id":73,"order_id":0,"money":"-6.00","type":"one","type_name":"午餐","create_time":"2020-11-28 14:02:11","account":{"id":73,"name":"个人账户"}}]}}
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"statistic":[{"income":"223.00","expend":"-104.50"}],"records":{"total":34,"per_page":"1","current_page":1,"last_page":34,"data":[{"id":528,"account_id":73,"order_id":0,"money":"-6.00","type":"one","type_name":"午餐","create_time":"2020-11-28 14:02:11","account":{"id":73,"name":"个人账户"}}]}}}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
      * @apiSuccess (返回参数说明) {String} msg 信息描述
      * @apiSuccess (返回参数说明) {int} total 数据总数
@@ -352,6 +352,9 @@ class Account extends BaseController
      * @apiSuccess (返回参数说明) {string} type 类型
      * @apiSuccess (返回参数说明) {string} type_name 类型名称
      * @apiSuccess (返回参数说明) {string} create_time 创建时间
+     * @apiSuccess (返回参数说明) {obj} statistic 金额统计
+     * @apiSuccess (返回参数说明) {float} income 收入
+     * @apiSuccess (返回参数说明) {float} expend 支出
      *
      */
     public function bill($page = 1, $size = 10)

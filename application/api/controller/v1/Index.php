@@ -6,6 +6,7 @@ namespace app\api\controller\v1;
 
 use app\api\controller\BaseController;
 use app\api\job\UploadExcel;
+use app\api\model\AccountRecordsT;
 use app\api\model\CanteenT;
 use app\api\model\CompanyAccountT;
 use app\api\model\CompanyStaffT;
@@ -103,7 +104,8 @@ Index extends BaseController
 
     public function test($param = "")
     {
-        echo UserBalanceV::userBalance2(7356);
+        $info = AccountRecordsT::billStatistic(6699, '2020-11');
+        print_r($info);
     }
 
     public function token()

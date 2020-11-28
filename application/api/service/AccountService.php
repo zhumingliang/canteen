@@ -471,7 +471,11 @@ class AccountService
     {
         $staffId = Token::getCurrentTokenVar('staff_id');
         $records = $this->records($page, $size, $staffId, $consumptionDate, $accountId = 0, $type = 0);
-        return $records;
+        $statistic = AccountRecordsT::billStatistic($staffId, $consumptionDate);
+        return [
+            'statistic' => $statistic,
+            'records' => $records
+        ];
     }
 
     public function records($page, $size, $staffId, $consumptionDate, $accountId = 0, $type = 0)
@@ -479,6 +483,7 @@ class AccountService
         $records = AccountRecordsT::transactionDetails($staffId, $accountId, $page, $size, $type, $consumptionDate);
         return $records;
     }
+
 
     public function detail($id)
     {
