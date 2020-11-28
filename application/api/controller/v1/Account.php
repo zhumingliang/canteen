@@ -287,13 +287,73 @@ class Account extends BaseController
         return json(new SuccessMessageWithData(['data' => $info]));
     }
 
-    public function transactionDetails($page = 1, $size = 10, $account_id = 0, $type = 1)
+    /**
+     * @api {GET} /api/v1/account/detail 微信端-我的账户-交易明细
+     * @apiGroup  Official
+     * @apiVersion 3.0.0
+     * @apiDescription 微信端-我的账户-交易明细
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/account/detail?consumption_date=2020-11&account_id=73&$page=1&size=10&type=0
+     * @apiParam (请求参数说明) {int} page 当前页码
+     * @apiParam (请求参数说明) {int} size 每页多少条数据
+     * @apiParam (请求参数说明) {string} consumption_date 查询时间
+     * @apiParam (请求参数说明) {int} account_id 每页多少条数据
+     * @apiParam (请求参数说明) {int} type 类型：0：全部；1：收入；2：支出
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"account":[{"account_id":73,"money":"118.50","account":{"id":73,"name":"个人账户"}}],"records":{"total":34,"per_page":"1","current_page":1,"last_page":34,"data":[{"id":528,"account_id":73,"order_id":0,"money":"-6.00","type":"one","type_name":"午餐","create_time":"2020-11-28 14:02:11","account":{"id":73,"name":"个人账户"}}]}}}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {String} msg 信息描述
+     * @apiSuccess (返回参数说明) {int} total 数据总数
+     * @apiSuccess (返回参数说明) {int} per_page 每页多少条数据
+     * @apiSuccess (返回参数说明) {int} current_page 当前页码
+     * @apiSuccess (返回参数说明) {int} last_page 最后页码
+     * @apiSuccess (返回参数说明) {obj} account 账户信息
+     * @apiSuccess (返回参数说明) {float} money 余额
+     * @apiSuccess (返回参数说明) {float} name 账户名称
+     * @apiSuccess (返回参数说明) {obj} records 明细
+     * @apiSuccess (返回参数说明) {int} account_id 账户id
+     * @apiSuccess (返回参数说明) {int} order_id 订单id
+     * @apiSuccess (返回参数说明) {float} money 金额
+     * @apiSuccess (返回参数说明) {string} type 类型
+     * @apiSuccess (返回参数说明) {string} type_name 类型名称
+     * @apiSuccess (返回参数说明) {string} create_time 创建时间
+     *
+     */
+    public function transactionDetails($page = 1, $size = 10, $account_id = 0, $type = 0)
     {
         $consumptionDate = Request::param('consumption_date');
-        $info = (new AccountService())->transactionDetails($page, $size, $account_id, $type,$consumptionDate);
+        $info = (new AccountService())->transactionDetails($page, $size, $account_id, $type, $consumptionDate);
         return json(new SuccessMessageWithData(['data' => $info]));
     }
 
+    /**
+     * @api {GET} /api/v1/account/detail 微信端-我的账户-账单
+     * @apiGroup  Official
+     * @apiVersion 3.0.0
+     * @apiDescription 微信端-我的账户-账单
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/account/detail?consumption_date=2020-11&$page=1&size=10
+     * @apiParam (请求参数说明) {int} page 当前页码
+     * @apiParam (请求参数说明) {int} size 每页多少条数据
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"total":34,"per_page":"1","current_page":1,"last_page":34,"data":[{"id":528,"account_id":73,"order_id":0,"money":"-6.00","type":"one","type_name":"午餐","create_time":"2020-11-28 14:02:11","account":{"id":73,"name":"个人账户"}}]}}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {String} msg 信息描述
+     * @apiSuccess (返回参数说明) {int} total 数据总数
+     * @apiSuccess (返回参数说明) {int} per_page 每页多少条数据
+     * @apiSuccess (返回参数说明) {int} current_page 当前页码
+     * @apiSuccess (返回参数说明) {int} last_page 最后页码
+     * @apiSuccess (返回参数说明) {obj} account 账户信息
+     * @apiSuccess (返回参数说明) {float} name 账户名称
+     * @apiSuccess (返回参数说明) {obj} records 明细
+     * @apiSuccess (返回参数说明) {int} account_id 账户id
+     * @apiSuccess (返回参数说明) {int} order_id 订单id
+     * @apiSuccess (返回参数说明) {float} money 金额
+     * @apiSuccess (返回参数说明) {string} type 类型
+     * @apiSuccess (返回参数说明) {string} type_name 类型名称
+     * @apiSuccess (返回参数说明) {string} create_time 创建时间
+     *
+     */
     public function bill($page = 1, $size = 10)
     {
         $consumptionDate = Request::param('consumption_date');

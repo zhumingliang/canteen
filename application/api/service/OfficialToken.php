@@ -92,6 +92,10 @@ class OfficialToken extends Token
         $cachedValue = [];
         $user = UserT::where('id', $u_id)
             ->find()->toArray();
+        $staff = CompanyStaffT::staffName($user['phone'], $user['current_company_id']);
+        if ($staff) {
+            $cachedValue['staff_id'] = $staff->id;
+        }
         $cachedValue['u_id'] = $u_id;
         $cachedValue['phone'] = $user['phone'];
         $cachedValue['openId'] = $user['openid'];

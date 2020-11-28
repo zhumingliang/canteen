@@ -335,3 +335,5 @@ Route::get('api/:version/accounts/search', 'api/:version.Account/accountsForSear
 Route::get('api/:version/account', 'api/:version.Account/account');
 Route::get('api/:version/account/balance', 'api/:version.Account/accountBalance');
 Route::get('api/:version/account/balance/fixed', 'api/:version.Account/fixedBalance');
+Route::get('api/:version/account/detail', 'api/:version.Account/transactionDetails');
+Route::get('api/:version/account/bill', 'api/:version.Account/bill');

@@ -351,7 +351,7 @@ class AccountService
 
     }
 
-    public function saveAccountRecords($consumptionDate, $canteenId, $money, $type, $orderId, $companyId, $staffId, $typeName,$outsider = 2)
+    public function saveAccountRecords($consumptionDate, $canteenId, $money, $type, $orderId, $companyId, $staffId, $typeName, $outsider = 2)
     {
         $accounts = $this->getAccountBalance($companyId, $staffId);
         $data = [];
@@ -369,7 +369,7 @@ class AccountService
                     'order_id' => $orderId,
                     'money' => $money,
                     'outsider' => $outsider,
-                    'type_name'=>$typeName
+                    'type_name' => $typeName
                 ]);
             } else {
                 $money -= $v['balance'];
@@ -395,7 +395,7 @@ class AccountService
             foreach ($accountBalance as $k2 => $v2) {
                 if ($v['id'] == $v2['account_id']) {
                     $balance += $v2['money'];
-                   // break;
+                    // break;
                 }
 
             }
@@ -453,9 +453,28 @@ class AccountService
 
     }
 
-    public function transactionDetails($page, $size, $account_id, $type,$consumptionDate)
+    public function transactionDetails($page, $size, $accountId, $type, $consumptionDate)
     {
-       // $records=AccountRecordsV::
+        $staffId = Token::getCurrentTokenVar('staff_id');
+        $records = $this->records($page, $size, $staffId, $consumptionDate, $accountId, $type);
+        $accountInfo = AccountRecordsT::accountBalance($staffId, $accountId);
+        return [
+            'account' => $accountInfo,
+            'records' => $records
+        ];
+    }
+
+    public function bill($page, $size, $consumptionDate)
+    {
+        $staffId = Token::getCurrentTokenVar('staff_id');
+        $records = $this->records($page, $size, $staffId, $consumptionDate, $accountId = 0, $type = 0);
+        return $records;
+    }
+
+    public function records($page, $size, $staffId, $consumptionDate, $accountId = 0, $type = 0)
+    {
+        $records = AccountRecordsT::transactionDetails($staffId, $accountId, $page, $size, $type, $consumptionDate);
+        return $records;
     }
 
 }
