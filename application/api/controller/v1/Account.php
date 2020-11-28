@@ -288,12 +288,12 @@ class Account extends BaseController
     }
 
     /**
-     * @api {GET} /api/v1/account/detail 微信端-我的账户-交易明细
+     * @api {GET} /api/v1/account/details 微信端-我的账户-交易明细
      * @apiGroup  Official
      * @apiVersion 3.0.0
      * @apiDescription 微信端-我的账户-交易明细
      * @apiExample {get}  请求样例:
-     * http://canteen.tonglingok.com/api/v1/account/detail?consumption_date=2020-11&account_id=73&$page=1&size=10&type=0
+     * http://canteen.tonglingok.com/api/v1/account/details?consumption_date=2020-11&account_id=73&$page=1&size=10&type=0
      * @apiParam (请求参数说明) {int} page 当前页码
      * @apiParam (请求参数说明) {int} size 每页多少条数据
      * @apiParam (请求参数说明) {string} consumption_date 查询时间
@@ -358,6 +358,36 @@ class Account extends BaseController
     {
         $consumptionDate = Request::param('consumption_date');
         $info = (new AccountService())->bill($page, $size, $consumptionDate);
+        return json(new SuccessMessageWithData(['data' => $info]));
+    }
+
+    /**
+     * @api {GET} /api/v1/account/detail微信端-我的账户-交易明细/账单-详情信息
+     * @apiGroup  Official
+     * @apiVersion 3.0.0
+     * @apiDescription 微信端-我的账户-交易明细/账单-详情信息
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/account/detail?id=2
+     * @apiParam (请求参数说明) {int} page 当前页码
+     * @apiParam (请求参数说明) {int} size 每页多少条数据
+     * @apiParam (请求参数说明) {int} id 明细ID
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"name":"午餐","type":"支出","create_time":"2020-11-28 13:53:58","sub_money":"1.00","money":"3.00","delivery_fee":"0.00","consumption_sort":0}}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {String} msg 信息描述
+     * @apiSuccess (返回参数说明) {string} name 名称
+     * @apiSuccess (返回参数说明) {string} type 类型
+     * @apiSuccess (返回参数说明) {string} create_time 时间
+     * @apiSuccess (返回参数说明) {float} money 标准金额
+     * @apiSuccess (返回参数说明) {float} sub_money 附加金额
+     * @apiSuccess (返回参数说明) {float} delivery_fee 运费
+     * @apiSuccess (返回参数说明) {int} consumption_sort 第几份
+     *
+     */
+    public function detail()
+    {
+        $id = Request::param('id');
+        $info = (new AccountService())->detail($id);
         return json(new SuccessMessageWithData(['data' => $info]));
     }
 }

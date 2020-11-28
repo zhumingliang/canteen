@@ -12,6 +12,9 @@ use app\api\model\CompanyAccountT;
 use app\api\model\CompanyStaffT;
 use app\api\model\ConsumptionRecordsV;
 use app\api\model\OrderConsumptionV;
+use app\api\model\OrderParentT;
+use app\api\model\OrderSubT;
+use app\api\model\OrderT;
 use app\api\model\PayNonghangConfigT;
 use app\api\model\PayT;
 use app\api\model\UserBalanceV;
@@ -475,6 +478,47 @@ class AccountService
     {
         $records = AccountRecordsT::transactionDetails($staffId, $accountId, $page, $size, $type, $consumptionDate);
         return $records;
+    }
+
+    public function detail($id)
+    {
+        $accountRecord = AccountRecordsT::info($id);
+        if (!$accountRecord) {
+            throw  new ParameterException(['msg' => '明细不存在']);
+        }
+        $type = $accountRecord->type;
+        $outsider = $accountRecord->outsider;
+        $returnData = [
+            'name' => $accountRecord->type_name,
+            'type' => $accountRecord->money > 0 ? "收入" : "支出",
+            'create_time' => $accountRecord->create_time,
+            'sub_money' => 0,
+            'money' => $accountRecord->money,
+            'delivery_fee' => 0,
+            'consumption_sort' => 0
+        ];
+        $orderId = $accountRecord->order_id;
+        if ($type == "one") {
+            $info = OrderT::get($orderId);
+            $returnData['money'] = $info->money;
+            $returnData['sub_money'] = $info->sub_money;
+            $returnData['delivery_fee'] = $info->delivery_fee;
+        } else if ($type == "more") {
+            if ($outsider == CommonEnum::STATE_IS_OK) {
+                $info = OrderParentT::get($orderId);
+                $returnData['money'] = $info->money;
+                $returnData['delivery_fee'] = $info->delivery_fee;
+                $returnData['consumption_sort'] = 1;
+
+            } else {
+                $info = OrderSubT::infoWithParent($orderId);
+                $returnData['money'] = $info->money;
+                $returnData['sub_money'] = $info->sub_money;
+                $returnData['consumption_sort'] = $info->consumption_sort;
+            }
+        }
+
+        return $returnData;
     }
 
 }

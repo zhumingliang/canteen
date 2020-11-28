@@ -39,7 +39,7 @@ class AccountRecordsT extends Model
 
     }
 
-    public static function accountBalance($staffId,$accountId)
+    public static function accountBalance($staffId, $accountId)
     {
         $statistic = self::where('staff_id', $staffId)
             ->where('account_id', $accountId)
@@ -80,6 +80,13 @@ class AccountRecordsT extends Model
             ->order('create_time desc')
             ->paginate($size, false, ['page' => $page]);
 
+    }
+
+    public static function info($id)
+    {
+        return self::where('id', $id)->with(['account' => function ($query) {
+            $query->field('id,name');
+        }])->find();
     }
 
 }
