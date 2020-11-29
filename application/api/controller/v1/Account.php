@@ -385,12 +385,31 @@ class Account extends BaseController
      * @apiSuccess (返回参数说明) {float} sub_money 附加金额
      * @apiSuccess (返回参数说明) {float} delivery_fee 运费
      * @apiSuccess (返回参数说明) {int} consumption_sort 第几份
-     *
      */
     public function detail()
     {
         $id = Request::param('id');
         $info = (new AccountService())->detail($id);
         return json(new SuccessMessageWithData(['data' => $info]));
+    }
+
+    /**
+     * @api {GET} /api/v1/account/staff  我的账户-获取用户可查看账户并排序
+     * @apiGroup  Official
+     * @apiVersion 3.0.0
+     * @apiDescription 我的账户-获取用户可查看账户并排序
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/account/staff?
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":[{"sort":1,"name":"个人账户"}]}
+     *     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {String} msg 信息描述
+     * @apiSuccess (返回参数说明) {string} name 名称
+     * @apiSuccess (返回参数说明) {int} sort 排序(小号在前)
+     */
+    public function staffAccount()
+    {
+        $account = (new AccountService())->staffAccount();
+        return json(new SuccessMessageWithData(['data' => $account]));
     }
 }

@@ -526,4 +526,37 @@ class AccountService
         return $returnData;
     }
 
+    public function staffAccount()
+    {
+        $staffId = Token::getCurrentTokenVar('staff_id');
+        $companyId = Token::getCurrentTokenVar('current_company_id');
+        $staff = CompanyStaffT::get($staffId);
+        $departmentId = $staff->d_id;
+        $accounts = CompanyAccountT::accountsWithSortsAndDepartment($companyId);
+        $useAccounts = [];
+        if ($accounts) {
+            foreach ($accounts as $k => $v) {
+                if ($v['department_all'] == CommonEnum::STATE_IS_OK) {
+                    array_push($useAccounts, [
+                        'sort' => $v['sort'],
+                        'name' => $v['name']
+                    ]);
+                    continue;
+                }
+                $departments = $v['department'];
+                foreach ($departments as $k2 => $v2) {
+                    if ($departmentId == $v2['department_id']) {
+                        array_push($useAccounts, [
+                            'sort' => $v['sort'],
+                            'name' => $v['name']
+                        ]);
+                        break;
+                    }
+                }
+            }
+        }
+        return $useAccounts;
+
+    }
+
 }

@@ -338,3 +338,4 @@ Route::get('api/:version/account/balance/fixed', 'api/:version.Account/fixedBala
 Route::get('api/:version/account/details', 'api/:version.Account/transactionDetails');
 Route::get('api/:version/account/bill', 'api/:version.Account/bill');
 Route::get('api/:version/account/detail', 'api/:version.Account/detail');
+Route::get('api/:version/account/staff', 'api/:version.Account/staffAccount');

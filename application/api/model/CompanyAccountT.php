@@ -32,7 +32,6 @@ class CompanyAccountT extends Model
     }
 
 
-
     public static function accounts($companyId)
     {
         $accounts = self::where('company_id', $companyId)
@@ -100,6 +99,24 @@ class CompanyAccountT extends Model
             ->where('state', CommonEnum::STATE_IS_OK)
             ->field('id,name')
             ->select();
+        return $accounts;
+    }
+
+    public static function accountsWithSortsAndDepartment($companyId)
+    {
+        $accounts = self::where('company_id', $companyId)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->with([
+                'departments' => function ($query) {
+                    $query->with(['department' => function ($query2) {
+                        $query2->field('id,name');
+                    }])
+                        ->where('state', CommonEnum::STATE_IS_OK)->field('id,account_id,department_id');
+                }
+            ])
+            ->field('id,name,sort,department_all')
+            ->order('sort')
+            ->select()->toArray();
         return $accounts;
     }
 
