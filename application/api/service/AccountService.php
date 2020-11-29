@@ -543,7 +543,7 @@ class AccountService
                     ]);
                     continue;
                 }
-                $departments = $v['department'];
+                $departments = $v['departments'];
                 foreach ($departments as $k2 => $v2) {
                     if ($departmentId == $v2['department_id']) {
                         array_push($useAccounts, [
