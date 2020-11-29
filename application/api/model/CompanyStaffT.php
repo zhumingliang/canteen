@@ -235,4 +235,20 @@ class CompanyStaffT extends Model
 
     }
 
+    public static function staffsForOffLine($companyId)
+    {
+        return self::where('company_id', $companyId)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->with([
+                'card' => function ($query) {
+                    $query->field('id,staff_id,card_code,state')
+                        ->whereIn('state', '1,2');
+                }
+            ])
+            ->field('id,username,t_id as staff_type_id')
+            ->order('id')
+            ->select();
+
+    }
+
 }

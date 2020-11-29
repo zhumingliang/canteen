@@ -204,5 +204,21 @@ class OrderParentT extends Model
         return $info;
     }
 
+    public static function canteenOrders($canteenId, $consumptionDate)
+    {
+        return self::where('canteen_id', $canteenId)
+            ->where('ordering_date', $consumptionDate)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->where('pay', 'paid')
+            ->with([
+                'sub' => function ($query) {
+                    $query->where('state', CommonEnum::STATE_IS_OK)
+                        ->field('id,order_id,consumption_sort,money,sub_money,meal_money,meal_sub_money,consumption_type');
+                }
+            ])
+            ->field('id,staff_id,fixed')
+            ->select();
+    }
+
 
 }

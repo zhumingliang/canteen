@@ -391,29 +391,13 @@ class AccountService
         $accounts = CompanyAccountT::accountsWithSorts($companyId);
         //获取用户账户余额
         $accountBalance = AccountRecordsT::statistic($staffID);
-        //获取用户（微信/农行）充值记录
-        $recharge = PayT::statistic($staffID);
         foreach ($accounts as $k => $v) {
             $balance = 0;
             foreach ($accountBalance as $k2 => $v2) {
                 if ($v['id'] == $v2['account_id']) {
                     $balance += $v2['money'];
-                    // break;
                 }
 
-            }
-            if ($v['type'] == 1) {
-                //基本账户
-                foreach ($recharge as $k2 => $v2) {
-                    if ($v['fixed_type'] == 1 && $v2['method_id'] == PayEnum::PAY_METHOD_WX) {
-                        //个人账户：添加微信充值
-                        $balance += $v2['money'];
-                    }
-                    if ($v['fixed_type'] == 2 && $v2['method_id'] == PayEnum::PAY_METHOD_NH) {
-                        //农行账户：添加充值
-                        $balance += $v2['money'];
-                    }
-                }
             }
             $accounts[$k]['balance'] = $balance;
         }

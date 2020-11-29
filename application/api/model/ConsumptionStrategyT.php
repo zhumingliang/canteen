@@ -113,7 +113,17 @@ class ConsumptionStrategyT extends Model
             ->select();
         return $strategies;
 
-
     }
+
+ public static function infoToOffLine($canteen_id)
+{
+    $info = self::where('c_id', $canteen_id)
+        ->where('state', CommonEnum::STATE_IS_OK)
+        ->hidden(['create_time', 'update_time', 'state'])
+        ->order('create_time desc')
+        ->select();
+    return $info;
+
+}
 
 }
