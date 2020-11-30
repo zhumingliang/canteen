@@ -481,6 +481,7 @@ class OrderService extends BaseService
     function checkBalance($staff_id, $canteen_id, $money, $company_id = '', $phone = '')
     {
         $balance = (new WalletService())->getUserBalance($company_id, $phone, $staff_id);
+        LogService::save($balance);
         if ($balance >= $money) {
             return PayEnum::PAY_BALANCE;
         }
@@ -949,6 +950,7 @@ class OrderService extends BaseService
     {
         $data = $this->prefixOnlineOrderingData($address_id, $type, $u_id, $canteen_id, $detail, $delivery_fee, $strategies, $company_id, $phone, $staff_type_id, $department_id, $staff_id);
         $money = $data['all_money'];
+        LogService::save($money);
         $pay_way = $this->checkBalance($staff_id, $canteen_id, $money, $company_id, $phone);
         if (!$pay_way) {
             throw new SaveException(['errorCode' => 49000, 'msg' => '余额不足']);
