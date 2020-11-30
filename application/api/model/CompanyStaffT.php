@@ -243,9 +243,11 @@ class CompanyStaffT extends Model
                 'card' => function ($query) {
                     $query->field('id,staff_id,card_code,state')
                         ->whereIn('state', '1,2');
+                }, 'department' => function ($query) {
+                    $query->field('id,name');
                 }
             ])
-            ->field('id,username,t_id as staff_type_id')
+            ->field('id,d_id,username,t_id as staff_type_id')
             ->order('id')
             ->select();
 
