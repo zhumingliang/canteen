@@ -1402,7 +1402,7 @@ class Order extends BaseController
     {
         $orderId = Request::param('id');
         $consumptionType = Request::param('consumption_type');
-        $orders = (new OrderService())->orderStatisticDetailInfo($orderId, $consumptionType);
+        $orders = (new OrderService())->orderStatisticDetailInfo2($orderId, $consumptionType);
         return json(new SuccessMessageWithData(['data' => $orders]));
     }
 
