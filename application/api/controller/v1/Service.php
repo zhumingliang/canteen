@@ -75,7 +75,7 @@ class Service extends BaseController
      * @apiSuccess (返回参数说明) {int} detail  策略明细
      * @apiSuccess (返回参数说明) {int}  number  次数类型
      * @apiSuccess (返回参数说明) {string}  strategy  餐次策略明细
-     * @apiSuccess (返回参数说明) {string}  status  消费状态：ordering_meals|订餐就餐；no_meals_ordered|订餐未就餐；unordered_meals|未订餐就餐
+     * @apiSuccess (返回参数说明) {string}  status  消费状态：ordering_meals：订餐就餐；no_meals_ordered：订餐未就餐；unordered_meals：未订餐就餐
      * @apiSuccess (返回参数说明) {float}  money 标准金额
      * @apiSuccess (返回参数说明) {float}  sub_money  附加金额
      */

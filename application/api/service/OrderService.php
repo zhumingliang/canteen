@@ -968,7 +968,6 @@ class OrderService extends BaseService
         $prefixData = $this->prefixOrderMoneyConsumptionTimesMore($detail, $canteen_id, $strategies, $phone);
         $detail = $prefixData['detail'];
         $allMoney = $prefixData['allMoney'];
-        LogService::save($allMoney);
         $pay_way = $this->checkBalance($staff_id, $canteen_id, $allMoney);
         if (!$pay_way) {
             throw new SaveException(['errorCode' => 49000, 'msg' => '余额不足']);
@@ -1058,7 +1057,14 @@ class OrderService extends BaseService
             $dinner = DinnerT::dinnerInfo($dinner_id);
             $strategy = $this->getDinnerConsumptionStrategy($strategies, $dinner_id);
             if (!empty($ordering_data)) {
+                $checkExits = [];
                 foreach ($ordering_data as $k2 => $v2) {
+                    $key = $dinner_id . '-' . $v2['ordering_date'];
+                    if (in_array($key, $checkExits)) {
+                        continue;
+                    } else {
+                        array_push($checkExits, $key);
+                    }
                     //检测是否可以订餐
                     $orderMoney = $this->checkUserCanOnlineOrderMore($strategy, $phone, $dinner,
                         $v2['ordering_date'],
@@ -1114,7 +1120,14 @@ class OrderService extends BaseService
                 throw new ParameterException(['msg' => '消费策略不存在']);
             }
             if (!empty($ordering_data)) {
+                $checkExits = [];
                 foreach ($ordering_data as $k2 => $v2) {
+                    $key = $v['d_id'] . '-' . $v2['ordering_date'];
+                    if (in_array($key, $checkExits)) {
+                        continue;
+                    } else {
+                        array_push($checkExits, $key);
+                    }
                     $checkOrder = $this->checkUserCanOrderForOnline($canteen_id, $dinner,
                         $v2['ordering_date'],
                         $v2['count'], $strategy, $phone);
