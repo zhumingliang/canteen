@@ -31,7 +31,7 @@ class OffLineService
 
     public function staffsForOffline()
     {
-        $companyId = 129;// Token::getCurrentTokenVar('company_id');
+        $companyId =  Token::getCurrentTokenVar('company_id');
         $staffs = CompanyStaffT::staffsForOffLine($companyId);
         $staffBalance = UserBalanceV::balanceForOffLine($companyId);
 

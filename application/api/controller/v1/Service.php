@@ -123,12 +123,12 @@ class Service extends BaseController
     }
 
     /**
-     * @api {GET} /api/v1/service/offline/company/staffs  消费机-离线消费-获取饭企业用户信息
+     * @api {GET} /api/v1/service/company/staffs  消费机-离线消费-获取饭企业用户信息
      * @apiGroup  Machine
      * @apiVersion 3.0.0
      * @apiDescription  消费机-离线消费-获取饭企业用户信息
      * @apiExample {get}  请求样例:
-     * http://canteen.tonglingok.com/service/offline/company/staffs
+     * http://canteen.tonglingok.com/service/company/staffs
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200,"data":[{"id":7242,"username":"测试5","staff_type_id":101,"balance":"32.00","card":{"id":355,"staff_id":7242,"card_code":"103","state":1}}]}
      * @apiSuccess (返回参数说明) {int} id  用户id
