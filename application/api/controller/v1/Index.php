@@ -104,7 +104,31 @@ Index extends BaseController
 
     public function test($param = "")
     {
-       echo UserBalanceV::userBalance2(7485);
+
+        /*  $phone = "13702717833";
+          $dinner = [155, 156];
+          foreach ($dinner as $k => $v) {
+              $dinnerId = $v;
+              $dateExits = [];
+              $parent = OrderParentT::where('phone', $phone)
+                  ->where('dinner_id', $dinnerId)
+                  ->where('ordering_date', '>=', "2020-12-01")
+                  ->where('state', CommonEnum::STATE_IS_OK)
+                  ->order('ordering_date')
+                  ->select()->toArray();
+              foreach ($parent as $k2 => $v2) {
+                  $orderingDate = $v2['ordering_date'];
+                  if (in_array($orderingDate, $dateExits)) {
+                      //   OrderParentT::update(['state' => CommonEnum::STATE_IS_FAIL], ['id' => $v2['id']]);
+                      //  OrderSubT::update(['state' => CommonEnum::STATE_IS_FAIL], ['order_id' => $v2['id']]);
+                  } else {
+                      array_push($dateExits, $orderingDate);
+                  }
+
+              }
+
+          }*/
+
     }
 
     public function token()
