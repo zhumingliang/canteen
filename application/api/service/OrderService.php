@@ -1737,8 +1737,8 @@ class OrderService extends BaseService
                 throw new ParameterException(['msg' => '指定订餐信息不存在']);
             }
             //检测订单是否可操作
-            $this->checkConsumptionTimesOrderCanUpdate($id);
-            $this->checkOrderCanHandel($order->dinner_id, $order->ordering_date);
+            // $this->checkConsumptionTimesOrderCanUpdate($id);
+            //$this->checkOrderCanHandel($order->dinner_id, $order->ordering_date);
             //检测订单修改数量是否合法
             $strategy = (new CanteenService())->getStaffConsumptionStrategy($order->canteen_id, $order->dinner_id, $order->staff_type_id);
             $orderCount = $order->count;
@@ -1764,7 +1764,7 @@ class OrderService extends BaseService
                     $updateMoney = $this->getOrderFoodsMoney($id);
                 }
                 $this->handleIncreaseSubOrder($strategy, $id, $order->ordering_date, $order->fixed, $order->canteen_id,
-                    $order->dinner_id, $order->phone, $updateCount - $orderCount, $updateMoney, $orderedCount);
+                    $order->dinner_id, $order->phone, $updateCount - $orderCount, $updateMoney, $orderedCount, $order->staff_id);
 
 
             } elseif ($updateCount < $orderCount) {
@@ -1786,7 +1786,7 @@ class OrderService extends BaseService
             $this->updateParentOrderMoney($id);
             //更新其它订单排序
             $this->prefixOrderSortWhenUpdateOrder($strategy, $order->dinner_id, $order->phone, $order->ordering_date, $id);
-            Db::commit();
+            // Db::commit();
         } catch
         (Exception $e) {
             Db::rollback();
@@ -2030,7 +2030,7 @@ class OrderService extends BaseService
                      * 3.生成子订单
                      */
                     $this->handleIncreaseSubOrder($strategy, $id, $order->ordering_date, $orderMoneyFixed, $order->canteen_id,
-                        $order->dinner_id, $order->phone, $updateCount - $orderCount, $updateFoodsMoney, $orderedCount);
+                        $order->dinner_id, $order->phone, $updateCount - $orderCount, $updateFoodsMoney, $orderedCount, $order->staff_id);
 
 
                 } else {
@@ -2086,13 +2086,19 @@ class OrderService extends BaseService
      */
     private
     function handleIncreaseSubOrder($strategy, $orderId, $ordering_date, $orderMoneyFixed, $canteen_id,
-                                    $dinner_id, $phone, $increaseCount, $updateFoodsMoney, $consumptionCount)
+                                    $dinner_id, $phone, $increaseCount, $updateFoodsMoney, $consumptionCount, $staff_id)
     {
         $subOrderDataList = [];
         $dinner = DinnerT::dinnerInfo($dinner_id);
         $orders = OrderingV::getRecordForDayOrderingByPhone($ordering_date, $dinner->name, $phone);
         $this->checkOrderedAnotherCanteen($canteen_id, $orders);
         $strategyMoney = $this->checkConsumptionStrategyTimesMore($strategy, $increaseCount, $consumptionCount);
+        //检测余额是否充足
+        $checkBalance = array_sum(array_column($strategyMoney, 'money')) + array_sum(array_column($strategyMoney, 'sub_money'));
+        $check_res = $this->checkBalance($staff_id, $canteen_id, $checkBalance);
+        if (!$check_res) {
+            throw new UpdateException(['msg' => '当前用户可消费余额不足']);
+        }
         if ($orderMoneyFixed == CommonEnum::STATE_IS_FAIL) {
             //1.处理之前已经下单的金额
             OrderSubT::update(['money' => $updateFoodsMoney], ['order_id' => $orderId]);

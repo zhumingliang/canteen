@@ -104,6 +104,7 @@ Index extends BaseController
 
     public function test($param = "")
     {
+        echo UserBalanceV::userBalance(94,'13622577573');
 
         /*  $phone = "13702717833";
           $dinner = [155, 156];
