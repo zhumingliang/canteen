@@ -970,6 +970,7 @@ class OrderService extends BaseService
         $prefixData = $this->prefixOrderMoneyConsumptionTimesMore($detail, $canteen_id, $strategies, $phone);
         $detail = $prefixData['detail'];
         $allMoney = $prefixData['allMoney'];
+        LogService::save($allMoney);
         $pay_way = $this->checkBalance($staff_id, $canteen_id, $allMoney);
         if (!$pay_way) {
             throw new SaveException(['errorCode' => 49000, 'msg' => '余额不足']);
