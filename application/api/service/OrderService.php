@@ -1737,8 +1737,8 @@ class OrderService extends BaseService
                 throw new ParameterException(['msg' => '指定订餐信息不存在']);
             }
             //检测订单是否可操作
-            // $this->checkConsumptionTimesOrderCanUpdate($id);
-            //$this->checkOrderCanHandel($order->dinner_id, $order->ordering_date);
+             $this->checkConsumptionTimesOrderCanUpdate($id);
+            $this->checkOrderCanHandel($order->dinner_id, $order->ordering_date);
             //检测订单修改数量是否合法
             $strategy = (new CanteenService())->getStaffConsumptionStrategy($order->canteen_id, $order->dinner_id, $order->staff_type_id);
             $orderCount = $order->count;
@@ -1786,7 +1786,7 @@ class OrderService extends BaseService
             $this->updateParentOrderMoney($id);
             //更新其它订单排序
             $this->prefixOrderSortWhenUpdateOrder($strategy, $order->dinner_id, $order->phone, $order->ordering_date, $id);
-            // Db::commit();
+             Db::commit();
         } catch
         (Exception $e) {
             Db::rollback();
