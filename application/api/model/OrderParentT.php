@@ -216,7 +216,7 @@ class OrderParentT extends Model
                         ->field('id,order_id,consumption_sort,money,sub_money,meal_money,meal_sub_money,consumption_type');
                 }
             ])
-            ->field('id,staff_id,fixed')
+            ->field('id,count as order_count,"more" as strategy_type,staff_id,fixed')
             ->select();
     }
 
