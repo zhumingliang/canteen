@@ -32,7 +32,8 @@ class UploadExcel
         // 有些消息在到达消费者时,可能已经不再需要执行了
         $isJobStillNeedToBeDone = $this->checkDatabaseToSeeIfJobNeedToBeDone($data);
         if (!$isJobStillNeedToBeDone) {
-            $this->clearUploading($data['company_id'], $data['u_id'], $data['type']);            $job->delete();
+            $this->clearUploading($data['company_id'], $data['u_id'], $data['type']);
+            $job->delete();
             return;
         }
         //执行excel导入
@@ -85,6 +86,8 @@ class UploadExcel
             $type = $data['type'];
             if ($type == "rechargeCash") {
                 return $this->uploadRechargeCash($data);
+            } else if ($type == "rechargeCashWithAccount") {
+                return $this->uploadRechargeCashWithAccount($data);
             } else if ($type == "supplement") {
                 return $this->uploadSupplement($data);
             }
@@ -104,6 +107,20 @@ class UploadExcel
         $data = (new ExcelService())->importExcel($fileName);
         $dataList = (new WalletService())->prefixSupplementUploadData($company_id, $admin_id, $data);
         $cash = (new RechargeSupplementT())->saveAll($dataList);
+        if (!$cash) {
+            return false;
+        }
+        return true;
+    }
+
+    public function uploadRechargeCashWithAccount($data)
+    {
+        $company_id = $data['company_id'];
+        $admin_id = $data['u_id'];
+        $fileName = $data['fileName'];
+        $data = (new ExcelService())->importExcel($fileName);
+        $dataList = (new WalletService())->prefixUploadDataWithAccount($company_id, $admin_id, $data);
+        $cash = (new RechargeCashT())->saveAll($dataList);
         if (!$cash) {
             return false;
         }

@@ -62,7 +62,26 @@ class WalletService
         ];
     }
 
-    public function checkData($company_id, $fileName)
+    //分账户批量充值
+    public function rechargeCashUploadWithAccount($cash_excel)
+    {
+        $company_id = Token::getCurrentTokenVar('company_id');
+        $admin_id = Token::getCurrentUid();
+        $fileName = (new ExcelService())->saveExcelReturnName($cash_excel);
+        $fail = $this->checkDataWithAccount($company_id, $fileName);
+        if (count($fail)) {
+            return [
+                'res' => false,
+                'fail' => $fail
+            ];
+        }
+        $this->uploadExcelTask($company_id, $admin_id, $fileName, "rechargeCash");
+        return [
+            'res' => true
+        ];
+    }
+
+    public function checkDataWithAccount($company_id, $fileName)
     {
         $data = (new ExcelService())->importExcel($fileName);
         $staffs = CompanyStaffT::staffs($company_id);
@@ -83,7 +102,7 @@ class WalletService
             if ($k < 2) {
                 continue;
             }
-            if (!in_array($v[0] . '&' . $v[1], $newStaffs)) {
+            if (!strlen($v[0]) || !strlen($v[1]) || !in_array($v[0] . '&' . $v[1], $newStaffs)) {
                 array_push($fail, '第' . $k . '行数据有问题');
             }
 
@@ -92,7 +111,35 @@ class WalletService
 
             }
 
-            $money = trim($v[4]);
+            $money = trim($v[3]);
+            if ($money == '') {
+                array_push($fail, '第' . $k . '行数据有问题');
+            }
+        }
+        return $fail;
+
+    }
+
+
+    public function checkData($company_id, $fileName)
+    {
+        $data = (new ExcelService())->importExcel($fileName);
+        $staffs = CompanyStaffT::staffs($company_id);
+        $newStaffs = [];
+        foreach ($staffs as $k => $v) {
+            array_push($newStaffs, $v['username'] . '&' . $v['phone']);
+        }
+
+        $fail = [];
+        foreach ($data as $k => $v) {
+            if ($k < 2) {
+                continue;
+            }
+            if (!strlen($v[0]) || !strlen($v[1]) || !in_array($v[0] . '&' . $v[1], $newStaffs)) {
+                array_push($fail, '第' . $k . '行数据有问题');
+            }
+
+            $money = trim($v[2]);
             if ($money == '') {
                 array_push($fail, '第' . $k . '行数据有问题');
             }
@@ -140,6 +187,32 @@ class WalletService
     {
         $dataList = [];
         $staffs = CompanyStaffT::staffs($company_id);
+        $newStaffs = [];
+        foreach ($staffs as $k => $v) {
+            $newStaffs[$v['phone']] = $v['id'];
+        }
+        foreach ($data as $k => $v) {
+            if ($k == 1 || empty($v[0])) {
+                continue;
+            }
+            array_push($dataList, [
+                'admin_id' => $admin_id,
+                'company_id' => $company_id,
+                'staff_id' => $newStaffs[$v[1]],
+                'username' => $v[0],
+                'phone' => $v[1],
+                'money' => $v[2],
+                'remark' => $v[3]
+            ]);
+        }
+        return $dataList;
+
+    }
+
+    public function prefixUploadDataWithAccount($company_id, $admin_id, $data)
+    {
+        $dataList = [];
+        $staffs = CompanyStaffT::staffs($company_id);
         $accounts = CompanyAccountT::accountsWithoutNonghang($company_id);
         $newStaffs = [];
         $newAccounts = [];
@@ -160,9 +233,8 @@ class WalletService
                 'account_id' => count($newAccounts) ? $newAccounts[$v[2]] : 0,
                 'username' => $v[0],
                 'phone' => $v[1],
-                'card_num' => $v[3],
-                'money' => $v[4],
-                'remark' => $v[5]
+                'money' => $v[3],
+                'remark' => $v[4]
             ]);
         }
         return $dataList;
@@ -352,7 +424,7 @@ class WalletService
     {
         if (!$staff_id) {
             $staff = CompanyStaffT::staffName($phone, $company_id);
-            $staff_id=$staff->id;
+            $staff_id = $staff->id;
         }
         $balance = UserBalanceV::userBalance2($staff_id);
         return $balance;

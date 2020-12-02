@@ -27,7 +27,7 @@ class Wallet extends BaseValidate
     ];
 
     protected $scene = [
-        'rechargeCash' => ['detail','money','account_id'],
+        'rechargeCash' => ['detail','money'],
         'rechargeSupplement' => ['canteen_id','money','staff_ids','type','consumption_date','dinner_id'],
         'rechargeAdmins' => ['module_id'],
         'rechargeRecords' => ['time_begin','time_end'],
