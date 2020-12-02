@@ -75,7 +75,7 @@ class WalletService
                 'fail' => $fail
             ];
         }
-        $this->uploadExcelTask($company_id, $admin_id, $fileName, "rechargeCash");
+        $this->uploadExcelTask($company_id, $admin_id, $fileName, "rechargeCashWithAccount");
         return [
             'res' => true
         ];
