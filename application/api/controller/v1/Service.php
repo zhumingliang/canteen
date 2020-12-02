@@ -89,12 +89,12 @@ class Service extends BaseController
     }
 
     /**
-     * @api {GET} /api/v1/service/offline/config  消费机-离线消费-获取饭堂今日订餐信息
+     * @api {GET} /api/v1/service/canteen/orders  消费机-离线消费-获取饭堂今日订餐信息
      * @apiGroup  Machine
      * @apiVersion 3.0.0
      * @apiDescription  消费机-离线消费-获取饭堂今日订餐信息
      * @apiExample {get}  请求样例:
-     * http://canteen.tonglingok.com/service/offline/config
+     * http://canteen.tonglingok.com/service/canteen/orders
      * @apiSuccessExample {json} 一次扣费返回样例:
      * {"msg":"ok","errorCode":0,"code":200,"data":[{"id":34625,"staff_id":7358,"money":"4.20","sub_money":"2.40","meal_money":"4.00","meal_sub_money":"2.20","consumption_type":"no_meals_ordered","fixed":2},{"id":34623,"staff_id":7358,"money":"6.00","sub_money":"6.60","meal_money":"3.00","meal_sub_money":"3.30","consumption_type":"no_meals_ordered","fixed":1}]}
      * @apiSuccess (返回参数说明) {int} id  订单id
