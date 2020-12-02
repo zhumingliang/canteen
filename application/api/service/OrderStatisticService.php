@@ -68,9 +68,22 @@ class OrderStatisticService
             $time_end, $page, $size, $name,
             $phone, $canteen_id, $department_id,
             $dinner_id, $type);
+        $list['data'] = $this->getTypeAttr($list['data']);
         return $list;
     }
 
+    public function getTypeAttr($data, $value = '')
+    {
+        $status = [1 => '堂食', 2 => '外卖'];
+        if ($value) {
+            return $status[$value];
+        }
+        foreach ($data as $k => $v) {
+            $data[$k]['type'] = $status[$v['type']];
+            $data[$k]['status'] = $this->getStatus($v['ordering_date'], $v['state'], $v['meal_time_end'], $v['used']);
+        }
+        return $data;
+    }
 
     public function exportOrderStatisticDetail($company_ids, $time_begin,
                                                $time_end, $name,
@@ -112,7 +125,7 @@ class OrderStatisticService
                 $data['username'] = $v['username'];
                 $data['phone'] = $v['phone'];
                 $data['dinner'] = $v['dinner'];
-                $data['type'] = $v['type'];
+                $data['type'] = $this->getTypeAttr([], $v['type']);
                 $data['count'] = Num::numToWord($v['count']) . "份";
                 $data['money'] = ($v['order_money'] - $v['delivery_fee']) / $v['count'];
                 $data['status'] = $this->getStatus($v['ordering_date'], $v['state'], $v['meal_time_end'], $v['used']);
@@ -213,7 +226,7 @@ class OrderStatisticService
             $name, $phone, $canteen_id, $department_id, $dinner_id,
             $consumption_type, $time_begin, $time_end, $company_ids, $type);
         $records = $this->prefixExportOrderSettlement($records);
-        $header = ['序号', '消费时间', '部门', '姓名', '手机号', '消费地点','账户名称', '消费类型', '餐次', '金额', '备注'];
+        $header = ['序号', '消费时间', '部门', '姓名', '手机号', '消费地点', '账户名称', '消费类型', '餐次', '金额', '备注'];
         $file_name = "消费明细报表（" . $time_begin . "-" . $time_end . "）";
         $url = (new ExcelService())->makeExcel($header, $records, $file_name);
         return [
@@ -695,9 +708,9 @@ class OrderStatisticService
         }
 
 
-
         $header = $this->addDinnerToHeader($header, $dinner, $accounts);
-        $reports = $this->prefixConsumptionStatistic($statistic, $accountRecords, $accounts, $dinner, $time_begin, $time_end);       $reportName = $fileNameArr[$status];
+        $reports = $this->prefixConsumptionStatistic($statistic, $accountRecords, $accounts, $dinner, $time_begin, $time_end);
+        $reportName = $fileNameArr[$status];
 
         $file_name = $reportName . "(" . $time_begin . "-" . $time_end . ")";
         $url = (new ExcelService())->makeExcel($header, $reports, $file_name);
@@ -849,7 +862,7 @@ class OrderStatisticService
                 if (!key_exists($v['statistic_id'], $fieldArr)) {
                     $fieldArr[$v['statistic_id']] = $v[$field];
                 }
-               // array_push($fieldArr, $v[$field]);
+                // array_push($fieldArr, $v[$field]);
 
             }
 
