@@ -24,6 +24,8 @@ use app\api\model\PayNonghangConfigT;
 use app\api\model\PayT;
 use app\api\model\RechargeCashT;
 use app\api\model\RechargeV;
+use app\api\model\StaffCardT;
+use app\api\model\StaffQrcodeT;
 use app\api\model\Submitequity;
 use app\api\model\UserBalanceV;
 use app\api\service\AccountService;
@@ -104,7 +106,16 @@ Index extends BaseController
 
     public function test($param = "")
     {
-        echo UserBalanceV::userBalance(94,'13622577573');
+        $companyStaff = CompanyStaffT::where('company_id', 118)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->select();
+        foreach ($companyStaff as $k => $v) {
+           StaffQrcodeT::update(['hour'=>1],['s_id'=>$v['id']]);
+        }
+
+        /*   echo UserBalanceV::userBalance(94,'13822329629');
+          // print_r(UserBalanceV::userBalance2(5637)) ;
+           echo UserBalanceV::userBalance2(5549);*/
 
         /*  $phone = "13702717833";
           $dinner = [155, 156];

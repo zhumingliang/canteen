@@ -5,6 +5,7 @@ namespace app\api\service;
 
 
 use app\api\model\AdminT;
+use app\api\model\CanteenAccountT;
 use app\api\model\CompanyT;
 use app\api\model\ConsumptionStrategyT;
 use app\api\model\DinnerT;
@@ -385,14 +386,17 @@ class CompanyService
     public function configForOffLine()
     {
 
-        $canteenId = Token::getCurrentTokenVar( 'belong_id');
+        $canteenId = 296;//Token::getCurrentTokenVar('belong_id');
         //1.获取饭堂所有餐次设置
         $dinners = DinnerT::dinners($canteenId);
         //2.获取饭堂消费策略
         $strategies = ConsumptionStrategyT::infoToOffLine($canteenId);
+        //获取饭堂配置
+        $accountConfig = CanteenAccountT::accountForOffLine($canteenId);
         return [
             'dinners' => $dinners,
-            'strategies' => $strategies
+            'strategies' => $strategies,
+            'canteen_config'=>$accountConfig
         ];
 
 

@@ -219,6 +219,7 @@ class UserBalanceV extends Model
         return $balance;
     }
 
+
     public static function userBalanceGroupByEffective($company_id, $phone)
         //public static function userBalanceGroupByEffective($staff_id)
     {
@@ -270,13 +271,6 @@ class UserBalanceV extends Model
                     ->where('staff_id', $staff_id)
                     ->where('status', PayEnum::PAY_SUCCESS)
                     ->where('refund', CommonEnum::STATE_IS_FAIL);
-
-            })
-            ->unionAll(function ($query) use ($staff_id) {
-                $query->table("canteen_clear_money_t")
-                    ->field('money,1 as effective')
-                    ->where('staff_id', $staff_id)
-                    ->where('state', CommonEnum::STATE_IS_OK);
 
             })
             ->unionAll(function ($query) use ($staff_id) {

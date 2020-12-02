@@ -45,14 +45,14 @@ class Service extends BaseController
     }
 
     /**
-     * @api {GET} /api/v1/service/offline/config  消费机-离线消费-获取饭堂餐次和消费策略配置
+     * @api {GET} /api/v1/service/canteen/config  消费机-离线消费-获取饭堂餐次和消费策略配置
      * @apiGroup  Machine
      * @apiVersion 3.0.0
      * @apiDescription  消费机-离线消费-获取饭堂餐次和消费策略配置
      * @apiExample {get}  请求样例:
-     * http://canteen.tonglingok.com/service/offline/config
+     * http://canteen.tonglingok.com/service/canteen/config
      * @apiSuccessExample {json} 返回样例:
-     * {"msg":"ok","errorCode":0,"code":200,"data":{"dinners":[{"id":417,"c_id":296,"name":"早餐","type":"day","create_time":"2020-11-16 15:57:01","type_number":1,"meal_time_begin":"06:00","meal_time_end":"08:30","limit_time":"17:00:00","fixed":1},{"id":418,"c_id":296,"name":"晚餐","type":"day","create_time":"2020-11-16 15:57:01","type_number":1,"meal_time_begin":"17:25","meal_time_end":"18:20","limit_time":"17:00:00","fixed":1}],"strategies":[{"id":714,"c_id":296,"t_id":101,"d_id":417,"unordered_meals":1,"detail":[{"number":1,"strategy":[{"number":1,"status":"ordering_meals","money":"0","sub_money":"0"},{"number":1,"status":"no_meals_ordered","sub_money":"0","money":"0"},{"number":1,"status":"unordered_meals","sub_money":"0","money":"4"}]}],"consumption_count":1,"ordered_count":0,"consumption_type":1},{"id":715,"c_id":296,"t_id":101,"d_id":418,"unordered_meals":1,"detail":[{"number":1,"strategy":[{"number":1,"status":"ordering_meals","sub_money":"0","money":"0"},{"number":1,"status":"no_meals_ordered","sub_money":"0","money":"0"},{"number":1,"status":"unordered_meals","sub_money":"0","money":"5"}]}],"consumption_count":1,"ordered_count":0,"consumption_type":1}]}}
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"dinners":[{"id":417,"c_id":296,"name":"早餐","type":"day","create_time":"2020-11-16 15:57:01","type_number":1,"meal_time_begin":"06:00","meal_time_end":"08:30","limit_time":"17:00:00","fixed":1},{"id":418,"c_id":296,"name":"晚餐","type":"day","create_time":"2020-11-16 15:57:01","type_number":1,"meal_time_begin":"17:25","meal_time_end":"18:20","limit_time":"17:00:00","fixed":1}],"strategies":[{"id":714,"c_id":296,"t_id":101,"d_id":417,"unordered_meals":1,"detail":[{"number":1,"strategy":[{"number":1,"status":"ordering_meals","money":"0","sub_money":"0"},{"number":1,"status":"no_meals_ordered","sub_money":"0","money":"0"},{"number":1,"status":"unordered_meals","sub_money":"0","money":"4"}]}],"consumption_count":1,"ordered_count":0,"consumption_type":1},{"id":715,"c_id":296,"t_id":101,"d_id":418,"unordered_meals":1,"detail":[{"number":1,"strategy":[{"number":1,"status":"ordering_meals","sub_money":"0","money":"0"},{"number":1,"status":"no_meals_ordered","sub_money":"0","money":"0"},{"number":1,"status":"unordered_meals","sub_money":"0","money":"5"}]}],"consumption_count":1,"ordered_count":0,"consumption_type":1}],"canteen_config":{"type":2,"limit_money":"0.00"}}}
      * @apiSuccess (返回参数说明) {string} dinners  订餐信息json字符串
      * @apiSuccess (返回参数说明) {string} id  餐次id
      * @apiSuccess (返回参数说明) {string} name  餐次名称
@@ -78,6 +78,9 @@ class Service extends BaseController
      * @apiSuccess (返回参数说明) {string}  status  消费状态：ordering_meals：订餐就餐；no_meals_ordered：订餐未就餐；unordered_meals：未订餐就餐
      * @apiSuccess (返回参数说明) {float}  money 标准金额
      * @apiSuccess (返回参数说明) {float}  sub_money  附加金额
+     * @apiSuccess (返回参数说明) {obj}  canteen_config  饭堂配置信息
+     * @apiSuccess (返回参数说明) {int}  type  消费类别：1:可透支消费；2:不可透支消费
+     * @apiSuccess (返回参数说明) {float}  limit_money  可预消费金额
      */
     public function configForOffLine()
     {
