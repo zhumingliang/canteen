@@ -5,6 +5,7 @@ namespace app\api\model;
 
 
 use app\lib\enum\CommonEnum;
+use think\Db;
 use think\Model;
 
 class OrderStatisticV extends Model
@@ -13,6 +14,12 @@ class OrderStatisticV extends Model
     {
         $status = [1 => '堂食', 2 => '外卖'];
         return $status[$value];
+    }
+
+    public function getSql($time_begin, $time_end, $company_ids, $canteen_id)
+    {
+
+
     }
 
     public function getStatusAttr($value, $data)
@@ -175,7 +182,7 @@ class OrderStatisticV extends Model
                     $query->where('type', $type);
                 }
             })
-            ->where('booking',CommonEnum::STATE_IS_OK)
+            ->where('booking', CommonEnum::STATE_IS_OK)
             ->field('order_id,ordering_date,username,canteen,department,dinner,type,ordering_type,state,meal_time_end,used,phone,count,order_money,consumption_type,delivery_fee')
             ->order('ordering_date DESC')
             ->select()->toArray();

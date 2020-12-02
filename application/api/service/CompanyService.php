@@ -386,7 +386,7 @@ class CompanyService
     public function configForOffLine()
     {
 
-        $canteenId = 296;//Token::getCurrentTokenVar('belong_id');
+        $canteenId = Token::getCurrentTokenVar('belong_id');
         //1.获取饭堂所有餐次设置
         $dinners = DinnerT::dinners($canteenId);
         //2.获取饭堂消费策略
