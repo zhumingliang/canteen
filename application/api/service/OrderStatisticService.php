@@ -238,7 +238,7 @@ class OrderStatisticService
             $name, $phone, $canteen_id, $department_id, $dinner_id,
             $consumption_type, $time_begin, $time_end, $company_ids, $type);
         $records = $this->prefixExportOrderSettlement($records);
-        $header = ['序号', '消费时间', '部门', '姓名', '手机号', '消费地点', '消费类型', '餐次', '金额', '备注'];
+        $header = ['序号','消费日期', '消费时间', '部门', '姓名', '手机号', '消费地点', '消费类型', '餐次', '金额', '备注'];
         $file_name = "消费明细报表（" . $time_begin . "-" . $time_end . "）";
         $url = (new ExcelService())->makeExcel($header, $records, $file_name);
         return [
@@ -254,7 +254,7 @@ class OrderStatisticService
             $name, $phone, $canteen_id, $department_id, $dinner_id,
             $consumption_type, $time_begin, $time_end, $company_ids, $type);
         $records = $this->prefixExportOrderSettlementWithAccount($records);
-        $header = ['序号', '消费时间', '部门', '姓名', '手机号', '消费地点', '账户名称', '消费类型', '餐次', '金额', '备注'];
+        $header = ['序号', '消费日期','消费时间', '部门', '姓名', '手机号', '消费地点', '账户名称', '消费类型', '餐次', '金额', '备注'];
         $file_name = "消费明细报表（" . $time_begin . "-" . $time_end . "）";
         $url = (new ExcelService())->makeExcel($header, $records, $file_name);
         return [
@@ -289,6 +289,7 @@ class OrderStatisticService
                 }
                 array_push($dataList, [
                     'number' => $k + 1,
+                    'ordering_date' => $v['ordering_date'],
                     'used_time' => $v['used_time'],
                     'department' => $v['department'],
                     'username' => $v['username'],
@@ -332,6 +333,7 @@ class OrderStatisticService
                 }
                 array_push($dataList, [
                     'number' => $k + 1,
+                    'consumptionDate' => $v['ordering_date'],
                     'used_time' => $v['used_time'],
                     'department' => $v['department'],
                     'username' => $v['username'],

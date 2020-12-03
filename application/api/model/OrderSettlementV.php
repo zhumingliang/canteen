@@ -494,7 +494,7 @@ class OrderSettlementV extends Model
                     }
                 }
 
-            })->field('used_time,department,username,phone,canteen,dinner,booking,used,type,money,remark,consumption_type')
+            })->field('ordering_date,used_time,department,username,phone,canteen,dinner,booking,used,type,money,remark,consumption_type')
             ->order('ordering_date DESC,phone')
             ->select()->toArray();
         return $list;
@@ -551,7 +551,7 @@ class OrderSettlementV extends Model
                     }
                 }
 
-            })->field('used_time,department,username,phone,canteen,account,dinner,booking,used,type,money,remark,consumption_type')
+            })->field('ordering_date,used_time,department,username,phone,canteen,account,dinner,booking,used,type,money,remark,consumption_type')
             ->order('ordering_date DESC,phone')
             ->select()->toArray();
         return $list;
