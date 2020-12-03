@@ -111,6 +111,84 @@ class UserBalanceV extends Model
         return $sql;
     }
 
+    public static function getSqlForStaffsBalance($companyId)
+    {
+        $sql = Db::table('canteen_company_staff_t')
+            ->alias('b')
+            ->field('0 as money,b.id as staff_id,b.username,b.code,c.card_code as card_num,b.phone,d.name as department')
+            ->where('b.company_id', $companyId)
+            ->leftJoin('canteen_staff_card_t c', "b.id=c.staff_id and c.state<3")
+            ->leftJoin('canteen_company_department_t d', "b.d_id=d.id")
+            ->unionAll(function ($query) use ($companyId) {
+                $query->table('canteen_order_t')
+                    ->alias('a')
+                    ->field('(0-a.money-a.sub_money-a.delivery_fee) as money,a.staff_id,b.username,b.code,c.card_code as card_num,b.phone,d.name as department')
+                    ->where('a.company_id', $companyId)
+                    ->where('a.state', CommonEnum::STATE_IS_OK)
+                    ->where('a.pay', PayEnum::PAY_SUCCESS)
+                    ->leftJoin('canteen_company_staff_t b', "a.staff_id=b.id")
+                    ->leftJoin('canteen_staff_card_t c', "b.id=c.staff_id and c.state<3")
+                    ->leftJoin('canteen_company_department_t d', "b.d_id=d.id");
+            })
+            ->unionAll(function ($query) use ($companyId) {
+                $query->table("canteen_order_parent_t")
+                    ->alias('a')
+                    ->field('(0-a.money-a.sub_money-a.delivery_fee) as money,a.staff_id,b.username,b.code,c.card_code as card_num,b.phone,d.name as department')
+                    ->where('a.company_id', $companyId)
+                    ->where('a.state', CommonEnum::STATE_IS_OK)
+                    ->where('a.pay', PayEnum::PAY_SUCCESS)
+                    ->leftJoin('canteen_company_staff_t b', "a.staff_id=b.id")
+                    ->leftJoin('canteen_staff_card_t c', "b.id=c.staff_id and c.state<3")
+                    ->leftJoin('canteen_company_department_t d', "b.d_id=d.id");
+            })
+            ->unionAll(function ($query) use ($companyId) {
+                $query->table("canteen_shop_order_t")
+                    ->alias('a')
+                    ->field('(0-a.money) as money,a.staff_id,b.username,b.code,c.card_code as card_num,b.phone,d.name as department')
+                    ->where('a.company_id', $companyId)
+                    ->where('a.state', CommonEnum::STATE_IS_OK)
+                    ->where('a.pay', PayEnum::PAY_SUCCESS)
+                    ->leftJoin('canteen_company_staff_t b', "a.staff_id=b.id")
+                    ->leftJoin('canteen_staff_card_t c', "b.id=c.staff_id and c.state<3")
+                    ->leftJoin('canteen_company_department_t d', "b.d_id=d.id");
+            })
+            ->unionAll(function ($query) use ($companyId) {
+                $query->table("canteen_recharge_supplement_t")
+                    ->alias('a')
+                    ->field('a.money,a.staff_id,b.username,b.code,c.card_code as card_num,b.phone,d.name as department')
+                    ->where('a.company_id', $companyId)
+                    ->leftJoin('canteen_company_staff_t b', "a.staff_id=b.id")
+                    ->leftJoin('canteen_staff_card_t c', "b.id=c.staff_id and c.state<3")
+                    ->leftJoin('canteen_company_department_t d', "b.d_id=d.id");
+
+            })
+            ->unionAll(function ($query) use ($companyId) {
+                $query->table("canteen_pay_t")
+                    ->alias('a')
+                    ->field('a.money,a.staff_id,b.username,b.code,c.card_code as card_num,b.phone,d.name as department')
+                    ->where('a.company_id', $companyId)
+                    ->where('a.status', PayEnum::PAY_SUCCESS)
+                    ->where('a.refund', CommonEnum::STATE_IS_FAIL)
+                    ->leftJoin('canteen_company_staff_t b', "a.staff_id=b.id")
+                    ->leftJoin('canteen_staff_card_t c', "b.id=c.staff_id and c.state<3")
+                    ->leftJoin('canteen_company_department_t d', "b.d_id=d.id");
+
+            })
+            ->unionAll(function ($query) use ($companyId) {
+                $query->table("canteen_recharge_cash_t")
+                    ->alias('a')
+                    ->field('a.money,a.staff_id,b.username,b.code,c.card_code as card_num,b.phone,d.name as department')
+                    ->where('a.company_id', $companyId)
+                    ->where('a.state', CommonEnum::STATE_IS_OK)
+                    ->leftJoin('canteen_company_staff_t b', "a.staff_id=b.id")
+                    ->leftJoin('canteen_staff_card_t c', "b.id=c.staff_id and c.state<3")
+                    ->leftJoin('canteen_company_department_t d', "b.d_id=d.id");
+
+            })->buildSql();
+        return $sql;
+    }
+
+
     public function getBalanceAttr($value)
     {
         return round($value, 2);
@@ -118,25 +196,50 @@ class UserBalanceV extends Model
 
     public static function usersBalance($page, $size, $department_id, $user, $phone, $company_id)
     {
-        $orderings = self::where('company_id', $company_id)
+        /* $orderings = self::where('company_id', $company_id)
+             ->where(function ($query) use ($department_id) {
+                 if (!empty($department_id)) {
+                     $query->where('department_id', $department_id);
+                 }
+             })
+             ->where(function ($query) use ($phone) {
+                 if (!empty($phone)) {
+                     $query->where('phone', $phone);
+                 }
+             })
+             ->where(function ($query) use ($user) {
+                 if (!empty($user)) {
+                     $query->where('username|code|card_num', 'like', '%' . $user . '%');
+                 }
+             })
+             ->field('username,code,card_num,phone,department,sum(money) as balance')
+             ->group('phone,company_id')
+             ->paginate($size, false, ['page' => $page]);*/
+
+        // return $orderings;
+        $sql = self::getSqlForStaffsBalance($company_id);
+        //return $sql;
+        $orderings = Db::table($sql . 'a')
             ->where(function ($query) use ($department_id) {
                 if (!empty($department_id)) {
-                    $query->where('department_id', $department_id);
+                    $query->where('a.department_id', $department_id);
                 }
             })
             ->where(function ($query) use ($phone) {
                 if (!empty($phone)) {
-                    $query->where('phone', $phone);
+                    $query->where('a.phone', $phone);
                 }
             })
             ->where(function ($query) use ($user) {
                 if (!empty($user)) {
-                    $query->where('username|code|card_num', 'like', '%' . $user . '%');
+                    $query->where('a.username|a.code|a.card_num', 'like', '%' . $user . '%');
                 }
             })
-            ->field('username,code,card_num,phone,department,sum(money) as balance')
-            ->group('phone,company_id')
-            ->paginate($size, false, ['page' => $page]);
+            ->field('a.staff_id,a.username,a.code,a.card_num,a.phone,a.department,sum(a.money) as balance')
+            ->group('a.staff_id')
+            ->order('a.staff_id')
+            ->paginate($size, false, ['page' => $page])->toArray();
+
         return $orderings;
     }
 

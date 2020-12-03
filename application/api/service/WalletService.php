@@ -261,7 +261,7 @@ class WalletService
     public function rechargeRecords($time_begin, $time_end,
                                     $page, $size, $type, $admin_id, $username)
     {
-        $company_id = Token::getCurrentTokenVar('company_id');
+        $company_id = 94;//Token::getCurrentTokenVar('company_id');
         $records = RechargeV::rechargeRecords($time_begin, $time_end,
             $page, $size, $type, $admin_id, $username, $company_id);
         return $records;
@@ -269,6 +269,19 @@ class WalletService
     }
 
     public function exportRechargeRecords($time_begin, $time_end, $type, $admin_id, $username)
+    {
+        $company_id = Token::getCurrentTokenVar('company_id');
+        $records = RechargeV::exportRechargeRecords($time_begin, $time_end, $type, $admin_id, $username, $company_id);
+        $header = ['创建时间', '姓名', '充值金额', '充值途径', '充值人员', '备注'];
+        $file_name = $time_begin . "-" . $time_end . "-充值记录明细";
+        $url = (new ExcelService())->makeExcel($header, $records, $file_name);
+        return [
+            'url' => config('setting.domain') . $url
+        ];
+
+    }
+
+    public function exportRechargeRecordsWithAccount($time_begin, $time_end, $type, $admin_id, $username)
     {
         $company_id = Token::getCurrentTokenVar('company_id');
         $records = RechargeV::exportRechargeRecords($time_begin, $time_end, $type, $admin_id, $username, $company_id);
@@ -283,9 +296,23 @@ class WalletService
 
     public function usersBalance($page, $size, $department_id, $user, $phone)
     {
+        $company_id = 120;//Token::getCurrentTokenVar('company_id');
+        $balance = UserBalanceV::usersBalance($page, $size, $department_id, $user, $phone, $company_id);
+        $data = $balance['data'];
+        foreach ($data as $k => $v) {
+            if ($v['staff_id'] == 0) {
+                unset($data[$k]);
+            }
+        }
+        $balance['data'] = $data;
+        return $balance;
+    }
+
+    public function usersBalanceWithAccount($page, $size, $department_id, $user, $phone)
+    {
         $company_id = Token::getCurrentTokenVar('company_id');
         $accounts = CompanyAccountT::accountsWithSorts($company_id);
-        $staffs = CompanyStaffT::staffsForBalance($page, $size, $department_id, $user, $phone, $company_id);
+        $staffs = CompanyStaffT::staffsForBalanceWithAccount($page, $size, $department_id, $user, $phone, $company_id);
         $staffs['data'] = $this->prefixAccount($staffs['data'], $accounts);
         return $staffs;
     }
@@ -317,24 +344,6 @@ class WalletService
                         }
                     }
                 }
-                $pay = $v['pay'];
-                if (count($pay)) {
-                    foreach ($staffCountData as $k2 => $v2) {
-                        foreach ($pay as $k3 => $v3) {
-                            if ($v3['method_id'] == PayEnum::PAY_METHOD_WX && ($v2['type'] == 1 && $v2['fixed_type'] == 1)) {
-                                $staffCountData[$k2]['balance'] += $v3['money'];
-                                break;
-                            }
-
-                            if ($v3['method_id'] == PayEnum::PAY_METHOD_NH && ($v2['type'] == 1 && $v2['fixed_type'] == 2)) {
-                                $staffCountData[$k2]['balance'] += $v3['money'];
-                                break;
-                            }
-
-                        }
-                    }
-                }
-
                 $staffs[$k]['account'] = $staffCountData;
                 unset($staffs[$k]['pay']);
             }
