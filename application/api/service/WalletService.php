@@ -472,7 +472,7 @@ class WalletService
                 'consumption_date' => $params['consumption_date'],
                 'remark' => empty($params['remark']) ? '' : $params['remark'],
                 'dinner_id' => $params['dinner_id'],
-                'account_id' => $params['account_id']
+                'account_id' => empty($params['account_id']) ? 0 : $params['account_id']
             ];
             array_push($dataList, $data);
         }
@@ -480,6 +480,27 @@ class WalletService
         if (!$supplement) {
             throw new SaveException();
         }
+    }
+
+
+
+    public function rechargeSupplementUploadWithAccount($supplement_excel)
+    {
+        $company_id = Token::getCurrentTokenVar('company_id');
+        $admin_id = Token::getCurrentUid();
+        $fileName = (new ExcelService())->saveExcelReturnName($supplement_excel);
+        //$fileName = dirname($_SERVER['SCRIPT_FILENAME']) . '/static/excel/upload/test.xlsx';
+        $fail = $this->checkSupplementDataWithAccount($company_id, $fileName);
+        if (count($fail)) {
+            return [
+                'res' => false,
+                'fail' => $fail
+            ];
+        }
+        $this->uploadExcelTask($company_id, $admin_id, $fileName, "supplementWithAccount");
+        return [
+            'res' => true
+        ];
     }
 
     public function rechargeSupplementUpload($supplement_excel)
@@ -501,7 +522,8 @@ class WalletService
         ];
     }
 
-    private function checkSupplementData($company_id, $fileName)
+
+    private function checkSupplementDataWithAccount($company_id, $fileName)
     {
         $newCanteen = [];
         $canteens = (new CanteenService())->companyCanteens($company_id);
@@ -551,6 +573,45 @@ class WalletService
         return $fail;
     }
 
+
+  private function checkSupplementData($company_id, $fileName)
+    {
+        $newCanteen = [];
+        $canteens = (new CanteenService())->companyCanteens($company_id);
+        $dinners = DinnerV::companyDinners($company_id);
+        $staffs = CompanyStaffT::staffs($company_id);
+
+        foreach ($canteens as $k => $v) {
+            array_push($newCanteen, $v['name']);
+        }
+        if (!count($newCanteen) || !count($dinners)) {
+            throw  new  SaveException(['msg' => '企业饭堂或者餐次设置异常']);
+        }
+        $newStaffs = [];
+        foreach ($staffs as $k => $v) {
+            array_push($newStaffs, $v['username'] . '&' . $v['phone']);
+        }
+        $fail = [];
+        $data = (new ExcelService())->importExcel($fileName);
+        foreach ($data as $k => $v) {
+            if ($k < 2) {
+                continue;
+            }
+            $checkData = $v[0] . '&' . $v[1];
+            if (!in_array($checkData, $newStaffs) ||
+                !in_array($v[2], $newCanteen) || !$this->checkDinnerInCanteen($v[2], $v[4], $dinners)) {
+                array_push($fail, '第' . $k . '行数据有问题');
+                break;
+            }
+            if (strtotime($v[3]) > strtotime(\date('Y-m-d')) || $v[6] < 0) {
+                array_push($fail, '第' . $k . '行数据有问题');
+                break;
+            }
+
+        }
+        return $fail;
+    }
+
     private function checkDinnerInCanteen($canteen, $dinner, $dinners)
     {
         foreach ($dinners as $k => $v) {
@@ -564,6 +625,49 @@ class WalletService
     }
 
     public function prefixSupplementUploadData($company_id, $admin_id, $data)
+    {
+        $dataList = [];
+        $canteens = (new CanteenService())->companyCanteens($company_id);
+        $dinners = DinnerV::companyDinners($company_id);
+        $staffs = CompanyStaffT::staffs($company_id);
+        $accounts = CompanyAccountT::accountsWithoutNonghang($company_id);
+
+        $newStaffs = [];
+        $newCanteen = [];
+
+        foreach ($staffs as $k => $v) {
+            $newStaffs[$v['phone']] = $v['id'];
+        }
+        foreach ($canteens as $k => $v) {
+            $newCanteen[$v['name']] = $v['id'];
+        }
+        foreach ($data as $k => $v) {
+            if ($k == 1) {
+                continue;
+            }
+            array_push($dataList, [
+                'admin_id' => $admin_id,
+                'company_id' => $company_id,
+                'staff_id' => $newStaffs[$v[1]],
+                'source' => 'upload',
+                'code' => '',
+                'username' => $v[0],
+                'card_num' => '',
+                'phone' => $v[1],
+                'canteen' => $v[2],
+                'canteen_id' => $newCanteen[$v[2]],
+                'consumption_date' => $this->getConsumptionDate($v[3]),
+                'dinner_id' => $this->getDinnerID($dinners, $newCanteen[$v[2]], $v[4]),
+                'dinner' => $v[4],
+                'type' => $v[5] == "补扣" ? 2 : 1,
+                'money' => $v[5] == "补扣" ? 0 - $v[6] : $v[6]
+            ]);
+        }
+
+        return $dataList;
+    }
+
+    public function prefixSupplementUploadDataWithAccount($company_id, $admin_id, $data)
     {
         $dataList = [];
         $canteens = (new CanteenService())->companyCanteens($company_id);
@@ -595,10 +699,8 @@ class WalletService
                 'staff_id' => $newStaffs[$v[1]],
                 'account_id' => count($newAccounts) ? $newAccounts[$v[6]] : 0,
                 'source' => 'upload',
-                //'code' => $v[0],
                 'code' => '',
                 'username' => $v[0],
-                //'card_num' => $v[2],
                 'card_num' => '',
                 'phone' => $v[1],
                 'canteen' => $v[2],

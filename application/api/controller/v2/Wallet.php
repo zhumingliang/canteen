@@ -95,7 +95,6 @@ class Wallet
 
     }
 
-
     /**
      * @api {GET} /api/v2/wallet/users/balance/export CMS管理端-充值管理（分账）-饭卡余额查询-导出报表
      * @apiGroup  CMS
@@ -118,4 +117,26 @@ class Wallet
         return json(new SuccessMessageWithData(['data' => $users]));
 
     }
+
+    /**
+     * @api {POST}  /api/v2/wallet/supplement/upload CMS管理端--设置--补录管理（账户）--批量充值
+     * @apiGroup  CMS
+     * @apiVersion 3.0.0
+     * @apiDescription  用file控件上传excel ，文件名称为：supplement
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200}
+     * @apiSuccess (返回参数说明) {int} error_code 错误代码 0 表示没有错误
+     * @apiSuccess (返回参数说明) {String} msg 操作结果描述
+     */
+    public function rechargeSupplementUpload()
+    {
+        $supplement_excel = request()->file('supplement');
+        if (is_null($supplement_excel)) {
+            throw  new ParameterException(['msg' => '缺少excel文件']);
+        }
+        $res = (new WalletService())->rechargeSupplementUploadWithAccount($supplement_excel);
+        return json(new SuccessMessageWithData(['data' => $res]));
+    }
+
+
 }
