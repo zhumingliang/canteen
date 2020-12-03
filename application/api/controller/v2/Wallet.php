@@ -58,7 +58,6 @@ class Wallet
 
     }
 
-
     /**
      * @api {GET} /api/v2/wallet/users/balance CMS管理端-充值管理(分账)-饭卡余额查询
      * @apiGroup  CMS
@@ -97,4 +96,26 @@ class Wallet
     }
 
 
+    /**
+     * @api {GET} /api/v2/wallet/users/balance/export CMS管理端-充值管理（分账）-饭卡余额查询-导出报表
+     * @apiGroup  CMS
+     * @apiVersion 3.0.0
+     * @apiDescription CMS管理端-充值管理-饭卡余额查询-导出报表
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v2/wallet/users/balance/export?&department_id=0&user&phone=
+     * @apiParam (请求参数说明) {String} user 人员信息
+     * @apiParam (请求参数说明) {String} phone 手机号
+     * @apiParam (请求参数说明) {int} department_id 部门id，全部传0
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"url":"http:\/\/canteen.tonglingok.com\/static\/excel\/download\/材料价格明细_20190817005931.xls"}}
+     * @apiSuccess (返回参数说明) {int} error_code 错误代码 0 表示没有错误
+     * @apiSuccess (返回参数说明) {string} msg 操作结果描述
+     * @apiSuccess (返回参数说明) {string} url 下载地址
+     */
+    public function exportUsersBalance($department_id = 0, $user = '', $phone = '')
+    {
+        $users = (new WalletService())->exportUsersBalanceWithAccount($department_id, $user, $phone);
+        return json(new SuccessMessageWithData(['data' => $users]));
+
+    }
 }

@@ -246,7 +246,7 @@ class UserBalanceV extends Model
 
     public static function exportUsersBalance($department_id, $user, $phone, $company_id)
     {
-        $orderings = self::where('company_id', $company_id)
+       /* $orderings = self::where('company_id', $company_id)
             ->where(function ($query) use ($department_id) {
                 if (!empty($department_id)) {
                     $query->where('department_id', $department_id);
@@ -264,6 +264,29 @@ class UserBalanceV extends Model
             })
             ->field('username,code,card_num,phone,department,sum(money) as balance')
             ->group('phone,company_id')
+            ->select()->toArray();*/
+
+
+        $sql = self::getSqlForStaffsBalance($company_id);
+        $orderings = Db::table($sql . 'a')
+            ->where(function ($query) use ($department_id) {
+                if (!empty($department_id)) {
+                    $query->where('a.department_id', $department_id);
+                }
+            })
+            ->where(function ($query) use ($phone) {
+                if (!empty($phone)) {
+                    $query->where('a.phone', $phone);
+                }
+            })
+            ->where(function ($query) use ($user) {
+                if (!empty($user)) {
+                    $query->where('a.username|a.code|a.card_num', 'like', '%' . $user . '%');
+                }
+            })
+            ->field('a.username,a.code,a.card_num,a.phone,a.department,sum(a.money) as balance')
+            ->group('a.staff_id')
+            ->order('a.staff_id')
             ->select()->toArray();
         return $orderings;
     }

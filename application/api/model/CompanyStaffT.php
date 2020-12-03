@@ -238,7 +238,7 @@ class CompanyStaffT extends Model
             })
             ->where(function ($query) use ($user) {
                 if (!empty($user)) {
-                    $query->where('username|code|card_num', 'like', '%' . $user . '%');
+                    $query->where('username|code', 'like', '%' . $user . '%');
                 }
             })
             ->with([
@@ -250,11 +250,11 @@ class CompanyStaffT extends Model
                         ->field('staff_id,account_id,sum(money) as money')
                         ->group('account_id');
                 },
-                'pay' => function ($query) {
-                    $query->where('status', PayEnum::PAY_SUCCESS)
-                        ->where('refund', CommonEnum::STATE_IS_FAIL)
-                        ->field('staff_id,method_id,sum(money) as money')
-                        ->group('method_id');
+                'card' => function ($query) use ($user) {
+                    $query->where(function ($query) use ($user) {
+                        $query->where('card_code', 'like', '%' . $user . '%');
+
+                    })->field('id,staff_id,card_code')->whereIn('state', '1,2');
                 }
             ])
             ->field('id,d_id,username,code,card_num,phone')
