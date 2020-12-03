@@ -218,6 +218,18 @@ class OrderStatisticService
         return $records;
     }
 
+    public function orderSettlementWithAccount($page, $size,
+                                               $name, $phone, $canteen_id, $department_id, $dinner_id,
+                                               $consumption_type, $time_begin, $time_end, $company_ids, $type)
+    {
+        $records = OrderSettlementV::orderSettlementWithAccount($page, $size,
+            $name, $phone, $canteen_id, $department_id, $dinner_id,
+            $consumption_type, $time_begin, $time_end, $company_ids, $type);
+
+        $records['data'] = $this->prefixSettlementConsumptionType($records['data']);
+        return $records;
+    }
+
     public function exportOrderSettlement(
         $name, $phone, $canteen_id, $department_id, $dinner_id,
         $consumption_type, $time_begin, $time_end, $company_ids, $type)
@@ -226,12 +238,71 @@ class OrderStatisticService
             $name, $phone, $canteen_id, $department_id, $dinner_id,
             $consumption_type, $time_begin, $time_end, $company_ids, $type);
         $records = $this->prefixExportOrderSettlement($records);
+        $header = ['序号', '消费时间', '部门', '姓名', '手机号', '消费地点', '消费类型', '餐次', '金额', '备注'];
+        $file_name = "消费明细报表（" . $time_begin . "-" . $time_end . "）";
+        $url = (new ExcelService())->makeExcel($header, $records, $file_name);
+        return [
+            'url' => config('setting.domain') . $url
+        ];
+    }
+
+    public function exportOrderSettlementWithAccount(
+        $name, $phone, $canteen_id, $department_id, $dinner_id,
+        $consumption_type, $time_begin, $time_end, $company_ids, $type)
+    {
+        $records = OrderSettlementV::exportOrderSettlementWithAccount(
+            $name, $phone, $canteen_id, $department_id, $dinner_id,
+            $consumption_type, $time_begin, $time_end, $company_ids, $type);
+        $records = $this->prefixExportOrderSettlementWithAccount($records);
         $header = ['序号', '消费时间', '部门', '姓名', '手机号', '消费地点', '账户名称', '消费类型', '餐次', '金额', '备注'];
         $file_name = "消费明细报表（" . $time_begin . "-" . $time_end . "）";
         $url = (new ExcelService())->makeExcel($header, $records, $file_name);
         return [
             'url' => config('setting.domain') . $url
         ];
+    }
+
+    private function prefixExportOrderSettlementWithAccount($data)
+    {
+        ($data);
+        $dataList = [];
+        if (count($data)) {
+            foreach ($data as $k => $v) {
+                if ($v['type'] == 'recharge') {
+                    $data[$k]['consumption_type'] = "系统补充";
+                } else if ($v['type'] == 'deduction') {
+                    $data[$k]['consumption_type'] = "系统补扣";
+                } else if ($v['type'] == 'shop') {
+                    if ($v['money'] > 0) {
+                        $data[$k]['consumption_type'] = "小卖部消费";
+                    } else {
+                        $data[$k]['consumption_type'] = "小卖部退款";
+                    }
+                    $data[$k]['money'] = sprintf("%.2f", abs($v['money']));
+
+                } else if ($v['type'] == 'canteen') {
+                    if ($v['booking'] == CommonEnum::STATE_IS_OK) {
+                        $data[$k]['consumption_type'] = $v['used'] == CommonEnum::STATE_IS_OK ? "订餐就餐" : "订餐未就餐";
+                    } else {
+                        $data[$k]['consumption_type'] = "未订餐就餐";
+                    }
+                }
+                array_push($dataList, [
+                    'number' => $k + 1,
+                    'used_time' => $v['used_time'],
+                    'department' => $v['department'],
+                    'username' => $v['username'],
+                    'phone' => $v['phone'],
+                    'canteen' => $v['canteen'],
+                    'account' => $v['account'],
+                    'consumption_type' => $data[$k]['consumption_type'],
+                    'dinner' => $v['dinner'],
+                    'money' => sprintf("%.2f", abs($v['money'])),
+                    'remark' => $v['remark']
+                ]);
+            }
+        }
+        return $dataList;
     }
 
     private function prefixExportOrderSettlement($data)
@@ -266,7 +337,6 @@ class OrderStatisticService
                     'username' => $v['username'],
                     'phone' => $v['phone'],
                     'canteen' => $v['canteen'],
-                    'account' => $v['account'],
                     'consumption_type' => $data[$k]['consumption_type'],
                     'dinner' => $v['dinner'],
                     'money' => sprintf("%.2f", abs($v['money'])),

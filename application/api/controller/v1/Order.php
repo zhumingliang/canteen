@@ -982,7 +982,6 @@ class Order extends BaseController
      * @apiSuccess (返回参数说明) {string} department 部门
      * @apiSuccess (返回参数说明) {string} name 用户姓名
      * @apiSuccess (返回参数说明) {string} dinner 餐次
-     * @apiSuccess (返回参数说明) {string} account 账户明细
      * @apiSuccess (返回参数说明) {string} consumption_type
      */
     public function orderSettlement($page = 1, $size = 20, $name = '',
