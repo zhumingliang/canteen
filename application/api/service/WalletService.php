@@ -298,13 +298,13 @@ class WalletService
     {
         $company_id = Token::getCurrentTokenVar('company_id');
         $balance = UserBalanceV::usersBalance($page, $size, $department_id, $user, $phone, $company_id);
-        $data = $balance['data'];
+       /* $data = $balance['data'];
         foreach ($data as $k => $v) {
             if ($v['staff_id'] == 0) {
                 unset($data[$k]);
             }
         }
-        $balance['data'] = $data;
+        $balance['data'] = $data;*/
         return $balance;
     }
 
