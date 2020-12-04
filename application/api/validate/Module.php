@@ -16,6 +16,7 @@ class Module extends BaseValidate
         'shop' => 'require',
         'canteen' => 'require',
         'parent_id' => 'require',
+        'state' => 'require|in:1,2,3',
         'type' => 'require|in:1,2,3',
         'default' => 'require|in:1,2'
     ];
