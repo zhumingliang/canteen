@@ -59,15 +59,15 @@ class Pos extends BaseController
         //设置查询当天扣款笔数和金额的开始时间,因为当天24点后就是第二天，所以不需要再设置结束时间
         $start = date('Y-m-d');
         //接收企业id
-        $company_id=Request::param('company_id');
+        $company_id = Request::param('company_id');
 
         //扣款笔数等于count订餐数量字段总数
-        $sql = "select count(count) as count from canteen_shop_order_t where date_format(create_time,'%Y-%m-%d') ='" . $start . "' and money>0 and company_id='".$company_id."'";
+        $sql = "select count(count) as count from canteen_shop_order_t where date_format(create_time,'%Y-%m-%d') ='" . $start . "' and money>0 and company_id='" . $company_id . "'";
 
         $total = Db::query($sql);
         //金额等于每笔订单的金额大于0的总数
 
-        $SQL = "select ifnull(sum(money),0) as sum from canteen_shop_order_t where date_format(create_time,'%Y-%m-%d') = '" . $start."' and company_id='".$company_id."'";
+        $SQL = "select ifnull(sum(money),0) as sum from canteen_shop_order_t where date_format(create_time,'%Y-%m-%d') = '" . $start . "' and company_id='" . $company_id . "'";
 
         $money = Db::query($SQL);
         $data = [['count' => $total[0]['count'],
@@ -308,12 +308,12 @@ class Pos extends BaseController
             $lastData = db('shop_order_t')
                 ->where('staff_id', $staff_id)
                 ->whereExp('money', '>0')
+                ->field('id,money,company_id')
                 ->order('id desc')
-                ->limit(1)
-                ->field('id,money')
                 ->find();
             $lastMoney = $lastData['money'];
             $id = $lastData['id'];
+            $company_id = $lastData['company_id'];
             $refundMoney = str_replace("-", "", $money);
             if ($refundMoney > $lastMoney) {
                 throw  new AuthException(['msg' => '退款金额必须小于或等于上一笔金额']);
@@ -331,6 +331,8 @@ class Pos extends BaseController
                     throw  new AuthException(['msg' => '累计退款金额大于上一笔扣费金额']);
                 }
             }
+            (new ShopService())->handleReduceOrder($id,$company_id, $staff_id, $money, $refundData);
+
         }
         if ($type == 'consume') {
             $balance = UserBalanceV::userBalance($company_id, $phone);
@@ -367,11 +369,6 @@ class Pos extends BaseController
         if (!$save) {
             throw  new  AuthException(['msg' => '扣费失败']);
         }
-        if($type == 'refund')
-        {
-            $order_id = $save->id;
-            (new ShopService())->handleReduceOrder($order_id, $staff_id, $money);
-        }
     }
 
     private function usersBindingCard($params)
@@ -400,9 +397,8 @@ class Pos extends BaseController
             throw new AuthException(['msg' => '绑卡失败，账号已停用']);
         }
 //        $staff_id = $user['id'];
-        if(StaffCardV::checkCardExits($company_id,$card_code))
-        {
-            throw new ParameterException(['msg'=>'卡号已经存在，不能重复绑定']);
+        if (StaffCardV::checkCardExits($company_id, $card_code)) {
+            throw new ParameterException(['msg' => '卡号已经存在，不能重复绑定']);
         }
 //        $sql = "select id from canteen_staff_card_t where (state = 1 or state = 2) and (staff_id = '" . $staff_id . "' or card_code = '" . $card_code . "')";
 //        $cardInfo = Db::query($sql);

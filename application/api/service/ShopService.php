@@ -6,6 +6,7 @@ namespace app\api\service;
 
 use app\api\model\AccountRecordsT;
 use app\api\model\CanteenCommentT;
+use app\api\model\CompanyT;
 use app\api\model\ShopModuleT;
 use app\api\model\ShopOrderDetailT;
 use app\api\model\ShopOrderQrcodeT;
@@ -854,10 +855,15 @@ class ShopService
      * @param $staffId 用户id
      * @param $money   撤销订单金额
      */
-    public function handleReduceOrder($orderId, $staffId, $money)
+    public function handleReduceOrder($orderId, $companyId, $staffId, $money, $reducedMoney)
     {
         $money = abs($money);
-        $order = ShopOrderT::where('staff_id', $staffId)->where('state', CommonEnum::STATE_IS_OK)
+        $company = CompanyT::where('id', $companyId)->find();
+        if ($company->account_status == CommonEnum::STATE_IS_FAIL) {
+            return true;
+        }
+        $order = ShopOrderT::where('staff_id', $staffId)
+            ->where('state', CommonEnum::STATE_IS_OK)
             ->where('money', '>', 0)
             ->order('create_time desc')
             ->find();
@@ -867,9 +873,25 @@ class ShopService
                 ->where('type', 'shop')->order('id desc')
                 ->select();
             $data = [];
+            //排除已经退款金额
             if ($records) {
                 foreach ($records as $k => $v) {
-                    if (abs($v['money']) >= $money) {
+                    $accountMoney = abs($v['money']);
+                    if ($reducedMoney > 0) {
+                        if (abs($v['money']) >= $accountMoney) {
+                            $records[$k]['money'] = abs($v['money']) - $accountMoney;
+                            break;
+                        } else {
+                            unset($records[$k]);
+                        }
+                    }
+                }
+            }
+
+            if ($records) {
+                foreach ($records as $k => $v) {
+                    $accountMoney = abs($v['money']);
+                    if ($accountMoney >= $money) {
                         array_push($data, [
                             'order_id' => $orderId,
                             'type' => 'shop',
@@ -881,14 +903,26 @@ class ShopService
                             'account_id' => $v['account_id'],
                             'consumption_date' => date('Y-m-d'),
                             'location_id' => $v['location_id'],
-                            'type_name'=>"小卖部退款"
-                            ]);
-                    } else {
+                            'type_name' => "小卖部退款"
+                        ]);
+                    }
+                    else {
+                        array_push($data, [
+                            'order_id' => $orderId,
+                            'type' => 'shop',
+                            'status' => 2,
+                            'company_id' => $v['company_id'],
+                            'state' => CommonEnum::STATE_IS_OK,
+                            'staff_id' => $staffId,
+                            'money' => $accountMoney,
+                            'account_id' => $v['account_id'],
+                            'consumption_date' => date('Y-m-d'),
+                            'location_id' => $v['location_id'],
+                            'type_name' => "小卖部退款"
+                        ]);
                         $money -= abs($v['money']);
                     }
-
                 }
-
             }
             if (count($data)) {
                 (new AccountRecordsT())->saveAll($data);
