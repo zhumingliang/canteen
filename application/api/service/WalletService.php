@@ -261,7 +261,7 @@ class WalletService
     public function rechargeRecords($time_begin, $time_end,
                                     $page, $size, $type, $admin_id, $username)
     {
-        $company_id = 94;//Token::getCurrentTokenVar('company_id');
+        $company_id = Token::getCurrentTokenVar('company_id');
         $records = RechargeV::rechargeRecords($time_begin, $time_end,
             $page, $size, $type, $admin_id, $username, $company_id);
         return $records;
@@ -483,7 +483,6 @@ class WalletService
     }
 
 
-
     public function rechargeSupplementUploadWithAccount($supplement_excel)
     {
         $company_id = Token::getCurrentTokenVar('company_id');
@@ -574,7 +573,7 @@ class WalletService
     }
 
 
-  private function checkSupplementData($company_id, $fileName)
+    private function checkSupplementData($company_id, $fileName)
     {
         $newCanteen = [];
         $canteens = (new CanteenService())->companyCanteens($company_id);

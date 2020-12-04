@@ -218,7 +218,6 @@ class UserBalanceV extends Model
 
         // return $orderings;
         $sql = self::getSqlForStaffsBalance($company_id);
-        //return $sql;
         $orderings = Db::table($sql . 'a')
             ->where(function ($query) use ($department_id) {
                 if (!empty($department_id)) {
