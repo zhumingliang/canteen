@@ -305,7 +305,16 @@ class AccountService
 
             if (!empty($params['account_sort'])) {
                 $accountSort = $params['account_sort'];
-                $update = CompanyAccountT::update($accountSort);
+                $accountSortArr = json_decode($accountSort, true);
+                $dataList = [];
+                foreach ($accountSortArr as $k => $v) {
+                    array_push($dataList, [
+                        'id' => $v['id'],
+                        'sort' => $v['sort']
+                    ]);
+
+                }
+                $update = (new CompanyAccountT())->saveAll($dataList);
                 if (!$update) {
                     throw new UpdateException();
                 }
