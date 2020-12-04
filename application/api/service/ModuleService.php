@@ -67,7 +67,7 @@ class ModuleService
     public function systemModules($tree = 1)
     {
         $modules = SystemCanteenModuleT::order('create_time desc')
-            ->where('state',CommonEnum::STATE_IS_OK)
+           // ->where('state',CommonEnum::STATE_IS_OK)
             ->select()
             ->toArray();
         if (!$tree) {
