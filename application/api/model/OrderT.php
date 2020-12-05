@@ -360,7 +360,7 @@ class OrderT extends Model
             ->where('used', CommonEnum::STATE_IS_FAIL)
             ->where('state', CommonEnum::STATE_IS_OK)
             ->where('pay', 'paid')
-            ->field('id,count as order_count,"one" as strategy_type,staff_id,money,sub_money,meal_money,meal_sub_money,consumption_type,fixed')
+            ->field('id,d_id as dinner_id,count as order_count,"one" as strategy_type,staff_id,money,sub_money,meal_money,meal_sub_money,consumption_type,fixed')
             ->order('create_time desc')
             ->select();
 

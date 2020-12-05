@@ -206,7 +206,7 @@ class Account extends BaseController
     public function update()
     {
         $params = Request::param();
-        (new AccountService())->update($params);
+        (new AccountService())->updadte($params);
         return json(new SuccessMessage());
     }
 
@@ -411,5 +411,13 @@ class Account extends BaseController
     {
         $account = (new AccountService())->staffAccount();
         return json(new SuccessMessageWithData(['data' => $account]));
+    }
+
+    public function staffsAccount($page = 1, $size = 10)
+    {
+        $companyId = Request::param('company_id');
+        $departmentId = Request::param('department_id');
+        $username = Request::param('username');
+        $staffs = (new AccountService())->staffsAccount($companyId,$departmentId,$username,$page,$size);
     }
 }

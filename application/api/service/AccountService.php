@@ -549,6 +549,13 @@ class AccountService
             }
         }
         return $useAccounts;
+    }
+
+    public function staffsAccount($companyId, $departmentId, $username, $page, $size)
+    {
+        $accounts=CompanyAccountT::
+        $staffs = CompanyStaffT::staffsForAccount($companyId, $departmentId, $username, $page, $size);
+
 
     }
 

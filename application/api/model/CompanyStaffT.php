@@ -281,4 +281,27 @@ class CompanyStaffT extends Model
 
     }
 
+    public static function staffsForAccount($companyId, $departmentId, $username, $page, $size)
+    {
+        return self::where('company_id', $companyId)
+            ->where(function ($query) use ($departmentId) {
+                if ($departmentId) {
+                    $query->where('d_id', $departmentId);
+                }
+            })->where(function ($query) use ($username) {
+                if (strlen($username)) {
+                    $query->where('username', 'like', '%' . $username . '%');
+                }
+            })->where('state', CommonEnum::STATE_IS_OK)
+            ->with([
+                'company' => function ($query) {
+                    $query->field('id,name');
+                }, 'department' => function ($query) {
+                    $query->field('id,name');
+                }
+            ])
+            ->field('id,company_id,d_id,username,phone')
+            ->paginate($size, false, ['page' => $page])->toArray();
+    }
+
 }
