@@ -342,3 +342,4 @@ Route::get('api/:version/account/details', 'api/:version.Account/transactionDeta
 Route::get('api/:version/account/bill', 'api/:version.Account/bill');
 Route::get('api/:version/account/detail', 'api/:version.Account/detail');
 Route::get('api/:version/account/staff', 'api/:version.Account/staffAccount');
+Route::get('api/:version/account/staffs', 'api/:version.Account/staffsAccount');

@@ -120,4 +120,20 @@ class CompanyAccountT extends Model
         return $accounts;
     }
 
+    public static function accountsWithSortsAndDepartmentId($companyId)
+    {
+        $accounts = self::where('company_id', $companyId)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->with([
+                'departments' => function ($query) {
+                    $query->where('state', CommonEnum::STATE_IS_OK)
+                        ->field('id,account_id,department_id');
+                }
+            ])
+            ->field('id,name,sort,department_all')
+            ->order('sort')
+            ->select()->toArray();
+        return $accounts;
+    }
+
 }

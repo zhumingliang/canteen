@@ -413,11 +413,48 @@ class Account extends BaseController
         return json(new SuccessMessageWithData(['data' => $account]));
     }
 
-    public function staffsAccount($page = 1, $size = 10)
+
+    /**
+     * @api {GET} /api/v1/account/staffs PC端-账户信息管理-扣费顺序查询
+     * @apiGroup  PC
+     * @apiVersion 3.0.0
+     * @apiDescription PC端-账户信息管理-扣费顺序查询
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/account/staffs?company_id=120&page=1&size=10&department_id=0&username=
+     * @apiParam (请求参数说明) {int} page 当前页码
+     * @apiParam (请求参数说明) {int} size 每页多少条数据
+     * @apiParam (请求参数说明) {int} company_id 企业id
+     * @apiParam (请求参数说明) {int} department_id 企业部门id,全部传入0
+     * @apiParam (请求参数说明) {string} username 用户姓名
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"staffs":{"total":4,"per_page":10,"current_page":1,"last_page":1,"data":[{"id":6699,"company_id":120,"d_id":353,"username":"蚊","phone":"15014335935","company":{"id":120,"name":"A"},"department":{"id":353,"name":"1部"},"account":[{"account_id":73,"account_name":"个人账户"}]},{"id":7357,"company_id":120,"d_id":353,"username":"管理员A","phone":"15057769808","company":{"id":120,"name":"A"},"department":{"id":353,"name":"1部"},"account":[{"account_id":73,"account_name":"个人账户"}]},{"id":7358,"company_id":120,"d_id":353,"username":"沈晓洁","phone":"15018891369","company":{"id":120,"name":"A"},"department":{"id":353,"name":"1部"},"account":[{"account_id":73,"account_name":"个人账户"}]},{"id":7488,"company_id":120,"d_id":418,"username":"佟瑶","phone":"15133906357","company":{"id":120,"name":"A"},"department":{"id":418,"name":"2部"},"account":[{"account_id":73,"account_name":"个人账户"}]}]},"accounts":[{"id":73,"name":"个人账户","sort":1,"department_all":1,"departments":[]}]}}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {String} msg 信息描述
+     * @apiSuccess (返回参数说明) {obj} staffs 用户信息
+     * @apiSuccess (返回参数说明) {int} total 数据总数
+     * @apiSuccess (返回参数说明) {int} per_page 每页多少条数据
+     * @apiSuccess (返回参数说明) {int} current_page 当前页码
+     * @apiSuccess (返回参数说明) {int} last_page 最后页码
+     * @apiSuccess (返回参数说明) {int} id 用户id
+     * @apiSuccess (返回参数说明) {string} username 用户姓名
+     * @apiSuccess (返回参数说明) {string} phone 用户手机号
+     * @apiSuccess (返回参数说明) {obj} company 企业信息
+     * @apiSuccess (返回参数说明) {string} name 企业名称
+     * @apiSuccess (返回参数说明) {obj} department 部门信息
+     * @apiSuccess (返回参数说明) {string} name 部门名称
+     * @apiSuccess (返回参数说明) {obj} account 用户账户信息
+     * @apiSuccess (返回参数说明) {int} account_id 账户id
+     * @apiSuccess (返回参数说明) {string} account_name 账户名称
+     * @apiSuccess (返回参数说明) {obj} accounts  企业所有账户信息
+     * @apiSuccess (返回参数说明) {int} id 账户ID
+     * @apiSuccess (返回参数说明) {string} name 账户名称
+     * @apiSuccess (返回参数说明) {string} sort 排序
+     *
+     */
+    public function staffsAccount($username = '', $department_id = 0, $page = 1, $size = 10)
     {
         $companyId = Request::param('company_id');
-        $departmentId = Request::param('department_id');
-        $username = Request::param('username');
-        $staffs = (new AccountService())->staffsAccount($companyId,$departmentId,$username,$page,$size);
+        $staffs = (new AccountService())->staffsAccount($companyId, $department_id, $username, $page, $size);
+        return json(new SuccessMessageWithData(['data' => $staffs]));
     }
 }

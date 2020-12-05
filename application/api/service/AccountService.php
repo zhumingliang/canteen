@@ -27,6 +27,7 @@ use app\lib\exception\UpdateException;
 use MongoDB\BSON\Type;
 use think\Db;
 use think\Exception;
+use function EasyWeChat\Kernel\data_to_array;
 
 class AccountService
 {
@@ -553,10 +554,51 @@ class AccountService
 
     public function staffsAccount($companyId, $departmentId, $username, $page, $size)
     {
-        $accounts=CompanyAccountT::
+        $accounts = CompanyAccountT::accountsWithSortsAndDepartmentId($companyId);
         $staffs = CompanyStaffT::staffsForAccount($companyId, $departmentId, $username, $page, $size);
+        $data = $staffs['data'];
+        if (count($data)) {
+            foreach ($data as $k => $v) {
+                $staffDepartmentId = $v['d_id'];
+                $data[$k]['account'] = $this->getStaffAccount($staffDepartmentId, $accounts);
+            }
+        }
+        $staffs['data'] = $data;
+        return [
+            'staffs' => $staffs,
+            'accounts' => $accounts
+        ];
+    }
 
+    private function getStaffAccount($departmentId, &$accounts)
+    {
+        $staffAccount = [];
+        if (!count($accounts)) {
+            return $staffAccount;
+        }
+        foreach ($accounts as $k => $v) {
 
+            if ($v['department_all'] == CommonEnum::STATE_IS_OK) {
+                array_push($staffAccount, [
+                    'account_id' => $v['id'],
+                    'account_name' => $v['name'],
+                ]);
+                continue;
+            }
+            $allowDepartments = $v['departments'];
+            if (count($allowDepartments)) {
+                foreach ($allowDepartments as $k2 => $v2) {
+                    if ($departmentId == $v2['department_id']) {
+                        array_push($staffAccount, [
+                            'account_id' => $v['id'],
+                            'account_name' => $v['name'],
+                        ]);
+                        break;
+                    }
+                }
+            }
+        }
+        return $staffAccount;
     }
 
 }
