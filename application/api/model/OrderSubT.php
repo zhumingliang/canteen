@@ -55,7 +55,7 @@ class OrderSubT extends Model
     {
         $info = self::where('id', $id)
             ->field('id,order_id,money,sub_money,used,booking,ordering_date,consumption_sort,sort_code')
-           // ->with('parent')
+            ->with('parent')
             ->find();
         return $info;
     }

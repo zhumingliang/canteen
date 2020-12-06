@@ -3054,7 +3054,7 @@ class OrderService extends BaseService
 
     private function getSubOrderInfo($orderId)
     {
-        $order = OrderSubT::info($orderId);
+        $order = OrderSubT::infoWithParent($orderId);
         if (!$order) {
             throw  new ParameterException(['msg' => '订单不存在']);
         }
@@ -3062,6 +3062,7 @@ class OrderService extends BaseService
         $foods = SubFoodT::detail($order['order_id']);
         $detail = [
             'number' => $order['consumption_sort'],
+            'fixed' => $order['parent']['fixed'],
             'order_id' => $order['id'],
             'money' => round($order['money'], 2),
             'sub_money' => round($order['sub_money'], 2),
