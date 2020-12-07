@@ -3203,6 +3203,8 @@ class OrderService extends BaseService
                 $consumptionCount++;
 
             }
+
+
             array_push($updateParentOrderData, [
                 'id' => $parentId,
                 'money' => $parentMoney
