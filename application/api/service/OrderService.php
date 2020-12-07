@@ -1959,7 +1959,7 @@ class OrderService extends BaseService
             }
             //处理订单明细
             $this->prefixUpdateOrderDetail($id, $detail);
-             Db::commit();
+            Db::commit();
         } catch (Exception $e) {
             Db::rollback();
             throw $e;
@@ -1979,9 +1979,9 @@ class OrderService extends BaseService
                 throw new ParameterException(['msg' => '订单不存在']);
             }
             //处理订单明细
-           /* if (!empty($detail)) {
-                $this->prefixUpdateOrderDetail($id, $detail, 'more');
-            }*/
+            /* if (!empty($detail)) {
+                 $this->prefixUpdateOrderDetail($id, $detail, 'more');
+             }*/
             //检测订单是否可操作
             $this->checkOrderCanHandel($order->dinner_id, $order->ordering_date);
             //处理菜品信息
@@ -2389,7 +2389,7 @@ class OrderService extends BaseService
     function userOrders($type, $id, $page, $size)
     {
         // $u_id = Token::getCurrentUid();
-        $phone = "13794247582";//Token::getCurrentPhone();
+        $phone = Token::getCurrentPhone();
         if ($type == OrderEnum::USER_ORDER_SHOP) {
             $orders = ShopOrderingV::userOrderings($phone, $id, $page, $size);
         } else {
@@ -2700,9 +2700,9 @@ class OrderService extends BaseService
                 }
 
             }
-           // Db::commit();
+            // Db::commit();
         } catch (Exception $e) {
-           // Db::rollback();
+            // Db::rollback();
             LogService::save($e->getMessage());
         }
 
