@@ -115,7 +115,7 @@ class UserBalanceV extends Model
     {
         $sql = Db::table('canteen_company_staff_t')
             ->alias('b')
-            ->field('0 as money,b.id as staff_id,b.username,b.code,c.card_code as card_num,b.phone,b.d_id as department_id,d.name as department,a.state as staff_state')
+            ->field('0 as money,b.id as staff_id,b.username,b.code,c.card_code as card_num,b.phone,b.d_id as department_id,d.name as department,b.state as staff_state')
             ->where('b.company_id', $companyId)
             ->leftJoin('canteen_staff_card_t c', "b.id=c.staff_id and c.state<3")
             ->leftJoin('canteen_company_department_t d', "b.d_id=d.id")
