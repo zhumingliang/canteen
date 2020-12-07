@@ -336,7 +336,7 @@ class Pos extends BaseController
 
         }
         if ($type == 'consume') {
-            $balance = UserBalanceV::userBalance($company_id, $phone);
+            $balance = (new WalletService())->getUserBalance($company_id, $phone,$staff_id);
             if ($balance < $money) {
                 throw  new  AuthException(['msg' => '余额不足']);
             }
