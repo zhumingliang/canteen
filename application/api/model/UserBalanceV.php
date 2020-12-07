@@ -194,7 +194,7 @@ class UserBalanceV extends Model
         return round($value, 2);
     }
 
-    public static function usersBalance($page, $size, $department_id, $user, $phone, $company_id)
+    public static function usersBalance($page, $size, $department_id, $user, $phone, $company_id, $checkCard)
     {
         /* $orderings = self::where('company_id', $company_id)
              ->where(function ($query) use ($department_id) {
@@ -218,6 +218,11 @@ class UserBalanceV extends Model
 
         // return $orderings;
         $sql = self::getSqlForStaffsBalance($company_id);
+        if ($checkCard) {
+            $fields = 'a.staff_id,a.username,a.code,a.card_num,a.phone,a.department,sum(a.money) as balance';
+        } else {
+            $fields = 'a.staff_id,a.username,a.code,a.phone,a.department,sum(a.money) as balance';
+        }
         $orderings = Db::table($sql . 'a')
             ->where(function ($query) use ($department_id) {
                 if (!empty($department_id)) {
@@ -234,7 +239,7 @@ class UserBalanceV extends Model
                     $query->where('a.username|a.code|a.card_num', 'like', '%' . $user . '%');
                 }
             })
-            ->field('a.staff_id,a.username,a.code,a.card_num,a.phone,a.department,sum(a.money) as balance')
+            ->field($fields)
             ->group('a.staff_id')
             ->order('a.staff_id')
             ->paginate($size, false, ['page' => $page])->toArray();
@@ -243,30 +248,35 @@ class UserBalanceV extends Model
     }
 
 
-    public static function exportUsersBalance($department_id, $user, $phone, $company_id)
+    public static function exportUsersBalance($department_id, $user, $phone, $company_id,$checkCard)
     {
-       /* $orderings = self::where('company_id', $company_id)
-            ->where(function ($query) use ($department_id) {
-                if (!empty($department_id)) {
-                    $query->where('department_id', $department_id);
-                }
-            })
-            ->where(function ($query) use ($phone) {
-                if (!empty($phone)) {
-                    $query->where('phone', $phone);
-                }
-            })
-            ->where(function ($query) use ($user) {
-                if (!empty($user)) {
-                    $query->where('username|code|card_num', 'like', '%' . $user . '%');
-                }
-            })
-            ->field('username,code,card_num,phone,department,sum(money) as balance')
-            ->group('phone,company_id')
-            ->select()->toArray();*/
+        /* $orderings = self::where('company_id', $company_id)
+             ->where(function ($query) use ($department_id) {
+                 if (!empty($department_id)) {
+                     $query->where('department_id', $department_id);
+                 }
+             })
+             ->where(function ($query) use ($phone) {
+                 if (!empty($phone)) {
+                     $query->where('phone', $phone);
+                 }
+             })
+             ->where(function ($query) use ($user) {
+                 if (!empty($user)) {
+                     $query->where('username|code|card_num', 'like', '%' . $user . '%');
+                 }
+             })
+             ->field('username,code,card_num,phone,department,sum(money) as balance')
+             ->group('phone,company_id')
+             ->select()->toArray();*/
 
 
         $sql = self::getSqlForStaffsBalance($company_id);
+        if ($checkCard) {
+            $fields = 'a.username,a.code,a.card_num,a.phone,a.department,sum(a.money) as balance';
+        } else {
+            $fields = 'a.username,a.code,a.phone,a.department,sum(a.money) as balance';
+        }
         $orderings = Db::table($sql . 'a')
             ->where(function ($query) use ($department_id) {
                 if (!empty($department_id)) {
@@ -283,7 +293,7 @@ class UserBalanceV extends Model
                     $query->where('a.username|a.code|a.card_num', 'like', '%' . $user . '%');
                 }
             })
-            ->field('a.username,a.code,a.card_num,a.phone,a.department,sum(a.money) as balance')
+            ->field($fields)
             ->group('a.staff_id')
             ->order('a.staff_id')
             ->select()->toArray();

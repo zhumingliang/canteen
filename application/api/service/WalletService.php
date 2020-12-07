@@ -7,6 +7,7 @@ namespace app\api\service;
 use app\api\job\UploadExcel;
 use app\api\model\CompanyAccountT;
 use app\api\model\CompanyStaffT;
+use app\api\model\CompanyT;
 use app\api\model\DinnerV;
 use app\api\model\OrderParentT;
 use app\api\model\OrderT;
@@ -15,6 +16,7 @@ use app\api\model\RechargeCashT;
 use app\api\model\RechargeSupplementT;
 use app\api\model\RechargeV;
 use app\api\model\UserBalanceV;
+use app\api\validate\Company;
 use app\lib\enum\CommonEnum;
 use app\lib\enum\PayEnum;
 use app\lib\exception\AuthException;
@@ -297,14 +299,15 @@ class WalletService
     public function usersBalance($page, $size, $department_id, $user, $phone)
     {
         $company_id = Token::getCurrentTokenVar('company_id');
-        $balance = UserBalanceV::usersBalance($page, $size, $department_id, $user, $phone, $company_id);
-       /* $data = $balance['data'];
+        $checkCard = (new CompanyService())->checkConsumptionContainsCard($company_id);
+        $balance = UserBalanceV::usersBalance($page, $size, $department_id, $user, $phone, $company_id, $checkCard);
+        $data = $balance['data'];
         foreach ($data as $k => $v) {
             if ($v['staff_id'] == 0) {
                 unset($data[$k]);
             }
         }
-        $balance['data'] = $data;*/
+        $balance['data'] = $data;
         return $balance;
     }
 
@@ -355,8 +358,13 @@ class WalletService
     public function exportUsersBalance($department_id, $user, $phone)
     {
         $company_id = Token::getCurrentTokenVar('company_id');
-        $staffs = UserBalanceV::exportUsersBalance($department_id, $user, $phone, $company_id);
-        $header = ['姓名', '员工编号', '卡号', '手机号码', '部门'];
+        $checkCard = (new CompanyService())->checkConsumptionContainsCard($company_id);
+        $staffs = UserBalanceV::exportUsersBalance($department_id, $user, $phone, $company_id,$checkCard);
+        if ($checkCard) {
+            $header = ['姓名', '员工编号', '卡号', '手机号码', '部门'];
+        } else {
+            $header = ['姓名', '员工编号', '手机号码', '部门'];
+        }
         $file_name = "饭卡余额报表";
         $url = (new ExcelService())->makeExcel($header, $staffs, $file_name);
         return [
