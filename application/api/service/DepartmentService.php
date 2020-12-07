@@ -736,6 +736,7 @@ class DepartmentService
 
                     $header = ['企业', '部门', '人员状态', '人员类型', '员工编号', '姓名', '手机号码', '归属饭堂'];
                 }
+
         $file_name = "企业员工导出";
         $url = (new ExcelService())->makeExcel($header, $staffs, $file_name);
         return [
@@ -749,30 +750,34 @@ class DepartmentService
         if (!count($staffs)) {
             return $staffs;
         }
+        $dataList = [];
         foreach ($staffs as $k => $v) {
+            $data = [];
+            $data['company'] = $v['company'];
+            $data['department'] = $v['department'];
+            $data['state'] = $v['state'] == 1 ? '启用' : '停用';;
+            $data['type'] = $v['type'];
+            $data['code'] = $v['code'];
+            $data['username'] = $v['username'];
+            $data['phone'] = $v['phone'];
+            if ($checkCard) {
+                $data['card_num'] = empty($v['card']['card_code']) ? '' : $v['card']['card_code'];
+                $data['birthday'] = $v['birthday'];
+            }
+            if ($checkFace) {
+                $data['face_code'] = $v['face_code'];
+            }
+
+
             $canteen = [];
-            unset($staffs[$k]['id']);
             $canteens = $v['canteens'];
-            unset($staffs[$k]['canteens']);
             foreach ($canteens as $k2 => $v2) {
                 array_push($canteen, $v2['info']['name']);
             }
-            if (!$checkCard) {
-                unset($staffs[$k]['card']['card_code']);
-                unset($staffs[$k]['birthday']);
-            }
-            if (!$checkFace) {
-                unset($staffs[$k]['face_code']);
-            }
-            if (!$checkCard && !$checkFace) {
-                unset($staffs[$k]['card_num']);
-                unset($staffs[$k]['birthday']);
-                unset($staffs[$k]['face_code']);
-            }
-            $staffs[$k]['canteen'] = implode('|', $canteen);
-            $staffs[$k]['state'] = $v['state'] == 1 ? '启用' : '停用';
+            $data['canteen'] = implode('|', $canteen);
+            array_push($dataList, $data);
         }
-        return $staffs;
+        return $dataList;
 
     }
 
