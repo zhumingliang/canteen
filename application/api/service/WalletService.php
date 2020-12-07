@@ -575,9 +575,9 @@ class WalletService
                     array_push($staffCanteen, $v2['info']['name']);
                 }
             }
-            array_push($staffCanteens, [
-                $v['username'] . '&' . $v['phone'] => $staffCanteen
-            ]);
+
+            $staffCanteens[$v['username'] . '&' . $v['phone']] = $staffCanteen;
+
         }
         $fail = [];
         $data = (new ExcelService())->importExcel($fileName);
