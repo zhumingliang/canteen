@@ -83,6 +83,7 @@ class UploadExcel
     private function doJob($data)
     {
         try {
+
             $type = $data['type'];
             if ($type == "rechargeCash") {
                 return $this->uploadRechargeCash($data);
@@ -121,7 +122,7 @@ class UploadExcel
         $admin_id = $data['u_id'];
         $fileName = $data['fileName'];
         $data = (new ExcelService())->importExcel($fileName);
-        $dataList = (new WalletService())->prefixSupplementUploadData($company_id, $admin_id, $data);
+        $dataList = (new WalletService())->prefixSupplementUploadDataWithAccount($company_id, $admin_id, $data);
         $cash = (new RechargeSupplementT())->saveAll($dataList);
         if (!$cash) {
             return false;

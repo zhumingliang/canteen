@@ -687,8 +687,6 @@ class WalletService
         $canteens = (new CanteenService())->companyCanteens($company_id);
         $dinners = DinnerV::companyDinners($company_id);
         $staffs = CompanyStaffT::staffs($company_id);
-        $accounts = CompanyAccountT::accountsWithoutNonghang($company_id);
-
         $newStaffs = [];
         $newCanteen = [];
 
