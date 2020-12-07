@@ -358,9 +358,9 @@ class WalletService
         $checkCard = (new CompanyService())->checkConsumptionContainsCard($company_id);
         $staffs = UserBalanceV::exportUsersBalance($department_id, $user, $phone, $company_id, $checkCard);
         if ($checkCard) {
-            $header = ['姓名', '员工编号', '卡号', '手机号码', '部门'];
+            $header = ['姓名', '员工编号', '卡号', '手机号码', '部门', '余额'];
         } else {
-            $header = ['姓名', '员工编号', '手机号码', '部门'];
+            $header = ['姓名', '员工编号', '手机号码', '部门', '余额'];
         }
         $file_name = "饭卡余额报表";
         $url = (new ExcelService())->makeExcel($header, $staffs, $file_name);
@@ -382,7 +382,7 @@ class WalletService
         }
 
         $header = $this->prefixHeader($accounts, $header);
-        $staffs = $this->prefixExportBalanceWithAccount($staffs, $accounts,$checkCard);
+        $staffs = $this->prefixExportBalanceWithAccount($staffs, $accounts, $checkCard);
         $file_name = "饭卡余额报表";
         $url = (new ExcelService())->makeExcel($header, $staffs, $file_name);
         return [
@@ -401,12 +401,12 @@ class WalletService
     }
 
 
-    private function prefixExportBalanceWithAccount($staffs, $accounts,$checkCard)
+    private function prefixExportBalanceWithAccount($staffs, $accounts, $checkCard)
     {
         $dataList = [];
         if (count($staffs)) {
             foreach ($staffs as $k => $v) {
-                if ($checkCard){
+                if ($checkCard) {
                     $data = [
                         'username' => $v['username'],
                         'code' => $v['code'],
@@ -414,7 +414,7 @@ class WalletService
                         'phone' => $v['phone'],
                         'department' => $v['department']['name']
                     ];
-                }else{
+                } else {
                     $data = [
                         'username' => $v['username'],
                         'code' => $v['code'],
