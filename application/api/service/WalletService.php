@@ -274,7 +274,7 @@ class WalletService
     {
         $company_id = Token::getCurrentTokenVar('company_id');
         $records = RechargeV::exportRechargeRecords($time_begin, $time_end, $type, $admin_id, $username, $company_id);
-        $header = ['创建时间', '姓名','手机号', '充值金额', '充值途径', '充值人员', '备注'];
+        $header = ['创建时间', '姓名', '手机号', '充值金额', '充值途径', '充值人员', '备注'];
         $file_name = $time_begin . "-" . $time_end . "-充值记录明细";
         $url = (new ExcelService())->makeExcel($header, $records, $file_name);
         return [
@@ -564,9 +564,20 @@ class WalletService
             throw  new  SaveException(['msg' => '企业饭堂或者餐次设置异常']);
         }
         $newStaffs = [];
+        $staffCanteens = [];
+
         foreach ($staffs as $k => $v) {
-            // array_push($newStaffs, $v['code'] . '&' . $v['username'] . '&' . $v['card_num'] . '&' . $v['phone']);
             array_push($newStaffs, $v['username'] . '&' . $v['phone']);
+            $canteens = $v['canteens'];
+            $staffCanteen = [];
+            foreach ($canteens as $k2 => $v2) {
+                if (!empty($v2['info']['name']) && strlen($v2['info']['name'])) {
+                    array_push($staffCanteen, $v2['info']['name']);
+                }
+            }
+            array_push($staffCanteens, [
+                $v['username'] . '&' . $v['phone'] => $staffCanteen
+            ]);
         }
         $fail = [];
         $data = (new ExcelService())->importExcel($fileName);
@@ -580,6 +591,13 @@ class WalletService
                 array_push($fail, '第' . $k . '行数据有问题');
                 break;
             }
+            //检测饭堂是否合法
+            $checkCanteens = $staffCanteens[$checkData];
+            if (!in_array($v[2], $checkCanteens)) {
+                array_push($fail, '第' . $k . '行数据有问题');
+                break;
+            }
+
             if (count($accountsArr) && !in_array($v[6], $accountsArr)) {
                 array_push($fail, '第' . $k . '行数据有问题');
 
@@ -608,8 +626,19 @@ class WalletService
             throw  new  SaveException(['msg' => '企业饭堂或者餐次设置异常']);
         }
         $newStaffs = [];
+        $staffCanteens = [];
         foreach ($staffs as $k => $v) {
             array_push($newStaffs, $v['username'] . '&' . $v['phone']);
+            $canteens = $v['canteens'];
+            $staffCanteen = [];
+            foreach ($canteens as $k2 => $v2) {
+                if (!empty($v2['info']['name']) && strlen($v2['info']['name'])) {
+                    array_push($staffCanteen, $v2['info']['name']);
+                }
+            }
+            array_push($staffCanteens, [
+                $v['username'] . '&' . $v['phone'] => $staffCanteen
+            ]);
         }
         $fail = [];
         $data = (new ExcelService())->importExcel($fileName);
@@ -623,6 +652,14 @@ class WalletService
                 array_push($fail, '第' . $k . '行数据有问题');
                 break;
             }
+
+            //检测饭堂是否合法
+            $checkCanteens = $staffCanteens[$checkData];
+            if (!in_array($v[2], $checkCanteens)) {
+                array_push($fail, '第' . $k . '行数据有问题');
+                break;
+            }
+
             if (strtotime($v[3]) > strtotime(\date('Y-m-d')) || $v[6] < 0) {
                 array_push($fail, '第' . $k . '行数据有问题');
                 break;

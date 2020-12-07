@@ -138,6 +138,13 @@ class CompanyStaffT extends Model
             ->with([
                 'card' => function ($query) {
                     $query->field('id,staff_id,card_code')->whereIn('state', '1,2');
+                },
+                'canteens' => function ($query) {
+                    $query->with(['info' => function ($query2) {
+                        $query2->field('id,name');
+                    }])
+                        ->field('id,staff_id,canteen_id')
+                        ->where('state', '=', CommonEnum::STATE_IS_OK);
                 }
             ])
             ->select();
