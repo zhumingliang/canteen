@@ -332,11 +332,9 @@ class Pos extends BaseController
                     throw  new AuthException(['msg' => '累计退款金额大于上一笔扣费金额']);
                 }
             }
-            (new ShopService())->handleReduceOrder($id, $company_id, $staff_id, $money, $refundData);
-
         }
         if ($type == 'consume') {
-            $balance = (new WalletService())->getUserBalance($company_id, $phone,$staff_id);
+            $balance = (new WalletService())->getUserBalance($company_id, $phone, $staff_id);
             if ($balance < $money) {
                 throw  new  AuthException(['msg' => '余额不足']);
             }
@@ -369,6 +367,10 @@ class Pos extends BaseController
         $save = ShopOrderT::create($data);
         if (!$save) {
             throw  new  AuthException(['msg' => '扣费失败']);
+        }
+        if ($type == 'refund') {
+            $newId = $save->id;
+            (new ShopService())->handleReduceOrder($id, $newId, $company_id, $staff_id, $money, $refundData);
         }
     }
 

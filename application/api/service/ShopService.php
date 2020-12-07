@@ -855,7 +855,7 @@ class ShopService
      * @param $staffId 用户id
      * @param $money   撤销订单金额
      */
-    public function handleReduceOrder($orderId, $companyId, $staffId, $money, $reducedMoney)
+    public function handleReduceOrder($orderId,$newId, $companyId, $staffId, $money, $reducedMoney)
     {
         $money = abs($money);
         $company = CompanyT::where('id', $companyId)->find();
@@ -893,7 +893,7 @@ class ShopService
                     $accountMoney = abs($v['money']);
                     if ($accountMoney >= $money) {
                         array_push($data, [
-                            'order_id' => $orderId,
+                            'order_id' => $newId,
                             'type' => 'shop',
                             'status' => 2,
                             'company_id' => $v['company_id'],
@@ -908,7 +908,7 @@ class ShopService
                     }
                     else {
                         array_push($data, [
-                            'order_id' => $orderId,
+                            'order_id' => $newId,
                             'type' => 'shop',
                             'status' => 2,
                             'company_id' => $v['company_id'],

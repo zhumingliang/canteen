@@ -225,7 +225,6 @@ class OrderStatisticService
         $records = OrderSettlementV::orderSettlementWithAccount($page, $size,
             $name, $phone, $canteen_id, $department_id, $dinner_id,
             $consumption_type, $time_begin, $time_end, $company_ids, $type);
-
         $records['data'] = $this->prefixSettlementConsumptionType($records['data']);
         return $records;
     }
