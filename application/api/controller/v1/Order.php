@@ -425,7 +425,7 @@ class Order extends BaseController
      * @apiVersion 3.0.0
      * @apiDescription 微信端-订单查询-订单列表
      * @apiExample {get}  请求样例:
-     * http://canteen.tonglingok.com/api/v1/order/userOrderings?$page=1&size=100&type=3&id=1
+     * http://canteen.tonglingok.com/api/v1/order/userOrderings?page=1&size=100&type=3&id=1
      * @apiParam (请求参数说明) {int} page 当前页码
      * @apiParam (请求参数说明) {int} size 每页多少条数据
      * @apiParam (请求参数说明) {int} type  类型：1|就餐；2|外卖；3|小卖部

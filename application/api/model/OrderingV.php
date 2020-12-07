@@ -559,9 +559,13 @@ class OrderingV extends Model
                             ->where('a.used', CommonEnum::STATE_IS_FAIL);
                     })
                     ->where('a.state', CommonEnum::STATE_IS_OK)
-                    ->where('a.pay', PayEnum::PAY_SUCCESS);
+                    ->where('a.pay', PayEnum::PAY_SUCCESS)
+                   ;
+
             })->buildSql();
+        //echo $sql;
         $records = Db::table($sql . 'a')
+            ->order('a.create_time desc')
             ->paginate($size, false, ['page' => $page]);
         return $records;
     }
