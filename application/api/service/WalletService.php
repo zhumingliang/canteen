@@ -301,26 +301,20 @@ class WalletService
         $company_id = Token::getCurrentTokenVar('company_id');
         $checkCard = (new CompanyService())->checkConsumptionContainsCard($company_id);
         $balance = UserBalanceV::usersBalance($page, $size, $department_id, $user, $phone, $company_id, $checkCard);
-        $data = $balance['data'];
-        foreach ($data as $k => $v) {
-            if ($v['staff_id'] == 0) {
-                unset($data[$k]);
-            }
-        }
-        $balance['data'] = $data;
         return $balance;
     }
 
     public function usersBalanceWithAccount($page, $size, $department_id, $user, $phone)
     {
         $company_id = Token::getCurrentTokenVar('company_id');
+        $checkCard = (new CompanyService())->checkConsumptionContainsCard($company_id);
         $accounts = CompanyAccountT::accountsWithSorts($company_id);
         $staffs = CompanyStaffT::staffsForBalanceWithAccount($page, $size, $department_id, $user, $phone, $company_id);
-        $staffs['data'] = $this->prefixAccount($staffs['data'], $accounts);
+        $staffs['data'] = $this->prefixAccount($staffs['data'], $accounts, $checkCard);
         return $staffs;
     }
 
-    public function prefixAccount($staffs, $accounts)
+    public function prefixAccount($staffs, $accounts, $checkCard)
     {
         $countData = [];
         foreach ($accounts as $k => $v) {
@@ -334,6 +328,9 @@ class WalletService
         }
         if (count($staffs)) {
             foreach ($staffs as $k => $v) {
+                if (!$checkCard) {
+                    unset($staffs[$k]['card']);
+                }
                 $staffCountData = $countData;
                 $account = $v['account'];
                 if (count($account)) {
@@ -359,7 +356,7 @@ class WalletService
     {
         $company_id = Token::getCurrentTokenVar('company_id');
         $checkCard = (new CompanyService())->checkConsumptionContainsCard($company_id);
-        $staffs = UserBalanceV::exportUsersBalance($department_id, $user, $phone, $company_id,$checkCard);
+        $staffs = UserBalanceV::exportUsersBalance($department_id, $user, $phone, $company_id, $checkCard);
         if ($checkCard) {
             $header = ['姓名', '员工编号', '卡号', '手机号码', '部门'];
         } else {
@@ -376,10 +373,16 @@ class WalletService
     {
         $company_id = Token::getCurrentTokenVar('company_id');
         $accounts = CompanyAccountT::accountsWithSorts($company_id);
+        $checkCard = (new CompanyService())->checkConsumptionContainsCard($company_id);
         $staffs = CompanyStaffT::staffsForExportsBalance($department_id, $user, $phone, $company_id);
-        $header = ['姓名', '员工编号', '卡号', '手机号码', '部门'];
+        if ($checkCard) {
+            $header = ['姓名', '员工编号', '卡号', '手机号码', '部门'];
+        } else {
+            $header = ['姓名', '员工编号', '手机号码', '部门'];
+        }
+
         $header = $this->prefixHeader($accounts, $header);
-        $staffs = $this->prefixExportBalanceWithAccount($staffs, $accounts);
+        $staffs = $this->prefixExportBalanceWithAccount($staffs, $accounts,$checkCard);
         $file_name = "饭卡余额报表";
         $url = (new ExcelService())->makeExcel($header, $staffs, $file_name);
         return [
@@ -398,18 +401,28 @@ class WalletService
     }
 
 
-    private function prefixExportBalanceWithAccount($staffs, $accounts)
+    private function prefixExportBalanceWithAccount($staffs, $accounts,$checkCard)
     {
         $dataList = [];
         if (count($staffs)) {
             foreach ($staffs as $k => $v) {
-                $data = [
-                    'username' => $v['username'],
-                    'code' => $v['code'],
-                    'card_num' => empty($v['card']['card_code']) ? '' : $v['card']['card_code'],
-                    'phone' => $v['phone'],
-                    'department' => $v['department']['name']
-                ];
+                if ($checkCard){
+                    $data = [
+                        'username' => $v['username'],
+                        'code' => $v['code'],
+                        'card_num' => empty($v['card']['card_code']) ? '' : $v['card']['card_code'],
+                        'phone' => $v['phone'],
+                        'department' => $v['department']['name']
+                    ];
+                }else{
+                    $data = [
+                        'username' => $v['username'],
+                        'code' => $v['code'],
+                        'phone' => $v['phone'],
+                        'department' => $v['department']['name']
+                    ];
+                }
+
                 $account = $v['account'];
                 $allBalance = 0;
                 foreach ($accounts as $k2 => $v2) {
