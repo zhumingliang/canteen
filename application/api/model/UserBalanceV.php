@@ -115,14 +115,14 @@ class UserBalanceV extends Model
     {
         $sql = Db::table('canteen_company_staff_t')
             ->alias('b')
-            ->field('0 as money,b.id as staff_id,b.username,b.code,c.card_code as card_num,b.phone,b.d_id as department_id,d.name as department')
+            ->field('0 as money,b.id as staff_id,b.username,b.code,c.card_code as card_num,b.phone,b.d_id as department_id,d.name as department,a.state as staff_state')
             ->where('b.company_id', $companyId)
             ->leftJoin('canteen_staff_card_t c', "b.id=c.staff_id and c.state<3")
             ->leftJoin('canteen_company_department_t d', "b.d_id=d.id")
             ->unionAll(function ($query) use ($companyId) {
                 $query->table('canteen_order_t')
                     ->alias('a')
-                    ->field('(0-a.money-a.sub_money-a.delivery_fee) as money,a.staff_id,b.username,b.code,c.card_code as card_num,b.phone,b.d_id as department_id,d.name as department')
+                    ->field('(0-a.money-a.sub_money-a.delivery_fee) as money,a.staff_id,b.username,b.code,c.card_code as card_num,b.phone,b.d_id as department_id,d.name as department,b.state as staff_state')
                     ->where('a.company_id', $companyId)
                     ->where('a.state', CommonEnum::STATE_IS_OK)
                     ->where('a.pay', PayEnum::PAY_SUCCESS)
@@ -133,7 +133,7 @@ class UserBalanceV extends Model
             ->unionAll(function ($query) use ($companyId) {
                 $query->table("canteen_order_parent_t")
                     ->alias('a')
-                    ->field('(0-a.money-a.sub_money-a.delivery_fee) as money,a.staff_id,b.username,b.code,c.card_code as card_num,b.phone,b.d_id as department_id,d.name as department')
+                    ->field('(0-a.money-a.sub_money-a.delivery_fee) as money,a.staff_id,b.username,b.code,c.card_code as card_num,b.phone,b.d_id as department_id,d.name as department,b.state as staff_state')
                     ->where('a.company_id', $companyId)
                     ->where('a.state', CommonEnum::STATE_IS_OK)
                     ->where('a.pay', PayEnum::PAY_SUCCESS)
@@ -144,7 +144,7 @@ class UserBalanceV extends Model
             ->unionAll(function ($query) use ($companyId) {
                 $query->table("canteen_shop_order_t")
                     ->alias('a')
-                    ->field('(0-a.money) as money,a.staff_id,b.username,b.code,c.card_code as card_num,b.phone,b.d_id as department_id,d.name as department')
+                    ->field('(0-a.money) as money,a.staff_id,b.username,b.code,c.card_code as card_num,b.phone,b.d_id as department_id,d.name as department,b.state as staff_state')
                     ->where('a.company_id', $companyId)
                     ->where('a.state', CommonEnum::STATE_IS_OK)
                     ->where('a.pay', PayEnum::PAY_SUCCESS)
@@ -155,7 +155,7 @@ class UserBalanceV extends Model
             ->unionAll(function ($query) use ($companyId) {
                 $query->table("canteen_recharge_supplement_t")
                     ->alias('a')
-                    ->field('a.money,a.staff_id,b.username,b.code,c.card_code as card_num,b.phone,b.d_id as department_id,d.name as department')
+                    ->field('a.money,a.staff_id,b.username,b.code,c.card_code as card_num,b.phone,b.d_id as department_id,d.name as department,b.state as staff_state')
                     ->where('a.company_id', $companyId)
                     ->leftJoin('canteen_company_staff_t b', "a.staff_id=b.id")
                     ->leftJoin('canteen_staff_card_t c', "b.id=c.staff_id and c.state<3")
@@ -165,7 +165,7 @@ class UserBalanceV extends Model
             ->unionAll(function ($query) use ($companyId) {
                 $query->table("canteen_pay_t")
                     ->alias('a')
-                    ->field('a.money,a.staff_id,b.username,b.code,c.card_code as card_num,b.phone,b.d_id as department_id,d.name as department')
+                    ->field('a.money,a.staff_id,b.username,b.code,c.card_code as card_num,b.phone,b.d_id as department_id,d.name as department,b.state as staff_state')
                     ->where('a.company_id', $companyId)
                     ->where('a.status', PayEnum::PAY_SUCCESS)
                     ->where('a.refund', CommonEnum::STATE_IS_FAIL)
@@ -177,7 +177,7 @@ class UserBalanceV extends Model
             ->unionAll(function ($query) use ($companyId) {
                 $query->table("canteen_recharge_cash_t")
                     ->alias('a')
-                    ->field('a.money,a.staff_id,b.username,b.code,c.card_code as card_num,b.phone,b.d_id as department_id,d.name as department')
+                    ->field('a.money,a.staff_id,b.username,b.code,c.card_code as card_num,b.phone,b.d_id as department_id,d.name as department,b.state as staff_state')
                     ->where('a.company_id', $companyId)
                     ->where('a.state', CommonEnum::STATE_IS_OK)
                     ->leftJoin('canteen_company_staff_t b', "a.staff_id=b.id")
@@ -224,6 +224,7 @@ class UserBalanceV extends Model
             $fields = 'a.staff_id,a.username,a.code,a.phone,a.department,sum(a.money) as balance';
         }
         $orderings = Db::table($sql . 'a')
+            ->where('a.staff_state', CommonEnum::STATE_IS_OK)
             ->where(function ($query) use ($department_id) {
                 if (!empty($department_id)) {
                     $query->where('a.department_id', $department_id);
@@ -248,7 +249,7 @@ class UserBalanceV extends Model
     }
 
 
-    public static function exportUsersBalance($department_id, $user, $phone, $company_id,$checkCard)
+    public static function exportUsersBalance($department_id, $user, $phone, $company_id, $checkCard)
     {
         /* $orderings = self::where('company_id', $company_id)
              ->where(function ($query) use ($department_id) {
