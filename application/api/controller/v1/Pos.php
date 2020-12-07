@@ -105,7 +105,8 @@ class Pos extends BaseController
         if (empty($phone)) {
             throw  new  AuthException(['msg' => '手机号码不能为空']);
         }
-        $users = $this->usersBalance($phone, $company_id);
+        // $users = $this->usersBalance($phone, $company_id);
+        $users = (new  WalletService())->getUserBalance($company_id, $phone);
         return json(new SuccessMessageWithData(['data' => $users]));
     }
 
@@ -331,7 +332,7 @@ class Pos extends BaseController
                     throw  new AuthException(['msg' => '累计退款金额大于上一笔扣费金额']);
                 }
             }
-            (new ShopService())->handleReduceOrder($id,$company_id, $staff_id, $money, $refundData);
+            (new ShopService())->handleReduceOrder($id, $company_id, $staff_id, $money, $refundData);
 
         }
         if ($type == 'consume') {
