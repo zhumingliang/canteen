@@ -279,6 +279,7 @@ class UserBalanceV extends Model
             $fields = 'a.username,a.code,a.phone,a.department,sum(a.money) as balance';
         }
         $orderings = Db::table($sql . 'a')
+            ->where('a.staff_state', CommonEnum::STATE_IS_OK)
             ->where(function ($query) use ($department_id) {
                 if (!empty($department_id)) {
                     $query->where('a.department_id', $department_id);
