@@ -66,6 +66,10 @@ class CompanyStaffV extends BaseModel
                     }])
                         ->field('id,staff_id,canteen_id')
                         ->where('state', '=', CommonEnum::STATE_IS_OK);
+                },
+                'card' => function ($query) {
+                    $query->field('id,staff_id,card_code,state')
+                    ->where('state', "<", CommonEnum::STATE_IS_DELETE);
                 }
             ])
             ->field('id,company,department,state,type,code,username,phone,card_num,birthday,face_code')

@@ -758,7 +758,7 @@ class DepartmentService
                 array_push($canteen, $v2['info']['name']);
             }
             if (!$checkCard) {
-                unset($staffs[$k]['card_num']);
+                unset($staffs[$k]['card']['card_code']);
                 unset($staffs[$k]['birthday']);
             }
             if (!$checkFace) {
