@@ -69,7 +69,7 @@ class CompanyStaffV extends BaseModel
                 },
                 'card' => function ($query) {
                     $query->field('id,staff_id,card_code,state')
-                    ->where('state', "<", CommonEnum::STATE_IS_DELETE);
+                        ->where('state', "<", CommonEnum::STATE_IS_DELETE);
                 }
             ])
             ->field('id,company,department,state,type,code,username,phone,birthday,face_code')
@@ -101,6 +101,13 @@ class CompanyStaffV extends BaseModel
                     $query->where('username|phone|code', 'like', "%" . $key . "%");
                 }
             })
+            ->with([
+                'canteens' => function ($query) {
+                    $query->field('id,staff_id,canteen_id')
+                        ->where('state', '=', CommonEnum::STATE_IS_OK);
+                }
+
+            ])
             ->field('id,company,department,code,card_num,username,phone')
             ->order('create_time desc')
             ->paginate($size, false, ['page' => $page]);
