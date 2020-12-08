@@ -206,7 +206,7 @@ class Account extends BaseController
     public function update()
     {
         $params = Request::param();
-        (new AccountService())->updadte($params);
+        (new AccountService())->update($params);
         return json(new SuccessMessage());
     }
 
