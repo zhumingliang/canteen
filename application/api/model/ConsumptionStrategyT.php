@@ -41,7 +41,7 @@ class ConsumptionStrategyT extends Model
             ->where('state', CommonEnum::STATE_IS_OK)
             ->with([
                 'dinner' => function ($query) {
-                    $query->where('state', CommonEnum::STATE_IS_OK)->field('id,name,fixed');
+                    $query->field('id,state,name,fixed');
                 },
                 'role' => function ($query) {
                     $query->field('id,name');
@@ -52,7 +52,7 @@ class ConsumptionStrategyT extends Model
             ])
             ->hidden(['create_time', 'update_time', 'state', 'd_id', 't_id', 'c_id'])
             ->order('create_time desc')
-            ->select();
+            ->select()->toArray();
         return $info;
 
     }
