@@ -456,7 +456,7 @@ class UserBalanceV extends Model
                     ->where('b.staff_id', $staff_id)
                     ->where('a.used', CommonEnum::STATE_IS_FAIL)
                     ->where('a.unused_handel', CommonEnum::STATE_IS_FAIL)
-                    ->where('b.state', CommonEnum::STATE_IS_OK)
+                    ->where('a.state', CommonEnum::STATE_IS_OK)
                     ->where('b.pay', PayEnum::PAY_SUCCESS);
             })->buildSql();
         $balance = Db::table($sql . 'a')->sum('money');
