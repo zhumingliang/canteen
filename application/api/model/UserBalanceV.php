@@ -326,7 +326,7 @@ class UserBalanceV extends Model
             })
             ->unionAll(function ($query) use ($staffId) {
                 $query->table("canteen_shop_order_t")
-                    ->field('sum(money) as money')
+                    ->field('sum(0-money) as money')
                     ->where('staff_id', $staffId)
                     ->where('state', CommonEnum::STATE_IS_OK)
                     ->where('pay', PayEnum::PAY_SUCCESS);
