@@ -41,7 +41,7 @@ class ConsumptionStrategyT extends Model
             ->where('state', CommonEnum::STATE_IS_OK)
             ->with([
                 'dinner' => function ($query) {
-                    $query->field('id,name,fixed');
+                    $query->where('state', CommonEnum::STATE_IS_OK)->field('id,name,fixed');
                 },
                 'role' => function ($query) {
                     $query->field('id,name');
@@ -115,15 +115,15 @@ class ConsumptionStrategyT extends Model
 
     }
 
- public static function infoToOffLine($canteen_id)
-{
-    $info = self::where('c_id', $canteen_id)
-        ->where('state', CommonEnum::STATE_IS_OK)
-        ->hidden(['create_time', 'update_time', 'state'])
-        ->order('create_time desc')
-        ->select();
-    return $info;
+    public static function infoToOffLine($canteen_id)
+    {
+        $info = self::where('c_id', $canteen_id)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->hidden(['create_time', 'update_time', 'state'])
+            ->order('create_time desc')
+            ->select();
+        return $info;
 
-}
+    }
 
 }
