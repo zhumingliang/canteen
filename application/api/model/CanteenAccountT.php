@@ -17,4 +17,14 @@ class CanteenAccountT extends Model
         return $info;
     }
 
+    public  static function accountForOffLine($c_id)
+    {
+        $info = self::where('c_id', $c_id)
+            ->field('type,limit_money')
+            ->find();
+        return $info;
+    }
+
+
+
 }

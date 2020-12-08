@@ -19,17 +19,21 @@ class OrderT extends Model
 
     public function getConsumptionTypeAttr($value, $data)
     {
-        if ($data['used'] == CommonEnum::STATE_IS_FAIL) {
-            return "订餐未就餐";
-        } else {
-            if ($data['booking'] == CommonEnum::STATE_IS_OK) {
-                return "订餐就餐";
-
+        if (!empty($data['used'])){
+            if ($data['used'] == CommonEnum::STATE_IS_FAIL) {
+                return "订餐未就餐";
             } else {
-                return "未订餐就餐";
-            }
+                if ($data['booking'] == CommonEnum::STATE_IS_OK) {
+                    return "订餐就餐";
 
+                } else {
+                    return "未订餐就餐";
+                }
+
+            }
         }
+        return  $data['consumption_type'];
+
     }
 
     public
@@ -346,6 +350,19 @@ class OrderT extends Model
             ->field('id,create_time,ordering_type,d_id,ordering_date,state,used,count,money,sub_money,delivery_fee,type,wx_confirm,sort_code,booking,remark,fixed')
             ->find();
         return $order;
+
+    }
+
+    public static function canteenOrders($canteenId,$consumptionDate)
+    {
+        return self::where('c_id', $canteenId)
+            ->where('ordering_date',$consumptionDate)
+            ->where('used', CommonEnum::STATE_IS_FAIL)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->where('pay', 'paid')
+            ->field('id,d_id as dinner_id,count as order_count,"one" as strategy_type,staff_id,money,sub_money,meal_money,meal_sub_money,consumption_type,fixed')
+            ->order('create_time desc')
+            ->select();
 
     }
 

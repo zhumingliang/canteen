@@ -425,7 +425,7 @@ class Order extends BaseController
      * @apiVersion 3.0.0
      * @apiDescription 微信端-订单查询-订单列表
      * @apiExample {get}  请求样例:
-     * http://canteen.tonglingok.com/api/v1/order/userOrderings?$page=1&size=100&type=3&id=1
+     * http://canteen.tonglingok.com/api/v1/order/userOrderings?page=1&size=100&type=3&id=1
      * @apiParam (请求参数说明) {int} page 当前页码
      * @apiParam (请求参数说明) {int} size 每页多少条数据
      * @apiParam (请求参数说明) {int} type  类型：1|就餐；2|外卖；3|小卖部
@@ -533,7 +533,6 @@ class Order extends BaseController
      * @apiSuccess (返回参数说明) {int} dinner 名称
      * @apiSuccess (返回参数说明) {int} all_money 可用金额
      * @apiSuccess (返回参数说明) {int} effective_money 实际金额
-     * @apiSuccess (返回参数说明) ney 实际金额
      */
     public function consumptionRecords($page = 1, $size = 20)
     {
@@ -548,9 +547,10 @@ class Order extends BaseController
      * @apiVersion 3.0.0
      * @apiDescription 微信端-消费查询-获取订单详情
      * @apiExample {get}  请求样例:
-     * http://canteen.tonglingok.com/api/v1/order/consumptionRecords/detail?order_id=8&order_type=canteen&consumption_type=one
+     * http://canteen.tonglingok.com/api/v1/order/consumptionRecords/detail?order_id=8&order_type=canteen&consumption_type=one&eating_type=1
      * @apiParam (请求参数说明) {int} order_type 饭堂订单：canteen；小卖部订单：shop;补录订单：recharge
      * @apiParam (请求参数说明) {int} order_id  订单id
+     * @apiParam (请求参数说明) {int} eating_type  就餐类型：1：堂吃；2：外卖
      * @apiParam (请求参数说明) {string} consumption_type  订单消费模式 one:一次性扣费;more：逐次扣费
      * @apiSuccessExample {json} 饭堂订单返回样例:
      * {"msg":"ok","errorCode":0,"code":200,"data":{"id":8,"u_id":3,"order_type":1,"ordering_type":"personal_choice|","count":1,"address_id":1,"state":1,"foods":[{"detail_id":5,"o_id":8,"food_id":1,"count":1,"name":"菜品1"},{"detail_id":6,"o_id":8,"food_id":3,"count":1,"name":"菜品2"}],"address":{"id":1,"province":"广东省","city":"江门市","area":"蓬江区","address":"江门市白石大道东4号路3栋","name":"张三","phone":"18956225230","sex":1}}}
@@ -586,7 +586,8 @@ class Order extends BaseController
         $order_type = Request::param('order_type');
         $order_id = Request::param('order_id');
         $consumptionType = Request::param('consumption_type');
-        $info = (new OrderService())->recordsDetail($order_type, $order_id, $consumptionType);
+        $eatingType = Request::param('eating_type');
+        $info = (new OrderService())->recordsDetail($order_type, $order_id, $consumptionType,$eatingType);
         return json(new SuccessMessageWithData(['data' => $info]));
     }
 
@@ -697,7 +698,7 @@ class Order extends BaseController
         $consumption_time = Request::param('consumption_time');
         $consumption_type = Request::param('consumption_type');
         $key = Request::param('key');
-        $info = (new OrderService())->orderUsersStatistic($canteen_id,$dinner_id, $consumption_time, $consumption_type, $key, $page, $size);
+        $info = (new OrderService())->orderUsersStatistic($canteen_id, $dinner_id, $consumption_time, $consumption_type, $key, $page, $size);
         return json(new SuccessMessageWithData(['data' => $info]));
     }
 
@@ -905,7 +906,7 @@ class Order extends BaseController
     {
         $orderId = Request::param('id');
         $consumptionType = Request::param('consumption_type');
-        $info = (new OrderService())->orderStatisticDetailInfo($orderId, $consumptionType);
+        $info = (new OrderService())->orderStatisticDetailInfo2($orderId, $consumptionType);
         return json(new SuccessMessageWithData(['data' => $info]));
     }
 
@@ -1361,7 +1362,7 @@ class Order extends BaseController
         $address_id = Request::param('address_id');
         $consumption_type = Request::param('consumption_type');
         $remark = Request::param('remark');
-        (new OrderService())->changeOrderAddress($order_id, $address_id,$consumption_type,$remark);
+        (new OrderService())->changeOrderAddress($order_id, $address_id, $consumption_type, $remark);
         return json(new SuccessMessage());
     }
 
@@ -1400,7 +1401,7 @@ class Order extends BaseController
     {
         $orderId = Request::param('id');
         $consumptionType = Request::param('consumption_type');
-        $orders = (new OrderService())->orderStatisticDetailInfo($orderId, $consumptionType);
+        $orders = (new OrderService())->orderStatisticDetailInfo2($orderId, $consumptionType);
         return json(new SuccessMessageWithData(['data' => $orders]));
     }
 
@@ -1450,5 +1451,6 @@ class Order extends BaseController
         $money = (new  OrderService())->getOrderMoney($params);
         return json(new SuccessMessageWithData(['data' => $money]));
     }
+
 
 }

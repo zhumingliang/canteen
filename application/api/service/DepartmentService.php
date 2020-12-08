@@ -15,6 +15,7 @@ use app\api\model\StaffCardV;
 use app\api\model\StaffQrcodeT;
 use app\api\model\StaffV;
 use app\lib\enum\CommonEnum;
+use app\lib\enum\UserEnum;
 use app\lib\exception\DeleteException;
 use app\lib\exception\ParameterException;
 use app\lib\exception\SaveException;
@@ -113,20 +114,31 @@ class DepartmentService
         }
     }
 
-    public function checkStaffExits($company_id, $phone, $face_code)
+    public function checkStaffExits($company_id, $phone, $face_code, $staff_id = 0)
     {
         $staff = CompanyStaffT::where('company_id', $company_id)
+            ->where(function ($query) use ($staff_id) {
+                if (empty(!$staff_id)) {
+                    $query->where('id', '<>', $staff_id);
+                }
+            })
             ->where(function ($query) use ($phone, $face_code) {
                 if (empty($face_code)) {
                     $query->where('phone', $phone);
                 } else {
-                    $query->whereOr('phone', $phone)->whereOr('face_code', $face_code);
+                    $query->whereOr('phone', $phone)
+                        ->whereOr('face_code', $face_code);
                 }
             })
             ->where('state', CommonEnum::STATE_IS_OK)
             ->count('id');
         if ($staff) {
-            throw  new SaveException(['msg' => '手机号或者人脸识别ID已存在']);
+            if (empty($face_code)) {
+                throw  new SaveException(['msg' => '手机号已存在']);
+            } else {
+                throw  new SaveException(['msg' => '手机号或者人脸识别ID已存在']);
+
+            }
         }
 
     }
@@ -143,6 +155,11 @@ class DepartmentService
             }
             $staff = CompanyStaffT::get($params['id']);
             $companyID = $staff->company_id;
+            if (!empty($params['phone'])) {
+                $this->checkStaffExits($companyID, $params['phone'], '', $staff->id);
+
+            }
+
             $update = CompanyStaffT:: update($params);
             if (!$update) {
                 throw new UpdateException();
@@ -241,76 +258,83 @@ class DepartmentService
     private
     function prefixStaffs($company_id, $data)
     {
-        $types = (new AdminService())->allTypes();
-        $canteens = (new CanteenService())->companyCanteens($company_id);
-        $departments = $this->companyDepartments($company_id);
-        $staffs = $this->getCompanyStaffs($company_id);
-        //获取企业消费方式
-        $consumptionType = (new CompanyService())->consumptionType($company_id);
-        $consumptionTypeArr = explode(',', $consumptionType['consumptionType']);
-        $phones = $staffs['phones'];
-        $faceCodes = $staffs['faceCodes'];
-        $cardNums = $staffs['cardNums'];
-        $fail = array();
-        $success = array();
-        $param_key = array();
-        if (count($data) < 2) {
-            return [];
-        }
+        try {
+            Db::startTrans();
+            $types = (new AdminService())->allTypes();
+            $canteens = (new CanteenService())->companyCanteens($company_id);
+            $departments = $this->companyDepartments($company_id);
+            $staffs = $this->getCompanyStaffs($company_id);
+            //获取企业消费方式
+            $consumptionType = (new CompanyService())->consumptionType($company_id);
+            $consumptionTypeArr = explode(',', $consumptionType['consumptionType']);
+            $phones = $staffs['phones'];
+            $faceCodes = $staffs['faceCodes'];
+            $cardNums = $staffs['cardNums'];
+            $fail = array();
+            $success = array();
+            $param_key = array();
+            if (count($data) < 2) {
+                return [];
+            }
 
-        foreach ($data as $k => $v) {
-            if ($k == 2) {
-                $param_key = $data[$k];
-            } else if ($k > 2 && !empty($data[$k])) {
-                if (empty($v[0])) {
-                    continue;
-                }
-                //检测手机号是否已经存在
-                if (in_array($v[5], $phones)) {
-                    $fail[] = "第" . $k . "数据有问题：手机号" . $v[5] . "系统已经存在";
-                    break;
-                } else if (!$this->isMobile($v[5])) {
-                    $fail[] = "第" . $k . "数据有问题：手机号格式错误";
-                    break;
-                } else {
-                    array_push($phones, $v[5]);
-                }
-                $faceCode = trim($v[9]);
-                //检测人脸识别id是否存在
-                if (in_array('face', $consumptionTypeArr)) {
-                    if (!empty($faceCode) && in_array($faceCode, $faceCodes)) {
-                        $fail[] = "第" . $k . "数据有问题：人脸识别ID" . $faceCode . "系统已经存在";
+            foreach ($data as $k => $v) {
+                if ($k == 2) {
+                    $param_key = $data[$k];
+                } else if ($k > 2 && !empty($data[$k])) {
+
+                    //检测手机号是否已经存在
+                    if (in_array($v[5], $phones)) {
+                        $fail[] = "第" . $k . "数据有问题：手机号" . $v[5] . "系统已经存在";
+                        break;
+                    } else if (!$this->isMobile($v[5])) {
+                        $fail[] = "第" . $k . "数据有问题：手机号格式错误";
                         break;
                     } else {
-                        if (!empty($faceCode)) {
-                            array_push($faceCodes, $faceCode);
-                        }
+                        array_push($phones, $v[5]);
                     }
+                    $faceCode = trim($v[9]);
+                    //检测人脸识别id是否存在
+                    if (in_array('face', $consumptionTypeArr)) {
+                        if (!empty($faceCode) && in_array($faceCode, $faceCodes)) {
+                            $fail[] = "第" . $k . "数据有问题：人脸识别ID" . $faceCode . "系统已经存在";
+                            break;
+                        } else {
+                            if (!empty($faceCode)) {
+                                array_push($faceCodes, $faceCode);
+                            }
+                        }
 
+                    }
+                    $check = $this->validateParams($company_id, $param_key, $data[$k], $types, $canteens, $departments, $consumptionTypeArr, $cardNums);
+                    if (!$check['res']) {
+                        $fail[] = "第" . $k . "数据有问题：" . $check['info']['msg'];
+                        continue;
+                    }
+                    if (in_array('card', $consumptionTypeArr) && strlen($v[6])) {
+                        array_push($cardNums, $v[6]);
+                    }
+                    $success[] = $check['info'];
                 }
-                $check = $this->validateParams($company_id, $param_key, $data[$k], $types, $canteens, $departments, $consumptionTypeArr, $cardNums);
-                if (!$check['res']) {
-                    $fail[] = "第" . $k . "数据有问题：" . $check['info']['msg'];
-                    continue;
-                }
-                if (in_array('card', $consumptionTypeArr)) {
-                    array_push($cardNums, $v[6]);
-                }
-                $success[] = $check['info'];
+
+            }
+            if (count($fail)) {
+                return [
+                    'fail' => $fail
+                ];
             }
 
-        }
-
-        if (count($success)) {
-            $all = (new CompanyStaffT())->saveAll($success);
-            if (!$all) {
-                throw  new SaveException();
+            if (count($success)) {
+                $all = (new CompanyStaffT())->saveAll($success);
+                if (!$all) {
+                    throw  new SaveException();
+                }
             }
+            Db::commit();
 
+        } catch (Exception $e) {
+            Db::rollback();
+            throw $e;
         }
-        return [
-            'fail' => $fail
-        ];
 
 
     }
@@ -375,10 +399,20 @@ class DepartmentService
                 'info' => $fail
             ];
         }
+
+        if (!strlen($name)) {
+            $fail = [
+                'name' => $name,
+                'msg' => '姓名为空'
+            ];
+            return [
+                'res' => false,
+                'info' => $fail
+            ];
+        }
         $state = trim($data[7]) == "启用" ? 1 : 2;
         //判断饭堂是否存在
-        $canteen_arr = explode('|', $canteen);
-        if (empty($canteen_arr)) {
+        if (!strlen($canteen)) {
             $fail = [
                 'name' => $name,
                 'msg' => '饭堂字段为空'
@@ -388,6 +422,7 @@ class DepartmentService
                 'info' => $fail
             ];
         }
+        $canteen_arr = explode('|', $canteen);
 
         foreach ($canteen_arr as $k => $v) {
             $c_id = $this->checkParamExits($canteens, $v);
@@ -701,6 +736,7 @@ class DepartmentService
 
                     $header = ['企业', '部门', '人员状态', '人员类型', '员工编号', '姓名', '手机号码', '归属饭堂'];
                 }
+
         $file_name = "企业员工导出";
         $url = (new ExcelService())->makeExcel($header, $staffs, $file_name);
         return [
@@ -714,30 +750,34 @@ class DepartmentService
         if (!count($staffs)) {
             return $staffs;
         }
+        $dataList = [];
         foreach ($staffs as $k => $v) {
+            $data = [];
+            $data['company'] = $v['company'];
+            $data['department'] = $v['department'];
+            $data['state'] = $v['state'] == 1 ? '启用' : '停用';;
+            $data['type'] = $v['type'];
+            $data['code'] = $v['code'];
+            $data['username'] = $v['username'];
+            $data['phone'] = $v['phone'];
+            if ($checkCard) {
+                $data['card_num'] = empty($v['card']['card_code']) ? '' : $v['card']['card_code'];
+                $data['birthday'] = $v['birthday'];
+            }
+            if ($checkFace) {
+                $data['face_code'] = $v['face_code'];
+            }
+
+
             $canteen = [];
-            unset($staffs[$k]['id']);
             $canteens = $v['canteens'];
-            unset($staffs[$k]['canteens']);
             foreach ($canteens as $k2 => $v2) {
                 array_push($canteen, $v2['info']['name']);
             }
-            if (!$checkCard) {
-                unset($staffs[$k]['card_num']);
-                unset($staffs[$k]['birthday']);
-            }
-            if (!$checkFace) {
-                unset($staffs[$k]['face_code']);
-            }
-            if (!$checkCard && !$checkFace) {
-                unset($staffs[$k]['card_num']);
-                unset($staffs[$k]['birthday']);
-                unset($staffs[$k]['face_code']);
-            }
-            $staffs[$k]['canteen'] = implode('|', $canteen);
-            $staffs[$k]['state'] = $v['state'] == 1 ? '启用' : '停用';
+            $data['canteen'] = implode('|', $canteen);
+            array_push($dataList, $data);
         }
-        return $staffs;
+        return $dataList;
 
     }
 
@@ -816,6 +856,24 @@ class DepartmentService
     {
         $staffs = CompanyStaffV::searchStaffs($page, $size, $company_id, $department_id, $key);
         return $staffs;
+    }
+
+    public function handleStaff($id, $state)
+    {
+        $staff = CompanyStaffT::update(['state' => $state], ['id' => $id]);
+        if (!$staff) {
+            throw  new UpdateException();
+        }
+        if ($state == CommonEnum::STATE_IS_DELETE) {
+            //删除用户需要解除卡绑定
+            $staffCard = StaffCardT::where('staff_id', $id)
+                ->where('state', CommonEnum::STATE_IS_OK)
+                ->find();
+            if ($staffCard) {
+                $staffCard->state = CommonEnum::STATE_IS_DELETE;
+                $staffCard->save();
+            }
+        }
     }
 
 

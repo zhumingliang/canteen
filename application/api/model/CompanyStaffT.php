@@ -5,6 +5,7 @@ namespace app\api\model;
 
 
 use app\lib\enum\CommonEnum;
+use app\lib\enum\PayEnum;
 use think\Model;
 
 class CompanyStaffT extends Model
@@ -28,6 +29,18 @@ class CompanyStaffT extends Model
     public function canteens()
     {
         return $this->hasMany('StaffCanteenT', 'staff_id', 'id');
+
+    }
+
+    public function account()
+    {
+        return $this->hasMany('AccountRecordsT', 'staff_id', 'id');
+
+    }
+
+    public function pay()
+    {
+        return $this->hasMany('PayT', 'staff_id', 'id');
 
     }
 
@@ -125,6 +138,13 @@ class CompanyStaffT extends Model
             ->with([
                 'card' => function ($query) {
                     $query->field('id,staff_id,card_code')->whereIn('state', '1,2');
+                },
+                'canteens' => function ($query) {
+                    $query->with(['info' => function ($query2) {
+                        $query2->field('id,name');
+                    }])
+                        ->field('id,staff_id,canteen_id')
+                        ->where('state', '=', CommonEnum::STATE_IS_OK);
                 }
             ])
             ->select();
@@ -138,6 +158,157 @@ class CompanyStaffT extends Model
             ->paginate($size, false, ['page' => $page])->toArray();
         return $types;
 
+    }
+
+    public static function staffsForBalance($page, $size, $department_id, $user, $phone, $company_id)
+    {
+        $users = self::where('company_id', $company_id)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->where(function ($query) use ($department_id) {
+                if (!empty($department_id)) {
+                    $query->where('d_id', $department_id);
+                }
+            })
+            ->where(function ($query) use ($phone) {
+                if (!empty($phone)) {
+                    $query->where('phone', $phone);
+                }
+            })
+            ->where(function ($query) use ($user) {
+                if (!empty($user)) {
+                    $query->where('username|code|card_num', 'like', '%' . $user . '%');
+                }
+            })
+            ->with([
+                'department' => function ($query) {
+                    $query->field('id,name');
+                }
+            ])
+            ->field('id,d_id,username,code,card_num,phone')
+            ->paginate($size, false, ['page' => $page])->toArray();
+        return $users;
+
+    }
+
+
+    public static function staffsForBalanceWithAccount($page, $size, $department_id, $user, $phone, $company_id)
+    {
+        $users = self::where('company_id', $company_id)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->where(function ($query) use ($department_id) {
+                if (!empty($department_id)) {
+                    $query->where('d_id', $department_id);
+                }
+            })
+            ->where(function ($query) use ($phone) {
+                if (!empty($phone)) {
+                    $query->where('phone', $phone);
+                }
+            })
+            ->where(function ($query) use ($user) {
+                if (!empty($user)) {
+                    $query->where('username|code|card_num', 'like', '%' . $user . '%');
+                }
+            })
+            ->with([
+                'department' => function ($query) {
+                    $query->field('id,name');
+                },
+                'account' => function ($query) {
+                    $query->where('state', CommonEnum::STATE_IS_OK)
+                        ->field('staff_id,account_id,sum(money) as money')
+                        ->group('account_id');
+                },
+                'card' => function ($query) {
+                    $query->field('id,staff_id,card_code')->whereIn('state', '1,2');
+                }
+            ])
+            ->field('id,d_id,username,code,phone')
+            ->paginate($size, false, ['page' => $page])->toArray();
+        return $users;
+
+    }
+
+    public static function staffsForExportsBalance($department_id, $user, $phone, $company_id)
+    {
+        $users = self::where('company_id', $company_id)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->where(function ($query) use ($department_id) {
+                if (!empty($department_id)) {
+                    $query->where('d_id', $department_id);
+                }
+            })
+            ->where(function ($query) use ($phone) {
+                if (!empty($phone)) {
+                    $query->where('phone', $phone);
+                }
+            })
+            ->where(function ($query) use ($user) {
+                if (!empty($user)) {
+                    $query->where('username|code', 'like', '%' . $user . '%');
+                }
+            })
+            ->with([
+                'department' => function ($query) {
+                    $query->field('id,name');
+                },
+                'account' => function ($query) {
+                    $query->where('state', CommonEnum::STATE_IS_OK)
+                        ->field('staff_id,account_id,sum(money) as money')
+                        ->group('account_id');
+                },
+                'card' => function ($query) use ($user) {
+                    $query->where(function ($query) use ($user) {
+                        $query->where('card_code', 'like', '%' . $user . '%');
+
+                    })->field('id,staff_id,card_code')->whereIn('state', '1,2');
+                }
+            ])
+            ->field('id,d_id,username,code,card_num,phone')
+            ->select()->toArray();
+        return $users;
+
+    }
+
+    public static function staffsForOffLine($companyId)
+    {
+        return self::where('company_id', $companyId)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->with([
+                'card' => function ($query) {
+                    $query->field('id,staff_id,card_code,state')
+                        ->whereIn('state', '1,2');
+                }, 'department' => function ($query) {
+                    $query->field('id,name');
+                }
+            ])
+            ->field('id,d_id,username,t_id as staff_type_id')
+            ->order('id')
+            ->select();
+
+    }
+
+    public static function staffsForAccount($companyId, $departmentId, $username, $page, $size)
+    {
+        return self::where('company_id', $companyId)
+            ->where(function ($query) use ($departmentId) {
+                if ($departmentId) {
+                    $query->where('d_id', $departmentId);
+                }
+            })->where(function ($query) use ($username) {
+                if (strlen($username)) {
+                    $query->where('username', 'like', '%' . $username . '%');
+                }
+            })->where('state', CommonEnum::STATE_IS_OK)
+            ->with([
+                'company' => function ($query) {
+                    $query->field('id,name');
+                }, 'department' => function ($query) {
+                    $query->field('id,name');
+                }
+            ])
+            ->field('id,company_id,d_id,username,phone')
+            ->paginate($size, false, ['page' => $page])->toArray();
     }
 
 }

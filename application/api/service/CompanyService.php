@@ -5,7 +5,11 @@ namespace app\api\service;
 
 
 use app\api\model\AdminT;
+use app\api\model\CanteenAccountT;
 use app\api\model\CompanyT;
+use app\api\model\ConsumptionStrategyT;
+use app\api\model\DinnerT;
+use app\api\model\PayNonghangConfigT;
 use app\api\model\PayWxConfigT;
 use app\api\model\ShopT;
 use app\api\model\StaffCardV;
@@ -17,6 +21,7 @@ use app\lib\exception\AuthException;
 use app\lib\exception\SaveException;
 use think\Db;
 use think\Exception;
+use zml\tp_tools\Redis;
 use function GuzzleHttp\Promise\each_limit;
 use function GuzzleHttp\Psr7\str;
 
@@ -39,6 +44,8 @@ class CompanyService
             $c_id = $company->id;
             //新增默认饭堂
             (new CanteenService())->saveDefault($c_id, CanteenEnum::DEFAULT_NAME);
+            //新增企业个人账户
+            (new AccountService())->saveFixedAccount($c_id, 1);
             //新增默认企业超级管理员账号
             //新增企业默认功能模块
             (new CanteenService())->saveDefaultCanteen($c_id);
@@ -58,6 +65,7 @@ class CompanyService
         }
 
     }
+
 
     private function checkCompany($name)
     {
@@ -347,5 +355,51 @@ class CompanyService
         return in_array('face', $arr);
     }
 
+    public function saveCompanyNHConfig($params)
+    {
+
+        $config = PayNonghangConfigT::config($params['company_id']);
+        if ($config) {
+            throw new SaveException(['msg' => '该企业配置已创建']);
+        }
+        $params['state'] = CommonEnum::STATE_IS_OK;
+        $config = PayNonghangConfigT::create($params);
+        if ($config) {
+            throw new SaveException();
+        }
+        //生成企业农行账户
+        (new AccountService())->saveFixedAccount($params['company_id'], 2);
+    }
+
+    public function wxConfig($companyId)
+    {
+        $config = PayWxConfigT::info($companyId);
+        return $config;
+    }
+
+    public function nhConfig($companyId)
+    {
+        $config = PayNonghangConfigT::config($companyId);
+        return $config;
+    }
+
+    public function configForOffLine()
+    {
+
+        $canteenId = Token::getCurrentTokenVar('belong_id');
+        //1.获取饭堂所有餐次设置
+        $dinners = DinnerT::dinners($canteenId);
+        //2.获取饭堂消费策略
+        $strategies = ConsumptionStrategyT::infoToOffLine($canteenId);
+        //获取饭堂配置
+        $accountConfig = CanteenAccountT::accountForOffLine($canteenId);
+        return [
+            'dinners' => $dinners,
+            'strategies' => $strategies,
+            'canteen_config'=>$accountConfig
+        ];
+
+
+    }
 
 }

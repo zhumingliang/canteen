@@ -258,7 +258,7 @@ class OrderingV extends Model
             })
             ->where('a.phone', $phone)
             ->where('a.ordering_date', $orderingDate)
-            ->where('b.id', $dinnerID)
+            ->where('a.dinner_id', $dinnerID)
             ->where('a.state', CommonEnum::STATE_IS_OK)
             ->where('a.pay', PayEnum::PAY_SUCCESS)
             ->order('create_time')
@@ -301,7 +301,7 @@ class OrderingV extends Model
                     })
                     ->where('a.phone', $phone)
                     ->where('a.ordering_date', $orderingDate)
-                    ->where('b.id', $dinnerID)
+                    ->where('a.d_id', $dinnerID)
                     ->where('a.state', CommonEnum::STATE_IS_OK)
                     ->where('a.pay', PayEnum::PAY_SUCCESS)
                     ->order('create_time')
@@ -559,9 +559,13 @@ class OrderingV extends Model
                             ->where('a.used', CommonEnum::STATE_IS_FAIL);
                     })
                     ->where('a.state', CommonEnum::STATE_IS_OK)
-                    ->where('a.pay', PayEnum::PAY_SUCCESS);
+                    ->where('a.pay', PayEnum::PAY_SUCCESS)
+                   ;
+
             })->buildSql();
+        //echo $sql;
         $records = Db::table($sql . 'a')
+            ->order('a.create_time desc')
             ->paginate($size, false, ['page' => $page]);
         return $records;
     }

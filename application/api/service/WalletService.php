@@ -5,7 +5,9 @@ namespace app\api\service;
 
 
 use app\api\job\UploadExcel;
+use app\api\model\CompanyAccountT;
 use app\api\model\CompanyStaffT;
+use app\api\model\CompanyT;
 use app\api\model\DinnerV;
 use app\api\model\OrderParentT;
 use app\api\model\OrderT;
@@ -14,6 +16,7 @@ use app\api\model\RechargeCashT;
 use app\api\model\RechargeSupplementT;
 use app\api\model\RechargeV;
 use app\api\model\UserBalanceV;
+use app\api\validate\Company;
 use app\lib\enum\CommonEnum;
 use app\lib\enum\PayEnum;
 use app\lib\exception\AuthException;
@@ -35,7 +38,8 @@ class WalletService
         }
         $company_id = Token::getCurrentTokenVar('company_id');
         $admin_id = Token::getCurrentUid();
-        $data = $this->prefixDetail($company_id, $admin_id, $detail, $params['money'], $params['remark']);
+        $account_id = empty($params['account_id']) ? 0 : $params['account_id'];
+        $data = $this->prefixDetail($company_id, $admin_id, $detail, $account_id, $params['money'], $params['remark']);
         $cash = (new RechargeCashT())->saveAll($data);
         if (!$cash) {
             throw new SaveException();
@@ -60,6 +64,65 @@ class WalletService
         ];
     }
 
+    //分账户批量充值
+    public function rechargeCashUploadWithAccount($cash_excel)
+    {
+        $company_id = Token::getCurrentTokenVar('company_id');
+        $admin_id = Token::getCurrentUid();
+        $fileName = (new ExcelService())->saveExcelReturnName($cash_excel);
+        $fail = $this->checkDataWithAccount($company_id, $fileName);
+        if (count($fail)) {
+            return [
+                'res' => false,
+                'fail' => $fail
+            ];
+        }
+        $this->uploadExcelTask($company_id, $admin_id, $fileName, "rechargeCashWithAccount");
+        return [
+            'res' => true
+        ];
+    }
+
+    public function checkDataWithAccount($company_id, $fileName)
+    {
+        $data = (new ExcelService())->importExcel($fileName);
+        $staffs = CompanyStaffT::staffs($company_id);
+        $accounts = CompanyAccountT::accountsWithoutNonghang($company_id);
+        $newStaffs = [];
+        $accountsArr = [];
+        foreach ($staffs as $k => $v) {
+            array_push($newStaffs, $v['username'] . '&' . $v['phone']);
+        }
+        if (count($accounts)) {
+            foreach ($accounts as $k => $v) {
+                array_push($accountsArr, $v['name']);
+            }
+        }
+
+        $fail = [];
+        foreach ($data as $k => $v) {
+            if ($k < 2) {
+                continue;
+            }
+            if (!strlen($v[0]) || !strlen($v[1]) || !in_array($v[0] . '&' . $v[1], $newStaffs)) {
+                array_push($fail, '第' . $k . '行数据有问题');
+            }
+
+            if (count($accountsArr) && !in_array($v[2], $accountsArr)) {
+                array_push($fail, '第' . $k . '行数据有问题');
+
+            }
+
+            $money = trim($v[3]);
+            if ($money == '') {
+                array_push($fail, '第' . $k . '行数据有问题');
+            }
+        }
+        return $fail;
+
+    }
+
+
     public function checkData($company_id, $fileName)
     {
         $data = (new ExcelService())->importExcel($fileName);
@@ -68,15 +131,17 @@ class WalletService
         foreach ($staffs as $k => $v) {
             array_push($newStaffs, $v['username'] . '&' . $v['phone']);
         }
+
         $fail = [];
         foreach ($data as $k => $v) {
             if ($k < 2) {
                 continue;
             }
-            if (!in_array($v[0] . '&' . $v[1], $newStaffs)) {
+            if (!strlen($v[0]) || !strlen($v[1]) || !in_array($v[0] . '&' . $v[1], $newStaffs)) {
                 array_push($fail, '第' . $k . '行数据有问题');
             }
-            $money = trim($v[3]);
+
+            $money = trim($v[2]);
             if ($money == '') {
                 array_push($fail, '第' . $k . '行数据有问题');
             }
@@ -138,7 +203,38 @@ class WalletService
                 'staff_id' => $newStaffs[$v[1]],
                 'username' => $v[0],
                 'phone' => $v[1],
-                'card_num' => $v[2],
+                'money' => $v[2],
+                'remark' => $v[3]
+            ]);
+        }
+        return $dataList;
+
+    }
+
+    public function prefixUploadDataWithAccount($company_id, $admin_id, $data)
+    {
+        $dataList = [];
+        $staffs = CompanyStaffT::staffs($company_id);
+        $accounts = CompanyAccountT::accountsWithoutNonghang($company_id);
+        $newStaffs = [];
+        $newAccounts = [];
+        foreach ($staffs as $k => $v) {
+            $newStaffs[$v['phone']] = $v['id'];
+        }
+        foreach ($accounts as $k => $v) {
+            $newAccounts [$v['name']] = $v['id'];
+        }
+        foreach ($data as $k => $v) {
+            if ($k == 1 || empty($v[0])) {
+                continue;
+            }
+            array_push($dataList, [
+                'admin_id' => $admin_id,
+                'company_id' => $company_id,
+                'staff_id' => $newStaffs[$v[1]],
+                'account_id' => count($newAccounts) ? $newAccounts[$v[2]] : 0,
+                'username' => $v[0],
+                'phone' => $v[1],
                 'money' => $v[3],
                 'remark' => $v[4]
             ]);
@@ -147,15 +243,15 @@ class WalletService
 
     }
 
-    private function prefixDetail($company_id, $admin_id, $detail, $money, $remark)
+    private function prefixDetail($company_id, $admin_id, $detail, $account_id, $money, $remark)
     {
         $dataList = [];
         foreach ($detail as $k => $v) {
             $data = [];
             $data['company_id'] = $company_id;
+            $data['account_id'] = $account_id;
             $data['money'] = $money;
             $data['staff_id'] = $v['staff_id'];
-            // $data['card_num'] = $v['card_num'];
             $data['state'] = CommonEnum::STATE_IS_OK;
             $data['admin_id'] = $admin_id;
             $data['remark'] = $remark;
@@ -178,7 +274,20 @@ class WalletService
     {
         $company_id = Token::getCurrentTokenVar('company_id');
         $records = RechargeV::exportRechargeRecords($time_begin, $time_end, $type, $admin_id, $username, $company_id);
-        $header = ['创建时间', '姓名', '充值金额', '充值途径', '充值人员', '备注'];
+        $header = ['创建时间', '姓名', '手机号', '充值金额', '充值途径', '充值人员', '备注'];
+        $file_name = $time_begin . "-" . $time_end . "-充值记录明细";
+        $url = (new ExcelService())->makeExcel($header, $records, $file_name);
+        return [
+            'url' => config('setting.domain') . $url
+        ];
+
+    }
+
+    public function exportRechargeRecordsWithAccount($time_begin, $time_end, $type, $admin_id, $username)
+    {
+        $company_id = Token::getCurrentTokenVar('company_id');
+        $records = RechargeV::exportRechargeRecords($time_begin, $time_end, $type, $admin_id, $username, $company_id);
+        $header = ['创建时间', '姓名', '充值金额', '账户名称', '充值途径', '充值人员', '备注'];
         $file_name = $time_begin . "-" . $time_end . "-充值记录明细";
         $url = (new ExcelService())->makeExcel($header, $records, $file_name);
         return [
@@ -190,26 +299,160 @@ class WalletService
     public function usersBalance($page, $size, $department_id, $user, $phone)
     {
         $company_id = Token::getCurrentTokenVar('company_id');
-        $users = UserBalanceV::usersBalance($page, $size, $department_id, $user, $phone, $company_id);
-        return $users;
+        $checkCard = (new CompanyService())->checkConsumptionContainsCard($company_id);
+        $balance = UserBalanceV::usersBalance($page, $size, $department_id, $user, $phone, $company_id, $checkCard);
+        return $balance;
+    }
+
+    public function usersBalanceWithAccount($page, $size, $department_id, $user, $phone)
+    {
+        $company_id = Token::getCurrentTokenVar('company_id');
+        $checkCard = (new CompanyService())->checkConsumptionContainsCard($company_id);
+        $accounts = CompanyAccountT::accountsWithSorts($company_id);
+        $staffs = CompanyStaffT::staffsForBalanceWithAccount($page, $size, $department_id, $user, $phone, $company_id);
+        $staffs['data'] = $this->prefixAccount($staffs['data'], $accounts, $checkCard);
+        return $staffs;
+    }
+
+    public function prefixAccount($staffs, $accounts, $checkCard)
+    {
+        $countData = [];
+        foreach ($accounts as $k => $v) {
+            array_push($countData, [
+                'account_id' => $v['id'],
+                'name' => $v['name'],
+                'type' => $v['type'],
+                'fixed_type' => $v['fixed_type'],
+                'balance' => 0
+            ]);
+        }
+        if (count($staffs)) {
+            foreach ($staffs as $k => $v) {
+                if (!$checkCard) {
+                    unset($staffs[$k]['card']);
+                }
+                $staffCountData = $countData;
+                $account = $v['account'];
+                if (count($account)) {
+                    foreach ($staffCountData as $k2 => $v2) {
+                        foreach ($account as $k3 => $v3) {
+                            if ($v2['account_id'] == $v3['account_id']) {
+                                $staffCountData[$k2]['balance'] = $v3['money'];
+                                break;
+                            }
+
+                        }
+                    }
+                }
+                $staffs[$k]['account'] = $staffCountData;
+                unset($staffs[$k]['pay']);
+            }
+        }
+        return $staffs;
+
     }
 
     public function exportUsersBalance($department_id, $user, $phone)
     {
         $company_id = Token::getCurrentTokenVar('company_id');
-        $users = UserBalanceV::exportUsersBalance($department_id, $user, $phone, $company_id);
-        $header = ['姓名', '员工编号', '卡号', '手机号码', '部门', '余额（元）'];
+        $checkCard = (new CompanyService())->checkConsumptionContainsCard($company_id);
+        $staffs = UserBalanceV::exportUsersBalance($department_id, $user, $phone, $company_id, $checkCard);
+        if ($checkCard) {
+            $header = ['姓名', '员工编号', '卡号', '手机号码', '部门', '余额'];
+        } else {
+            $header = ['姓名', '员工编号', '手机号码', '部门', '余额'];
+        }
         $file_name = "饭卡余额报表";
-        $url = (new ExcelService())->makeExcel($header, $users, $file_name);
+        $url = (new ExcelService())->makeExcel($header, $staffs, $file_name);
         return [
             'url' => config('setting.domain') . $url
         ];
-        return $users;
     }
 
-    public function getUserBalance($company_id, $phone)
+    public function exportUsersBalanceWithAccount($department_id, $user, $phone)
     {
-        $balance = UserBalanceV::userBalance($company_id, $phone);
+        $company_id = Token::getCurrentTokenVar('company_id');
+        $accounts = CompanyAccountT::accountsWithSorts($company_id);
+        $checkCard = (new CompanyService())->checkConsumptionContainsCard($company_id);
+        $staffs = CompanyStaffT::staffsForExportsBalance($department_id, $user, $phone, $company_id);
+        if ($checkCard) {
+            $header = ['姓名', '员工编号', '卡号', '手机号码', '部门'];
+        } else {
+            $header = ['姓名', '员工编号', '手机号码', '部门'];
+        }
+
+        $header = $this->prefixHeader($accounts, $header);
+        $staffs = $this->prefixExportBalanceWithAccount($staffs, $accounts, $checkCard);
+        $file_name = "饭卡余额报表";
+        $url = (new ExcelService())->makeExcel($header, $staffs, $file_name);
+        return [
+            'url' => config('setting.domain') . $url
+        ];
+    }
+
+    private function prefixHeader($accounts, $header)
+    {
+        foreach ($accounts as $k => $v) {
+            array_push($header, $v['name']);
+        }
+        array_push($header, '总余额（元）');
+        return $header;
+
+    }
+
+
+    private function prefixExportBalanceWithAccount($staffs, $accounts, $checkCard)
+    {
+        $dataList = [];
+        if (count($staffs)) {
+            foreach ($staffs as $k => $v) {
+                if ($checkCard) {
+                    $data = [
+                        'username' => $v['username'],
+                        'code' => $v['code'],
+                        'card_num' => empty($v['card']['card_code']) ? '' : $v['card']['card_code'],
+                        'phone' => $v['phone'],
+                        'department' => $v['department']['name']
+                    ];
+                } else {
+                    $data = [
+                        'username' => $v['username'],
+                        'code' => $v['code'],
+                        'phone' => $v['phone'],
+                        'department' => $v['department']['name']
+                    ];
+                }
+
+                $account = $v['account'];
+                $allBalance = 0;
+                foreach ($accounts as $k2 => $v2) {
+                    $accountBalance = 0;
+                    if (count($account)) {
+                        foreach ($account as $k3 => $v3) {
+                            if ($v2['id'] == $v3['account_id']) {
+                                $accountBalance = $v3['money'];
+                                break;
+                            }
+                        }
+
+                    }
+                    $data[$v2['name']] = $accountBalance;
+                }
+                $data['总余额'] = $allBalance;
+                array_push($dataList, $data);
+            }
+        }
+        return $dataList;
+
+    }
+
+    public function getUserBalance($company_id, $phone, $staff_id = 0)
+    {
+        if (!$staff_id) {
+            $staff = CompanyStaffT::staffName($phone, $company_id);
+            $staff_id = $staff->id;
+        }
+        $balance = UserBalanceV::userBalance2($staff_id);
         return $balance;
 
     }
@@ -226,10 +469,10 @@ class WalletService
         }
         $admin_id = Token::getCurrentUid();
         //调用存储过程，将账户清0
-        $resultSet = Db::query('call clear_money(:in_companyId,:in_adminID)', [
-            'in_companyId' => $company_id,
-            'in_adminID' => $admin_id
-        ]);
+        /* $resultSet = Db::query('call clear_money(:in_companyId,:in_adminID)', [
+             'in_companyId' => $company_id,
+             'in_adminID' => $admin_id
+         ]);*/
     }
 
     public function rechargeSupplement($params)
@@ -249,7 +492,8 @@ class WalletService
                 'staff_id' => $v,
                 'consumption_date' => $params['consumption_date'],
                 'remark' => empty($params['remark']) ? '' : $params['remark'],
-                'dinner_id' => $params['dinner_id']
+                'dinner_id' => $params['dinner_id'],
+                'account_id' => empty($params['account_id']) ? 0 : $params['account_id']
             ];
             array_push($dataList, $data);
         }
@@ -257,6 +501,26 @@ class WalletService
         if (!$supplement) {
             throw new SaveException();
         }
+    }
+
+
+    public function rechargeSupplementUploadWithAccount($supplement_excel)
+    {
+        $company_id = Token::getCurrentTokenVar('company_id');
+        $admin_id = Token::getCurrentUid();
+        $fileName = (new ExcelService())->saveExcelReturnName($supplement_excel);
+        //$fileName = dirname($_SERVER['SCRIPT_FILENAME']) . '/static/excel/upload/test.xlsx';
+        $fail = $this->checkSupplementDataWithAccount($company_id, $fileName);
+        if (count($fail)) {
+            return [
+                'res' => false,
+                'fail' => $fail
+            ];
+        }
+        $this->uploadExcelTask($company_id, $admin_id, $fileName, "supplementWithAccount");
+        return [
+            'res' => true
+        ];
     }
 
     public function rechargeSupplementUpload($supplement_excel)
@@ -278,12 +542,21 @@ class WalletService
         ];
     }
 
-    private function checkSupplementData($company_id, $fileName)
+
+    private function checkSupplementDataWithAccount($company_id, $fileName)
     {
         $newCanteen = [];
         $canteens = (new CanteenService())->companyCanteens($company_id);
         $dinners = DinnerV::companyDinners($company_id);
         $staffs = CompanyStaffT::staffs($company_id);
+        $accounts = CompanyAccountT::accountsWithoutNonghang($company_id);
+        $accountsArr = [];
+        if (count($accounts)) {
+            foreach ($accounts as $k => $v) {
+                array_push($accountsArr, $v['name']);
+            }
+        }
+
         foreach ($canteens as $k => $v) {
             array_push($newCanteen, $v['name']);
         }
@@ -291,9 +564,20 @@ class WalletService
             throw  new  SaveException(['msg' => '企业饭堂或者餐次设置异常']);
         }
         $newStaffs = [];
+        $staffCanteens = [];
+
         foreach ($staffs as $k => $v) {
-            // array_push($newStaffs, $v['code'] . '&' . $v['username'] . '&' . $v['card_num'] . '&' . $v['phone']);
             array_push($newStaffs, $v['username'] . '&' . $v['phone']);
+            $canteens = $v['canteens'];
+            $staffCanteen = [];
+            foreach ($canteens as $k2 => $v2) {
+                if (!empty($v2['info']['name']) && strlen($v2['info']['name'])) {
+                    array_push($staffCanteen, $v2['info']['name']);
+                }
+            }
+
+            $staffCanteens[$v['username'] . '&' . $v['phone']] = $staffCanteen;
+
         }
         $fail = [];
         $data = (new ExcelService())->importExcel($fileName);
@@ -307,7 +591,76 @@ class WalletService
                 array_push($fail, '第' . $k . '行数据有问题');
                 break;
             }
-            if (strtotime($v[3]) > time() || $v[6] < 0) {
+            //检测饭堂是否合法
+            $checkCanteens = $staffCanteens[$checkData];
+            if (!in_array($v[2], $checkCanteens)) {
+                array_push($fail, '第' . $k . '行数据有问题');
+                break;
+            }
+
+            if (count($accountsArr) && !in_array($v[6], $accountsArr)) {
+                array_push($fail, '第' . $k . '行数据有问题');
+
+            }
+            if (strtotime($v[3]) > strtotime(\date('Y-m-d')) || $v[7] < 0) {
+                array_push($fail, '第' . $k . '行数据有问题');
+                break;
+            }
+
+        }
+        return $fail;
+    }
+
+
+    private function checkSupplementData($company_id, $fileName)
+    {
+        $newCanteen = [];
+        $canteens = (new CanteenService())->companyCanteens($company_id);
+        $dinners = DinnerV::companyDinners($company_id);
+        $staffs = CompanyStaffT::staffs($company_id);
+
+        foreach ($canteens as $k => $v) {
+            array_push($newCanteen, $v['name']);
+        }
+        if (!count($newCanteen) || !count($dinners)) {
+            throw  new  SaveException(['msg' => '企业饭堂或者餐次设置异常']);
+        }
+        $newStaffs = [];
+        $staffCanteens = [];
+        foreach ($staffs as $k => $v) {
+            array_push($newStaffs, $v['username'] . '&' . $v['phone']);
+            $canteens = $v['canteens'];
+            $staffCanteen = [];
+            foreach ($canteens as $k2 => $v2) {
+                if (!empty($v2['info']['name']) && strlen($v2['info']['name'])) {
+                    array_push($staffCanteen, $v2['info']['name']);
+                }
+            }
+            array_push($staffCanteens, [
+                $v['username'] . '&' . $v['phone'] => $staffCanteen
+            ]);
+        }
+        $fail = [];
+        $data = (new ExcelService())->importExcel($fileName);
+        foreach ($data as $k => $v) {
+            if ($k < 2) {
+                continue;
+            }
+            $checkData = $v[0] . '&' . $v[1];
+            if (!in_array($checkData, $newStaffs) ||
+                !in_array($v[2], $newCanteen) || !$this->checkDinnerInCanteen($v[2], $v[4], $dinners)) {
+                array_push($fail, '第' . $k . '行数据有问题');
+                break;
+            }
+
+            //检测饭堂是否合法
+            $checkCanteens = $staffCanteens[$checkData];
+            if (!in_array($v[2], $checkCanteens)) {
+                array_push($fail, '第' . $k . '行数据有问题');
+                break;
+            }
+
+            if (strtotime($v[3]) > strtotime(\date('Y-m-d')) || $v[6] < 0) {
                 array_push($fail, '第' . $k . '行数据有问题');
                 break;
             }
@@ -336,6 +689,7 @@ class WalletService
         $staffs = CompanyStaffT::staffs($company_id);
         $newStaffs = [];
         $newCanteen = [];
+
         foreach ($staffs as $k => $v) {
             $newStaffs[$v['phone']] = $v['id'];
         }
@@ -351,10 +705,8 @@ class WalletService
                 'company_id' => $company_id,
                 'staff_id' => $newStaffs[$v[1]],
                 'source' => 'upload',
-                //'code' => $v[0],
                 'code' => '',
                 'username' => $v[0],
-                //'card_num' => $v[2],
                 'card_num' => '',
                 'phone' => $v[1],
                 'canteen' => $v[2],
@@ -364,6 +716,55 @@ class WalletService
                 'dinner' => $v[4],
                 'type' => $v[5] == "补扣" ? 2 : 1,
                 'money' => $v[5] == "补扣" ? 0 - $v[6] : $v[6]
+            ]);
+        }
+
+        return $dataList;
+    }
+
+    public function prefixSupplementUploadDataWithAccount($company_id, $admin_id, $data)
+    {
+        $dataList = [];
+        $canteens = (new CanteenService())->companyCanteens($company_id);
+        $dinners = DinnerV::companyDinners($company_id);
+        $staffs = CompanyStaffT::staffs($company_id);
+        $accounts = CompanyAccountT::accountsWithoutNonghang($company_id);
+
+        $newStaffs = [];
+        $newCanteen = [];
+        $newAccounts = [];
+
+        foreach ($accounts as $k => $v) {
+            $newAccounts [$v['name']] = $v['id'];
+        }
+
+        foreach ($staffs as $k => $v) {
+            $newStaffs[$v['phone']] = $v['id'];
+        }
+        foreach ($canteens as $k => $v) {
+            $newCanteen[$v['name']] = $v['id'];
+        }
+        foreach ($data as $k => $v) {
+            if ($k == 1) {
+                continue;
+            }
+            array_push($dataList, [
+                'admin_id' => $admin_id,
+                'company_id' => $company_id,
+                'staff_id' => $newStaffs[$v[1]],
+                'account_id' => count($newAccounts) ? $newAccounts[$v[6]] : 0,
+                'source' => 'upload',
+                'code' => '',
+                'username' => $v[0],
+                'card_num' => '',
+                'phone' => $v[1],
+                'canteen' => $v[2],
+                'canteen_id' => $newCanteen[$v[2]],
+                'consumption_date' => $this->getConsumptionDate($v[3]),
+                'dinner_id' => $this->getDinnerID($dinners, $newCanteen[$v[2]], $v[4]),
+                'dinner' => $v[4],
+                'type' => $v[5] == "补扣" ? 2 : 1,
+                'money' => $v[5] == "补扣" ? 0 - $v[7] : $v[7]
             ]);
         }
 

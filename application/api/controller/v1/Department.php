@@ -324,10 +324,7 @@ class Department extends BaseController
     {
         $id = Request::param('id');
         $state = Request::param('state');
-        $staff = CompanyStaffT::update(['state' =>$state], ['id' => $id]);
-        if (!$staff) {
-            throw  new UpdateException();
-        }
+        (new DepartmentService())->handleStaff($id,$state);
         return json(new SuccessMessage());
     }
 

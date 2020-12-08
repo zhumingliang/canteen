@@ -39,6 +39,9 @@ Route::post('api/:version/canteen/module/category', 'api/:version.Module/canteen
 
 Route::post('api/:version/company/save', 'api/:version.Company/save');
 Route::post('api/:version/company/wxConfig/save', 'api/:version.Company/saveCompanyWxConfig');
+Route::get('api/:version/company/wxConfig', 'api/:version.Company/wxConfig');
+Route::post('api/:version/company/nhConfig/save', 'api/:version.Company/saveCompanyNHConfig');
+Route::get('api/:version/company/nhConfig', 'api/:version.Company/nhConfig');
 Route::get('api/:version/companies', 'api/:version.Company/companies');
 Route::get('api/:version/company/consumptionLocation', 'api/:version.Company/consumptionLocation');
 Route::get('api/:version/manager/companies', 'api/:version.Company/managerCompanies');
@@ -303,6 +306,9 @@ Route::rule('api/:version/wallet/WXNotifyUrl', 'api/:version.Wallet/WXNotifyUrl'
 
 
 Route::rule('api/:version/service/printer', 'api/:version.Service/printer');
+Route::rule('api/:version/service/canteen/config', 'api/:version.Service/configForOffLine');
+Route::rule('api/:version/service/canteen/orders', 'api/:version.Service/orderForOffline');
+Route::rule('api/:version/service/company/staffs', 'api/:version.Service/staffsForOffline');
 
 Route::post('api/:version/outsider/save', 'api/:version.Outsider/saveCanteen');
 Route::get('api/:version/outsiders', 'api/:version.Outsider/outsiders');
@@ -323,3 +329,17 @@ Route::post('api/:version/notice2/updateNotice', 'api/:version.Notice2/updateNot
 Route::get('api/:version/card/staffs', 'api/:version.CardManager/staffs');
 Route::post('api/:version/staff/card/bind', 'api/:version.CardManager/bind');
 Route::post('api/:version/staff/card/handle', 'api/:version.CardManager/handle');
+
+Route::post('api/:version/account/save', 'api/:version.Account/save');
+Route::post('api/:version/account/handle', 'api/:version.Account/handle');
+Route::post('api/:version/account/update', 'api/:version.Account/update');
+Route::get('api/:version/accounts', 'api/:version.Account/accounts');
+Route::get('api/:version/accounts/search', 'api/:version.Account/accountsForSearch');
+Route::get('api/:version/account', 'api/:version.Account/account');
+Route::get('api/:version/account/balance', 'api/:version.Account/accountBalance');
+Route::get('api/:version/account/balance/fixed', 'api/:version.Account/fixedBalance');
+Route::get('api/:version/account/details', 'api/:version.Account/transactionDetails');
+Route::get('api/:version/account/bill', 'api/:version.Account/bill');
+Route::get('api/:version/account/detail', 'api/:version.Account/detail');
+Route::get('api/:version/account/staff', 'api/:version.Account/staffAccount');
+Route::get('api/:version/account/staffs', 'api/:version.Account/staffsAccount');

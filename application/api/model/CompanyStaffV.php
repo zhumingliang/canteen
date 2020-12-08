@@ -66,9 +66,13 @@ class CompanyStaffV extends BaseModel
                     }])
                         ->field('id,staff_id,canteen_id')
                         ->where('state', '=', CommonEnum::STATE_IS_OK);
+                },
+                'card' => function ($query) {
+                    $query->field('id,staff_id,card_code,state')
+                        ->where('state', "<", CommonEnum::STATE_IS_DELETE);
                 }
             ])
-            ->field('id,company,department,state,type,code,username,phone,card_num,birthday,face_code')
+            ->field('id,company,department,state,type,code,username,phone,birthday,face_code')
             ->order('create_time desc')
             ->select()->toArray();
         return $list;
@@ -97,6 +101,13 @@ class CompanyStaffV extends BaseModel
                     $query->where('username|phone|code', 'like', "%" . $key . "%");
                 }
             })
+            ->with([
+                'canteens' => function ($query) {
+                    $query->field('id,staff_id,canteen_id')
+                        ->where('state', '=', CommonEnum::STATE_IS_OK);
+                }
+
+            ])
             ->field('id,company,department,code,card_num,username,phone')
             ->order('create_time desc')
             ->paginate($size, false, ['page' => $page]);
