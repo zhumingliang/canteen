@@ -24,10 +24,12 @@ class Wallet extends BaseController
      * @apiDescription     CMS管理端--充值管理--现金充值
      * @apiExample {post}  请求样例:
      *    {
+     *       "account_id": 1,
      *       "money": 200,
      *       "remark": '备注',
      *       "detail":[{"staff_id":1},{"staff_id":2}]
      *     }
+     * @apiParam (请求参数说明) {int} account_id 账户ID：如果企业没有开通账户管理可以不用传
      * @apiParam (请求参数说明) {int} money 充值金额
      * @apiParam (请求参数说明) {int} remark 备注
      * @apiParam (请求参数说明) {obj} detail  充值人员信息json字符串
@@ -140,6 +142,7 @@ class Wallet extends BaseController
      * @apiSuccess (返回参数说明) {String} create_time 创建时间
      * @apiSuccess (返回参数说明) {String} username  姓名
      * @apiSuccess (返回参数说明) {int} money 充值金额
+     * @apiSuccess (返回参数说明) {int} account 账户名称
      * @apiSuccess (返回参数说明) {string} admin 充值人员
      * @apiSuccess (返回参数说明) {string} remark 备注
      */
@@ -194,7 +197,7 @@ class Wallet extends BaseController
      * @apiParam (请求参数说明) {String} phone 手机号
      * @apiParam (请求参数说明) {int} department_id 部门id，全部传0
      * @apiSuccessExample {json} 返回样例:
-     * {"msg":"ok","errorCode":0,"code":200,"data":{"total":2,"per_page":20,"current_page":1,"last_page":1,"data":[{"username":"LANGBIN","code":"1996010101","card_num":"1101147822","phone":"15521323081","department":"B1部门","balance":-227},{"username":null,"code":null,"card_num":"123","phone":"18956225230","department":null,"balance":400}]}}
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"total":5,"per_page":"1","current_page":1,"last_page":5,"data":[{"staff_id":6699,"username":"蚊","code":"1000","card_num":"680141047","phone":"15014335935","department":"1部","balance":"1216.30"}]}}
      * @apiSuccess (返回参数说明) {int} total 数据总数
      * @apiSuccess (返回参数说明) {int} per_page 每页多少条数据
      * @apiSuccess (返回参数说明) {int} current_page 当前页码
@@ -203,8 +206,8 @@ class Wallet extends BaseController
      * @apiSuccess (返回参数说明) {int} code 编码
      * @apiSuccess (返回参数说明) {string} card_num 卡号
      * @apiSuccess (返回参数说明) {string} phone 手机号
-     * @apiSuccess (返回参数说明) {string} department 部门
-     * @apiSuccess (返回参数说明) {int} balance 余额
+     * @apiSuccess (返回参数说明) {string} department 部门名称
+     * @apiSuccess (返回参数说明) {string} balance 余额
      */
     public function usersBalance($page = 1, $size = 20, $department_id = 0, $user = '', $phone = '')
     {
@@ -268,6 +271,7 @@ class Wallet extends BaseController
      *       "money":10,
      *       "staff_ids":"1,2,3",
      *       "type":1,
+     *       "account_id":1,
      *     }
      * @apiParam (请求参数说明) {int} money 充值金额
      * @apiParam (请求参数说明) {int} remark 备注
@@ -276,6 +280,7 @@ class Wallet extends BaseController
      * @apiParam (请求参数说明) {string} dinner_id  餐次id
      * @apiParam (请求参数说明) {string} staff_ids  d多用户id，用逗号分隔：1,2,3
      * @apiParam (请求参数说明) {string} type  消费状态：1：补充；2：补扣
+     * @apiParam (请求参数说明) {int} account_id  账户ID
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
@@ -359,7 +364,6 @@ class Wallet extends BaseController
     {
         $app = app('wechat.payment');
         $response = $app->handlePaidNotify(function ($message, $fail) {
-            // 使用通知里的 "微信支付订单号" 或者 "商户订单号" 去自己的数据库找到订单
             $order_num = $message['out_trade_no'];
             $order = PayT::where('order_num', $order_num)->find();
 
@@ -391,7 +395,6 @@ class Wallet extends BaseController
             }
 
             $order->save(); // 保存订单
-
             return true; // 返回处理完成
         });
 

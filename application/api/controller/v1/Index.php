@@ -6,8 +6,11 @@ namespace app\api\controller\v1;
 
 use app\api\controller\BaseController;
 use app\api\job\UploadExcel;
+use app\api\model\AccountRecordsT;
 use app\api\model\CanteenT;
+use app\api\model\CompanyAccountT;
 use app\api\model\CompanyStaffT;
+use app\api\model\CompanyT;
 use app\api\model\ConsumptionRecordsV;
 use app\api\model\ConsumptionStrategyT;
 use app\api\model\DinnerT;
@@ -17,11 +20,15 @@ use app\api\model\OrderParentT;
 use app\api\model\OrderSubT;
 use app\api\model\OrderT;
 use app\api\model\OrderUnusedV;
+use app\api\model\PayNonghangConfigT;
 use app\api\model\PayT;
 use app\api\model\RechargeCashT;
 use app\api\model\RechargeV;
+use app\api\model\StaffCardT;
+use app\api\model\StaffQrcodeT;
 use app\api\model\Submitequity;
 use app\api\model\UserBalanceV;
+use app\api\service\AccountService;
 use app\api\service\AddressService;
 use app\api\service\CanteenService;
 use app\api\service\CompanyService;
@@ -32,6 +39,7 @@ use app\api\service\NoticeService;
 use app\api\service\OrderService;
 use app\api\service\QrcodeService;
 use app\api\service\SendSMSService;
+use app\api\service\ShopService;
 use app\api\service\TakeoutService;
 use app\api\service\WalletService;
 use app\api\service\WeiXinService;
@@ -59,27 +67,79 @@ use function GuzzleHttp\Psr7\str;
 class
 Index extends BaseController
 {
-    public function index($sorts)
+    public function index()
     {
-        /*
-        *
-        *
-       $redis = new \Redis();
-       $redis->connect('121.37.255.12', 6379);
-       $redis->auth('waHqes-nijpi8-ruwqex');
-       $redis->set('a',1);
-      echo $redis->get('a');*/
+        /*$company = CompanyT::where('state', CommonEnum::STATE_IS_OK)->select();
+        $account = [];
+        foreach ($company as $k => $v) {
+            $data = [
+                'company_id' => $v['id'],
+                'type' => 1,
+                'department_all' => 1,
+                'name' => '个人账户',
+                'fixed_type' => 1,
+                'clear' => CommonEnum::STATE_IS_FAIL,
+                'sort' => 1,
+                'state' => CommonEnum::STATE_IS_OK
+            ];
+            array_push($account, $data);
+        }
+        $nonghang = PayNonghangConfigT::
+        where('state', CommonEnum::STATE_IS_OK)->select();
+        foreach ($nonghang as $k => $v) {
+            $data = [
+                'company_id' => $v['company_id'],
+                'type' => 1,
+                'department_all' => 1,
+                'name' => '农行账户',
+                'fixed_type' => 2,
+                'clear' => CommonEnum::STATE_IS_FAIL,
+                'sort' => 2,
+                'state' => CommonEnum::STATE_IS_OK
+            ];
+            array_push($account, $data);
+        }
+
+        (new CompanyAccountT())->saveAll($account);*/
 
     }
 
     public function test($param = "")
     {
-        $parent = OrderParentT::where('state', CommonEnum::STATE_IS_FAIL)
-            ->where('phone',"13267686837")
+        $companyStaff = CompanyStaffT::where('company_id', 118)
+            ->where('state', CommonEnum::STATE_IS_OK)
             ->select();
-        foreach ($parent as $k => $v) {
-            OrderSubT::update(['state' => 2], ['order_id' => $v['id']]);
+        foreach ($companyStaff as $k => $v) {
+           StaffQrcodeT::update(['hour'=>1],['s_id'=>$v['id']]);
         }
+
+        /*   echo UserBalanceV::userBalance(94,'13822329629');
+          // print_r(UserBalanceV::userBalance2(5637)) ;
+           echo UserBalanceV::userBalance2(5549);*/
+
+        /*  $phone = "13702717833";
+          $dinner = [155, 156];
+          foreach ($dinner as $k => $v) {
+              $dinnerId = $v;
+              $dateExits = [];
+              $parent = OrderParentT::where('phone', $phone)
+                  ->where('dinner_id', $dinnerId)
+                  ->where('ordering_date', '>=', "2020-12-01")
+                  ->where('state', CommonEnum::STATE_IS_OK)
+                  ->order('ordering_date')
+                  ->select()->toArray();
+              foreach ($parent as $k2 => $v2) {
+                  $orderingDate = $v2['ordering_date'];
+                  if (in_array($orderingDate, $dateExits)) {
+                      //   OrderParentT::update(['state' => CommonEnum::STATE_IS_FAIL], ['id' => $v2['id']]);
+                      //  OrderSubT::update(['state' => CommonEnum::STATE_IS_FAIL], ['order_id' => $v2['id']]);
+                  } else {
+                      array_push($dateExits, $orderingDate);
+                  }
+
+              }
+
+          }*/
 
     }
 

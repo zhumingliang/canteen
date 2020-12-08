@@ -5,6 +5,8 @@ namespace app\api\controller\v1;
 
 
 use app\api\controller\BaseController;
+use app\api\model\ShopOrderT;
+use app\api\model\StaffCardV;
 use app\api\service\ShopService;
 use app\api\service\WalletService;
 use app\api\model\UserBalanceV;
@@ -56,14 +58,16 @@ class Pos extends BaseController
     {
         //设置查询当天扣款笔数和金额的开始时间,因为当天24点后就是第二天，所以不需要再设置结束时间
         $start = date('Y-m-d');
+        //接收企业id
+        $company_id = Request::param('company_id');
 
         //扣款笔数等于count订餐数量字段总数
-        $sql = "select count(count) as count from canteen_shop_order_t where date_format(create_time,'%Y-%m-%d') ='" . $start . "' and money>0";
+        $sql = "select count(count) as count from canteen_shop_order_t where date_format(create_time,'%Y-%m-%d') ='" . $start . "' and money>0 and company_id='" . $company_id . "'";
 
         $total = Db::query($sql);
         //金额等于每笔订单的金额大于0的总数
 
-        $SQL = "select ifnull(sum(money),0) as sum from canteen_shop_order_t where date_format(create_time,'%Y-%m-%d') = '" . $start . "'";
+        $SQL = "select ifnull(sum(money),0) as sum from canteen_shop_order_t where date_format(create_time,'%Y-%m-%d') = '" . $start . "' and company_id='" . $company_id . "'";
 
         $money = Db::query($SQL);
         $data = [['count' => $total[0]['count'],
@@ -101,7 +105,8 @@ class Pos extends BaseController
         if (empty($phone)) {
             throw  new  AuthException(['msg' => '手机号码不能为空']);
         }
-        $users = $this->usersBalance($phone, $company_id);
+        // $users = $this->usersBalance($phone, $company_id);
+        $users = (new  WalletService())->getUserBalance($company_id, $phone);
         return json(new SuccessMessageWithData(['data' => $users]));
     }
 
@@ -283,18 +288,19 @@ class Pos extends BaseController
     {
         $money = $params['money'];
         $card_code = $params['card_code'];
+        $company_id = $params['company_id'];
         $cardInfo = db('staff_card_t')
             ->alias('t1')
             ->leftJoin('company_staff_t t2', 't1.staff_id = t2.id')
             ->where('card_code', $card_code)
             ->where('t1.state', CommonEnum::STATE_IS_OK)
             ->where('t2.state', CommonEnum::STATE_IS_OK)
+            ->where('t2.company_id', $company_id)
             ->field('t1.staff_id,t2.d_id,t2.t_id,t2.company_id,t2.phone')
             ->find();
         if (empty($cardInfo)) {
             throw  new  AuthException(['msg' => '找不到该卡或卡已注销']);
         }
-        $company_id = $cardInfo['company_id'];
         $phone = $cardInfo['phone'];
         $staff_id = $cardInfo['staff_id'];
         $d_id = $cardInfo['d_id'];
@@ -303,12 +309,12 @@ class Pos extends BaseController
             $lastData = db('shop_order_t')
                 ->where('staff_id', $staff_id)
                 ->whereExp('money', '>0')
+                ->field('id,money,company_id')
                 ->order('id desc')
-                ->limit(1)
-                ->field('id,money')
                 ->find();
             $lastMoney = $lastData['money'];
             $id = $lastData['id'];
+            $company_id = $lastData['company_id'];
             $refundMoney = str_replace("-", "", $money);
             if ($refundMoney > $lastMoney) {
                 throw  new AuthException(['msg' => '退款金额必须小于或等于上一笔金额']);
@@ -320,7 +326,6 @@ class Pos extends BaseController
                 ->order('id desc')
                 ->field('money')
                 ->sum('money');
-//            echo PHP_EOL;
             if (!empty($refundData)) {
                 $refundSumMoney = str_replace("-", "", $refundData);
                 if ($refundMoney + $refundSumMoney > $lastMoney) {
@@ -329,7 +334,7 @@ class Pos extends BaseController
             }
         }
         if ($type == 'consume') {
-            $balance = UserBalanceV::userBalance($company_id, $phone);
+            $balance = (new WalletService())->getUserBalance($company_id, $phone, $staff_id);
             if ($balance < $money) {
                 throw  new  AuthException(['msg' => '余额不足']);
             }
@@ -359,11 +364,13 @@ class Pos extends BaseController
             'phone' => $phone,
             'send' => 1
         ];
-        $save = db('shop_order_t')
-            ->data($data)
-            ->insert();
-        if ($save < 0) {
+        $save = ShopOrderT::create($data);
+        if (!$save) {
             throw  new  AuthException(['msg' => '扣费失败']);
+        }
+        if ($type == 'refund') {
+            $newId = $save->id;
+            (new ShopService())->handleReduceOrder($id, $newId, $company_id, $staff_id, $money, $refundData);
         }
     }
 
@@ -392,13 +399,16 @@ class Pos extends BaseController
         if ($user['state'] != 1) {
             throw new AuthException(['msg' => '绑卡失败，账号已停用']);
         }
-        $staff_id = $user['id'];
-        $sql = "select id from canteen_staff_card_t where (state = 1 or state = 2) and (staff_id = '" . $staff_id . "' or card_code = '" . $card_code . "')";
-        $cardInfo = Db::query($sql);
-
-        if (!empty($cardInfo)) {
-            throw new AuthException(['msg' => '该卡或账号已被绑定，请先注销后再绑卡']);
+//        $staff_id = $user['id'];
+        if (StaffCardV::checkCardExits($company_id, $card_code)) {
+            throw new ParameterException(['msg' => '卡号已经存在，不能重复绑定']);
         }
+//        $sql = "select id from canteen_staff_card_t where (state = 1 or state = 2) and (staff_id = '" . $staff_id . "' or card_code = '" . $card_code . "')";
+//        $cardInfo = Db::query($sql);
+//
+//        if (!empty($cardInfo)) {
+//            throw new AuthException(['msg' => '该卡或账号已被绑定，请先注销后再绑卡']);
+//        }
         db('staff_card_t')
             ->whereOr('staff_id', $user['id'])
             ->whereOr('card_code', $card_code)

@@ -167,17 +167,18 @@ class Company extends BaseController
     }
 
     /**
-     * @api {POST} /api/v1/company/wxConfig/save CMS管理端--企业管理--添加企业微信支付配置信息
+     * @api {POST} /api/v1/company/wxConfig/save CMS管理端--企业管理--添加/修改企业微信支付配置信息
      * @apiGroup   CMS
      * @apiVersion 3.0.0
      * @apiDescription    CMS管理端--企业管理--添加企业微信支付配置信息
      * @apiExample {post}  请求样例:
      *    {
+     *       "id": 1,
      *       "company_id": 1,
      *       "app_id": wx60311f2f47c86a3e,
      *       "mch_id": 1555725021
      *     }
-     * @apiParam (请求参数说明) {int} company_id  企业id
+     * @apiParam (请求参数说明) {int} company_id  账户id
      * @apiParam (请求参数说明) {string} app_id  公众号app_id
      * @apiParam (请求参数说明) {string} mch_id  支付商户id
      * @apiSuccessExample {json} 返回样例:
@@ -191,6 +192,90 @@ class Company extends BaseController
         (new CompanyService())->saveCompanyWxConfig($params);
         return json(new SuccessMessage());
     }
+
+    /**
+     * @api {POST} /api/v1/company/wxConfig CMS管理端--企业管理--查看企业微信支付配置信息
+     * @apiGroup   CMS
+     * @apiVersion 3.0.0
+     * @apiDescription    CMS管理端--企业管理--添加企业微信支付配置信息
+     * @apiExample {post}  请求样例:
+     *    {
+     *       "company_id": 1
+     *     }
+     * @apiParam (请求参数说明) {int} company_id  企业id
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"id":5,"company_id":95,"state":1,"app_id":"wx60311f2f47c86a3e","mch_id":"1596044941","create_time":"2020-05-29 09:21:09","update_time":"2020-05-29 09:21:09"}}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     * @apiSuccess (返回参数说明) {int} id  配置id
+     * @apiSuccess (返回参数说明) {string} app_id  公众号app_id
+     * @apiSuccess (返回参数说明) {string} mch_id  支付商户id
+     */
+    public function wxConfig()
+    {
+        $companyId = Request::param('company_id');
+        $config = (new CompanyService())->wxConfig($companyId);
+        return json(new SuccessMessageWithData(['data' => $config]));
+    }
+
+    /**
+     * @api {POST} /api/v1/company/nhConfig CMS管理端--企业管理--查看企业农行支付配置信息
+     * @apiGroup   CMS
+     * @apiVersion 3.0.0
+     * @apiDescription    CMS管理端--企业管理--添加企业微信支付配置信息
+     * @apiExample {post}  请求样例:
+     *    {
+     *       "company_id": 1
+     *     }
+     * @apiParam (请求参数说明) {int} company_id  企业id
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"id":10,"company_id":98,"code":"JF-EPAY2020062403555","create_time":"2020-06-29 08:12:03","update_time":"2020-06-29 08:12:07","state":1,"pfx":"enpingsk","prikey":"aa123123"}}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     * @apiSuccess (返回参数说明) {int} id  配置id
+     * @apiSuccess (返回参数说明) {string} code  缴费项目编号
+     * @apiSuccess  (返回参数说明) {string} prikey  支付商户id
+     */
+    public function nhConfig()
+    {
+        $companyId = Request::param('company_id');
+        $config = (new CompanyService())->nhConfig($companyId);
+        return json(new SuccessMessageWithData(['data' => $config]));
+    }
+
+
+    /**
+     * @api {POST} /api/v1/company/nhConfig/save CMS管理端--企业管理--添加/更新企业农行支付配置信息
+     * @apiGroup   CMS
+     * @apiVersion 3.0.0
+     * @apiDescription    CMS管理端--企业管理--添加企业农行支付配置信息
+     * @apiExample {post}  请求样例:
+     *    {
+     *       "id": 1,
+     *       "company_id": 1,
+     *       "code":"JF-EPAY2019062401722",
+     *       "prikey": ab123,
+     *       "pfx": nonghang,
+     *     }
+     * @apiParam (请求参数说明) {int} id  账户id：更新操作传入
+     * @apiParam (请求参数说明) {int} company_id  企业id
+     * @apiParam (请求参数说明) {string} code  缴费项目编号
+     * @apiParam (请求参数说明) {string} prikey  支付商户id
+     * @apiParam (请求参数说明) {string} pfx  证书地址
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     */
+    public function saveCompanyNHConfig()
+    {
+        $params = Request::param();
+        (new CompanyService())->saveCompanyNHConfig($params);
+        return json(new SuccessMessage());
+    }
+
 
     /**
      * @api {GET} /api/v1/company/qrcode CMS管理端--企业管理-获取非企业人员二维码
@@ -254,7 +339,6 @@ class Company extends BaseController
         (new CompanyService())->updateConsumptionType($company_id, $consumption_type);
         return json(new SuccessMessage());
     }
-
 
 
 }

@@ -5,6 +5,8 @@ namespace app\api\model;
 
 
 use app\lib\enum\CommonEnum;
+use app\lib\enum\PayEnum;
+use think\Db;
 use think\Model;
 
 class OrderStatisticV extends Model
@@ -13,6 +15,65 @@ class OrderStatisticV extends Model
     {
         $status = [1 => '堂食', 2 => '外卖'];
         return $status[$value];
+    }
+
+    public static function getSql($time_begin, $time_end, $company_ids, $canteen_id, $dinner_id)
+    {
+        $sql = Db::table('canteen_order_t')
+            ->field("`a`.`id` AS `order_id`,`a`.`count` AS `count`,`a`.`d_id` AS `dinner_id`,`b`.`name` AS `dinner`,`a`.`c_id` AS `canteen_id`,`c`.`name` AS `canteen`,`a`.`company_id` AS `company_id`,`d`.`name` AS `company`,`a`.`ordering_date` AS `ordering_date`,`a`.`u_id` AS `u_id`,`a`.`department_id` AS `department_id`,`e`.`name` AS `department`,`f`.`username` AS `username`,`f`.`phone` AS `phone`,`a`.`type` AS `type`,`a`.`ordering_type` AS `ordering_type`,`a`.`state` AS `state`,`b`.`meal_time_begin` AS `meal_time_begin`,`b`.`meal_time_end` AS `meal_time_end`,'one' AS `consumption_type`,((`a`.`money`+`a`.`sub_money`)+`a`.`delivery_fee`) AS `order_money`,`a`.`used` AS `used`,`a`.`fixed` AS `fixed`,`a`.`delivery_fee` AS `delivery_fee`,`a`.`booking` AS `booking`")
+            ->alias('a')
+            ->leftJoin('canteen_dinner_t b', "`a`.`d_id` = `b`.`id`")
+            ->leftJoin('canteen_canteen_t c', " `a`.`c_id` = `c`.`id`")
+            ->leftJoin("canteen_company_t d", "`a`.`company_id` = `d`.`id`")
+            ->leftJoin('canteen_company_department_t e', "`a`.`department_id` = `e`.`id`")
+            ->leftJoin('canteen_company_staff_t f', "`a`.`staff_id` = `f`.`id`")
+            ->where('a.ordering_date', ">=", $time_begin)
+            ->where('a.ordering_date', "<=", $time_end)
+            ->where(function ($query) use ($company_ids, $canteen_id, $dinner_id) {
+                if (!empty($dinner_id)) {
+                    $query->where('a.d_id', $dinner_id);
+                } else {
+                    if (!empty($canteen_id)) {
+                        $query->where('a.c_id', $canteen_id);
+                    } else {
+                        if (strpos($company_ids, ',') !== false) {
+                            $query->whereIn('a.company_id', $company_ids);
+                        } else {
+                            $query->where('a.company_id', $company_ids);
+                        }
+                    }
+                }
+            })
+            ->where('a.pay', PayEnum::PAY_SUCCESS)
+            ->unionAll(function ($query) use ($time_begin, $time_end, $company_ids, $canteen_id, $dinner_id) {
+                $query->table('canteen_order_parent_t')->alias('b')
+                    ->field("`b`.`id` AS `order_id`,`b`.`count` AS `count`,`b`.`dinner_id` AS `dinner_id`,`c`.`name` AS `dinner`,`b`.`canteen_id` AS `canteen_id`,`d`.`name` AS `canteen`,`b`.`company_id` AS `company_id`,`e`.`name` AS `company`,`b`.`ordering_date` AS `ordering_date`,`b`.`u_id` AS `u_id`,`b`.`department_id` AS `department_id`,`f`.`name` AS `department`,`g`.`username` AS `username`,`g`.`phone` AS `phone`,`b`.`type` AS `type`,`b`.`ordering_type` AS `ordering_type`,`b`.`state` AS `state`,`c`.`meal_time_begin` AS `meal_time_begin`,`c`.`meal_time_end` AS `meal_time_end`,'more' AS `consumption_type`,((`b`.`money`+`b`.`sub_money`)+`b`.`delivery_fee`) AS `order_money`,`b`.`used` AS `used`,`b`.`fixed` AS `fixed`,`b`.`delivery_fee` AS `delivery_fee`,`b`.`booking` AS `booking`")
+                    ->leftJoin('canteen_dinner_t c', "`b`.`dinner_id` = `c`.`id`")
+                    ->leftJoin('canteen_canteen_t d', " `b`.`canteen_id` = `d`.`id`")
+                    ->leftJoin("canteen_company_t e", "`b`.`company_id` = `e`.`id`")
+                    ->leftJoin('canteen_company_department_t f', "`b`.`department_id` = `f`.`id`")
+                    ->leftJoin('canteen_company_staff_t g', "`b`.`staff_id` = `g`.`id`")
+                    ->where('b.ordering_date', ">=", $time_begin)
+                    ->where('b.ordering_date', "<=", $time_end)
+                    ->where(function ($query) use ($company_ids, $canteen_id, $dinner_id) {
+                        if (!empty($dinner_id)) {
+                            $query->where('b.dinner_id', $dinner_id);
+                        } else {
+                            if (!empty($canteen_id)) {
+                                $query->where('b.canteen_id', $canteen_id);
+                            } else {
+                                if (strpos($company_ids, ',') !== false) {
+                                    $query->whereIn('b.company_id', $company_ids);
+                                } else {
+                                    $query->where('b.company_id', $company_ids);
+                                }
+                            }
+                        }
+                    })
+                    ->where('b.pay', PayEnum::PAY_SUCCESS);
+            })->buildSql();
+        return $sql;
+
     }
 
     public function getStatusAttr($value, $data)
@@ -95,8 +156,53 @@ class OrderStatisticV extends Model
                                   $phone, $canteen_id, $department_id,
                                   $dinner_id, $type)
     {
-        $list = self::where('ordering_date', ">=", $time_begin)
-            ->where('ordering_date', "<=", $time_end)
+        /*  $list = self::where('ordering_date', ">=", $time_begin)
+              ->where('ordering_date', "<=", $time_end)
+              ->where(function ($query) use ($name, $phone, $department_id) {
+                  if (strlen($name)) {
+                      $query->where('username', 'like', '%' . $name . '%');
+                  }
+                  if (strlen($phone)) {
+                      $query->where('phone', 'like', '%' . $phone . '%');
+                  }
+                  if (!empty($department_id)) {
+                      $query->where('department_id', $department_id);
+                  }
+              })
+              ->where(function ($query) use ($company_ids, $canteen_id, $dinner_id) {
+                  if (!empty($dinner_id)) {
+                      $query->where('dinner_id', $dinner_id);
+                  } else {
+                      if (!empty($canteen_id)) {
+                          $query->where('canteen_id', $canteen_id);
+                      } else {
+                          if (strpos($company_ids, ',') !== false) {
+                              $query->whereIn('company_id', $company_ids);
+                          } else {
+                              $query->where('company_id', $company_ids);
+                          }
+                      }
+                  }
+              })
+              ->where(function ($query) use ($type) {
+                  if ($type < 3) {
+                      $query->where('type', $type);
+                  }
+              })
+              ->where('booking', CommonEnum::STATE_IS_OK)
+              ->field('order_id,consumption_type,ordering_date,username,canteen,department,phone,count,dinner,type,ordering_type,order_money,1 as status,state,meal_time_end,used,fixed')
+              ->order('ordering_date DESC')
+              ->paginate($size, false, ['page' => $page]);*/
+        // return $list;
+
+        $sql = self::getSql($time_begin, $time_end, $company_ids, $canteen_id, $dinner_id);
+        $list = Db::table($sql . 'a')->where(function ($query) use ($type) {
+            if ($type < 3) {
+                $query->where('type', $type);
+            }
+        })
+            ->field('order_id,consumption_type,ordering_date,username,canteen,department,phone,count,dinner,type,ordering_type,order_money,1 as status,state,meal_time_end,used,fixed')
+            ->where('booking', CommonEnum::STATE_IS_OK)
             ->where(function ($query) use ($name, $phone, $department_id) {
                 if (strlen($name)) {
                     $query->where('username', 'like', '%' . $name . '%');
@@ -108,30 +214,8 @@ class OrderStatisticV extends Model
                     $query->where('department_id', $department_id);
                 }
             })
-            ->where(function ($query) use ($company_ids, $canteen_id, $dinner_id) {
-                if (!empty($dinner_id)) {
-                    $query->where('dinner_id', $dinner_id);
-                } else {
-                    if (!empty($canteen_id)) {
-                        $query->where('canteen_id', $canteen_id);
-                    } else {
-                        if (strpos($company_ids, ',') !== false) {
-                            $query->whereIn('company_id', $company_ids);
-                        } else {
-                            $query->where('company_id', $company_ids);
-                        }
-                    }
-                }
-            })
-            ->where(function ($query) use ($type) {
-                if ($type < 3) {
-                    $query->where('type', $type);
-                }
-            })
-            ->where('booking', CommonEnum::STATE_IS_OK)
-            ->field('order_id,consumption_type,ordering_date,username,canteen,department,phone,count,dinner,type,ordering_type,order_money,1 as status,state,meal_time_end,used,fixed')
             ->order('ordering_date DESC')
-            ->paginate($size, false, ['page' => $page]);
+            ->paginate($size, false, ['page' => $page])->toArray();
         return $list;
 
     }
@@ -141,9 +225,55 @@ class OrderStatisticV extends Model
                                         $phone, $canteen_id, $department_id,
                                         $dinner_id, $type)
     {
+
         //$time_end = addDay(1, $time_end);
-        $list = self::where('ordering_date', ">=", $time_begin)
-            ->where('ordering_date', "<=", $time_end)
+        /*        $list = self::where('ordering_date', ">=", $time_begin)
+                    ->where('ordering_date', "<=", $time_end)
+                    ->where(function ($query) use ($name, $phone, $department_id) {
+                        if (strlen($name)) {
+                            $query->where('username', 'like', '%' . $name . '%');
+                        }
+                        if (strlen($phone)) {
+                            $query->where('phone', 'like', '%' . $phone . '%');
+                        }
+                        if (!empty($department_id)) {
+                            $query->where('department_id', $department_id);
+                        }
+                    })
+                    ->where(function ($query) use ($company_ids, $canteen_id, $dinner_id) {
+                        if (!empty($dinner_id)) {
+                            $query->where('dinner_id', $dinner_id);
+                        } else {
+                            if (!empty($canteen_id)) {
+                                $query->where('canteen_id', $canteen_id);
+                            } else {
+                                if (strpos($company_ids, ',') !== false) {
+                                    $query->whereIn('company_id', $company_ids);
+                                } else {
+                                    $query->where('company_id', $company_ids);
+                                }
+                            }
+                        }
+                    })
+                    ->where(function ($query) use ($type) {
+                        if ($type < 3) {
+                            $query->where('type', $type);
+                        }
+                    })
+                    ->where('booking', CommonEnum::STATE_IS_OK)
+                    ->field('order_id,ordering_date,username,canteen,department,dinner,type,ordering_type,state,meal_time_end,used,phone,count,order_money,consumption_type,delivery_fee')
+                    ->order('ordering_date DESC')
+                    ->select()->toArray();*/
+
+
+        $sql = self::getSql($time_begin, $time_end, $company_ids, $canteen_id, $dinner_id);
+        $list = Db::table($sql . 'a')->where(function ($query) use ($type) {
+            if ($type < 3) {
+                $query->where('type', $type);
+            }
+        })
+            ->field('order_id,ordering_date,username,canteen,department,dinner,type,ordering_type,state,meal_time_end,used,phone,count,order_money,consumption_type,delivery_fee')
+            ->where('booking', CommonEnum::STATE_IS_OK)
             ->where(function ($query) use ($name, $phone, $department_id) {
                 if (strlen($name)) {
                     $query->where('username', 'like', '%' . $name . '%');
@@ -155,28 +285,6 @@ class OrderStatisticV extends Model
                     $query->where('department_id', $department_id);
                 }
             })
-            ->where(function ($query) use ($company_ids, $canteen_id, $dinner_id) {
-                if (!empty($dinner_id)) {
-                    $query->where('dinner_id', $dinner_id);
-                } else {
-                    if (!empty($canteen_id)) {
-                        $query->where('canteen_id', $canteen_id);
-                    } else {
-                        if (strpos($company_ids, ',') !== false) {
-                            $query->whereIn('company_id', $company_ids);
-                        } else {
-                            $query->where('company_id', $company_ids);
-                        }
-                    }
-                }
-            })
-            ->where(function ($query) use ($type) {
-                if ($type < 3) {
-                    $query->where('type', $type);
-                }
-            })
-            ->where('booking',CommonEnum::STATE_IS_OK)
-            ->field('order_id,ordering_date,username,canteen,department,dinner,type,ordering_type,state,meal_time_end,used,phone,count,order_money,consumption_type,delivery_fee')
             ->order('ordering_date DESC')
             ->select()->toArray();
         return $list;

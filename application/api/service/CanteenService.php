@@ -456,6 +456,7 @@ class CanteenService
     {
         $exit = ConsumptionStrategyT::where('c_id', $canteen_id)
             ->where('t_id', $staff_type_id)
+            ->where('state', CommonEnum::STATE_IS_OK)
             ->count('id');
         if ($exit) {
             throw  new SaveException(['msg' => '指定人员类型已存在消费策略，不能重复添加']);
@@ -466,6 +467,15 @@ class CanteenService
     public function consumptionStrategy($c_id)
     {
         $info = ConsumptionStrategyT::info($c_id);
+        if (count($info)) {
+            foreach ($info as $k => $v) {
+                $dinner = $v['dinner'];
+                if ($dinner['state'] == CommonEnum::STATE_IS_FAIL) {
+                    unset($info[$k]);
+                }
+
+            }
+        }
         return $info;
     }
 

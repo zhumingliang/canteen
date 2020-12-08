@@ -21,6 +21,8 @@ class PayEnum
 
     const PAY_METHOD_WX = 1;
 
+    const PAY_METHOD_NH = 2;
+
     const PAY_FAIL = 'paid_fail';
 
     const PAY_SUCCESS = 'paid';

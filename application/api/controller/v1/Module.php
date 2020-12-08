@@ -64,7 +64,7 @@ class Module extends BaseController
      * @apiSuccess (返回参数说明) {String} msg 信息描述
      * @apiSuccess (返回参数说明) {int} id 模块id
      * @apiSuccess (返回参数说明) {string} url 模块路由
-     * @apiSuccess (返回参数说明) {int} state 模块状态：1|正常；2|停用
+     * @apiSuccess (返回参数说明) {int} state 模块状态：1|正常；2|停用；3：删除
      * @apiSuccess (返回参数说明) {int} type  模块类别：1|pc;2|手机端
      * @apiSuccess (返回参数说明) {int} default  是否默认模块：1|是;2|否
      * @apiSuccess (返回参数说明) {string} create_time 创建时间
@@ -91,7 +91,7 @@ class Module extends BaseController
      *       "state":1
      *     }
      * @apiParam (请求参数说明) {int} id  模块ID
-     * @apiParam (请求参数说明) {int} state  模块状态：1|启用；2|停用
+     * @apiParam (请求参数说明) {int} state  模块状态：1|启用；2|停用；3：删除
      * @apiSuccessExample {json} 返回样例:
      *{"msg":"ok","errorCode":0}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
