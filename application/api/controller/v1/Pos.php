@@ -274,6 +274,34 @@ class Pos extends BaseController
         return json(new SuccessMessageWithData(['data' => $data]));
     }
 
+    /**
+     * 通过手机号码判断是否有关闭绑卡页面的权限
+     */
+    public function isClose()
+    {
+        $company_id = Request::param('company_id');
+        $phone = Request::param('phone');
+        $staffInfo = db('company_staff_t')
+            ->alias('t1')
+            ->leftJoin('canteen_staff_type_t t2', 't1.t_id = t2.id')
+            ->where('company_id', $company_id)
+            ->where('phone', $phone)
+            ->where('t1.state', CommonEnum::STATE_IS_OK)
+            ->field('t2.name')
+            ->find();
+        if (empty($staffInfo)) {
+            throw new AuthException(['msg' => '找不到信息']);
+        }
+        $name = $staffInfo['name'];
+
+        if ($name == '管理员') {
+            $isClose = true;
+        } else {
+            $isClose = false;
+        }
+        return json(new SuccessMessageWithData(['data' => ['isClose' => $isClose]]));
+    }
+
     private function usersBalance($phone, $company_id)
     {
         $orderings = db('user_balance_v')->where('company_id', $company_id)
