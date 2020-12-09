@@ -106,12 +106,6 @@ Index extends BaseController
 
     public function test($param = "")
     {
-        $companyStaff = CompanyStaffT::where('company_id', 118)
-            ->where('state', CommonEnum::STATE_IS_OK)
-            ->select();
-        foreach ($companyStaff as $k => $v) {
-           StaffQrcodeT::update(['hour'=>1],['s_id'=>$v['id']]);
-        }
 
         /*   echo UserBalanceV::userBalance(94,'13822329629');
           // print_r(UserBalanceV::userBalance2(5637)) ;
