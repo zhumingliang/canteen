@@ -217,7 +217,7 @@ class CompanyStaffT extends Model
                 'account' => function ($query) {
                     $query->where('state', CommonEnum::STATE_IS_OK)
                         ->field('staff_id,account_id,sum(money) as money')
-                        ->group('account_id');
+                        ->group('staff_id,account_id');
                 },
                 'card' => function ($query) {
                     $query->field('id,staff_id,card_code')->whereIn('state', '1,2');
