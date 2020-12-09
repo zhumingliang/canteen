@@ -710,7 +710,8 @@ class OrderStatisticService
             case OrderEnum::STATISTIC_BY_DEPARTMENT:
                 return $this->consumptionStatisticByDepartment($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id, $phone, $order_type, $version);
             case OrderEnum::STATISTIC_BY_USERNAME:
-                if ($version == 1) {
+
+                if ($version == 'v1') {
                     return $this->consumptionStatisticByUsername($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id, $phone, $order_type, $page, $size, $version);
                 } else {
                     return $this->consumptionStatisticByUsernameWithAccount($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id, $phone, $order_type, $page, $size, $version);
@@ -1206,7 +1207,6 @@ class OrderStatisticService
                 $username, $staff_type_id, $time_begin,
                 $time_end, $company_id, $phone, $order_type);
             $statistic = $this->prefixStatistic($statistic, 'status', $time_begin, $time_end, $status);
-
             return $statistic;
         } else if ($version == "v2") {
             $statistic = OrderConsumptionAccountV::consumptionStatisticByStatus($canteen_id, $status, $department_id,
