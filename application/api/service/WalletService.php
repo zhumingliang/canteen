@@ -317,19 +317,20 @@ class WalletService
     public function prefixAccount($staffs, $accounts, $checkCard)
     {
         $countData = [];
-        foreach ($accounts as $k => $v) {
-            array_push($countData, [
-                'account_id' => $v['id'],
-                'name' => $v['name'],
-                'type' => $v['type'],
-                'fixed_type' => $v['fixed_type'],
-                'balance' => 0
-            ]);
-        }
+
         if (count($staffs)) {
             foreach ($staffs as $k => $v) {
                 if (!$checkCard) {
                     unset($staffs[$k]['card']);
+                }
+                foreach ($accounts as $k4 => $v4) {
+                    array_push($countData, [
+                        'account_id' => $v4['id'],
+                        'name' => $v4['name'],
+                        'type' => $v4['type'],
+                        'fixed_type' => $v4['fixed_type'],
+                        'balance' => 0
+                    ]);
                 }
                 $staffCountData = $countData;
                 $account = $v['account'];
@@ -345,7 +346,6 @@ class WalletService
                     }
                 }
                 $staffs[$k]['account'] = $staffCountData;
-                unset($staffs[$k]['pay']);
             }
         }
         return $staffs;
