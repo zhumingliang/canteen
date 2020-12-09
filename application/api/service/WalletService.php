@@ -316,13 +316,14 @@ class WalletService
 
     public function prefixAccount($staffs, $accounts, $checkCard)
     {
-        $countData = [];
+
 
         if (count($staffs)) {
             foreach ($staffs as $k => $v) {
                 if (!$checkCard) {
                     unset($staffs[$k]['card']);
                 }
+                $countData = [];
                 foreach ($accounts as $k4 => $v4) {
                     array_push($countData, [
                         'account_id' => $v4['id'],
