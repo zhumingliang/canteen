@@ -287,6 +287,11 @@ class AccountService
     {
         Db::startTrans();
         try {
+
+
+            $params['next_time'] = $this->getNextClearTime($params['clear'], $params['clear_type'],
+                $params['first'], $params['end'],
+                $params['day_count'], $params['time_begin']);
             $account = CompanyAccountT::update($params);
             if (!$account) {
                 throw new UpdateException();
@@ -427,7 +432,7 @@ class AccountService
         $accountBalance = array_sum(array_column($accounts, 'balance'));
 
         return [
-            'balance' => $accountBalance ,
+            'balance' => $accountBalance,
             'useBalance' => $accountBalance - $fixedBalance,
             'accounts' => $accounts
         ];
