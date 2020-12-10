@@ -34,7 +34,7 @@ class UserBalanceV extends Model
                     ->leftJoin('canteen_order_parent_t b', 'a.order_id = b.id')
                     ->field('(0-a.money-a.sub_money) as money,IF ((a.used=1),1,IF ((a.unused_handel=1),1,2)) AS effective')
                     ->where('b.staff_id', $staff_id)
-                    ->where('b.state', CommonEnum::STATE_IS_OK)
+                    ->where('a.state', CommonEnum::STATE_IS_OK)
                     ->where('b.pay', PayEnum::PAY_SUCCESS);
             })
             ->unionAll(function ($query) use ($staff_id) {

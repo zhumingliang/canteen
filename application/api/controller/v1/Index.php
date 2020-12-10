@@ -107,6 +107,8 @@ Index extends BaseController
     public function test($param = "")
     {
 
+        $msg = '{"return_code":"FAIL","return_msg":"\u53d7\u7406\u673a\u6784\u53d1\u8d77\u652f\u4ed8\u65f6, \u5b50\u5546\u6237mchid\u4e0d\u80fd\u4e0e\u81ea\u8eabmchid\u76f8\u540c"}';
+        print_r(\GuzzleHttp\json_decode($msg,true));
         /*   echo UserBalanceV::userBalance(94,'13822329629');
           // print_r(UserBalanceV::userBalance2(5637)) ;
            echo UserBalanceV::userBalance2(5549);*/
