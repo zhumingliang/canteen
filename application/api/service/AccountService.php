@@ -427,7 +427,7 @@ class AccountService
         $accountBalance = array_sum(array_column($accounts, 'balance'));
 
         return [
-            'balance' => $accountBalance - $fixedBalance,
+            'balance' => $accountBalance ,
             'useBalance' => $accountBalance - $fixedBalance,
             'accounts' => $accounts
         ];
