@@ -311,4 +311,39 @@ class CompanyStaffT extends Model
             ->paginate($size, false, ['page' => $page])->toArray();
     }
 
+
+    public static function staffsForSearch($page, $size, $department_id, $user, $company_id)
+    {
+        $users = self::where('company_id', $company_id)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->where(function ($query) use ($department_id) {
+                if (!empty($department_id)) {
+                    $query->where('d_id', $department_id);
+                }
+            })
+            ->where(function ($query) use ($user) {
+                if (!empty($user)) {
+                    $query->where('username|code|card_num', 'like', '%' . $user . '%');
+                }
+            })
+            ->with([
+                'department' => function ($query) {
+                    $query->field('id,name');
+                },
+                'account' => function ($query) {
+                    $query->where('state', CommonEnum::STATE_IS_OK)
+                        ->field('staff_id,account_id,sum(money) as money')
+                        ->group('staff_id,account_id');
+                },
+                'card' => function ($query) {
+                    $query->field('id,staff_id,card_code')->whereIn('state', '1,2');
+                }
+            ])
+            ->field('id,d_id,username,code,phone')
+            ->paginate($size, false, ['page' => $page])->toArray();
+        return $users;
+
+    }
+
+
 }
