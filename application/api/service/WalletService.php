@@ -153,9 +153,9 @@ class WalletService
     public function uploadExcelTask($company_id, $u_id, $fileName, $type)
     {
         //设置限制未上传完成不能继续上传
-        if (!$this->checkUploading($company_id, $u_id, $type)) {
+       /* if (!$this->checkUploading($company_id, $u_id, $type)) {
             throw new SaveException(["msg" => '有文件正在上传，请稍等']);
-        }
+        }*/
         $jobHandlerClassName = 'app\api\job\UploadExcel';//负责处理队列任务的类
         $jobQueueName = "uploadQueue";//队列名称
         $jobData = [
@@ -182,7 +182,7 @@ class WalletService
             return false;
         }
         Redis::instance()->set($code, time(), 5 * 60);
-        return $code;
+        return true;
     }
 
     public function prefixUploadData($company_id, $admin_id, $data)
