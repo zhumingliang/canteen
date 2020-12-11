@@ -68,7 +68,7 @@ class RechargeV extends Model
                 }
             })
             ->where('state', CommonEnum::STATE_IS_OK)
-            ->field('create_time,username,phone,money,type,admin,remark')
+            ->field('create_time,username,phone,account,money,type,admin,remark')
             ->order('create_time desc')
             ->select()->toArray();
         return $orderings;

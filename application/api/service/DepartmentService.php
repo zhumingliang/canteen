@@ -5,6 +5,7 @@ namespace app\api\service;
 
 
 use app\api\model\CanteenT;
+use app\api\model\CompanyAccountT;
 use app\api\model\CompanyDepartmentT;
 use app\api\model\CompanyStaffT;
 use app\api\model\CompanyStaffV;
@@ -847,7 +848,15 @@ class DepartmentService
     function staffsForRecharge($page, $size, $department_id, $key)
     {
         $company_id = Token::getCurrentTokenVar('company_id');
+        $accounts = CompanyAccountT::accountsWithSortsAndDepartmentId($company_id);
         $staffs = CompanyStaffV:: staffsForRecharge($page, $size, $department_id, $key, $company_id);
+        $data = $staffs['data'];
+        if (count($data)) {
+            foreach ($data as $k => $v) {
+                $data[$k]['account'] = (new AccountService())->checkStaffAccount($accounts, $v['d_id']);
+            }
+        }
+        $staffs['data'] = $data;
         return $staffs;
     }
 

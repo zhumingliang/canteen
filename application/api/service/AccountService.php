@@ -28,6 +28,7 @@ use MongoDB\BSON\Type;
 use think\Db;
 use think\Exception;
 use function EasyWeChat\Kernel\data_to_array;
+use function GuzzleHttp\Promise\all;
 
 class AccountService
 {
@@ -287,6 +288,9 @@ class AccountService
     {
         Db::startTrans();
         try {
+            $params['next_time'] = $this->getNextClearTime($params['clear'], $params['clear_type'],
+                $params['first'], $params['end'],
+                $params['day_count'], $params['time_begin']);
             $account = CompanyAccountT::update($params);
             if (!$account) {
                 throw new UpdateException();
@@ -366,7 +370,8 @@ class AccountService
 
     public function saveAccountRecords($consumptionDate, $canteenId, $money, $type, $orderId, $companyId, $staffId, $typeName, $outsider = 2)
     {
-        $accounts = $this->getAccountBalance($companyId, $staffId);
+        $staff = CompanyStaffT::where('id', $staffId)->find();
+        $accounts = $this->getAccountBalance($companyId, $staffId, $staff->d_id);
         $data = [];
         foreach ($accounts as $k => $v) {
             if ($v['balance'] >= $money) {
@@ -395,21 +400,39 @@ class AccountService
 
     }
 
-    public function getAccountBalance($companyId, $staffID)
+    public function getAccountBalance($companyId, $staffID, $departmentId)
     {
         //获取企业所有账户
-        $accounts = CompanyAccountT::accountsWithSorts($companyId);
+        $accounts = CompanyAccountT::accountsWithSortsAndDepartment($companyId);
         //获取用户账户余额
         $accountBalance = AccountRecordsT::statistic($staffID);
         foreach ($accounts as $k => $v) {
             $balance = 0;
-            foreach ($accountBalance as $k2 => $v2) {
-                if ($v['id'] == $v2['account_id']) {
-                    $balance += $v2['money'];
+            $allow = false;
+            if ($v['department_all'] == CommonEnum::STATE_IS_OK) {
+                $allow = true;
+            } else {
+                $departments = $v['departments'];
+                foreach ($departments as $k2 => $v2) {
+                    if ($departmentId == $v2['department_id']) {
+                        $allow = true;
+                        break;
+                    }
                 }
-
             }
-            $accounts[$k]['balance'] = $balance;
+
+            if ($allow) {
+                foreach ($accountBalance as $k2 => $v2) {
+                    if ($v['id'] == $v2['account_id']) {
+                        $balance += $v2['money'];
+                    }
+
+                }
+                $accounts[$k]['balance'] = $balance;
+            } else {
+                unset($accounts[$k]);
+            }
+
         }
         return $accounts;
 
@@ -421,13 +444,14 @@ class AccountService
         $phone = Token::getCurrentPhone();
         $staff = CompanyStaffT::staffName($phone, $companyId);
         $staffId = $staff->id;
-        $accounts = $this->getAccountBalance($companyId, $staffId);
+        $departmentId = $staff->d_id;
+        $accounts = $this->getAccountBalance($companyId, $staffId, $departmentId);
 
         $fixedBalance = UserBalanceV::userFixedBalance($staffId);
         $accountBalance = array_sum(array_column($accounts, 'balance'));
 
         return [
-            'balance' => $accountBalance - $fixedBalance,
+            'balance' => $accountBalance,
             'useBalance' => $accountBalance - $fixedBalance,
             'accounts' => $accounts
         ];
@@ -599,6 +623,35 @@ class AccountService
             }
         }
         return $staffAccount;
+    }
+
+    public function checkStaffAccount($accounts, $departmentId)
+    {
+        $useAccounts = [];
+        if ($accounts) {
+            foreach ($accounts as $k => $v) {
+                if ($v['department_all'] == CommonEnum::STATE_IS_OK) {
+                    array_push($useAccounts, [
+                        'account_id' => $v['id'],
+                        'sort' => $v['sort'],
+                        'name' => $v['name']
+                    ]);
+                    continue;
+                }
+                $departments = $v['departments'];
+                foreach ($departments as $k2 => $v2) {
+                    if ($departmentId == $v2['department_id']) {
+                        array_push($useAccounts, [
+                            'account_id' => $v['id'],
+                            'sort' => $v['sort'],
+                            'name' => $v['name']
+                        ]);
+                        break;
+                    }
+                }
+            }
+        }
+        return $useAccounts;
     }
 
 }

@@ -108,9 +108,9 @@ class CompanyStaffV extends BaseModel
                 }
 
             ])
-            ->field('id,company,department,code,card_num,username,phone')
+            ->field('id,company,d_id,department,code,card_num,username,phone')
             ->order('create_time desc')
-            ->paginate($size, false, ['page' => $page]);
+            ->paginate($size, false, ['page' => $page])->toArray();
         return $list;
     }
 

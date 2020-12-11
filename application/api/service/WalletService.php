@@ -175,13 +175,13 @@ class WalletService
 
     private function checkUploading($company_id, $u_id, $type)
     {
-        $set = "uploadExcel";
-        $code = "$company_id:$u_id:$type";
-        $check = Redis::instance()->sIsMember($set, $code);
+        // $set = "uploadExcel";
+        $code = "uploadExcel:" . "$company_id:$u_id:$type";
+        $check = Redis::instance()->get($code);
         if ($check) {
             return false;
         }
-        Redis::instance()->sAdd($set, $code);
+        Redis::instance()->set($code, time(), 5 * 60);
         return $code;
     }
 
@@ -287,7 +287,7 @@ class WalletService
     {
         $company_id = Token::getCurrentTokenVar('company_id');
         $records = RechargeV::exportRechargeRecords($time_begin, $time_end, $type, $admin_id, $username, $company_id);
-        $header = ['创建时间', '姓名', '充值金额', '账户名称', '充值途径', '充值人员', '备注'];
+        $header = ['创建时间', '姓名', "手机号", '账户名称', '充值金额', '充值途径', '充值人员', '备注'];
         $file_name = $time_begin . "-" . $time_end . "-充值记录明细";
         $url = (new ExcelService())->makeExcel($header, $records, $file_name);
         return [
