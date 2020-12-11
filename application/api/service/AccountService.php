@@ -226,6 +226,11 @@ class AccountService
 
     private function checkAccountBalance($accountId)
     {
+        //检测账户余额是否为0
+        $balance = AccountRecordsT::accountBalance($accountId);
+        if ($balance) {
+            throw new ParameterException(['msg' => '账户余额不为0，不能停用']);
+        }
 
     }
 
