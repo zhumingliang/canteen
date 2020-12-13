@@ -272,7 +272,7 @@ class OrderService extends BaseService
         //获取订单金额
         $orderMoney = $this->checkOutsiderOrderMoney($dinner_id, $detail);
         return [
-            'orderMoney' => $orderMoney,
+            'orderMoney' => $orderMoney * $params['count'],
             'delivery_fee' => $delivery_fee
         ];
 
