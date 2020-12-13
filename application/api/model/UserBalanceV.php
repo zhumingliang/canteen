@@ -39,7 +39,7 @@ class UserBalanceV extends Model
             })
             ->unionAll(function ($query) use ($staff_id) {
                 $query->table("canteen_shop_order_t")
-                    ->field('money,used as effective')
+                    ->field('(0-money) as money,used as effective')
                     ->where('staff_id', $staff_id)
                     ->where('state', CommonEnum::STATE_IS_OK)
                     ->where('pay', PayEnum::PAY_SUCCESS);
@@ -83,7 +83,7 @@ class UserBalanceV extends Model
             })
             ->unionAll(function ($query) use ($companyId) {
                 $query->table("canteen_shop_order_t")
-                    ->field('money,staff_id')
+                    ->field('(0-money) as money,staff_id')
                     ->where('company_id', $companyId)
                     ->where('state', CommonEnum::STATE_IS_OK)
                     ->where('pay', PayEnum::PAY_SUCCESS);
@@ -144,7 +144,7 @@ class UserBalanceV extends Model
             ->unionAll(function ($query) use ($companyId) {
                 $query->table("canteen_shop_order_t")
                     ->alias('a')
-                    ->field('a.money,a.staff_id,b.username,b.code,c.card_code as card_num,b.phone,b.d_id as department_id,d.name as department,b.state as staff_state')
+                    ->field('(0-a.money) as money,a.staff_id,b.username,b.code,c.card_code as card_num,b.phone,b.d_id as department_id,d.name as department,b.state as staff_state')
                     ->where('a.company_id', $companyId)
                     ->where('a.state', CommonEnum::STATE_IS_OK)
                     ->where('a.pay', PayEnum::PAY_SUCCESS)
@@ -326,7 +326,7 @@ class UserBalanceV extends Model
             })
             ->unionAll(function ($query) use ($staffId) {
                 $query->table("canteen_shop_order_t")
-                    ->field('sum(money) as money')
+                    ->field('sum(0-money) as money')
                     ->where('staff_id', $staffId)
                     ->where('state', CommonEnum::STATE_IS_OK)
                     ->where('pay', PayEnum::PAY_SUCCESS);
@@ -391,7 +391,7 @@ class UserBalanceV extends Model
             })
             ->unionAll(function ($query) use ($staff_id) {
                 $query->table("canteen_shop_order_t")
-                    ->field('money,used as effective')
+                    ->field('(0-money) as money,used as effective')
                     ->where('staff_id', $staff_id)
                     ->where('state', CommonEnum::STATE_IS_OK)
                     ->where('pay', PayEnum::PAY_SUCCESS);
