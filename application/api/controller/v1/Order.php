@@ -1453,4 +1453,11 @@ class Order extends BaseController
     }
 
 
+    public function getOutsiderOrderMoney(){
+        $params = Request::param();
+        $money = (new  OrderService())->getOutsiderOrderMoney($params);
+        return json(new SuccessMessageWithData(['data' => $money]));
+    }
+
+
 }

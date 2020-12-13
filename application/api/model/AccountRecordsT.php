@@ -105,5 +105,13 @@ class AccountRecordsT extends Model
 
     }
 
+    public static function checkAccountBalance($accountId)
+    {
+        $balance = self::where('account_id', $accountId)
+            ->sum('money');
+        return $balance;
+
+    }
+
 
 }

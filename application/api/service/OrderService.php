@@ -12,6 +12,7 @@ namespace app\api\service;
 use app\api\model\CanteenAccountT;
 use app\api\model\CompanyStaffT;
 use app\api\model\ConsumptionRecordsV;
+use app\api\model\ConsumptionStrategyT;
 use app\api\model\DinnerStatisticV;
 use app\api\model\DinnerT;
 use app\api\model\FoodsStatisticV;
@@ -252,6 +253,31 @@ class OrderService extends BaseService
 
     }
 
+
+    public function getOutsiderOrderMoney($params)
+    {
+        $dinner_id = $params['dinner_id'];
+        $ordering_date = $params['ordering_date'];
+        $detail = json_decode($params['detail'], true);
+        unset($params['detail']);
+        $params['ordering_type'] = OrderEnum::ORDERING_CHOICE;
+        $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
+        //检测配送费用
+        $delivery_fee = $this->checkUserOutsider($params['type'], $canteen_id);
+
+        //获取餐次信息
+        $dinner = DinnerT::dinnerInfo($dinner_id);
+        //检测该餐次订餐时间是否允许
+        $this->checkDinnerForPersonalChoice($dinner, $ordering_date);
+        //获取订单金额
+        $orderMoney = $this->checkOutsiderOrderMoney($dinner_id, $detail);
+        return [
+            'orderMoney' => $orderMoney,
+            'delivery_fee' => $delivery_fee
+        ];
+
+    }
+
     public
     function personChoiceOutsider($params)
     {
@@ -279,7 +305,7 @@ class OrderService extends BaseService
             $dinner = DinnerT::dinnerInfo($dinner_id);
             //检测该餐次订餐时间是否允许
             $this->checkDinnerForPersonalChoice($dinner, $ordering_date);
-            $consumptionType = $this->getConsumptionType($phone, $company_id, $canteen_id, $dinner_id);
+            $consumptionType = $this->getCanteenConsumptionType($canteen_id, $dinner_id);
             //获取订单金额
             $orderMoney = $this->checkOutsiderOrderMoney($dinner_id, $detail);
 
@@ -662,6 +688,24 @@ class OrderService extends BaseService
         $t_id = (new UserService())->getUserStaffTypeByPhone($phone, $company_id);
         //获取指定用户消费策略
         $strategies = (new CanteenService())->getStaffConsumptionStrategy($canteen_id, $dinner_id, $t_id);
+        if (!$strategies) {
+            throw new ParameterException(['msg' => '消费策略设置异常']);
+        }
+        $consumptionType = $strategies->consumption_type;
+        return $consumptionType;
+    }
+
+
+    private
+    function getCanteenConsumptionType($canteen_id, $dinner_id)
+    {
+
+        $strategies = ConsumptionStrategyT::where('c_id', $canteen_id)
+            ->where('d_id', $dinner_id)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->hidden(['create_time', 'update_time', 'state', 'd_id', 't_id', 'c_id'])
+            ->order('create_time desc')
+            ->find();
         if (!$strategies) {
             throw new ParameterException(['msg' => '消费策略设置异常']);
         }
@@ -2453,6 +2497,12 @@ class OrderService extends BaseService
     public
     function consumptionRecords($consumption_time, $page, $size)
     {
+        /* $phone ="13333311339";// Token::getCurrentPhone();
+         $canteen_id = 285;//Token::getCurrentTokenVar('current_canteen_id');
+         $company_id = 129;//Token::getCurrentTokenVar('current_company_id');
+         $records = ConsumptionRecordsV::recordsByPhone($phone, $company_id, $consumption_time, $page, $size);
+   */
+
         $phone = Token::getCurrentPhone();
         $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
         $company_id = Token::getCurrentTokenVar('current_company_id');
