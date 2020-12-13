@@ -526,29 +526,6 @@ class OrderService extends BaseService
 
     }
 
-    public
-    function checkBalanceTest($canteen_id, $money, $company_id, $phone)
-    {
-        $balance = (new WalletService())->getUserBalance($company_id, $phone);
-        if ($balance >= $money) {
-            return PayEnum::PAY_BALANCE;
-        }
-        //获取账户设置，检测是否可预支消费
-        $canteenAccount = CanteenAccountT::where('c_id', $canteen_id)->find();
-        if (!$canteenAccount) {
-            return false;
-        }
-
-        if ($canteenAccount->type == OrderEnum::OVERDRAFT_NO) {
-            return false;
-        }
-        if ($canteenAccount->limit_money < ($money - $balance)) {
-            return false;
-        }
-        return PayEnum::PAY_OVERDRAFT;
-
-    }
-
 
     public
     function checkUserCanOrder($dinner, $day, $canteen_id, $count,
@@ -2497,20 +2474,29 @@ class OrderService extends BaseService
     public
     function consumptionRecords($consumption_time, $page, $size)
     {
-        /* $phone ="13333311339";// Token::getCurrentPhone();
-         $canteen_id = 285;//Token::getCurrentTokenVar('current_canteen_id');
-         $company_id = 129;//Token::getCurrentTokenVar('current_company_id');
-         $records = ConsumptionRecordsV::recordsByPhone($phone, $company_id, $consumption_time, $page, $size);
-   */
-
+        $outsiders = Token::getCurrentTokenVar('outsiders');
         $phone = Token::getCurrentPhone();
         $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
         $company_id = Token::getCurrentTokenVar('current_company_id');
-        $records = ConsumptionRecordsV::recordsByPhone($phone, $company_id, $consumption_time, $page, $size);
-        $records['data'] = $this->prefixConsumptionRecords($records['data']);
-        $consumptionMoney = ConsumptionRecordsV::monthConsumptionMoneyByPhone($phone, $consumption_time, $company_id);
+        if ($outsiders == UserEnum::INSIDE) {
+            $staffId = Token::getCurrentTokenVar('staff_id');
+            if (!$staffId) {
+                $staff = CompanyStaffT::staffName($phone, $company_id);
+                $staffId = $staff->id;
+            }
+            $records = ConsumptionRecordsV::recordsByStaffId($staffId, $consumption_time, $page, $size);
+            $records['data'] = $this->prefixConsumptionRecords($records['data']);
+            $consumptionMoney = ConsumptionRecordsV::monthConsumptionMoneyByStaffId($phone, $consumption_time);
+            $balance = $this->getUserBalanceByStaffId($canteen_id, $staffId);
+        } else {
+            $records = ConsumptionRecordsV::recordsByPhone($phone, $company_id, $consumption_time, $page, $size);
+            $records['data'] = $this->prefixConsumptionRecords($records['data']);
+            $consumptionMoney = ConsumptionRecordsV::monthConsumptionMoneyByPhone($phone, $consumption_time, $company_id);
+            $balance = 0;
+        }
+
         return [
-            'balance' => $this->getUserBalance($canteen_id, $company_id, $phone),
+            'balance' => $balance,
             'consumptionMoney' => $consumptionMoney,
             'records' => $records
         ];
@@ -2569,6 +2555,37 @@ class OrderService extends BaseService
             //不可透支消费，返回用户在该企业余额
             $money = UserBalanceV::userBalanceGroupByEffective2($staff->id);
             //$money = UserBalanceV::userBalanceGroupByEffective($company_id, $phone);
+            foreach ($money as $k => $v) {
+                $all += $v['money'];
+                if ($v['effective'] == CommonEnum::STATE_IS_OK) {
+                    $effective += $v['money'];
+                }
+            }
+
+        }
+        return [
+            'hidden' => $hidden,
+            'all_money' => $all,
+            'effective_money' => $effective
+        ];
+
+    }
+
+    public
+    function getUserBalanceByStaffId($canteen_id, $staffId)
+    {
+
+        $canteenAccount = CanteenAccountT::where('c_id', $canteen_id)
+            ->find();
+        if (!$canteenAccount) {
+            throw new ParameterException(['msg' => '该用户归属饭堂设置异常']);
+        }
+        $hidden = $canteenAccount->type;
+        $all = 0;
+        $effective = 0;
+        if ($hidden == CommonEnum::STATE_IS_FAIL) {
+            //不可透支消费，返回用户在该企业余额
+            $money = UserBalanceV::userBalanceGroupByEffective2($staffId);
             foreach ($money as $k => $v) {
                 $all += $v['money'];
                 if ($v['effective'] == CommonEnum::STATE_IS_OK) {
