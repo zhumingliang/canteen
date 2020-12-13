@@ -252,6 +252,31 @@ class OrderService extends BaseService
 
     }
 
+
+    public function getOutsiderOrderMoney($params)
+    {
+        $dinner_id = $params['dinner_id'];
+        $ordering_date = $params['ordering_date'];
+        $detail = json_decode($params['detail'], true);
+        unset($params['detail']);
+        $params['ordering_type'] = OrderEnum::ORDERING_CHOICE;
+        $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
+        //检测配送费用
+        $delivery_fee = $this->checkUserOutsider($params['type'], $canteen_id);
+
+        //获取餐次信息
+        $dinner = DinnerT::dinnerInfo($dinner_id);
+        //检测该餐次订餐时间是否允许
+        $this->checkDinnerForPersonalChoice($dinner, $ordering_date);
+        //获取订单金额
+        $orderMoney = $this->checkOutsiderOrderMoney($dinner_id, $detail);
+        return [
+            'orderMoney' => $orderMoney,
+            'delivery_fee' => $delivery_fee
+        ];
+
+    }
+
     public
     function personChoiceOutsider($params)
     {
@@ -2453,6 +2478,12 @@ class OrderService extends BaseService
     public
     function consumptionRecords($consumption_time, $page, $size)
     {
+        /* $phone ="13333311339";// Token::getCurrentPhone();
+         $canteen_id = 285;//Token::getCurrentTokenVar('current_canteen_id');
+         $company_id = 129;//Token::getCurrentTokenVar('current_company_id');
+         $records = ConsumptionRecordsV::recordsByPhone($phone, $company_id, $consumption_time, $page, $size);
+   */
+
         $phone = Token::getCurrentPhone();
         $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
         $company_id = Token::getCurrentTokenVar('current_company_id');
