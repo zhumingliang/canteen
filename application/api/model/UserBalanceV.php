@@ -144,7 +144,7 @@ class UserBalanceV extends Model
             ->unionAll(function ($query) use ($companyId) {
                 $query->table("canteen_shop_order_t")
                     ->alias('a')
-                    ->field('(a.money,a.staff_id,b.username,b.code,c.card_code as card_num,b.phone,b.d_id as department_id,d.name as department,b.state as staff_state')
+                    ->field('a.money,a.staff_id,b.username,b.code,c.card_code as card_num,b.phone,b.d_id as department_id,d.name as department,b.state as staff_state')
                     ->where('a.company_id', $companyId)
                     ->where('a.state', CommonEnum::STATE_IS_OK)
                     ->where('a.pay', PayEnum::PAY_SUCCESS)
