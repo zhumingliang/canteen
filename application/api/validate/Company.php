@@ -19,7 +19,7 @@ class Company extends BaseValidate
         'save' => ['name', 'parent_id'],
         'managerCompanies' => ['name'],
         'consumptionLocation' => ['company_id'],
-        'saveCompanyWxConfig' => ['company_id', 'mch_id', 'app_id'],
+        'saveCompanyWxConfig' => ['company_id', 'mch_id'],
     ];
 
 }
