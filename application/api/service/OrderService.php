@@ -1338,7 +1338,8 @@ class OrderService extends BaseService
             $this->checkOrderCanHandel($order->d_id, $order->ordering_date);
         } else {
             //撤回订单
-            $this->refundWxOrder($id);
+            throw  new  ParameterException(['msg' => "外来人员订餐，不能取消订单"]);
+           // $this->refundWxOrder($id);
         }
         $userType = Token::getCurrentTokenVar('type');
         if ($userType == "cms") {
@@ -1552,7 +1553,9 @@ class OrderService extends BaseService
             //判断是不是微信支付订餐
             if ($order->pay_way == PayEnum::PAY_WEIXIN) {
                 //撤回订单
-                $this->refundWxOrder($v, 'more');
+                throw  new  ParameterException(['msg' => "外来人员订餐，不能取消订单"]);
+
+               //$this->refundWxOrder($v, 'more');
             }
             $res = OrderParentT::update(['state' => OrderEnum::STATUS_CANCEL], ['id' => $v]);
             if (!$res) {

@@ -1077,6 +1077,7 @@ class OrderStatisticService
                 foreach ($statistic as $k2 => $v2) {
                     if ($v == $v2[$field]) {
                         array_push($dinnerStatistic, [
+                            'statistic_id' =>$k,
                             'dinner_id' => $v2['dinner_id'],
                             'dinner' => $v2['dinner'],
                             'order_count' => $v2['order_count'],
