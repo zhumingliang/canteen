@@ -2490,7 +2490,7 @@ class OrderService extends BaseService
             }
             $records = ConsumptionRecordsV::recordsByStaffId($staffId, $consumption_time, $page, $size);
             $records['data'] = $this->prefixConsumptionRecords($records['data']);
-            $consumptionMoney = ConsumptionRecordsV::monthConsumptionMoneyByStaffId($phone, $consumption_time);
+            $consumptionMoney = ConsumptionRecordsV::monthConsumptionMoneyByStaffId($staffId, $consumption_time);
             $balance = $this->getUserBalanceByStaffId($canteen_id, $staffId);
         } else {
             $records = ConsumptionRecordsV::recordsByPhone($phone, $company_id, $consumption_time, $page, $size);
