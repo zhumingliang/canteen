@@ -431,6 +431,7 @@ class WalletService
                     if (count($account)) {
                         foreach ($account as $k3 => $v3) {
                             if ($v2['id'] == $v3['account_id']) {
+                                $allBalance+=$v3['money'];
                                 $accountBalance = $v3['money'];
                                 break;
                             }
