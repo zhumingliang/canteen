@@ -109,7 +109,6 @@ class AccountService
                 ]);
             }
         }
-
         $accountDepartment = (new AccountDepartmentT())->saveAll($data);
         if (!$accountDepartment) {
             throw new SaveException();
@@ -300,15 +299,15 @@ class AccountService
             if (!$account) {
                 throw new UpdateException();
             }
-            if (empty($params['departments'])) {
-                $departments = json_encode($params['departments'], true);
+            if (!empty($params['departments'])) {
+                $departments = json_decode($params['departments'], true);
                 $add = [];
                 $cancel = [];
                 if (!empty($departments['add'])) {
-                    $add = json_decode($departments['add'], true);
+                    $add = $departments['add'];
                 }
                 if (!empty($departments['cancel'])) {
-                    $cancel = json_decode($departments['cancel'], true);
+                    $cancel = $departments['cancel'];
                 }
                 $this->saveDepartments($params['id'], $add, $cancel);
             }
@@ -330,11 +329,12 @@ class AccountService
                 }
             }
 
+            Db::commit();
+
         } catch (Exception $e) {
             Db::rollback();
             throw $e;
         }
-        Db::commit();
     }
 
     public function accountsForSearch($companyId)
