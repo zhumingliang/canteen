@@ -153,9 +153,9 @@ class WalletService
     public function uploadExcelTask($company_id, $u_id, $fileName, $type)
     {
         //设置限制未上传完成不能继续上传
-       /* if (!$this->checkUploading($company_id, $u_id, $type)) {
-            throw new SaveException(["msg" => '有文件正在上传，请稍等']);
-        }*/
+        /* if (!$this->checkUploading($company_id, $u_id, $type)) {
+             throw new SaveException(["msg" => '有文件正在上传，请稍等']);
+         }*/
         $jobHandlerClassName = 'app\api\job\UploadExcel';//负责处理队列任务的类
         $jobQueueName = "uploadQueue";//队列名称
         $jobData = [
@@ -308,7 +308,7 @@ class WalletService
     {
         $company_id = Token::getCurrentTokenVar('company_id');
         $checkCard = (new CompanyService())->checkConsumptionContainsCard($company_id);
-        $accounts = CompanyAccountT::accountsWithSorts($company_id);
+        $accounts = CompanyAccountT::accountsWithSortsAndDepartmentId($company_id);
         $staffs = CompanyStaffT::staffsForBalanceWithAccount($page, $size, $department_id, $user, $phone, $company_id);
         $staffs['data'] = $this->prefixAccount($staffs['data'], $accounts, $checkCard);
         return $staffs;
@@ -330,6 +330,7 @@ class WalletService
                         'name' => $v4['name'],
                         'type' => $v4['type'],
                         'fixed_type' => $v4['fixed_type'],
+                        'have' => (new AccountService())->checkStaffHaveAccount($v4['department_all'],$v4['departments'],$v['d_id']),
                         'balance' => 0
                     ]);
                 }
@@ -431,7 +432,7 @@ class WalletService
                     if (count($account)) {
                         foreach ($account as $k3 => $v3) {
                             if ($v2['id'] == $v3['account_id']) {
-                                $allBalance+=$v3['money'];
+                                $allBalance += $v3['money'];
                                 $accountBalance = $v3['money'];
                                 break;
                             }

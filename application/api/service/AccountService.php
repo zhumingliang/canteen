@@ -24,6 +24,7 @@ use app\lib\enum\PayEnum;
 use app\lib\exception\ParameterException;
 use app\lib\exception\SaveException;
 use app\lib\exception\UpdateException;
+use http\Env\Request;
 use MongoDB\BSON\Type;
 use think\Db;
 use think\Exception;
@@ -674,6 +675,23 @@ class AccountService
             }
         }
         return $useAccounts;
+    }
+
+
+    public function checkStaffHaveAccount($department_all, $accountDepartments, $staffDepartmentId)
+    {
+        $have = CommonEnum::STATE_IS_FAIL;
+        if ($department_all == CommonEnum::STATE_IS_OK) {
+            $have = CommonEnum::STATE_IS_OK;
+        }
+        foreach ($accountDepartments as $k => $v) {
+            if ($staffDepartmentId == $v['department_id']) {
+                $have = CommonEnum::STATE_IS_OK;
+                break;
+            }
+        }
+        return $have;
+
     }
 
 }
