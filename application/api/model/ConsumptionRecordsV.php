@@ -143,7 +143,7 @@ class ConsumptionRecordsV extends Model
         $subQuery = Db::table('canteen_order_t')
             ->alias('a')
             ->field("a.id as order_id,a.c_id as location_id,c.name as location,'canteen' as order_type,a.create_time,a.ordering_date,b.name as dinner,
-            (0-a.money-a.sub_money-a.delivery_fee) as money, a.phone,a.count,a.sub_money,a.delivery_fee,a.booking,a.used,a.type as eating_type, 'one' as consumption_type,a.company_id,a.sort_code ,1 as supplement_type")
+            (0-a.money-a.sub_money-a.delivery_fee) as money, a.phone,a.count,a.sub_money,a.delivery_fee,a.booking,a.used,a.type as eating_type, 'one' as consumption_type,a.company_id,a.sort_code ,1 as supplement_type,a.unused_handel")
             ->leftJoin('canteen_dinner_t b', 'a.d_id = b.id')
             ->leftJoin('canteen_canteen_t c', 'a.c_id = c.id')
             ->where('a.staff_id', $staffId)
@@ -154,7 +154,7 @@ class ConsumptionRecordsV extends Model
             ->unionAll(function ($query) use ($staffId, $time_begin, $time_end) {
                 $query->table("canteen_order_parent_t")
                     ->alias('a')
-                    ->field("a.id as order_id,a.canteen_id as location_id,c.name as location,'canteen' as order_type,a.create_time,a.ordering_date,b.name as dinner,(0-a.money-a.sub_money-a.delivery_fee) as money, a.phone,a.count,a.sub_money,a.delivery_fee,a.booking,a.used,a.type as eating_type,'more' as consumption_type,a.company_id,0 as sort_code,1 as supplement_type")
+                    ->field("a.id as order_id,a.canteen_id as location_id,c.name as location,'canteen' as order_type,a.create_time,a.ordering_date,b.name as dinner,(0-a.money-a.sub_money-a.delivery_fee) as money, a.phone,a.count,a.sub_money,a.delivery_fee,a.booking,a.used,a.type as eating_type,'more' as consumption_type,a.company_id,0 as sort_code,1 as supplement_type,a.used as unused_handel")
                     ->leftJoin('canteen_dinner_t b', 'a.dinner_id = b.id')
                     ->leftJoin('canteen_canteen_t c', 'a.canteen_id = c.id')
                     ->where('a.staff_id', $staffId)
@@ -170,7 +170,7 @@ class ConsumptionRecordsV extends Model
                     ->field("a.id as order_id,d.canteen_id as location_id,c.name as location,'canteen' as order_type,a.create_time,
                     a.ordering_date,b.name as dinner,(0-a.money-a.sub_money) as money, 
                     d.phone,a.count,a.sub_money,d.delivery_fee,d.booking,a.used,
-                    d.type as eating_type,'more' as consumption_type,d.company_id, a.sort_code,1 as supplement_type")
+                    d.type as eating_type,'more' as consumption_type,d.company_id, a.sort_code,1 as supplement_type,a.unused_handel")
                     ->leftJoin('canteen_order_parent_t d', 'a.order_id = d.id')
                     ->leftJoin('canteen_dinner_t b', 'd.dinner_id = b.id')
                     ->leftJoin('canteen_canteen_t c', 'd.canteen_id = c.id')
@@ -185,7 +185,7 @@ class ConsumptionRecordsV extends Model
                 $query->table("canteen_shop_order_t")
                     ->alias('a')
                     ->leftJoin('canteen_shop_t b', 'a.shop_id = b.id')
-                    ->field("a.id as order_id,a.shop_id as location_id,b.name as location,'shop' as order_type,a.create_time,date_format(a.create_time, '%Y-%m-%d' ) AS ordering_date,'小卖部' AS dinner,( 0-a.money ) AS money,a.phone,a.count,0 AS sub_money,0 AS delivery_fee,1 AS booking,1 AS used,1 AS eating_type,'one' AS consumption_type,a.company_id,0 AS sort_code,1 as supplement_type")
+                    ->field("a.id as order_id,a.shop_id as location_id,b.name as location,'shop' as order_type,a.create_time,date_format(a.create_time, '%Y-%m-%d' ) AS ordering_date,'小卖部' AS dinner,( 0-a.money ) AS money,a.phone,a.count,0 AS sub_money,0 AS delivery_fee,1 AS booking,1 AS used,1 AS eating_type,'one' AS consumption_type,a.company_id,0 AS sort_code,1 as supplement_type,1 as unused_handel")
                     ->where('a.staff_id', $staffId)
                     ->where('a.create_time', ">=", $time_begin)
                     ->where('a.create_time', "<=", $time_end)
@@ -198,7 +198,7 @@ class ConsumptionRecordsV extends Model
                     ->leftJoin('canteen_dinner_t c', 'a.dinner_id = c.id')
                     ->leftJoin('canteen_company_staff_t d', 'a.staff_id = d.id')
                     ->leftJoin('canteen_canteen_t e', 'a.canteen_id = e.id')
-                    ->field("a.id as order_id,a.canteen_id as location_id,e.name as location,'recharge' as order_type,a.create_time,a.consumption_date AS ordering_date,c.name AS dinner,a.money AS money,d.phone,1 as count,0 AS sub_money,0 AS delivery_fee,1 AS booking,1 AS used,1 AS eating_type,'one' AS consumption_type,a.company_id,0 AS sort_code, a.type as supplement_type")
+                    ->field("a.id as order_id,a.canteen_id as location_id,e.name as location,'recharge' as order_type,a.create_time,a.consumption_date AS ordering_date,c.name AS dinner,a.money AS money,d.phone,1 as count,0 AS sub_money,0 AS delivery_fee,1 AS booking,1 AS used,1 AS eating_type,'one' AS consumption_type,a.company_id,0 AS sort_code, a.type as supplement_type,1 as unused_handel")
                     ->where('a.staff_id', $staffId)
                     ->where('a.consumption_date', ">=", $time_begin)
                     ->where('a.consumption_date', "<=", $time_end);
