@@ -976,8 +976,8 @@ class OrderStatisticService
                     if ($v['statistic_id'] == $v2['statistic_id']) {
                         foreach ($accounts as $k3 => $v3) {
                             if ($v2['account_id'] == $v3['id']) {
-                                $data[$v3['id'] . $v3['name']] = $v2['money'];
-                                $endData[$v3['id'] . $v3['name']] += $v2['money'];
+                                $data[$v3['id'] . $v3['name']] = abs($v2['money']);
+                                $endData[$v3['id'] . $v3['name']] += abs($v2['money']);
                                 break;
                             }
 
