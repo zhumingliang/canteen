@@ -130,7 +130,7 @@ class CompanyAccountT extends Model
                         ->field('id,account_id,department_id');
                 }
             ])
-            ->field('id,name,sort,department_all')
+            ->field('id,name,type,fixed_type,sort,department_all')
             ->order('sort')
             ->select()->toArray();
         return $accounts;
