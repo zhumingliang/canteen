@@ -536,7 +536,7 @@ IF
 
                 }
             })
-            ->field('staff_id as statistic,staff_id,username, username as statistic,department')
+            ->field('staff_id as statistic_id,staff_id,username, username as statistic,department')
             ->group('staff_id')
             ->paginate($size, false, ['page' => $page])->toArray();
 

@@ -6,6 +6,7 @@ namespace app\api\service;
 
 use app\api\model\OfficialTemplateT;
 use app\api\model\OrderParentT;
+use app\api\model\OrderSubT;
 use app\api\model\OrderT;
 use app\lib\enum\CommonEnum;
 use app\lib\enum\OrderEnum;
@@ -161,6 +162,12 @@ class TakeoutService
                 $res = $order->save();
                 if (!$res) {
                     throw new  UpdateException(['msg' => '更新订单失败']);
+                }
+                //更新子订单
+                $subRefund = OrderSubT::update(['state' => OrderEnum::REFUND], ['order_id' => $v]);
+                if (!$subRefund) {
+                    throw new  UpdateException(['msg' => '更新子订单失败']);
+
                 }
                 $this->sendRefundTemplate($order['user']['openid'], $order['money']);
             }

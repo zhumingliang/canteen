@@ -819,7 +819,7 @@ class OrderStatisticService
                 $info = $this->consumptionStatisticByDepartment($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id, $phone, $order_type, $version);
                 break;
             case OrderEnum::STATISTIC_BY_USERNAME:
-                $info = $this->consumptionStatisticByUsername($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id, $phone, $order_type, 1, 10000, $version);
+                $info = $this->consumptionStatisticByUsernameWithAccount($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id, $phone, $order_type, 1, 10000, $version);
                 break;
             case OrderEnum::STATISTIC_BY_STAFF_TYPE:
                 $info = $this->consumptionStatisticByStaff($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id, $phone, $order_type, $version);
@@ -833,8 +833,9 @@ class OrderStatisticService
             default:
                 throw new ParameterException();
         }
+
         if ($type == OrderEnum::STATISTIC_BY_USERNAME) {
-            $statistic = $info['consumptionRecords']['statistic']['data'];
+            $statistic = $info['consumptionRecords']['data'];
         } else {
             $statistic = $info['consumptionRecords']['statistic'];
         }
