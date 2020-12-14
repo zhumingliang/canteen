@@ -394,6 +394,7 @@ class AccountService
                     'outsider' => $outsider,
                     'type_name' => $typeName
                 ]);
+                break;
             } else {
                 if ($v['balance'] > 0) {
                     array_push($data, [
@@ -412,8 +413,6 @@ class AccountService
                     ]);
                     $money -= $v['balance'];
                 }
-
-
             }
         }
         $res = (new AccountRecordsT())->saveAll($data);

@@ -11,6 +11,7 @@ namespace app\api\service;
 
 use app\api\model\CanteenAccountT;
 use app\api\model\CompanyStaffT;
+use app\api\model\CompanyT;
 use app\api\model\ConsumptionRecordsV;
 use app\api\model\ConsumptionStrategyT;
 use app\api\model\DinnerStatisticV;
@@ -2920,9 +2921,13 @@ class OrderService extends BaseService
                 $consumptionMoney = $allMoney + $parentOrder->delivery_fee;
                 $staffId = $parentOrder->staff_id;
             }
-            $dinner = DinnerT::dinnerInfo($dinnerId);
-            (new AccountService())->saveAccountRecords($consumptionDate, $canteenId,
-                $consumptionMoney, $consumptionType, $order_id, $companyId, $staffId, $dinner->name, 1);
+            //检测企业是否开启分账
+            $company = CompanyT::where('id', $companyId)->find();
+            if ($company->account_status == CommonEnum::STATE_IS_OK) {
+                $dinner = DinnerT::dinnerInfo($dinnerId);
+                (new AccountService())->saveAccountRecords($consumptionDate, $canteenId,
+                    $consumptionMoney, $consumptionType, $order_id, $companyId, $staffId, $dinner->name, 1);
+            }
             Db::commit();
         } catch (Exception $e) {
             Db::rollback();
