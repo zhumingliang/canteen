@@ -5,6 +5,7 @@ namespace app\api\service;
 
 
 use app\api\job\UploadExcel;
+use app\api\model\CanteenAccountT;
 use app\api\model\CompanyAccountT;
 use app\api\model\CompanyStaffT;
 use app\api\model\CompanyT;
@@ -18,6 +19,7 @@ use app\api\model\RechargeV;
 use app\api\model\UserBalanceV;
 use app\api\validate\Company;
 use app\lib\enum\CommonEnum;
+use app\lib\enum\OrderEnum;
 use app\lib\enum\PayEnum;
 use app\lib\exception\AuthException;
 use app\lib\exception\ParameterException;
@@ -330,7 +332,7 @@ class WalletService
                         'name' => $v4['name'],
                         'type' => $v4['type'],
                         'fixed_type' => $v4['fixed_type'],
-                        'have' => (new AccountService())->checkStaffHaveAccount($v4['department_all'],$v4['departments'],$v['d_id']),
+                        'have' => (new AccountService())->checkStaffHaveAccount($v4['department_all'], $v4['departments'], $v['d_id']),
                         'balance' => 0
                     ]);
                 }
@@ -460,6 +462,14 @@ class WalletService
 
     }
 
+
+    public function getUserBalanceWithStaffId($staff_id)
+    {
+        $balance = UserBalanceV::userBalance2($staff_id);
+        return $balance;
+
+    }
+
     public function clearBalance()
     {
         $grade = Token::getCurrentTokenVar('grade');
@@ -479,6 +489,59 @@ class WalletService
     }
 
     public function rechargeSupplement($params)
+    {
+        $admin_id = Token::getCurrentUid();
+        $company_id = Token::getCurrentTokenVar('company_id');
+        $staffs = explode(',', $params['staff_ids']);
+        $dataList = array();
+        foreach ($staffs as $k => $v) {
+            //检测余额是否充足
+            if ($params['type'] == 2) {
+                $this->checkSupplementBalance($v, $params['canteen_id'], $params['money']);
+            }
+
+            $data = [
+                'source' => 'save',
+                'admin_id' => $admin_id,
+                'company_id' => $company_id,
+                'canteen_id' => $params['canteen_id'],
+                'money' => $params['type'] == 1 ? $params['money'] : 0 - $params['money'],
+                'type' => $params['type'],
+                'staff_id' => $v,
+                'consumption_date' => $params['consumption_date'],
+                'remark' => empty($params['remark']) ? '' : $params['remark'],
+                'dinner_id' => $params['dinner_id'],
+                'account_id' => empty($params['account_id']) ? 0 : $params['account_id']
+            ];
+            array_push($dataList, $data);
+        }
+        $supplement = (new RechargeSupplementT())->saveAll($dataList);
+        if (!$supplement) {
+            throw new SaveException();
+        }
+    }
+
+    private function checkSupplementBalance($staffId, $canteenId, $money)
+    {
+        $balance = (new WalletService())->getUserBalanceWithStaffId($staffId);
+        if ($money > $balance) {
+            //获取账户设置，检测是否可预支消费
+            $canteenAccount = CanteenAccountT::where('c_id', $canteenId)->find();
+            if (!$canteenAccount) {
+                throw new ParameterException(['msg' => "账户余额不足，不能补扣"]);
+            }
+
+            if ($canteenAccount->type == OrderEnum::OVERDRAFT_NO) {
+                throw new ParameterException(['msg' => "账户余额不足，不能补扣"]);
+            }
+            if ($canteenAccount->limit_money < ($money - $balance)) {
+                throw new ParameterException(['msg' => "账户余额不足，不能补扣"]);
+            }
+        }
+
+    }
+
+    public function rechargeSupplementWithAccount($params)
     {
         $admin_id = Token::getCurrentUid();
         $company_id = Token::getCurrentTokenVar('company_id');
