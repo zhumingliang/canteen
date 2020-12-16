@@ -106,8 +106,14 @@ Index extends BaseController
 
     public function test($param = "")
     {
+        $params['pfx'] = '批量现金充值模板 (1).xlsx';
+        if (!empty($params['pfx'])) {
+            $pfxArr = explode('.', $params['pfx']);
+            array_pop($pfxArr);
+            $params['pfx'] = implode('', $pfxArr);
+        }
 
-        (new ShopService())->handleReduceOrder(1, 647, 133, 7538, 11, 0);
+        print_r($params);
         /*   echo UserBalanceV::userBalance(94,'13822329629');
           // print_r(UserBalanceV::userBalance2(5637)) ;
            echo UserBalanceV::userBalance2(5549);*/

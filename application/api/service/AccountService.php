@@ -184,6 +184,14 @@ class AccountService
 
     public function saveFixedAccount($companyId, $fixedType)
     {
+        //检测账户是否已经存在
+        $account = CompanyAccountT::where('company_id', $companyId)
+            ->where('type', 1)
+            ->where('fixed_type', $fixedType)
+            ->where('state', CommonEnum::STATE_IS_OK)->find();
+        if ($account) {
+            return true;
+        }
         $accountName = [
             1 => '个人账户',
             2 => '农行账户'
