@@ -358,6 +358,10 @@ class CompanyService
     public function saveCompanyNHConfig($params)
     {
 
+
+        $pfxArr = explode('.', $params['pfx']);
+        $pfxArr = array_pop($pfxArr);
+        $params['pfx'] = implode('', $pfxArr);
         $config = PayNonghangConfigT::config($params['company_id']);
         if ($config) {
             throw new SaveException(['msg' => '该企业配置已创建']);
@@ -396,7 +400,7 @@ class CompanyService
         return [
             'dinners' => $dinners,
             'strategies' => $strategies,
-            'canteen_config'=>$accountConfig
+            'canteen_config' => $accountConfig
         ];
 
 
