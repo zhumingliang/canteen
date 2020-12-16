@@ -372,7 +372,7 @@ class CompanyService
         }
         $params['state'] = CommonEnum::STATE_IS_OK;
         $config = PayNonghangConfigT::create($params);
-        if ($config) {
+        if (!$config) {
             throw new SaveException();
         }
         //生成企业农行账户
