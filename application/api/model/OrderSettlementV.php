@@ -74,7 +74,7 @@ class OrderSettlementV extends Model
                             }
                         }
 
-                    });
+                    })->group('g.id');
 
 
             })->unionAll(function ($query) use ($time_begin, $time_end, $company_ids, $canteen_id, $dinner_id) {
@@ -176,7 +176,8 @@ class OrderSettlementV extends Model
                         }
 
                     })
-                    ->where('a.state', CommonEnum::STATE_IS_OK)->group('a.id');
+                    ->where('a.state', CommonEnum::STATE_IS_OK)
+                    ->group('a.id');
 
             })->buildSql();
         return $sql;
