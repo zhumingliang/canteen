@@ -76,6 +76,37 @@ class RechargeV extends Model
                 }
             })
             ->where('state', CommonEnum::STATE_IS_OK)
+            ->field('create_time,department,username,phone,money,type,admin,remark')
+            ->order('create_time desc')
+            ->select()->toArray();
+        return $orderings;
+    }
+
+    public static function exportRechargeRecordsWithAccount($time_begin, $time_end, $type, $admin_id, $username, $company_id,$department_id)
+    {
+        $time_end = addDay(1, $time_end);
+        $orderings = self::where('company_id', $company_id)
+            ->whereBetweenTime('create_time', $time_begin, $time_end)
+            ->where(function ($query) use ($type) {
+                if ($type != "all") {
+                    $query->where('type', $type);
+                }
+            }) ->where(function ($query) use ($department_id) {
+                if ($department_id) {
+                    $query->where('department_id', $department_id);
+                }
+            })
+            ->where(function ($query) use ($admin_id) {
+                if (!empty($admin_id)) {
+                    $query->where('admin_id', $admin_id);
+                }
+            })
+            ->where(function ($query) use ($username) {
+                if (!empty($username)) {
+                    $query->where('username', $username);
+                }
+            })
+            ->where('state', CommonEnum::STATE_IS_OK)
             ->field('create_time,department,username,phone,account,money,type,admin,remark')
             ->order('create_time desc')
             ->select()->toArray();
