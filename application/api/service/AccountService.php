@@ -554,6 +554,7 @@ class AccountService
         $orderId = $accountRecord->order_id;
         if ($type == "one") {
             $info = OrderT::get($orderId);
+            $returnData['count'] = $info->count;
             $returnData['money'] = $info->money;
             $returnData['sub_money'] = $info->sub_money;
             $returnData['delivery_fee'] = $info->delivery_fee;
