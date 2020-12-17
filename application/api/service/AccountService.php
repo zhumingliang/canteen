@@ -560,12 +560,14 @@ class AccountService
         } else if ($type == "more") {
             if ($outsider == CommonEnum::STATE_IS_OK) {
                 $info = OrderParentT::get($orderId);
+                $returnData['count'] = $info->count;
                 $returnData['money'] = $info->money;
                 $returnData['delivery_fee'] = $info->delivery_fee;
                 $returnData['consumption_sort'] = 1;
 
             } else {
                 $info = OrderSubT::infoWithParent($orderId);
+                $returnData['count'] = 1;
                 $returnData['money'] = $info->money;
                 $returnData['sub_money'] = $info->sub_money;
                 $returnData['consumption_sort'] = $info->consumption_sort;
