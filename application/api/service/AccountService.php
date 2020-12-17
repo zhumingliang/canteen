@@ -492,10 +492,8 @@ class AccountService
 
     public function fixedBalance($page, $size)
     {
-        /*$phone = Token::getCurrentPhone();
-        $companyId = Token::getCurrentTokenVar('current_company_id');*/
-        $companyId = Token::getCurrentTokenVar('current_company_id');
         $phone = Token::getCurrentPhone();
+        $companyId = Token::getCurrentTokenVar('current_company_id');
         $staff = CompanyStaffT::staffName($phone, $companyId);
         $staffId = $staff->id;
         $info = ConsumptionRecordsV::fixedRecords($phone, $companyId, $page, $size);
