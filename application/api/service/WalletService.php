@@ -263,20 +263,20 @@ class WalletService
     }
 
     public function rechargeRecords($time_begin, $time_end,
-                                    $page, $size, $type, $admin_id, $username)
+                                    $page, $size, $type, $admin_id, $username,$department_id)
     {
         $company_id = Token::getCurrentTokenVar('company_id');
         $records = RechargeV::rechargeRecords($time_begin, $time_end,
-            $page, $size, $type, $admin_id, $username, $company_id);
+            $page, $size, $type, $admin_id, $username, $company_id,$department_id);
         return $records;
 
     }
 
-    public function exportRechargeRecords($time_begin, $time_end, $type, $admin_id, $username)
+    public function exportRechargeRecords($time_begin, $time_end, $type, $admin_id, $username,$department_id)
     {
         $company_id = Token::getCurrentTokenVar('company_id');
-        $records = RechargeV::exportRechargeRecords($time_begin, $time_end, $type, $admin_id, $username, $company_id);
-        $header = ['创建时间', '姓名', '手机号', '充值金额', '充值途径', '充值人员', '备注'];
+        $records = RechargeV::exportRechargeRecords($time_begin, $time_end, $type, $admin_id, $username, $company_id,$department_id);
+        $header = ['创建时间','部门', '姓名', '手机号', '充值金额', '充值途径', '充值人员', '备注'];
         $file_name = $time_begin . "-" . $time_end . "-充值记录明细";
         $url = (new ExcelService())->makeExcel($header, $records, $file_name);
         return [

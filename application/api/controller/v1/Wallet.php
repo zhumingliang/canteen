@@ -125,13 +125,14 @@ class Wallet extends BaseController
      * @apiVersion 3.0.0
      * @apiDescription CMS管理端-充值管理-充值记录列表
      * @apiExample {get}  请求样例:
-     * http://canteen.tonglingok.com/api/v1/wallet/recharges?time_begin=2019-09-01&time_end=2019-11-01&admin_id=0&username&type=all&page=1&size=10
+     * http://canteen.tonglingok.com/api/v1/wallet/recharges?time_begin=2019-09-01&time_end=2019-11-01&admin_id=0&username&type=all&page=1&size=10&department_id
      * @apiParam (请求参数说明) {int} page 当前页码
      * @apiParam (请求参数说明) {int} size 每页多少条数据
      * @apiParam (请求参数说明) {string} time_begin 查询开始时间
      * @apiParam (请求参数说明) {string} time_end 查询截止时间
      * @apiParam (请求参数说明) {String} username 被充值用户
      * @apiParam (请求参数说明) {int} admin_id 充值人员id，全部传入0
+     * @apiParam (请求参数说明) {int} department_id 部门id，全部传入0
      * @apiParam (请求参数说明) {String} type 充值途径:目前有：cash：现金；1:微信；2:农行；all：全部
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200,"data":{"total":2,"per_page":20,"current_page":1,"last_page":1,"data":[{"create_time":"2019-10-31 18:32:47","username":null,"money":"200.00","type":"cash","admin":"系统超级管理员","remark":""},{"create_time":"2019-10-31 18:32:48","username":null,"money":"200.00","type":"cash","admin":"系统超级管理员","remark":""}]}}
@@ -146,12 +147,12 @@ class Wallet extends BaseController
      * @apiSuccess (返回参数说明) {string} admin 充值人员
      * @apiSuccess (返回参数说明) {string} remark 备注
      */
-    public function rechargeRecords($page = 1, $size = 20, $type = 'all', $admin_id = 0, $username = '')
+    public function rechargeRecords($page = 1, $size = 20, $type = 'all', $admin_id = 0, $username = '', $department_id = 0)
     {
         $time_begin = Request::param('time_begin');
         $time_end = Request::param('time_end');
         $records = (new WalletService())->rechargeRecords($time_begin, $time_end,
-            $page, $size, $type, $admin_id, $username);
+            $page, $size, $type, $admin_id, $username, $department_id);
         return json(new SuccessMessageWithData(['data' => $records]));
 
     }
@@ -162,11 +163,12 @@ class Wallet extends BaseController
      * @apiVersion 3.0.0
      * @apiDescription CMS管理端-充值管理-充值记录列表-导出报表
      * @apiExample {get}  请求样例:
-     * http://canteen.tonglingok.com/api/v1/wallet/recharges/export?time_begin=2019-09-01&time_end=2019-11-01&admin_id=0&username&type=all
+     * http://canteen.tonglingok.com/api/v1/wallet/recharges/export?time_begin=2019-09-01&time_end=2019-11-01&admin_id=0&username&type=all&department_id=0
      * @apiParam (请求参数说明) {string} time_begin 查询开始时间
      * @apiParam (请求参数说明) {string} time_end 查询截止时间
      * @apiParam (请求参数说明) {String} username 被充值用户
      * @apiParam (请求参数说明) {int} admin_id 充值人员id，全部传入0
+     * @apiParam (请求参数说明) {int} department_id 部门id，全部传入0
      * @apiParam (请求参数说明) {String} type 充值途径:目前有：cash：现金；1:微信；2:农行；all：全部
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200,"data":{"url":"http:\/\/canteen.tonglingok.com\/static\/excel\/download\/材料价格明细_20190817005931.xls"}}
@@ -174,11 +176,11 @@ class Wallet extends BaseController
      * @apiSuccess (返回参数说明) {string} msg 操作结果描述
      * @apiSuccess (返回参数说明) {string} url 下载地址
      */
-    public function exportRechargeRecords($type = 'all', $admin_id = 0, $username = '')
+    public function exportRechargeRecords($type = 'all', $admin_id = 0, $username = '', $department_id = 0)
     {
         $time_begin = Request::param('time_begin');
         $time_end = Request::param('time_end');
-        $records = (new WalletService())->exportRechargeRecords($time_begin, $time_end, $type, $admin_id, $username);
+        $records = (new WalletService())->exportRechargeRecords($time_begin, $time_end, $type, $admin_id, $username, $department_id);
         return json(new SuccessMessageWithData(['data' => $records]));
 
     }
