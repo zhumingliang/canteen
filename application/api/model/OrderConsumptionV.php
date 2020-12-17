@@ -69,7 +69,7 @@ IF
             ->where('a.state', CommonEnum::STATE_IS_OK)
             ->where('a.pay', PayEnum::PAY_SUCCESS)
             ->unionAll(function ($query) {
-                $query->field("`a`.`id` AS `order_id`,1 AS `type`,`a`.`dinner_id` AS `dinner_id`,`f`.`name` AS `dinner`,`a`.`canteen_id` AS `canteen_id`,`g`.`name` AS `canteen`,`a`.`company_id` AS `company_id`,`b`.`name` AS `company`,`a`.`consumption_date` AS `consumption_date`,`c`.`d_id` AS `department_id`,`d`.`name` AS `department`,`c`.`username` AS `username`,`c`.`phone` AS `phone`,IF ((`a`.`type`=1),4,5) AS `status`,(0-`a`.`money`) AS `order_money`,`c`.`t_id` AS `staff_type_id`,`e`.`name` AS `staff_type`,1 AS `order_count`,`a`.`staff_id` AS `staff_id`,'recharge' AS `location`")
+                $query->field("`a`.`id` AS `order_id`,1 AS `type`,`a`.`dinner_id` AS `dinner_id`,`f`.`name` AS `dinner`,`a`.`canteen_id` AS `canteen_id`,`g`.`name` AS `canteen`,`a`.`company_id` AS `company_id`,`b`.`name` AS `company`,`a`.`consumption_date` AS `consumption_date`,`c`.`d_id` AS `department_id`,`d`.`name` AS `department`,`c`.`username` AS `username`,`c`.`phone` AS `phone`,IF ((`a`.`type`=1),4,5) AS `status`,(0-`a`.`money`) AS `order_money`,`c`.`t_id` AS `staff_type_id`,`e`.`name` AS `staff_type`,1 AS `order_count`,`a`.`staff_id` AS `staff_id`,'canteen' AS `location`")
                     ->table('canteen_recharge_supplement_t')->alias('a')
                     ->leftJoin('canteen_company_t b', "`a`.`company_id` = `b`.`id`")
                     ->leftJoin('canteen_company_staff_t c', "`a`.`staff_id` = `c`.`id`")

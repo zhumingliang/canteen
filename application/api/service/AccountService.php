@@ -558,12 +558,14 @@ class AccountService
             $returnData['money'] = $info->money;
             $returnData['sub_money'] = $info->sub_money;
             $returnData['delivery_fee'] = $info->delivery_fee;
+            $returnData['unused_handel'] = $info->unused_handel;
         } else if ($type == "more") {
             if ($outsider == CommonEnum::STATE_IS_OK) {
                 $info = OrderParentT::get($orderId);
                 $returnData['count'] = $info->count;
                 $returnData['money'] = $info->money;
                 $returnData['delivery_fee'] = $info->delivery_fee;
+                $returnData['unused_handel'] = $info->unused_handel;
                 $returnData['consumption_sort'] = 1;
 
             } else {
