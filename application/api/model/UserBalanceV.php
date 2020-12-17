@@ -445,6 +445,7 @@ class UserBalanceV extends Model
                     ->where('staff_id', $staff_id)
                     ->where('type', OrderEnum::EAT_OUTSIDER)
                     ->where('used', CommonEnum::STATE_IS_FAIL)
+                    ->where('unused_handel', CommonEnum::STATE_IS_FAIL)
                     ->where('state', CommonEnum::STATE_IS_OK)
                     ->where('pay', PayEnum::PAY_SUCCESS);
             })

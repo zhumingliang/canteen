@@ -339,6 +339,7 @@ class ConsumptionRecordsV extends Model
                     ->where('a.phone', $phone)
                     ->where('a.company_id', $company_id)
                     ->where('a.used', CommonEnum::STATE_IS_FAIL)
+                    ->where('a.unused_handel', CommonEnum::STATE_IS_FAIL)
                     ->where('a.type', OrderEnum::EAT_OUTSIDER)
                     ->where('a.state', CommonEnum::STATE_IS_OK)
                     ->where('a.pay', PayEnum::PAY_SUCCESS);
