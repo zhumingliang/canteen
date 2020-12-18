@@ -106,16 +106,42 @@ Index extends BaseController
 
     public function test($param = "")
     {
-        $nextTime = "2020-12-18 15:35:00";
-        $now = strtotime(date('Y-m-d H:i'));
-        $nextTime = strtotime(date('Y-m-d H:i', strtotime($nextTime)));
-        if ($now == $nextTime) {
-            echo 1;
-        }else{
-            echo 2;
+
+        $companyId = 107;
+        //获取企业个人账户
+        $account = CompanyAccountT::where('company_id', $companyId)
+            ->where('type', 1)
+            ->where('fixed_type', 1)
+            ->where('state', 1)
+            ->find()->toArray();
+        if (!$account) {
+            throw new ParameterException(['msg' => "账户为空"]);
         }
+        //获取企业所有用户余额
+        $balance = UserBalanceV::balanceForOffLine($companyId);
+        $data = [];
+        foreach ($balance as $k => $v) {
+            if ($v['balance'] != 0) {
+                array_push($data, [
+                    'account_id' => $account['id'],
+                    'company_id' => $companyId,
+                    'consumption_date' => \date('Y-m-d'),
+                    'location_id' => 0,
+                    'used' => CommonEnum::STATE_IS_OK,
+                    'status' => CommonEnum::STATE_IS_OK,
+                    'staff_id' => $v['staff_id'],
+                    'type' => 'init',
+                    'order_id' => 0,
+                    'money' => $v['balance'],
+                    'outsider' => 2,
+                    'type_name' => "系统初始化"
+                ]);
+            }
 
+        }
+        print_r($data);
 
+        (new AccountRecordsT())->saveAll($data);
         /*   echo UserBalanceV::userBalance(94,'13822329629');
           // print_r(UserBalanceV::userBalance2(5637)) ;
            echo UserBalanceV::userBalance2(5549);*/
