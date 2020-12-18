@@ -74,7 +74,7 @@ class OrderSettlementV extends Model
                             }
                         }
 
-                    })->group('g.id');
+                    })->group('a.id');
 
 
             })->unionAll(function ($query) use ($time_begin, $time_end, $company_ids, $canteen_id, $dinner_id) {
