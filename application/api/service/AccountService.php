@@ -237,7 +237,7 @@ class AccountService
         //检测账户余额是否为0
         $balance = AccountRecordsT::checkAccountBalance($accountId);
         if ($balance) {
-            throw new ParameterException(['msg' => '账户余额不为0，不能停用']);
+            throw new ParameterException(['msg' => '该账户余额未全部清零，停用失败！']);
         }
 
     }
@@ -354,8 +354,6 @@ class AccountService
 
     public function accountBalance($company_id, $staff_id)
     {
-        //获取充值信息（微信/农行）1｜ 微信；2｜农行
-        $payBalance = PayT::statistic($staff_id);
         //消费统计
         $statistic = AccountRecordsT::statistic($staff_id);
         $accounts = CompanyAccountT::accountsWithSorts($company_id);
@@ -366,15 +364,6 @@ class AccountService
                     $money = $v2['money'];
                     break;
                 }
-            }
-            if ($v['type'] == 1) {
-                //基本账户
-                foreach ($payBalance as $k3 => $v3) {
-                    if ($v['fixed_type'] == $v3['method_id']) {
-                        $money += $v3['money'];
-                    }
-                }
-
             }
             $accounts[$k]['balance'] = $money;
         }
