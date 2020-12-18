@@ -819,7 +819,7 @@ class OrderStatisticService
                 $info = $this->consumptionStatisticByDepartment($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id, $phone, $order_type, $version);
                 break;
             case OrderEnum::STATISTIC_BY_USERNAME:
-                $info = $this->consumptionStatisticByUsername($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id, $phone, $order_type, 1, 10000, $version);
+                $info = $this->consumptionStatisticByUsernameWithAccount($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id, $phone, $order_type, 1, 10000, $version);
                 break;
             case OrderEnum::STATISTIC_BY_STAFF_TYPE:
                 $info = $this->consumptionStatisticByStaff($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id, $phone, $order_type, $version);
@@ -833,12 +833,14 @@ class OrderStatisticService
             default:
                 throw new ParameterException();
         }
+
         if ($type == OrderEnum::STATISTIC_BY_USERNAME) {
-            $statistic = $info['consumptionRecords']['statistic']['data'];
+            $statistic = $info['consumptionRecords']['data'];
         } else {
             $statistic = $info['consumptionRecords']['statistic'];
         }
         $accountRecords = $info['accountRecords'];
+
 
         $header = ['序号', '统计变量', '开始时间', '结束时间', '姓名', '部门'];
         //获取饭堂对应的餐次设置
@@ -1077,6 +1079,7 @@ class OrderStatisticService
                 foreach ($statistic as $k2 => $v2) {
                     if ($v == $v2[$field]) {
                         array_push($dinnerStatistic, [
+                            'statistic_id' =>$k,
                             'dinner_id' => $v2['dinner_id'],
                             'dinner' => $v2['dinner'],
                             'order_count' => $v2['order_count'],

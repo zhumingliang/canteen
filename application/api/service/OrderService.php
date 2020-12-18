@@ -11,7 +11,9 @@ namespace app\api\service;
 
 use app\api\model\CanteenAccountT;
 use app\api\model\CompanyStaffT;
+use app\api\model\CompanyT;
 use app\api\model\ConsumptionRecordsV;
+use app\api\model\ConsumptionStrategyT;
 use app\api\model\DinnerStatisticV;
 use app\api\model\DinnerT;
 use app\api\model\FoodsStatisticV;
@@ -252,6 +254,31 @@ class OrderService extends BaseService
 
     }
 
+
+    public function getOutsiderOrderMoney($params)
+    {
+        $dinner_id = $params['dinner_id'];
+        $ordering_date = $params['ordering_date'];
+        $detail = json_decode($params['detail'], true);
+        unset($params['detail']);
+        $params['ordering_type'] = OrderEnum::ORDERING_CHOICE;
+        $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
+        //检测配送费用
+        $delivery_fee = $this->checkUserOutsider($params['type'], $canteen_id);
+
+        //获取餐次信息
+        $dinner = DinnerT::dinnerInfo($dinner_id);
+        //检测该餐次订餐时间是否允许
+        $this->checkDinnerForPersonalChoice($dinner, $ordering_date);
+        //获取订单金额
+        $orderMoney = $this->checkOutsiderOrderMoney($dinner_id, $detail);
+        return [
+            'orderMoney' => $orderMoney * $params['count'],
+            'delivery_fee' => $delivery_fee
+        ];
+
+    }
+
     public
     function personChoiceOutsider($params)
     {
@@ -279,7 +306,7 @@ class OrderService extends BaseService
             $dinner = DinnerT::dinnerInfo($dinner_id);
             //检测该餐次订餐时间是否允许
             $this->checkDinnerForPersonalChoice($dinner, $ordering_date);
-            $consumptionType = $this->getConsumptionType($phone, $company_id, $canteen_id, $dinner_id);
+            $consumptionType = $this->getCanteenConsumptionType($canteen_id, $dinner_id);
             //获取订单金额
             $orderMoney = $this->checkOutsiderOrderMoney($dinner_id, $detail);
 
@@ -500,29 +527,6 @@ class OrderService extends BaseService
 
     }
 
-    public
-    function checkBalanceTest($canteen_id, $money, $company_id, $phone)
-    {
-        $balance = (new WalletService())->getUserBalance($company_id, $phone);
-        if ($balance >= $money) {
-            return PayEnum::PAY_BALANCE;
-        }
-        //获取账户设置，检测是否可预支消费
-        $canteenAccount = CanteenAccountT::where('c_id', $canteen_id)->find();
-        if (!$canteenAccount) {
-            return false;
-        }
-
-        if ($canteenAccount->type == OrderEnum::OVERDRAFT_NO) {
-            return false;
-        }
-        if ($canteenAccount->limit_money < ($money - $balance)) {
-            return false;
-        }
-        return PayEnum::PAY_OVERDRAFT;
-
-    }
-
 
     public
     function checkUserCanOrder($dinner, $day, $canteen_id, $count,
@@ -662,6 +666,24 @@ class OrderService extends BaseService
         $t_id = (new UserService())->getUserStaffTypeByPhone($phone, $company_id);
         //获取指定用户消费策略
         $strategies = (new CanteenService())->getStaffConsumptionStrategy($canteen_id, $dinner_id, $t_id);
+        if (!$strategies) {
+            throw new ParameterException(['msg' => '消费策略设置异常']);
+        }
+        $consumptionType = $strategies->consumption_type;
+        return $consumptionType;
+    }
+
+
+    private
+    function getCanteenConsumptionType($canteen_id, $dinner_id)
+    {
+
+        $strategies = ConsumptionStrategyT::where('c_id', $canteen_id)
+            ->where('d_id', $dinner_id)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->hidden(['create_time', 'update_time', 'state', 'd_id', 't_id', 'c_id'])
+            ->order('create_time desc')
+            ->find();
         if (!$strategies) {
             throw new ParameterException(['msg' => '消费策略设置异常']);
         }
@@ -1316,7 +1338,8 @@ class OrderService extends BaseService
             $this->checkOrderCanHandel($order->d_id, $order->ordering_date);
         } else {
             //撤回订单
-            $this->refundWxOrder($id);
+            throw  new  ParameterException(['msg' => "外来人员订餐，不能取消订单"]);
+           // $this->refundWxOrder($id);
         }
         $userType = Token::getCurrentTokenVar('type');
         if ($userType == "cms") {
@@ -1530,7 +1553,9 @@ class OrderService extends BaseService
             //判断是不是微信支付订餐
             if ($order->pay_way == PayEnum::PAY_WEIXIN) {
                 //撤回订单
-                $this->refundWxOrder($v, 'more');
+                throw  new  ParameterException(['msg' => "外来人员订餐，不能取消订单"]);
+
+               //$this->refundWxOrder($v, 'more');
             }
             $res = OrderParentT::update(['state' => OrderEnum::STATUS_CANCEL], ['id' => $v]);
             if (!$res) {
@@ -2453,14 +2478,29 @@ class OrderService extends BaseService
     public
     function consumptionRecords($consumption_time, $page, $size)
     {
+        $outsiders = Token::getCurrentTokenVar('outsiders');
         $phone = Token::getCurrentPhone();
         $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
         $company_id = Token::getCurrentTokenVar('current_company_id');
-        $records = ConsumptionRecordsV::recordsByPhone($phone, $company_id, $consumption_time, $page, $size);
-        $records['data'] = $this->prefixConsumptionRecords($records['data']);
-        $consumptionMoney = ConsumptionRecordsV::monthConsumptionMoneyByPhone($phone, $consumption_time, $company_id);
+        if ($outsiders == UserEnum::INSIDE) {
+            $staffId = Token::getCurrentTokenVar('staff_id');
+            if (!$staffId) {
+                $staff = CompanyStaffT::staffName($phone, $company_id);
+                $staffId = $staff->id;
+            }
+            $records = ConsumptionRecordsV::recordsByStaffId($staffId, $consumption_time, $page, $size);
+            $records['data'] = $this->prefixConsumptionRecords($records['data']);
+            $consumptionMoney = ConsumptionRecordsV::monthConsumptionMoneyByStaffId($staffId, $consumption_time);
+            $balance = $this->getUserBalanceByStaffId($canteen_id, $staffId);
+        } else {
+            $records = ConsumptionRecordsV::recordsByPhone($phone, $company_id, $consumption_time, $page, $size);
+            $records['data'] = $this->prefixConsumptionRecords($records['data']);
+            $consumptionMoney = ConsumptionRecordsV::monthConsumptionMoneyByPhone($phone, $consumption_time, $company_id);
+            $balance = 0;
+        }
+
         return [
-            'balance' => $this->getUserBalance($canteen_id, $company_id, $phone),
+            'balance' => $balance,
             'consumptionMoney' => $consumptionMoney,
             'records' => $records
         ];
@@ -2519,6 +2559,37 @@ class OrderService extends BaseService
             //不可透支消费，返回用户在该企业余额
             $money = UserBalanceV::userBalanceGroupByEffective2($staff->id);
             //$money = UserBalanceV::userBalanceGroupByEffective($company_id, $phone);
+            foreach ($money as $k => $v) {
+                $all += $v['money'];
+                if ($v['effective'] == CommonEnum::STATE_IS_OK) {
+                    $effective += $v['money'];
+                }
+            }
+
+        }
+        return [
+            'hidden' => $hidden,
+            'all_money' => $all,
+            'effective_money' => $effective
+        ];
+
+    }
+
+    public
+    function getUserBalanceByStaffId($canteen_id, $staffId)
+    {
+
+        $canteenAccount = CanteenAccountT::where('c_id', $canteen_id)
+            ->find();
+        if (!$canteenAccount) {
+            throw new ParameterException(['msg' => '该用户归属饭堂设置异常']);
+        }
+        $hidden = $canteenAccount->type;
+        $all = 0;
+        $effective = 0;
+        if ($hidden == CommonEnum::STATE_IS_FAIL) {
+            //不可透支消费，返回用户在该企业余额
+            $money = UserBalanceV::userBalanceGroupByEffective2($staffId);
             foreach ($money as $k => $v) {
                 $all += $v['money'];
                 if ($v['effective'] == CommonEnum::STATE_IS_OK) {
@@ -2853,9 +2924,13 @@ class OrderService extends BaseService
                 $consumptionMoney = $allMoney + $parentOrder->delivery_fee;
                 $staffId = $parentOrder->staff_id;
             }
-            $dinner = DinnerT::dinnerInfo($dinnerId);
-            (new AccountService())->saveAccountRecords($consumptionDate, $canteenId,
-                $consumptionMoney, $consumptionType, $order_id, $companyId, $staffId, $dinner->name, 1);
+            //检测企业是否开启分账
+            $company = CompanyT::where('id', $companyId)->find();
+            if ($company->account_status == CommonEnum::STATE_IS_OK) {
+                $dinner = DinnerT::dinnerInfo($dinnerId);
+                (new AccountService())->saveAccountRecords($consumptionDate, $canteenId,
+                    $consumptionMoney, $consumptionType, $order_id, $companyId, $staffId, $dinner->name, 1);
+            }
             Db::commit();
         } catch (Exception $e) {
             Db::rollback();

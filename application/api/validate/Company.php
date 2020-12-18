@@ -12,6 +12,9 @@ class Company extends BaseValidate
         'name' => 'require|isNotEmpty',
         'mch_id' => 'require|isNotEmpty',
         'app_id' => 'require|isNotEmpty',
+        'code' => 'require|isNotEmpty',
+        'prikey' => 'require|isNotEmpty',
+        'pfx' => 'require|isNotEmpty',
         'parent_id' => 'require'
     ];
 
@@ -19,7 +22,8 @@ class Company extends BaseValidate
         'save' => ['name', 'parent_id'],
         'managerCompanies' => ['name'],
         'consumptionLocation' => ['company_id'],
-        'saveCompanyWxConfig' => ['company_id', 'mch_id', 'app_id'],
+        'saveCompanyWxConfig' => ['company_id', 'mch_id'],
+        'saveCompanyNHConfig' => ['company_id', 'code', 'prikey', 'pfx'],
     ];
 
 }

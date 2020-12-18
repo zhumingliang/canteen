@@ -22,6 +22,7 @@ use app\lib\exception\SaveException;
 use think\Db;
 use think\Exception;
 use zml\tp_tools\Redis;
+use function Composer\Autoload\includeFile;
 use function GuzzleHttp\Promise\each_limit;
 use function GuzzleHttp\Psr7\str;
 
@@ -358,13 +359,20 @@ class CompanyService
     public function saveCompanyNHConfig($params)
     {
 
+
+        if (!empty($params['pfx'])) {
+            $pfxArr = explode('.', $params['pfx']);
+            array_pop($pfxArr);
+            $params['pfx'] = implode('', $pfxArr);
+        }
+
         $config = PayNonghangConfigT::config($params['company_id']);
         if ($config) {
             throw new SaveException(['msg' => '该企业配置已创建']);
         }
         $params['state'] = CommonEnum::STATE_IS_OK;
         $config = PayNonghangConfigT::create($params);
-        if ($config) {
+        if (!$config) {
             throw new SaveException();
         }
         //生成企业农行账户
@@ -396,7 +404,7 @@ class CompanyService
         return [
             'dinners' => $dinners,
             'strategies' => $strategies,
-            'canteen_config'=>$accountConfig
+            'canteen_config' => $accountConfig
         ];
 
 

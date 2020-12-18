@@ -106,6 +106,15 @@ Index extends BaseController
 
     public function test($param = "")
     {
+        $nextTime = "2020-12-18 15:35:00";
+        $now = strtotime(date('Y-m-d H:i'));
+        $nextTime = strtotime(date('Y-m-d H:i', strtotime($nextTime)));
+        if ($now == $nextTime) {
+            echo 1;
+        }else{
+            echo 2;
+        }
+
 
         /*   echo UserBalanceV::userBalance(94,'13822329629');
           // print_r(UserBalanceV::userBalance2(5637)) ;

@@ -27,6 +27,15 @@ class AccountRecordsT extends Model
 
     }
 
+    public static function balance($staff_id)
+    {
+        $statistic = self::where('staff_id', $staff_id)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->sum('money');
+        return $statistic;
+
+    }
+
     public static function companyAccountsBalance($staffId, $companyId)
     {
         $statistic = self::where('company_id', $companyId)
@@ -102,6 +111,14 @@ class AccountRecordsT extends Model
             ->where('state', CommonEnum::STATE_IS_OK)
             ->select();
         return $statistic;
+
+    }
+
+    public static function checkAccountBalance($accountId)
+    {
+        $balance = self::where('account_id', $accountId)
+            ->sum('money');
+        return $balance;
 
     }
 
