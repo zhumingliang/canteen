@@ -263,20 +263,20 @@ class WalletService
     }
 
     public function rechargeRecords($time_begin, $time_end,
-                                    $page, $size, $type, $admin_id, $username,$department_id)
+                                    $page, $size, $type, $admin_id, $username, $department_id)
     {
         $company_id = Token::getCurrentTokenVar('company_id');
         $records = RechargeV::rechargeRecords($time_begin, $time_end,
-            $page, $size, $type, $admin_id, $username, $company_id,$department_id);
+            $page, $size, $type, $admin_id, $username, $company_id, $department_id);
         return $records;
 
     }
 
-    public function exportRechargeRecords($time_begin, $time_end, $type, $admin_id, $username,$department_id)
+    public function exportRechargeRecords($time_begin, $time_end, $type, $admin_id, $username, $department_id)
     {
         $company_id = Token::getCurrentTokenVar('company_id');
-        $records = RechargeV::exportRechargeRecords($time_begin, $time_end, $type, $admin_id, $username, $company_id,$department_id);
-        $header = ['创建时间','部门', '姓名', '手机号', '充值金额', '充值途径', '充值人员', '备注'];
+        $records = RechargeV::exportRechargeRecords($time_begin, $time_end, $type, $admin_id, $username, $company_id, $department_id);
+        $header = ['创建时间', '部门', '姓名', '手机号', '充值金额', '充值途径', '充值人员', '备注'];
         $file_name = $time_begin . "-" . $time_end . "-充值记录明细";
         $url = (new ExcelService())->makeExcel($header, $records, $file_name);
         return [
@@ -285,11 +285,11 @@ class WalletService
 
     }
 
-    public function exportRechargeRecordsWithAccount($time_begin, $time_end, $type, $admin_id, $username,$department_id)
+    public function exportRechargeRecordsWithAccount($time_begin, $time_end, $type, $admin_id, $username, $department_id)
     {
         $company_id = Token::getCurrentTokenVar('company_id');
-        $records = RechargeV::exportRechargeRecordsWithAccount($time_begin, $time_end, $type, $admin_id, $username, $company_id,$department_id);
-        $header = ['创建时间','部门', '姓名', "手机号", '账户名称', '充值金额', '充值途径', '充值人员', '备注'];
+        $records = RechargeV::exportRechargeRecordsWithAccount($time_begin, $time_end, $type, $admin_id, $username, $company_id, $department_id);
+        $header = ['创建时间', '部门', '姓名', "手机号", '账户名称', '充值金额', '充值途径', '充值人员', '备注'];
         $file_name = $time_begin . "-" . $time_end . "-充值记录明细";
         $url = (new ExcelService())->makeExcel($header, $records, $file_name);
         return [
@@ -594,7 +594,7 @@ class WalletService
         $company_id = Token::getCurrentTokenVar('company_id');
         $admin_id = Token::getCurrentUid();
         $fileName = (new ExcelService())->saveExcelReturnName($supplement_excel);
-        //$fileName = dirname($_SERVER['SCRIPT_FILENAME']) . '/static/excel/upload/test.xlsx';
+        // $fileName = dirname($_SERVER['SCRIPT_FILENAME']) . '/static/excel/upload/test.xlsx';
         $fail = $this->checkSupplementData($company_id, $fileName);
         if (count($fail)) {
             return [
@@ -602,7 +602,7 @@ class WalletService
                 'fail' => $fail
             ];
         }
-        $this->uploadExcelTask($company_id, $admin_id, $fileName, "supplement");
+         $this->uploadExcelTask($company_id, $admin_id, $fileName, "supplement");
         return [
             'res' => true
         ];
@@ -702,9 +702,9 @@ class WalletService
                     array_push($staffCanteen, $v2['info']['name']);
                 }
             }
-            array_push($staffCanteens, [
-                $v['username'] . '&' . $v['phone'] => $staffCanteen
-            ]);
+
+            $staffCanteens[$v['username'] . '&' . $v['phone']] = $staffCanteen;
+
         }
         $fail = [];
         $data = (new ExcelService())->importExcel($fileName);
@@ -718,7 +718,6 @@ class WalletService
                 array_push($fail, '第' . $k . '行数据有问题');
                 break;
             }
-
             //检测饭堂是否合法
             $checkCanteens = $staffCanteens[$checkData];
             if (!in_array($v[2], $checkCanteens)) {
