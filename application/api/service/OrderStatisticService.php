@@ -841,6 +841,7 @@ class OrderStatisticService
         }
         $accountRecords = $info['accountRecords'];
 
+
         $header = ['序号', '统计变量', '开始时间', '结束时间', '姓名', '部门'];
         //获取饭堂对应的餐次设置
         $dinner = DinnerT::dinnerNames($canteen_id);
@@ -976,8 +977,8 @@ class OrderStatisticService
                     if ($v['statistic_id'] == $v2['statistic_id']) {
                         foreach ($accounts as $k3 => $v3) {
                             if ($v2['account_id'] == $v3['id']) {
-                                $data[$v3['id'] . $v3['name']] = abs($v2['money']);
-                                $endData[$v3['id'] . $v3['name']] += abs($v2['money']);
+                                $data[$v3['id'] . $v3['name']] = $v2['money'];
+                                $endData[$v3['id'] . $v3['name']] += $v2['money'];
                                 break;
                             }
 
