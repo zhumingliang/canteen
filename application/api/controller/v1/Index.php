@@ -106,14 +106,16 @@ Index extends BaseController
 
     public function test($param = "")
     {
-        $params['pfx'] = '批量现金充值模板 (1).xlsx';
-        if (!empty($params['pfx'])) {
-            $pfxArr = explode('.', $params['pfx']);
-            array_pop($pfxArr);
-            $params['pfx'] = implode('', $pfxArr);
+        $nextTime = "2020-12-18 15:35:00";
+        $now = strtotime(date('Y-m-d H:i'));
+        $nextTime = strtotime(date('Y-m-d H:i', strtotime($nextTime)));
+        if ($now == $nextTime) {
+            echo 1;
+        }else{
+            echo 2;
         }
 
-        print_r($params);
+
         /*   echo UserBalanceV::userBalance(94,'13822329629');
           // print_r(UserBalanceV::userBalance2(5637)) ;
            echo UserBalanceV::userBalance2(5549);*/

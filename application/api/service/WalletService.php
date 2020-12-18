@@ -616,6 +616,7 @@ class WalletService
         $staffs = CompanyStaffT::staffs($company_id);
         $accounts = CompanyAccountT::accountsWithoutNonghang($company_id);
         $accountsArr = [];
+
         if (count($accounts)) {
             foreach ($accounts as $k => $v) {
                 array_push($accountsArr, $v['name']);
@@ -630,7 +631,7 @@ class WalletService
         }
         $newStaffs = [];
         $staffCanteens = [];
-
+        $staffIds = [];
         foreach ($staffs as $k => $v) {
             array_push($newStaffs, $v['username'] . '&' . $v['phone']);
             $canteens = $v['canteens'];
@@ -642,6 +643,7 @@ class WalletService
             }
 
             $staffCanteens[$v['username'] . '&' . $v['phone']] = $staffCanteen;
+            $staffIds[$v['username'] . '&' . $v['phone']] = $v['id'];
 
         }
         $fail = [];
@@ -671,6 +673,15 @@ class WalletService
                 array_push($fail, '第' . $k . '行数据有问题');
                 break;
             }
+            //检测余额是否充足
+            if ($v[6] == "补扣") {
+                $staffId = $staffIds[$checkData];
+                $balance = (new WalletService())->getUserBalanceWithStaffId($staffId);
+                if ($balance < $v[7]) {
+                    array_push($fail, '第' . $k . '行数据有问题:余额不足');
+                    break;
+                }
+            }
 
         }
         return $fail;
@@ -692,6 +703,7 @@ class WalletService
         }
         $newStaffs = [];
         $staffCanteens = [];
+        $staffIds = [];
         foreach ($staffs as $k => $v) {
             array_push($newStaffs, $v['username'] . '&' . $v['phone']);
             $canteens = $v['canteens'];
@@ -703,6 +715,7 @@ class WalletService
             }
 
             $staffCanteens[$v['username'] . '&' . $v['phone']] = $staffCanteen;
+            $staffIds[$v['username'] . '&' . $v['phone']] = $v['id'];
 
         }
         $fail = [];
@@ -727,6 +740,16 @@ class WalletService
             if (strtotime($v[3]) > strtotime(\date('Y-m-d')) || $v[6] < 0) {
                 array_push($fail, '第' . $k . '行数据有问题');
                 break;
+            }
+
+            //检测余额是否充足
+            if ($v[5] == "补扣") {
+                $staffId = $staffIds[$checkData];
+                $balance = (new WalletService())->getUserBalanceWithStaffId($staffId);
+                if ($balance < $v[6]) {
+                    array_push($fail, '第' . $k . '行数据有问题:余额不足');
+                    break;
+                }
             }
 
         }
