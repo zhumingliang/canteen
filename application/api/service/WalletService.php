@@ -457,13 +457,6 @@ class WalletService
             $staff = CompanyStaffT::staffName($phone, $company_id);
             $staff_id = $staff->id;
         }
-       /* //检测企业是否开通分账管理
-        $company = CompanyT::get($company_id);
-        if ($company->account_status == 1) {
-            //返回分账的余额
-
-        }*/
-
         $balance = UserBalanceV::userBalance2($staff_id);
         return $balance;
 
