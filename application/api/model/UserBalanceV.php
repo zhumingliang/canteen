@@ -351,6 +351,12 @@ class UserBalanceV extends Model
                     ->where('staff_id', $staffId)
                     ->where('state', CommonEnum::STATE_IS_OK);
             })
+            ->unionAll(function ($query) use ($staffId) {
+                $query->table("canteen_account_records_t")
+                    ->field('sum(money) as money')
+                    ->where('staff_id', $staffId)
+                    ->where('state', CommonEnum::STATE_IS_OK);
+            })
             ->buildSql();
         $balance = Db::table($sql . 'a')->sum('money');
         return $balance;
