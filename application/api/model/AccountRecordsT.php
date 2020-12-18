@@ -87,7 +87,7 @@ class AccountRecordsT extends Model
             ->where('state', CommonEnum::STATE_IS_OK)
             ->field('id,account_id,order_id,money,type,type_name,create_time')
             ->order('create_time desc')
-            ->paginate($size, false, ['page' => $page]);
+           ->paginate($size, false, ['page' => $page]);
 
     }
 
