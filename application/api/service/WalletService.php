@@ -647,7 +647,7 @@ class WalletService
         $fail = [];
         $data = (new ExcelService())->importExcel($fileName);
         foreach ($data as $k => $v) {
-            if ($k < 2) {
+            if ($k < 3) {
                 continue;
             }
             $checkData = $v[0] . '&' . $v[1];
@@ -663,7 +663,7 @@ class WalletService
                 break;
             }
 
-            if (count($accountsArr) && !in_array($v[6], $accountsArr)) {
+            if ($v[6] == "补充" && count($accountsArr) && !in_array($v[6], $accountsArr)) {
                 array_push($fail, '第' . $k . '行数据有问题');
 
             }
@@ -809,14 +809,19 @@ class WalletService
             $newCanteen[$v['name']] = $v['id'];
         }
         foreach ($data as $k => $v) {
-            if ($k == 1) {
+            if ($k < 3) {
                 continue;
             }
+            $account_id = 0;
+            if ($v[5] == "补充" && count($newAccounts)) {
+                $account_id = $newAccounts[$v[6]];
+            }
+
             array_push($dataList, [
                 'admin_id' => $admin_id,
                 'company_id' => $company_id,
                 'staff_id' => $newStaffs[$v[1]],
-                'account_id' => count($newAccounts) ? $newAccounts[$v[6]] : 0,
+                'account_id' => $account_id,
                 'source' => 'upload',
                 'code' => '',
                 'username' => $v[0],
