@@ -1960,6 +1960,9 @@ class OrderService extends BaseService
             $new_no_meal_money = $old_no_meal_money / $old_count * $updateCount;
             $new_no_meal_sub_money = $old_no_meal_sub_money / $old_count * $updateCount;
 
+            $order->no_meal_money = $new_no_meal_money;
+            $order->no_meal_sub_money = $new_no_meal_sub_money;
+
             if ($order->fixed == CommonEnum::STATE_IS_OK) {
                 if ($new_no_meal_money + $new_no_meal_sub_money
                     < $check_money['new_money'] + $check_money['new_sub_money']) {
@@ -1974,7 +1977,6 @@ class OrderService extends BaseService
             } else {
                 $order->money = $check_money['new_money'];
                 $order->sub_money = $check_money['new_sub_money'];
-                $order->sub_money = $new_no_meal_sub_money;
 
             }
 
