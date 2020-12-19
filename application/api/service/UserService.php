@@ -54,6 +54,7 @@ class UserService
         $phone = Token::getCurrentTokenVar('phone');
         $outsider = Token::getCurrentTokenVar('outsiders');
         $company_id = (new CanteenService())->getCanteenCompanyID($canteen_id);
+
         if ($outsider == UserEnum::INSIDE) {
             $staff = CompanyStaffT::where('phone', $phone)
                 ->where('company_id', $company_id)
@@ -62,7 +63,7 @@ class UserService
             if (!$staff) {
                 throw  new AuthException(['msg' => '用户信息不存在']);
             }
-
+            Token::updateCurrentTokenVar('staff_id', $staff->id);
             $userCanteen = StaffCanteenT::where('staff_id', $staff->id)
                 ->where('canteen_id', $canteen_id)
                 ->where('state', CommonEnum::STATE_IS_OK)

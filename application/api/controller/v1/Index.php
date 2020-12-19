@@ -107,7 +107,8 @@ Index extends BaseController
     public function test($param = "")
     {
 
-        $companyId = 107;
+
+        $companyId = 115;
         //获取企业个人账户
         $account = CompanyAccountT::where('company_id', $companyId)
             ->where('type', 1)
@@ -118,7 +119,7 @@ Index extends BaseController
             throw new ParameterException(['msg' => "账户为空"]);
         }
         //获取企业所有用户余额
-        $balance = UserBalanceV::balanceForOffLine($companyId);
+        $balance = UserBalanceV::balanceForAccountInit($companyId);
         $data = [];
         foreach ($balance as $k => $v) {
             if ($v['balance'] != 0) {
@@ -139,8 +140,6 @@ Index extends BaseController
             }
 
         }
-        print_r($data);
-
         (new AccountRecordsT())->saveAll($data);
         /*   echo UserBalanceV::userBalance(94,'13822329629');
           // print_r(UserBalanceV::userBalance2(5637)) ;

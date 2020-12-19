@@ -124,6 +124,66 @@ class UserBalanceV extends Model
         return $sql;
     }
 
+    public static function getCompanySqlForAccountInit($companyId)
+    {
+        $sql = Db::table('canteen_order_t')
+            ->field('(0-money-sub_money-delivery_fee) as money,staff_id')
+            ->where('company_id', $companyId)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->where('pay', PayEnum::PAY_SUCCESS)
+            ->where(function ($query) {
+                $query->where('used', CommonEnum::STATE_IS_OK)->whereOr('unused_handel', CommonEnum::STATE_IS_OK);
+            })
+            ->unionAll(function ($query) use ($companyId) {
+                $query->table("canteen_order_parent_t")
+                    ->field('(0-delivery_fee) as money,staff_id')
+                    ->where('company_id', $companyId)
+                    ->where('state', CommonEnum::STATE_IS_OK)
+                    ->where('type', OrderEnum::EAT_OUTSIDER)
+                    ->where(function ($query) {
+                        $query->where('used', CommonEnum::STATE_IS_OK)->whereOr('unused_handel', CommonEnum::STATE_IS_OK);
+                    })
+                    ->where('pay', PayEnum::PAY_SUCCESS);
+            })->unionAll(function ($query) use ($companyId) {
+                $query->table("canteen_order_sub_t")
+                    ->alias('a')
+                    ->leftJoin('canteen_order_parent_t b', 'a.order_id=b.id')
+                    ->field('(0-a.money-a.sub_money) as money,b.staff_id')
+                    ->where('b.company_id', $companyId)
+                    ->where('a.state', CommonEnum::STATE_IS_OK)
+                    ->where('b.pay', PayEnum::PAY_SUCCESS);
+            })
+            ->unionAll(function ($query) use ($companyId) {
+                $query->table("canteen_shop_order_t")
+                    ->field('(0-money) as money,staff_id')
+                    ->where('company_id', $companyId)
+                    ->where('state', CommonEnum::STATE_IS_OK)
+                    ->where('pay', PayEnum::PAY_SUCCESS);
+            })
+            ->unionAll(function ($query) use ($companyId) {
+                $query->table("canteen_recharge_supplement_t")
+                    ->field('money,staff_id')
+                    ->where('company_id', $companyId);
+
+            })
+            ->unionAll(function ($query) use ($companyId) {
+                $query->table("canteen_pay_t")
+                    ->field('money,staff_id')
+                    ->where('company_id', $companyId)
+                    ->where('status', PayEnum::PAY_SUCCESS)
+                    ->where('refund', CommonEnum::STATE_IS_FAIL);
+
+            })
+            ->unionAll(function ($query) use ($companyId) {
+                $query->table("canteen_recharge_cash_t")
+                    ->field('money,staff_id')
+                    ->where('company_id', $companyId)
+                    ->where('state', CommonEnum::STATE_IS_OK);
+            })
+            ->buildSql();
+        return $sql;
+    }
+
     public static function getSqlForStaffsBalance($companyId)
     {
         $sql = Db::table('canteen_company_staff_t')
@@ -327,7 +387,7 @@ class UserBalanceV extends Model
                 $query->table("canteen_account_records_t")
                     ->field('sum(money) as money')
                     ->where('staff_id', $staffId)
-                    ->where('type','clear')
+                    ->where('type', 'clear')
                     ->where('state', CommonEnum::STATE_IS_OK);
             })
             ->buildSql();
@@ -446,6 +506,16 @@ class UserBalanceV extends Model
     public static function balanceForOffLine($companyId)
     {
         $sql = self::getCompanySql($companyId);
+        return Db::table($sql . 'a')
+            ->field('staff_id,sum(money) as balance')
+            ->group('staff_id')
+            ->order('staff_id')
+            ->select();
+    }
+
+    public static function balanceForAccountInit($companyId)
+    {
+        $sql = self::getCompanySqlForAccountInit($companyId);
         return Db::table($sql . 'a')
             ->field('staff_id,sum(money) as balance')
             ->group('staff_id')
