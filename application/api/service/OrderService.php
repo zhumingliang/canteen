@@ -1974,6 +1974,8 @@ class OrderService extends BaseService
             } else {
                 $order->money = $check_money['new_money'];
                 $order->sub_money = $check_money['new_sub_money'];
+                $order->sub_money = $new_no_meal_sub_money;
+
             }
 
             $order->count = $updateCount;
