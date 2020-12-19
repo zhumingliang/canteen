@@ -1339,7 +1339,7 @@ class OrderService extends BaseService
         } else {
             //撤回订单
             throw  new  ParameterException(['msg' => "外来人员订餐，不能取消订单"]);
-           // $this->refundWxOrder($id);
+            // $this->refundWxOrder($id);
         }
         $userType = Token::getCurrentTokenVar('type');
         if ($userType == "cms") {
@@ -1555,7 +1555,7 @@ class OrderService extends BaseService
                 //撤回订单
                 throw  new  ParameterException(['msg' => "外来人员订餐，不能取消订单"]);
 
-               //$this->refundWxOrder($v, 'more');
+                //$this->refundWxOrder($v, 'more');
             }
             $res = OrderParentT::update(['state' => OrderEnum::STATUS_CANCEL], ['id' => $v]);
             if (!$res) {
