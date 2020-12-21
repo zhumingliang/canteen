@@ -331,7 +331,6 @@ class DepartmentService
                 }
             }
             Db::commit();
-
         } catch (Exception $e) {
             Db::rollback();
             throw $e;
@@ -389,7 +388,6 @@ class DepartmentService
         $face_code = trim($data[9]);
         $birthday = trim($data[8]);
         $canteen_ids = [];
-
         if (!in_array($data[7], $state)) {
             $fail = [
                 'name' => $name,

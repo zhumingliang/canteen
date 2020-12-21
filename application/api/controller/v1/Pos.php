@@ -398,7 +398,7 @@ class Pos extends BaseController
         }
         if ($type == 'refund') {
             $newId = $save->id;
-            (new ShopService())->handleReduceOrder($id, $newId, $company_id, $staff_id, $money, $refundData);
+            (new ShopService())->handleReduceOrder($id, $newId, $company_id, $staff_id, $money,$refundData);
         }
     }
 

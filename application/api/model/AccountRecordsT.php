@@ -27,6 +27,15 @@ class AccountRecordsT extends Model
 
     }
 
+    public static function balance($staff_id)
+    {
+        $statistic = self::where('staff_id', $staff_id)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->sum('money');
+        return $statistic;
+
+    }
+
     public static function companyAccountsBalance($staffId, $companyId)
     {
         $statistic = self::where('company_id', $companyId)
@@ -78,7 +87,7 @@ class AccountRecordsT extends Model
             ->where('state', CommonEnum::STATE_IS_OK)
             ->field('id,account_id,order_id,money,type,type_name,create_time')
             ->order('create_time desc')
-            ->paginate($size, false, ['page' => $page]);
+           ->paginate($size, false, ['page' => $page]);
 
     }
 
@@ -111,6 +120,17 @@ class AccountRecordsT extends Model
             ->sum('money');
         return $balance;
 
+    }
+
+
+    public static function staffBalance($accountId)
+    {
+        $statistic = self::where('account_id', $accountId)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->field('company_id,staff_id,sum(money) as money')
+            ->group('staff_id')
+            ->select();
+        return $statistic;
     }
 
 

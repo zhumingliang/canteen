@@ -95,6 +95,8 @@ class OfficialToken extends Token
         $staff = CompanyStaffT::staffName($user['phone'], $user['current_company_id']);
         if ($staff) {
             $cachedValue['staff_id'] = $staff->id;
+        } else {
+            $cachedValue['staff_id'] = 0;
         }
         $cachedValue['u_id'] = $u_id;
         $cachedValue['phone'] = $user['phone'];

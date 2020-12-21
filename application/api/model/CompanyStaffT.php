@@ -255,7 +255,7 @@ class CompanyStaffT extends Model
                 'account' => function ($query) {
                     $query->where('state', CommonEnum::STATE_IS_OK)
                         ->field('staff_id,account_id,sum(money) as money')
-                        ->group('account_id');
+                        ->group('account_id,staff_id');
                 },
                 'card' => function ($query) use ($user) {
                     $query->where(function ($query) use ($user) {

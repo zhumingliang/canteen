@@ -5,6 +5,7 @@ namespace app\api\service;
 
 
 use app\api\job\UploadExcel;
+use app\api\model\CanteenAccountT;
 use app\api\model\CompanyAccountT;
 use app\api\model\CompanyStaffT;
 use app\api\model\CompanyT;
@@ -18,6 +19,7 @@ use app\api\model\RechargeV;
 use app\api\model\UserBalanceV;
 use app\api\validate\Company;
 use app\lib\enum\CommonEnum;
+use app\lib\enum\OrderEnum;
 use app\lib\enum\PayEnum;
 use app\lib\exception\AuthException;
 use app\lib\exception\ParameterException;
@@ -153,9 +155,9 @@ class WalletService
     public function uploadExcelTask($company_id, $u_id, $fileName, $type)
     {
         //设置限制未上传完成不能继续上传
-       /* if (!$this->checkUploading($company_id, $u_id, $type)) {
-            throw new SaveException(["msg" => '有文件正在上传，请稍等']);
-        }*/
+        /* if (!$this->checkUploading($company_id, $u_id, $type)) {
+             throw new SaveException(["msg" => '有文件正在上传，请稍等']);
+         }*/
         $jobHandlerClassName = 'app\api\job\UploadExcel';//负责处理队列任务的类
         $jobQueueName = "uploadQueue";//队列名称
         $jobData = [
@@ -261,20 +263,20 @@ class WalletService
     }
 
     public function rechargeRecords($time_begin, $time_end,
-                                    $page, $size, $type, $admin_id, $username)
+                                    $page, $size, $type, $admin_id, $username, $department_id)
     {
         $company_id = Token::getCurrentTokenVar('company_id');
         $records = RechargeV::rechargeRecords($time_begin, $time_end,
-            $page, $size, $type, $admin_id, $username, $company_id);
+            $page, $size, $type, $admin_id, $username, $company_id, $department_id);
         return $records;
 
     }
 
-    public function exportRechargeRecords($time_begin, $time_end, $type, $admin_id, $username)
+    public function exportRechargeRecords($time_begin, $time_end, $type, $admin_id, $username, $department_id)
     {
         $company_id = Token::getCurrentTokenVar('company_id');
-        $records = RechargeV::exportRechargeRecords($time_begin, $time_end, $type, $admin_id, $username, $company_id);
-        $header = ['创建时间', '姓名', '手机号', '充值金额', '充值途径', '充值人员', '备注'];
+        $records = RechargeV::exportRechargeRecords($time_begin, $time_end, $type, $admin_id, $username, $company_id, $department_id);
+        $header = ['创建时间', '部门', '姓名', '手机号', '充值金额', '充值途径', '充值人员', '备注'];
         $file_name = $time_begin . "-" . $time_end . "-充值记录明细";
         $url = (new ExcelService())->makeExcel($header, $records, $file_name);
         return [
@@ -283,11 +285,11 @@ class WalletService
 
     }
 
-    public function exportRechargeRecordsWithAccount($time_begin, $time_end, $type, $admin_id, $username)
+    public function exportRechargeRecordsWithAccount($time_begin, $time_end, $type, $admin_id, $username, $department_id)
     {
         $company_id = Token::getCurrentTokenVar('company_id');
-        $records = RechargeV::exportRechargeRecords($time_begin, $time_end, $type, $admin_id, $username, $company_id);
-        $header = ['创建时间', '姓名', "手机号", '账户名称', '充值金额', '充值途径', '充值人员', '备注'];
+        $records = RechargeV::exportRechargeRecordsWithAccount($time_begin, $time_end, $type, $admin_id, $username, $company_id, $department_id);
+        $header = ['创建时间', '部门', '姓名', "手机号", '账户名称', '充值金额', '充值途径', '充值人员', '备注'];
         $file_name = $time_begin . "-" . $time_end . "-充值记录明细";
         $url = (new ExcelService())->makeExcel($header, $records, $file_name);
         return [
@@ -308,7 +310,7 @@ class WalletService
     {
         $company_id = Token::getCurrentTokenVar('company_id');
         $checkCard = (new CompanyService())->checkConsumptionContainsCard($company_id);
-        $accounts = CompanyAccountT::accountsWithSorts($company_id);
+        $accounts = CompanyAccountT::accountsWithSortsAndDepartmentId($company_id);
         $staffs = CompanyStaffT::staffsForBalanceWithAccount($page, $size, $department_id, $user, $phone, $company_id);
         $staffs['data'] = $this->prefixAccount($staffs['data'], $accounts, $checkCard);
         return $staffs;
@@ -330,6 +332,7 @@ class WalletService
                         'name' => $v4['name'],
                         'type' => $v4['type'],
                         'fixed_type' => $v4['fixed_type'],
+                        'have' => (new AccountService())->checkStaffHaveAccount($v4['department_all'], $v4['departments'], $v['d_id']),
                         'balance' => 0
                     ]);
                 }
@@ -431,6 +434,7 @@ class WalletService
                     if (count($account)) {
                         foreach ($account as $k3 => $v3) {
                             if ($v2['id'] == $v3['account_id']) {
+                                $allBalance += $v3['money'];
                                 $accountBalance = $v3['money'];
                                 break;
                             }
@@ -458,6 +462,13 @@ class WalletService
 
     }
 
+    public function getUserBalanceWithStaffId($staff_id)
+    {
+        $balance = UserBalanceV::userBalance2($staff_id);
+        return $balance;
+
+    }
+
     public function clearBalance()
     {
         $grade = Token::getCurrentTokenVar('grade');
@@ -477,6 +488,59 @@ class WalletService
     }
 
     public function rechargeSupplement($params)
+    {
+        $admin_id = Token::getCurrentUid();
+        $company_id = Token::getCurrentTokenVar('company_id');
+        $staffs = explode(',', $params['staff_ids']);
+        $dataList = array();
+        foreach ($staffs as $k => $v) {
+            //检测余额是否充足
+            if ($params['type'] == 2) {
+                $this->checkSupplementBalance($v, $params['canteen_id'], $params['money']);
+            }
+
+            $data = [
+                'source' => 'save',
+                'admin_id' => $admin_id,
+                'company_id' => $company_id,
+                'canteen_id' => $params['canteen_id'],
+                'money' => $params['type'] == 1 ? $params['money'] : 0 - $params['money'],
+                'type' => $params['type'],
+                'staff_id' => $v,
+                'consumption_date' => $params['consumption_date'],
+                'remark' => empty($params['remark']) ? '' : $params['remark'],
+                'dinner_id' => $params['dinner_id'],
+                'account_id' => empty($params['account_id']) ? 0 : $params['account_id']
+            ];
+            array_push($dataList, $data);
+        }
+        $supplement = (new RechargeSupplementT())->saveAll($dataList);
+        if (!$supplement) {
+            throw new SaveException();
+        }
+    }
+
+    private function checkSupplementBalance($staffId, $canteenId, $money)
+    {
+        $balance = (new WalletService())->getUserBalanceWithStaffId($staffId);
+        if ($money > $balance) {
+            //获取账户设置，检测是否可预支消费
+            $canteenAccount = CanteenAccountT::where('c_id', $canteenId)->find();
+            if (!$canteenAccount) {
+                throw new ParameterException(['msg' => "账户余额不足，不能补扣"]);
+            }
+
+            if ($canteenAccount->type == OrderEnum::OVERDRAFT_NO) {
+                throw new ParameterException(['msg' => "账户余额不足，不能补扣"]);
+            }
+            if ($canteenAccount->limit_money < ($money - $balance)) {
+                throw new ParameterException(['msg' => "账户余额不足，不能补扣"]);
+            }
+        }
+
+    }
+
+    public function rechargeSupplementWithAccount($params)
     {
         $admin_id = Token::getCurrentUid();
         $company_id = Token::getCurrentTokenVar('company_id');
@@ -529,7 +593,7 @@ class WalletService
         $company_id = Token::getCurrentTokenVar('company_id');
         $admin_id = Token::getCurrentUid();
         $fileName = (new ExcelService())->saveExcelReturnName($supplement_excel);
-        //$fileName = dirname($_SERVER['SCRIPT_FILENAME']) . '/static/excel/upload/test.xlsx';
+        // $fileName = dirname($_SERVER['SCRIPT_FILENAME']) . '/static/excel/upload/test.xlsx';
         $fail = $this->checkSupplementData($company_id, $fileName);
         if (count($fail)) {
             return [
@@ -552,6 +616,7 @@ class WalletService
         $staffs = CompanyStaffT::staffs($company_id);
         $accounts = CompanyAccountT::accountsWithoutNonghang($company_id);
         $accountsArr = [];
+
         if (count($accounts)) {
             foreach ($accounts as $k => $v) {
                 array_push($accountsArr, $v['name']);
@@ -566,7 +631,7 @@ class WalletService
         }
         $newStaffs = [];
         $staffCanteens = [];
-
+        $staffIds = [];
         foreach ($staffs as $k => $v) {
             array_push($newStaffs, $v['username'] . '&' . $v['phone']);
             $canteens = $v['canteens'];
@@ -578,12 +643,13 @@ class WalletService
             }
 
             $staffCanteens[$v['username'] . '&' . $v['phone']] = $staffCanteen;
+            $staffIds[$v['username'] . '&' . $v['phone']] = $v['id'];
 
         }
         $fail = [];
         $data = (new ExcelService())->importExcel($fileName);
         foreach ($data as $k => $v) {
-            if ($k < 2) {
+            if ($k < 3) {
                 continue;
             }
             $checkData = $v[0] . '&' . $v[1];
@@ -599,13 +665,22 @@ class WalletService
                 break;
             }
 
-            if (count($accountsArr) && !in_array($v[6], $accountsArr)) {
+            if ($v[6] == "补充" && count($accountsArr) && !in_array($v[6], $accountsArr)) {
                 array_push($fail, '第' . $k . '行数据有问题');
 
             }
             if (strtotime($v[3]) > strtotime(\date('Y-m-d')) || $v[7] < 0) {
                 array_push($fail, '第' . $k . '行数据有问题');
                 break;
+            }
+            //检测余额是否充足
+            if ($v[6] == "补扣") {
+                $staffId = $staffIds[$checkData];
+                $balance = (new WalletService())->getUserBalanceWithStaffId($staffId);
+                if ($balance < $v[7]) {
+                    array_push($fail, '第' . $k . '行数据有问题:余额不足');
+                    break;
+                }
             }
 
         }
@@ -628,6 +703,7 @@ class WalletService
         }
         $newStaffs = [];
         $staffCanteens = [];
+        $staffIds = [];
         foreach ($staffs as $k => $v) {
             array_push($newStaffs, $v['username'] . '&' . $v['phone']);
             $canteens = $v['canteens'];
@@ -637,9 +713,10 @@ class WalletService
                     array_push($staffCanteen, $v2['info']['name']);
                 }
             }
-            array_push($staffCanteens, [
-                $v['username'] . '&' . $v['phone'] => $staffCanteen
-            ]);
+
+            $staffCanteens[$v['username'] . '&' . $v['phone']] = $staffCanteen;
+            $staffIds[$v['username'] . '&' . $v['phone']] = $v['id'];
+
         }
         $fail = [];
         $data = (new ExcelService())->importExcel($fileName);
@@ -653,7 +730,6 @@ class WalletService
                 array_push($fail, '第' . $k . '行数据有问题');
                 break;
             }
-
             //检测饭堂是否合法
             $checkCanteens = $staffCanteens[$checkData];
             if (!in_array($v[2], $checkCanteens)) {
@@ -664,6 +740,16 @@ class WalletService
             if (strtotime($v[3]) > strtotime(\date('Y-m-d')) || $v[6] < 0) {
                 array_push($fail, '第' . $k . '行数据有问题');
                 break;
+            }
+
+            //检测余额是否充足
+            if ($v[5] == "补扣") {
+                $staffId = $staffIds[$checkData];
+                $balance = (new WalletService())->getUserBalanceWithStaffId($staffId);
+                if ($balance < $v[6]) {
+                    array_push($fail, '第' . $k . '行数据有问题:余额不足');
+                    break;
+                }
             }
 
         }
@@ -746,14 +832,19 @@ class WalletService
             $newCanteen[$v['name']] = $v['id'];
         }
         foreach ($data as $k => $v) {
-            if ($k == 1) {
+            if ($k < 3) {
                 continue;
             }
+            $account_id = 0;
+            if ($v[5] == "补充" && count($newAccounts)) {
+                $account_id = $newAccounts[$v[6]];
+            }
+
             array_push($dataList, [
                 'admin_id' => $admin_id,
                 'company_id' => $company_id,
                 'staff_id' => $newStaffs[$v[1]],
-                'account_id' => count($newAccounts) ? $newAccounts[$v[6]] : 0,
+                'account_id' => $account_id,
                 'source' => 'upload',
                 'code' => '',
                 'username' => $v[0],

@@ -40,7 +40,7 @@ class AccountRecordsV
                     ->where('a.outsider', CommonEnum::STATE_IS_OK);
             })
             ->unionAll(function ($query) {
-                $query->field('a.account_id,a.staff_id,d.name,a.company_id,a.money,c.phone,c.username,c.d_id as department_id,c.t_id as staff_type_id,b.consumption_date,IF ((b.type=1),4,5) AS status,"recharge" as location,b.canteen_id as location_id')->table('canteen_account_records_t')
+                $query->field('a.account_id,a.staff_id,d.name,a.company_id,a.money,c.phone,c.username,c.d_id as department_id,c.t_id as staff_type_id,b.consumption_date,IF ((b.type=1),4,5) AS status,"canteen" as location,b.canteen_id as location_id')->table('canteen_account_records_t')
                     ->alias('a')
                     ->leftJoin('canteen_recharge_supplement_t b', 'a.order_id=b.id')
                     ->leftJoin('canteen_company_staff_t c', 'b.staff_id=c.id')

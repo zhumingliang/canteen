@@ -24,6 +24,7 @@ use app\lib\enum\PayEnum;
 use app\lib\exception\ParameterException;
 use app\lib\exception\SaveException;
 use app\lib\exception\UpdateException;
+use http\Env\Request;
 use MongoDB\BSON\Type;
 use think\Db;
 use think\Exception;
@@ -109,7 +110,6 @@ class AccountService
                 ]);
             }
         }
-
         $accountDepartment = (new AccountDepartmentT())->saveAll($data);
         if (!$accountDepartment) {
             throw new SaveException();
@@ -184,6 +184,14 @@ class AccountService
 
     public function saveFixedAccount($companyId, $fixedType)
     {
+        //检测账户是否已经存在
+        $account = CompanyAccountT::where('company_id', $companyId)
+            ->where('type', 1)
+            ->where('fixed_type', $fixedType)
+            ->where('state', CommonEnum::STATE_IS_OK)->find();
+        if ($account) {
+            return true;
+        }
         $accountName = [
             1 => '个人账户',
             2 => '农行账户'
@@ -227,9 +235,9 @@ class AccountService
     private function checkAccountBalance($accountId)
     {
         //检测账户余额是否为0
-        $balance = AccountRecordsT::accountBalance($accountId);
+        $balance = AccountRecordsT::checkAccountBalance($accountId);
         if ($balance) {
-            throw new ParameterException(['msg' => '账户余额不为0，不能停用']);
+            throw new ParameterException(['msg' => '该账户余额未全部清零，停用失败！']);
         }
 
     }
@@ -300,15 +308,15 @@ class AccountService
             if (!$account) {
                 throw new UpdateException();
             }
-            if (empty($params['departments'])) {
-                $departments = json_encode($params['departments'], true);
+            if (!empty($params['departments'])) {
+                $departments = json_decode($params['departments'], true);
                 $add = [];
                 $cancel = [];
                 if (!empty($departments['add'])) {
-                    $add = json_decode($departments['add'], true);
+                    $add = $departments['add'];
                 }
                 if (!empty($departments['cancel'])) {
-                    $cancel = json_decode($departments['cancel'], true);
+                    $cancel = $departments['cancel'];
                 }
                 $this->saveDepartments($params['id'], $add, $cancel);
             }
@@ -330,11 +338,12 @@ class AccountService
                 }
             }
 
+            Db::commit();
+
         } catch (Exception $e) {
             Db::rollback();
             throw $e;
         }
-        Db::commit();
     }
 
     public function accountsForSearch($companyId)
@@ -345,8 +354,6 @@ class AccountService
 
     public function accountBalance($company_id, $staff_id)
     {
-        //获取充值信息（微信/农行）1｜ 微信；2｜农行
-        $payBalance = PayT::statistic($staff_id);
         //消费统计
         $statistic = AccountRecordsT::statistic($staff_id);
         $accounts = CompanyAccountT::accountsWithSorts($company_id);
@@ -357,15 +364,6 @@ class AccountService
                     $money = $v2['money'];
                     break;
                 }
-            }
-            if ($v['type'] == 1) {
-                //基本账户
-                foreach ($payBalance as $k3 => $v3) {
-                    if ($v['fixed_type'] == $v3['method_id']) {
-                        $money += $v3['money'];
-                    }
-                }
-
             }
             $accounts[$k]['balance'] = $money;
         }
@@ -394,22 +392,25 @@ class AccountService
                     'outsider' => $outsider,
                     'type_name' => $typeName
                 ]);
+                break;
             } else {
-                array_push($data, [
-                    'account_id' => $v['id'],
-                    'company_id' => $companyId,
-                    'consumption_date' => $consumptionDate,
-                    'location_id' => $canteenId,
-                    'used' => CommonEnum::STATE_IS_OK,
-                    'status' => CommonEnum::STATE_IS_OK,
-                    'staff_id' => $staffId,
-                    'type' => $type,
-                    'order_id' => $orderId,
-                    'money' => 0 - $v['balance'],
-                    'outsider' => $outsider,
-                    'type_name' => $typeName
-                ]);
-                $money -= $v['balance'];
+                if ($v['balance'] > 0) {
+                    array_push($data, [
+                        'account_id' => $v['id'],
+                        'company_id' => $companyId,
+                        'consumption_date' => $consumptionDate,
+                        'location_id' => $canteenId,
+                        'used' => CommonEnum::STATE_IS_OK,
+                        'status' => CommonEnum::STATE_IS_OK,
+                        'staff_id' => $staffId,
+                        'type' => $type,
+                        'order_id' => $orderId,
+                        'money' => 0 - $v['balance'],
+                        'outsider' => $outsider,
+                        'type_name' => $typeName
+                    ]);
+                    $money -= $v['balance'];
+                }
             }
         }
         $res = (new AccountRecordsT())->saveAll($data);
@@ -542,18 +543,23 @@ class AccountService
         $orderId = $accountRecord->order_id;
         if ($type == "one") {
             $info = OrderT::get($orderId);
+            $returnData['count'] = $info->count;
             $returnData['money'] = $info->money;
             $returnData['sub_money'] = $info->sub_money;
             $returnData['delivery_fee'] = $info->delivery_fee;
+            $returnData['unused_handel'] = $info->unused_handel;
         } else if ($type == "more") {
             if ($outsider == CommonEnum::STATE_IS_OK) {
                 $info = OrderParentT::get($orderId);
+                $returnData['count'] = $info->count;
                 $returnData['money'] = $info->money;
                 $returnData['delivery_fee'] = $info->delivery_fee;
+                $returnData['unused_handel'] = $info->unused_handel;
                 $returnData['consumption_sort'] = 1;
 
             } else {
                 $info = OrderSubT::infoWithParent($orderId);
+                $returnData['count'] = 1;
                 $returnData['money'] = $info->money;
                 $returnData['sub_money'] = $info->sub_money;
                 $returnData['consumption_sort'] = $info->consumption_sort;
@@ -671,6 +677,61 @@ class AccountService
             }
         }
         return $useAccounts;
+    }
+
+
+    public function checkStaffHaveAccount($department_all, $accountDepartments, $staffDepartmentId)
+    {
+        $have = CommonEnum::STATE_IS_FAIL;
+        if ($department_all == CommonEnum::STATE_IS_OK) {
+            $have = CommonEnum::STATE_IS_OK;
+        }
+        foreach ($accountDepartments as $k => $v) {
+            if ($staffDepartmentId == $v['department_id']) {
+                $have = CommonEnum::STATE_IS_OK;
+                break;
+            }
+        }
+        return $have;
+
+    }
+
+
+    public function initAccount(){
+        $companyId = 0;//95;
+        //获取企业个人账户
+        (new  AccountService())->accounts($companyId);
+        $account = CompanyAccountT::where('company_id', $companyId)
+            ->where('type', 1)
+            ->where('fixed_type', 1)
+            ->where('state', 1)
+            ->find()->toArray();
+        if (!$account) {
+            throw new ParameterException(['msg' => "账户为空"]);
+        }
+        //获取企业所有用户余额
+        $balance = UserBalanceV::balanceForAccountInit($companyId);
+        $data = [];
+        foreach ($balance as $k => $v) {
+            if ($v['staff_id']>0 && $v['balance'] != 0) {
+                array_push($data, [
+                    'account_id' => $account['id'],
+                    'company_id' => $companyId,
+                    'consumption_date' => \date('Y-m-d'),
+                    'location_id' => 0,
+                    'used' => CommonEnum::STATE_IS_OK,
+                    'status' => CommonEnum::STATE_IS_OK,
+                    'staff_id' => $v['staff_id'],
+                    'type' => 'init',
+                    'order_id' => 0,
+                    'money' => $v['balance'],
+                    'outsider' => 2,
+                    'type_name' => "系统初始化"
+                ]);
+            }
+
+        }
+        (new AccountRecordsT())->saveAll($data);
     }
 
 }

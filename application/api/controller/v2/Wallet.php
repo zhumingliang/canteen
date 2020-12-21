@@ -49,11 +49,11 @@ class Wallet
      * @apiSuccess (返回参数说明) {string} msg 操作结果描述
      * @apiSuccess (返回参数说明) {string} url 下载地址
      */
-    public function exportRechargeRecords($type = 'all', $admin_id = 0, $username = '')
+    public function exportRechargeRecords($type = 'all', $admin_id = 0, $username = '',$department_id=0)
     {
         $time_begin = Request::param('time_begin');
         $time_end = Request::param('time_end');
-        $records = (new WalletService())->exportRechargeRecordsWithAccount($time_begin, $time_end, $type, $admin_id, $username);
+        $records = (new WalletService())->exportRechargeRecordsWithAccount($time_begin, $time_end, $type, $admin_id, $username,$department_id);
         return json(new SuccessMessageWithData(['data' => $records]));
 
     }

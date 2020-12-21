@@ -346,3 +346,10 @@ Route::get('api/:version/account/staff', 'api/:version.Account/staffAccount');
 Route::get('api/:version/account/staffs', 'api/:version.Account/staffsAccount');
 
 Route::get('api/:version/pos/isClose', 'api/:version.Pos/isClose');
+
+Route::post('api/:version/timeswitch/addTimeSwitch', 'api/:version.TimeSwitch/addTimeSwitch');
+Route::post('api/:version/timeswitch/updateTimeSwitch', 'api/:version.TimeSwitch/updateTimeSwitch');
+Route::get('api/:version/timeswitch/showTimeSwitch', 'api/:version.TimeSwitch/showTimeSwitch');
+Route::post('api/:version/timeswitch/deleteTimeSwitch', 'api/:version.TimeSwitch/deleteTimeSwitch');
+Route::post('api/:version/timeswitch/switchButton', 'api/:version.TimeSwitch/switchButton');
+Route::get('api/:version/timeswitch/showDevice', 'api/:version.TimeSwitch/showDevice');
