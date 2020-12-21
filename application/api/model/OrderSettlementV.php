@@ -380,7 +380,7 @@ class OrderSettlementV extends Model
                 }
 
             })
-            ->field('order_id,used_time,username,phone,canteen,department,dinner,booking,used,type,ordering_date,money,consumption_type')
+            ->field('order_id,used_time,username,phone,canteen,department,dinner,booking,used,type,ordering_date,money,consumption_type,outsider')
             ->order('ordering_date DESC,phone')
             ->paginate($size, false, ['page' => $page])->toArray();
         return $list;
