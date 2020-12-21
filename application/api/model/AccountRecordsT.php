@@ -123,4 +123,15 @@ class AccountRecordsT extends Model
     }
 
 
+    public static function staffBalance($accountId)
+    {
+        $statistic = self::where('account_id', $accountId)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->field('company_id,staff_id,sum(money) as money')
+            ->group('staff_id')
+            ->select();
+        return $statistic;
+    }
+
+
 }
