@@ -2870,22 +2870,33 @@ class OrderService extends BaseService
             Db::startTrans();
             if ($consumptionType == "one") {
                 $order = OrderT::get($order_id);
-                $dinnerId = $order->d_id;
-                if ($order->consumption_type == 'no_meals_ordered' && ($order->fixed == CommonEnum::STATE_IS_OK || $order->ordering_type == "online")) {
-                    $order->money = $order->meal_money;
-                }
-                $order->sub_money = $order->meal_sub_money;
-                $order->used = CommonEnum::STATE_IS_OK;
-                $order->used_time = date('Y-m-d H:i:s');
-                $res = $order->save();
-                if (!$res) {
-                    throw new UpdateException();
-                }
-                $consumptionDate = $order->ordering_date;
-                $canteenId = $order->c_id;
-                $companyId = $order->company_id;
-                $consumptionMoney = $order->money + $order->sub_money + $order->delivery_fee;
                 $staffId = $order->staff_id;
+                if ($staffId == 0) {
+                    //外来人员就餐
+                    $order->used = CommonEnum::STATE_IS_OK;
+                    $order->used_time = date('Y-m-d H:i:s');
+                    $res = $order->save();
+                    if (!$res) {
+                        throw new UpdateException();
+                    }
+                } else {
+                    $dinnerId = $order->d_id;
+                    if ($order->consumption_type == 'no_meals_ordered' && ($order->fixed == CommonEnum::STATE_IS_OK || $order->ordering_type == "online")) {
+                        $order->money = $order->meal_money;
+                    }
+                    $order->sub_money = $order->meal_sub_money;
+                    $order->used = CommonEnum::STATE_IS_OK;
+                    $order->used_time = date('Y-m-d H:i:s');
+                    $res = $order->save();
+                    if (!$res) {
+                        throw new UpdateException();
+                    }
+                    $consumptionDate = $order->ordering_date;
+                    $canteenId = $order->c_id;
+                    $companyId = $order->company_id;
+                    $consumptionMoney = $order->money + $order->sub_money + $order->delivery_fee;
+
+                }
 
             } else {
                 $allMoney = 0;
@@ -2928,12 +2939,14 @@ class OrderService extends BaseService
                 $consumptionMoney = $allMoney + $parentOrder->delivery_fee;
                 $staffId = $parentOrder->staff_id;
             }
-            //检测企业是否开启分账
-            $company = CompanyT::where('id', $companyId)->find();
-            if ($company->account_status == CommonEnum::STATE_IS_OK) {
-                $dinner = DinnerT::dinnerInfo($dinnerId);
-                (new AccountService())->saveAccountRecords($consumptionDate, $canteenId,
-                    $consumptionMoney, $consumptionType, $order_id, $companyId, $staffId, $dinner->name, 1);
+            if ($staffId > 0) {
+                //检测企业是否开启分账
+                $company = CompanyT::where('id', $companyId)->find();
+                if ($company->account_status == CommonEnum::STATE_IS_OK) {
+                    $dinner = DinnerT::dinnerInfo($dinnerId);
+                    (new AccountService())->saveAccountRecords($consumptionDate, $canteenId,
+                        $consumptionMoney, $consumptionType, $order_id, $companyId, $staffId, $dinner->name, 1);
+                }
             }
             Db::commit();
         } catch (Exception $e) {
@@ -2943,6 +2956,7 @@ class OrderService extends BaseService
 
 
     }
+
 
     public
     function infoForPersonChoiceOnline($day)

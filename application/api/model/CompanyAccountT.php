@@ -136,4 +136,13 @@ class CompanyAccountT extends Model
         return $accounts;
     }
 
+    public static function clearAccounts()
+    {
+        $accounts = self::where('clear', '>', 1)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->select()->toArray();
+        return $accounts;
+    }
+
+
 }

@@ -54,6 +54,7 @@ use app\lib\exception\SuccessMessage;
 use app\lib\exception\SuccessMessageWithData;
 use app\lib\Num;
 use app\lib\printer\Printer;
+use app\model\LogT;
 use think\Db;
 use think\db\Where;
 use think\Exception;
@@ -106,41 +107,9 @@ Index extends BaseController
 
     public function test($param = "")
     {
+        $this->clearAccounts();
 
 
-        $companyId = 115;
-        //获取企业个人账户
-        $account = CompanyAccountT::where('company_id', $companyId)
-            ->where('type', 1)
-            ->where('fixed_type', 1)
-            ->where('state', 1)
-            ->find()->toArray();
-        if (!$account) {
-            throw new ParameterException(['msg' => "账户为空"]);
-        }
-        //获取企业所有用户余额
-        $balance = UserBalanceV::balanceForAccountInit($companyId);
-        $data = [];
-        foreach ($balance as $k => $v) {
-            if ($v['balance'] != 0) {
-                array_push($data, [
-                    'account_id' => $account['id'],
-                    'company_id' => $companyId,
-                    'consumption_date' => \date('Y-m-d'),
-                    'location_id' => 0,
-                    'used' => CommonEnum::STATE_IS_OK,
-                    'status' => CommonEnum::STATE_IS_OK,
-                    'staff_id' => $v['staff_id'],
-                    'type' => 'init',
-                    'order_id' => 0,
-                    'money' => $v['balance'],
-                    'outsider' => 2,
-                    'type_name' => "系统初始化"
-                ]);
-            }
-
-        }
-        (new AccountRecordsT())->saveAll($data);
         /*   echo UserBalanceV::userBalance(94,'13822329629');
           // print_r(UserBalanceV::userBalance2(5637)) ;
            echo UserBalanceV::userBalance2(5549);*/
@@ -176,4 +145,135 @@ Index extends BaseController
         return json(\app\api\service\Token::getCurrentTokenVar());
 
     }
+
+
+    public function clearAccounts()
+    {
+
+        Db::startTrans();
+        try {
+            //获取需要清除余额的账户
+            $account = CompanyAccountT::clearAccounts();
+
+            if (!count($account)) {
+                return true;
+            }
+            foreach ($account as $k => $v) {
+                $accountId = $v['id'];
+                if ($accountId != 208) {
+                    continue;
+                }
+                //检测是否清零时间
+                if (!$this->checkClearTime($v['next_time'])) {
+                    continue;
+                }
+                $clearData = [];
+                //获取账户所有用户的余额
+                $staffBalance = AccountRecordsT::staffBalance($accountId);
+                if (!count($staffBalance)) {
+                    continue;
+                }
+                foreach ($staffBalance as $k2 => $v2) {
+                    if (abs($v2['money']) > 0) {
+                        array_push($clearData, [
+                            'account_id' => $accountId,
+                            'company_id' => $v2['company_id'],
+                            'consumption_date' => date('Y-m-d'),
+                            'location_id' => 0,
+                            'used' => CommonEnum::STATE_IS_OK,
+                            'status' => CommonEnum::STATE_IS_OK,
+                            'staff_id' => $v2['staff_id'],
+                            'type' => 'clear',
+                            'order_id' => 0,
+                            'money' => 0 - $v2['money'],
+                            'outsider' => 2,
+                            'type_name' => "到期清零"
+                        ]);
+                    }
+
+                }
+                if (count($clearData)) {
+                    (new AccountRecordsT())->saveAll($clearData);
+                }
+                //更新清零时间
+                $nextTime = $this->getNextClearTime($v['clear_type'],
+                    $v['first'], $v['end'],
+                    $v['day_count'], $v['time_begin']);
+                echo $nextTime;
+                CompanyAccountT::update(['next_time' => $nextTime], ['id' => $accountId]);
+            }
+
+           // Db::commit();
+        } catch (\Exception $e) {
+           echo $e->getMessage();
+            Db::rollback();
+        }
+    }
+
+    private function checkClearTime($nextTime)
+    {
+        return true;
+        $now = strtotime(date('Y-m-d H:i'));
+        $nextTime = strtotime(date('Y-m-d H:i', strtotime($nextTime)));
+        if ($now == $nextTime) {
+            echo 1;
+            return true;
+        }
+        return false;
+
+    }
+
+    private function getNextClearTime($clearType, $first, $end, $dayCount, $time_begin)
+    {
+        if ($clearType == "day") {
+            return addDay($dayCount, $time_begin) . ' ' . "23:59";
+        }
+        if ($clearType == "week") {
+            if ($first == CommonEnum::STATE_IS_OK) {
+                if (date('w') == 1) {
+
+                    return addDay(7, date('Y-m-d')) . ' ' . "00:01";
+                } else {
+                    return date('Y-m-d', strtotime('+1 week last monday')) . ' ' . "00:01";
+                }
+            } else if ($end == CommonEnum::STATE_IS_OK) {
+                if (date('w') == 0) {
+                    return date('Y-m-d') . ' ' . "23:59";
+                } else {
+                    return date('Y-m-d', strtotime('+1 week last sunday')) . ' ' . "23:59";
+                }
+            }
+        } else if ($clearType == "month") {
+            if ($first == CommonEnum::STATE_IS_OK) {
+                $nextMonthBegin = date('Y-m-01', strtotime('+1 month'));
+                return $nextMonthBegin . ' ' . "00:01";
+            } else if ($end == CommonEnum::STATE_IS_OK) {
+                $monthBegin = date('Y-m-01');
+                return date('Y-m-d', strtotime("$monthBegin +1 month -1 day")) . ' ' . "23:59";
+            }
+
+        } else if ($clearType == "quarter") {
+            $season = ceil((date('n')) / 3);
+
+            if ($first == CommonEnum::STATE_IS_OK) {
+                $nextQuarterBegin = date('Y-m-01', mktime(0, 0, 0, ($season) * 3 + 1, 1, date('Y')));
+                return $nextQuarterBegin . ' ' . "00:01";
+            } else if ($end == CommonEnum::STATE_IS_OK) {
+                return date('Y-m-d', mktime(23, 59, 59, $season * 3,
+                    date('t', mktime(0, 0, 0, $season * 3, 1,
+                        date("Y"))), date('Y')));
+            }
+
+        } else if ($clearType == "year") {
+            $nextYearBegin = date('Y-01-01', strtotime('+1 year'));
+
+            if ($first == CommonEnum::STATE_IS_OK) {
+                return $nextYearBegin . ' ' . "00:01";
+            } else if ($end == CommonEnum::STATE_IS_OK) {
+                return reduceDay(1, $nextYearBegin) . ' ' . "23:59";
+            }
+        }
+    }
+
+
 }

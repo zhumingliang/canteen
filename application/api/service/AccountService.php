@@ -696,4 +696,42 @@ class AccountService
 
     }
 
+
+    public function initAccount(){
+        $companyId = 0;//95;
+        //获取企业个人账户
+        (new  AccountService())->accounts($companyId);
+        $account = CompanyAccountT::where('company_id', $companyId)
+            ->where('type', 1)
+            ->where('fixed_type', 1)
+            ->where('state', 1)
+            ->find()->toArray();
+        if (!$account) {
+            throw new ParameterException(['msg' => "账户为空"]);
+        }
+        //获取企业所有用户余额
+        $balance = UserBalanceV::balanceForAccountInit($companyId);
+        $data = [];
+        foreach ($balance as $k => $v) {
+            if ($v['staff_id']>0 && $v['balance'] != 0) {
+                array_push($data, [
+                    'account_id' => $account['id'],
+                    'company_id' => $companyId,
+                    'consumption_date' => \date('Y-m-d'),
+                    'location_id' => 0,
+                    'used' => CommonEnum::STATE_IS_OK,
+                    'status' => CommonEnum::STATE_IS_OK,
+                    'staff_id' => $v['staff_id'],
+                    'type' => 'init',
+                    'order_id' => 0,
+                    'money' => $v['balance'],
+                    'outsider' => 2,
+                    'type_name' => "系统初始化"
+                ]);
+            }
+
+        }
+        (new AccountRecordsT())->saveAll($data);
+    }
+
 }
