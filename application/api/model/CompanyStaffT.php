@@ -6,6 +6,7 @@ namespace app\api\model;
 
 use app\lib\enum\CommonEnum;
 use app\lib\enum\PayEnum;
+use think\Db;
 use think\Model;
 
 class CompanyStaffT extends Model
@@ -52,6 +53,11 @@ class CompanyStaffT extends Model
     public function department()
     {
         return $this->belongsTo('CompanyDepartmentT', 'd_id', 'id');
+    }
+
+    public function user()
+    {
+        return $this->belongsTo('UserT', 'phone', 'phone');
     }
 
     public static function staff($phone, $company_id = '')
@@ -345,5 +351,32 @@ class CompanyStaffT extends Model
 
     }
 
+    public static function getStaffWithUId($accountId, $companyId, $departmentIds)
+    {
+        $staffs = self::where(function ($query) use ($companyId, $departmentIds) {
+            if ($departmentIds) {
+                $query->whereIn('d_id', $departmentIds);
+            } else {
+                $query->where('company_id', $companyId);
+            }
+
+        })->with([
+
+            'user' => function ($query) {
+                $query->field('phone,openid');
+
+            },
+            'account' => function ($query) use ($accountId) {
+                $query->where('account_id', $accountId)->where('state', CommonEnum::STATE_IS_OK)
+                    ->field('staff_id,account_id,sum(money) as money')
+                    ->group('staff_id');
+            }
+
+        ])->field('id,phone,username')
+            ->select();
+
+        return $staffs;
+
+    }
 
 }

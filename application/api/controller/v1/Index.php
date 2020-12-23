@@ -107,8 +107,20 @@ Index extends BaseController
 
     public function test($param = "")
     {
-        $this->clearAccounts();
+        //获取需要清除余额的账户
+        $account = CompanyAccountT::clearAccounts();
+        $clearAccount = [];
+        if (!count($account)) {
+            return $clearAccount;
+        }
+        foreach ($account as $k => $v) {
+            if (addDay(3, \date('Y-m-d')) == date('Y-m-d', strtotime($v['next_time']))) {
+                array_push($clearAccount, $v['id']);
+            }
 
+        }
+        $ids = implode(',', $clearAccount);
+        echo $ids;
 
         /*   echo UserBalanceV::userBalance(94,'13822329629');
           // print_r(UserBalanceV::userBalance2(5637)) ;
@@ -203,9 +215,9 @@ Index extends BaseController
                 CompanyAccountT::update(['next_time' => $nextTime], ['id' => $accountId]);
             }
 
-           // Db::commit();
+            // Db::commit();
         } catch (\Exception $e) {
-           echo $e->getMessage();
+            echo $e->getMessage();
             Db::rollback();
         }
     }
