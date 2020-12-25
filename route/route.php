@@ -310,7 +310,7 @@ Route::rule('api/:version/service/printer', 'api/:version.Service/printer');
 Route::rule('api/:version/service/canteen/config', 'api/:version.Service/configForOffLine');
 Route::rule('api/:version/service/canteen/orders', 'api/:version.Service/orderForOffline');
 Route::rule('api/:version/service/company/staffs', 'api/:version.Service/staffsForOffline');
-Route::rule('api/:version/service/template', 'api/:version.Service/sendTemplateToStaffForClearAccount');
+Route::rule('api/:version/service/template', 'api/:version.Service/sendTemplate');
 
 Route::post('api/:version/outsider/save', 'api/:version.Outsider/saveCanteen');
 Route::get('api/:version/outsiders', 'api/:version.Outsider/outsiders');

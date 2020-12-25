@@ -6,7 +6,10 @@ namespace app\api\job;
 
 use app\api\model\CompanyAccountT;
 use app\api\model\CompanyStaffT;
+use app\api\model\MachineReminderT;
+use app\api\model\MachineT;
 use app\api\model\OfficialTemplateT;
+use app\api\service\CanteenService;
 use app\api\service\LogService;
 use app\lib\enum\CommonEnum;
 use app\lib\weixin\Template;
@@ -73,10 +76,10 @@ class SendTemplate
     {
         try {
             $type = $data['type'];
+            $id = $data['id'];
+            $ids = explode(',', $id);
             if ($type == "clearAccount") {
                 //账户清零通知
-                $accountId = $data['accountId'];
-                $ids = explode(',', $accountId);
                 if (count($ids)) {
                     foreach ($ids as $k => $v) {
                         $this->sendClearAccountTemplate($v);
@@ -84,12 +87,54 @@ class SendTemplate
                 }
             } else if ($type == "machine") {
                 //设备异常通知
+                if (count($ids)) {
+                    foreach ($ids as $k => $v) {
+                        $this->sendMachineOffLineTemplate($v);
+                    }
+                }
 
             }
 
 
         } catch (Exception $e) {
-            LogService::saveJob('账户清零微信通知失败:' . $e->getMessage(), json_encode($data));
+            LogService::saveJob('微信通知失败类型（' . $type . '）:' . $e->getMessage(), json_encode($data));
+        }
+
+    }
+
+    private function sendMachineOffLineTemplate($machineId)
+    {
+        //检测是否在线
+        $check = (new CanteenService())->checkMachineState($machineId);
+        if ($check == CommonEnum::STATE_IS_FAIL) {
+            $reminder = MachineReminderT::reminders($machineId);
+            if (count($reminder)) {
+                $templateConfig = OfficialTemplateT::template('clearAccount');
+                $template_id = $templateConfig->template_id;
+                $url = $templateConfig->url;
+                //发送模板
+                $fail = [];
+                $machine = MachineT::get($machineId);
+                foreach ($reminder as $k => $v) {
+                    $data = [
+                        'first' => "消费机处于异常状态，请及时处理！",
+                        'keyword1' => "异常报警：网络异常",
+                        'keyword2' => "机器名：" . $machine->name,
+                        'keyword3' => "异常时间：" . date('Y-m-d H:i'),
+                        'remark' => "建议现场查看消费机的异常显示。"
+                    ];
+                    if ($templateConfig) {
+                        $res = (new Template())->send($v['openid'], $template_id, $url, $data);
+                        $data['res'] = $res;
+                        array_push($fail, $data);
+                    }
+                }
+                if (count($fail)) {
+                    LogService::saveJob('消费机离线微信通知失败:', json_encode($data));
+                }
+            }
+
+
         }
 
     }

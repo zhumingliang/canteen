@@ -152,10 +152,11 @@ class Service extends BaseController
     /**
      * 账户定时清零
      */
-    public function sendTemplateToStaffForClearAccount()
+    public function sendTemplate()
     {
         $accountId = Request::param('account_id');
-        (new AccountService())->sendTemplateToStaffForClearAccount($accountId);
+        $type = Request::param('type');
+        (new AccountService())->sendTemplate($type,$accountId);
         return json(new SuccessMessage());
 
     }

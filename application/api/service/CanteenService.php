@@ -765,7 +765,7 @@ class CanteenService
         return $machines;
     }
 
-    private function checkMachineState($machine_id)
+    public function checkMachineState($machine_id)
     {
         if (Gateway::isUidOnline($machine_id)) {
             return 1;

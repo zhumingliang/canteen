@@ -736,14 +736,14 @@ class AccountService
         (new AccountRecordsT())->saveAll($data);
     }
 
-    public function sendTemplateToStaffForClearAccount($accountId)
+    public function sendTemplate($type, $accountId)
     {
 
         $jobHandlerClassName = 'app\api\job\SendTemplate';//负责处理队列任务的类
         $jobQueueName = "sendTemplateQueue";//队列名称
         $jobData = [
-            'type' => "clearAccount",
-            'account_id' => $accountId
+            'type' => $type,
+            'id' => $accountId
         ];//当前任务的业务数据
         $isPushed = Queue::push($jobHandlerClassName, $jobData, $jobQueueName);
         //将该任务推送到消息队列
