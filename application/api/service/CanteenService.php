@@ -16,6 +16,7 @@ use app\api\model\CompanyStaffV;
 use app\api\model\CompanyT;
 use app\api\model\ConsumptionStrategyT;
 use app\api\model\DinnerT;
+use app\api\model\MachineReminderT;
 use app\api\model\MachineT;
 use app\api\model\MenuT;
 use app\api\model\OutConfigT;
@@ -41,6 +42,7 @@ use GatewayClient\Gateway;
 use think\Db;
 use think\Exception;
 use think\Model;
+use function Sodium\add;
 
 class CanteenService
 {
@@ -654,23 +656,88 @@ class CanteenService
 
     public function saveMachine($params)
     {
-        if (!empty($params['pwd'])) {
-            $params['pwd'] = sha1($params['pwd']);
+        Db::startTrans();
+        try {
+            if (!empty($params['pwd'])) {
+                $params['pwd'] = sha1($params['pwd']);
+            }
+
+            $machine = MachineT::create($params);
+            if (!$machine) {
+                throw new SaveException();
+            }
+            //处理提醒人员信息
+            if (!empty($params['remind']) && $params['remind'] == CommonEnum::STATE_IS_OK) {
+                if (!empty($params['reminder'])) {
+                    $this->prefixReminder($params['reminder'], $machine->id);
+                }
+            }
+            Db::commit();
+        } catch (Exception $e) {
+            Db::rollback();
+            throw $e;
         }
-        $machine = MachineT::create($params);
-        if (!$machine) {
-            throw new SaveException();
+
+    }
+
+    private function prefixReminder($reminder, $machineId)
+    {
+        $reminder = json_decode($reminder, true);
+        $data = [];
+        if (!empty($reminder['add'])) {
+            $add = $reminder['add'];
+            $addArr = explode(',', $add);
+
+            foreach ($addArr as $k => $v) {
+                array_push($data, [
+                    'machine_id' => $machineId,
+                    'staff_id' => $v,
+                    'openid' => ((new UserService()))->getOpenidWithStaffId($v),
+                    'state' => CommonEnum::STATE_IS_OK
+                ]);
+            }
+
+        }
+
+
+        if (!empty($reminder['cancel'])) {
+            $cancel = $reminder['cancel'];
+            $cancelArr = explode(',', $cancel);
+            foreach ($cancelArr as $k => $v) {
+                array_push($data, [
+                    'id' => $v,
+                    'state' => CommonEnum::STATE_IS_FAIL
+                ]);
+            }
+        }
+        if (count($data)) {
+            $res = (new MachineReminderT())->saveAll($data);
+            if (!$res) {
+                throw new SaveException(['msg' => "提醒用户添加失败"]);
+            }
         }
     }
 
     public function updateMachine($params)
     {
-        if (!empty($params['pwd'])) {
-            $params['pwd'] = sha1($params['pwd']);
-        }
-        $machine = MachineT::update($params);
-        if (!$machine) {
-            throw new UpdateException();
+
+        Db::startTrans();
+        try {
+            if (!empty($params['pwd'])) {
+                $params['pwd'] = sha1($params['pwd']);
+            }
+
+            $machine = MachineT::update($params);
+            if (!$machine) {
+                throw new UpdateException();
+            }
+            if (!empty($params['reminder'])) {
+                $this->prefixReminder($params['reminder'], $params['id']);
+            }
+            Db::commit();
+        } catch (Exception $e) {
+            Db::rollback();
+            throw $e;
         }
     }
 

@@ -5,10 +5,16 @@ namespace app\api\model;
 
 
 use app\lib\enum\CommonEnum;
+use think\Db;
 use think\Model;
 
 class MachineT extends Model
 {
+    public function reminder()
+    {
+        return $this->hasMany('MachineReminderT', 'machine_id', 'id');
+    }
+
     public static function companyMachines($company_id, $page, $size)
     {
         $machines = self::where('company_id', $company_id)
@@ -23,6 +29,12 @@ class MachineT extends Model
         $machines = self::where('belong_id', $belong_id)
             ->where('machine_type', $machine_type)
             ->where('state', CommonEnum::STATE_IS_OK)
+            ->with([
+                'reminder' => function ($query) {
+                    $query->where('state', CommonEnum::STATE_IS_OK)
+                        ->field('id,staff_id,machine_id,openid,username');
+                }
+            ])
             ->field('id,machine_type,name,code,number,out,sort_code,face_id,remind')
             ->order('create_time desc')
             ->paginate($size, false, ['page' => $page])->toArray();
