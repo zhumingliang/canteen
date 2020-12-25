@@ -109,7 +109,7 @@ class SendTemplate
         if ($check == CommonEnum::STATE_IS_FAIL) {
             $reminder = MachineReminderT::reminders($machineId);
             if (count($reminder)) {
-                $templateConfig = OfficialTemplateT::template('clearAccount');
+                $templateConfig = OfficialTemplateT::template('machine');
                 $template_id = $templateConfig->template_id;
                 $url = $templateConfig->url;
                 //发送模板
