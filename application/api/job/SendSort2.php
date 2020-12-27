@@ -79,6 +79,7 @@ class SendSort2
                     'msg' => 'success',
                     'type' => 'time',
                     'data' => [
+                        'id' => $data['id'],
                         'on_time' => $data['on_time'],
                         'off_time' => $data['off_time'],
                         'repeat' => $data['repeat'],
