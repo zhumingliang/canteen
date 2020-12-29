@@ -72,7 +72,9 @@ Index extends BaseController
 {
     public function index()
     {
-        (new SendTemplate())->sendMachineOffLineTemplate(150);
+        $msg = '{"first":"\u6d88\u8d39\u673a\u5904\u4e8e\u5f02\u5e38\u72b6\u6001\uff0c\u8bf7\u53ca\u65f6\u5904\u7406\uff01","keyword1":"\u5f02\u5e38\u62a5\u8b66\uff1a\u7f51\u7edc\u5f02\u5e38","keyword2":"\u673a\u5668\u540d\uff1aa123","keyword3":"\u5f02\u5e38\u65f6\u95f4\uff1a2020-12-30 00:50","remark":"\u5efa\u8bae\u73b0\u573a\u67e5\u770b\u6d88\u8d39\u673a\u7684\u5f02\u5e38\u663e\u793a\u3002"}';
+        print_r(json_decode($msg,true));
+       // (new SendTemplate())->sendMachineOffLineTemplate(150);
         /*$company = CompanyT::where('state', CommonEnum::STATE_IS_OK)->select();
         $account = [];
         foreach ($company as $k => $v) {

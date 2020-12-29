@@ -739,7 +739,9 @@ class AccountService
     public function sendTemplate($type, $accountId)
     {
 
-        $jobHandlerClassName = 'app\api\job\SendTemplate';//负责处理队列任务的类
+
+
+    /*    $jobHandlerClassName = 'app\api\job\SendTemplate';//负责处理队列任务的类
         $jobQueueName = "sendTemplateQueue";//队列名称
         $jobData = [
             'type' => $type,
@@ -749,7 +751,7 @@ class AccountService
         //将该任务推送到消息队列
         if ($isPushed == false) {
             throw new SaveException(['msg' => '发送模板消息失败']);
-        }
+        }*/
     }
 
 

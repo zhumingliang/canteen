@@ -123,7 +123,6 @@ class SendTemplate
                             'keyword3' => "异常时间：" . date('Y-m-d H:i'),
                             'remark' => "建议现场查看消费机的异常显示。"
                         ];
-                        LogService::saveJob(json_encode($data));
                         if ($templateConfig) {
                             $res = (new Template())->send($v['openid'], $template_id, $url, $data);
                         }
