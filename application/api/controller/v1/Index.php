@@ -54,6 +54,7 @@ use app\lib\exception\SuccessMessage;
 use app\lib\exception\SuccessMessageWithData;
 use app\lib\Num;
 use app\lib\printer\Printer;
+use app\lib\weixin\Template;
 use app\model\LogT;
 use think\Db;
 use think\db\Where;
@@ -70,9 +71,8 @@ Index extends BaseController
 {
     public function index()
     {
-        $date=\date('Y-m-d');
-        echo $date;
-        echo $this-> toDateChinese($date);
+        $wechat = (new Template());
+        var_dump($wechat->app);
         /*$company = CompanyT::where('state', CommonEnum::STATE_IS_OK)->select();
         $account = [];
         foreach ($company as $k => $v) {
@@ -107,6 +107,7 @@ Index extends BaseController
         (new CompanyAccountT())->saveAll($account);*/
 
     }
+
     private function toDateChinese($date)
     {
 

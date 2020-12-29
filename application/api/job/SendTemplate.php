@@ -77,7 +77,6 @@ class SendTemplate
         try {
             $type = $data['type'];
             $id = $data['id'];
-            LogService::save($id);
             $ids = explode(',', $id);
             if ($type == "clearAccount") {
                 //账户清零通知
