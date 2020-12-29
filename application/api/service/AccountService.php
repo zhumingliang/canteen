@@ -28,6 +28,7 @@ use http\Env\Request;
 use MongoDB\BSON\Type;
 use think\Db;
 use think\Exception;
+use think\Queue;
 use function EasyWeChat\Kernel\data_to_array;
 use function GuzzleHttp\Promise\all;
 
@@ -697,7 +698,8 @@ class AccountService
     }
 
 
-    public function initAccount(){
+    public function initAccount()
+    {
         $companyId = 0;//95;
         //获取企业个人账户
         (new  AccountService())->accounts($companyId);
@@ -713,7 +715,7 @@ class AccountService
         $balance = UserBalanceV::balanceForAccountInit($companyId);
         $data = [];
         foreach ($balance as $k => $v) {
-            if ($v['staff_id']>0 && $v['balance'] != 0) {
+            if ($v['staff_id'] > 0 && $v['balance'] != 0) {
                 array_push($data, [
                     'account_id' => $account['id'],
                     'company_id' => $companyId,
@@ -733,5 +735,22 @@ class AccountService
         }
         (new AccountRecordsT())->saveAll($data);
     }
+
+    public function sendTemplate($type, $accountId)
+    {
+
+        $jobHandlerClassName = 'app\api\job\SendTemplate';//负责处理队列任务的类
+        $jobQueueName = "sendTemplateQueue";//队列名称
+        $jobData = [
+            'type' => $type,
+            'id' => $accountId
+        ];//当前任务的业务数据
+        $isPushed = Queue::push($jobHandlerClassName, $jobData, $jobQueueName);
+        //将该任务推送到消息队列
+        if ($isPushed == false) {
+            throw new SaveException(['msg' => '发送模板消息失败']);
+        }
+    }
+
 
 }

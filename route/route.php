@@ -192,6 +192,7 @@ Route::post('api/:version/order/personChoice/outside/save', 'api/:version.Order/
 Route::post('api/:version/order/online/save', 'api/:version.Order/orderingOnline');
 Route::get('api/:version/order/userOrdering', 'api/:version.Order/userOrdering');
 Route::get('api/:version/order/online/info', 'api/:version.Order/infoForOnline');
+Route::get('api/:version/order/dinner/count', 'api/:version.Order/getDinnerOrderedCount');
 Route::get('api/:version/order/personChoice/info', 'api/:version.Order/infoForPersonChoiceOnline');
 Route::get('api/:version/order/personalChoice/info', 'api/:version.Order/personalChoiceInfo');
 Route::post('api/:version/order/cancel', 'api/:version.Order/orderCancel');
@@ -310,6 +311,7 @@ Route::rule('api/:version/service/printer', 'api/:version.Service/printer');
 Route::rule('api/:version/service/canteen/config', 'api/:version.Service/configForOffLine');
 Route::rule('api/:version/service/canteen/orders', 'api/:version.Service/orderForOffline');
 Route::rule('api/:version/service/company/staffs', 'api/:version.Service/staffsForOffline');
+Route::rule('api/:version/service/template', 'api/:version.Service/sendTemplate');
 
 Route::post('api/:version/outsider/save', 'api/:version.Outsider/saveCanteen');
 Route::get('api/:version/outsiders', 'api/:version.Outsider/outsiders');
