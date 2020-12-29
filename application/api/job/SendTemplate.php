@@ -114,7 +114,6 @@ class SendTemplate
                     $template_id = $templateConfig->template_id;
                     $url = $templateConfig->url;
                     //发送模板
-                    $fail = [];
                     $machine = MachineT::get($machineId);
                     foreach ($reminder as $k => $v) {
                         $data = [
@@ -126,12 +125,7 @@ class SendTemplate
                         ];
                         if ($templateConfig) {
                             $res = (new Template())->send($v['openid'], $template_id, $url, $data);
-                            $data['res'] = $res;
-                            array_push($fail, $data);
                         }
-                    }
-                    if (count($fail)) {
-                        LogService::saveJob('消费机离线微信通知失败:', json_encode($data));
                     }
                 }
 
