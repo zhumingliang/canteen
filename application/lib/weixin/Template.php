@@ -13,7 +13,7 @@ class Template extends Base
     {
         LogService::saveJob($openid);
         LogService::saveJob($template_id);
-        LogService::saveJob($url,json_encode($data));
+        LogService::saveJob('',json_encode($data));
         $res = $this->app->template_message->send([
             'touser' => $openid,
             'template_id' => $template_id,
