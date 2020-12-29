@@ -107,6 +107,7 @@ class SendTemplate
         try {
             //检测是否在线
             $check = (new CanteenService())->checkMachineState($machineId);
+            LogService::saveJob('check:'.$check);
             if ($check == CommonEnum::STATE_IS_FAIL) {
                 $reminder = MachineReminderT::reminders($machineId);
                 if (count($reminder)) {
