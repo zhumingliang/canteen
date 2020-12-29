@@ -94,9 +94,10 @@ class SendTemplate
                 }
 
             }
-
+            return true;
 
         } catch (Exception $e) {
+            return false;
             LogService::saveJob('微信通知失败类型（' . $type . '）:' . $e->getMessage(), json_encode($data));
         }
 
@@ -107,7 +108,6 @@ class SendTemplate
         try {
             //检测是否在线
             $check = (new CanteenService())->checkMachineState($machineId);
-            LogService::saveJob('check:'.$check);
             if ($check == CommonEnum::STATE_IS_FAIL) {
                 $reminder = MachineReminderT::reminders($machineId);
                 if (count($reminder)) {
@@ -126,6 +126,7 @@ class SendTemplate
                         ];
                         if ($templateConfig) {
                             $res = (new Template())->send($v['openid'], $template_id, $url, $data);
+                            LogService::saveJob(json_encode($res));
                         }
                     }
                 }
