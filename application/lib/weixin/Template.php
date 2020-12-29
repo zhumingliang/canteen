@@ -17,7 +17,7 @@ class Template extends Base
         $res = $this->app->template_message->send([
             'touser' => $openid,
             'template_id' => $template_id,
-            'url' => $url,
+         //   'url' => $url,
             'data' => $data,
         ]);
 
