@@ -138,7 +138,7 @@ class SendTemplate
 
             }
         } catch (Exception $e) {
-            LogService::saveTask($e->getMessage());
+            LogService::saveJob($e->getMessage());
         }
 
 
