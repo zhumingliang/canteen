@@ -102,7 +102,7 @@ class SendTemplate
 
     }
 
-    private function sendMachineOffLineTemplate($machineId)
+    public function sendMachineOffLineTemplate($machineId)
     {
         try {
             //检测是否在线

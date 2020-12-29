@@ -5,6 +5,7 @@ namespace app\api\controller\v1;
 
 
 use app\api\controller\BaseController;
+use app\api\job\SendTemplate;
 use app\api\job\UploadExcel;
 use app\api\model\AccountRecordsT;
 use app\api\model\CanteenT;
@@ -71,8 +72,7 @@ Index extends BaseController
 {
     public function index()
     {
-        $wechat = (new Template());
-        var_dump($wechat->app);
+        (new SendTemplate())->sendMachineOffLineTemplate(150);
         /*$company = CompanyT::where('state', CommonEnum::STATE_IS_OK)->select();
         $account = [];
         foreach ($company as $k => $v) {
