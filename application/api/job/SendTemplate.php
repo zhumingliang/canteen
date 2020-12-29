@@ -89,6 +89,7 @@ class SendTemplate
                 //设备异常通知
                 if (count($ids)) {
                     foreach ($ids as $k => $v) {
+                        LogService::saveJob('begin:'.$v);
                         $this->sendMachineOffLineTemplate($v);
                     }
                 }
