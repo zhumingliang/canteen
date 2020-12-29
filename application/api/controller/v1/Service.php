@@ -151,10 +151,11 @@ class Service extends BaseController
 
     /**
      * 账户定时清零
+     * 消费机离线提醒
      */
     public function sendTemplate()
     {
-        $accountId = Request::param('account_id');
+        $accountId = Request::param('id');
         $type = Request::param('type');
         (new AccountService())->sendTemplate($type,$accountId);
         return json(new SuccessMessage());
