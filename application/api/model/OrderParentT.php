@@ -5,6 +5,7 @@ namespace app\api\model;
 
 
 use app\lib\enum\CommonEnum;
+use app\lib\enum\PayEnum;
 use think\Model;
 use think\Request;
 
@@ -218,6 +219,16 @@ class OrderParentT extends Model
             ])
             ->field('id,dinner_id,count as order_count,"more" as strategy_type,staff_id,fixed')
             ->select();
+    }
+    public static function dinnerStatistic($dinnerId,$orderingDate)
+    {
+        return self::where('dinner_id', $dinnerId)
+            ->where('ordering_date',$orderingDate)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->where('pay', PayEnum::PAY_SUCCESS)
+            ->sum('count');
+
+
     }
 
 

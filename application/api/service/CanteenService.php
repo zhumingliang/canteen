@@ -689,9 +689,11 @@ class CanteenService
             $addArr = explode(',', $add);
 
             foreach ($addArr as $k => $v) {
+                $staff = CompanyStaffT::get($v);
                 array_push($data, [
                     'machine_id' => $machineId,
                     'staff_id' => $v,
+                    'username' => $staff->username,
                     'openid' => ((new UserService()))->getOpenidWithStaffId($v),
                     'state' => CommonEnum::STATE_IS_OK
                 ]);

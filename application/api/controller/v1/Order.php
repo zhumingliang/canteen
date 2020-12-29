@@ -587,7 +587,7 @@ class Order extends BaseController
         $order_id = Request::param('order_id');
         $consumptionType = Request::param('consumption_type');
         $eatingType = Request::param('eating_type');
-        $info = (new OrderService())->recordsDetail($order_type, $order_id, $consumptionType,$eatingType);
+        $info = (new OrderService())->recordsDetail($order_type, $order_id, $consumptionType, $eatingType);
         return json(new SuccessMessageWithData(['data' => $info]));
     }
 
@@ -1453,10 +1453,32 @@ class Order extends BaseController
     }
 
 
-    public function getOutsiderOrderMoney(){
+    public function getOutsiderOrderMoney()
+    {
         $params = Request::param();
         $money = (new  OrderService())->getOutsiderOrderMoney($params);
         return json(new SuccessMessageWithData(['data' => $money]));
+    }
+
+    /**
+     * @api {GET} /api/v1/order/dinner/count 微信端-个人选菜-查看餐次已经订餐数量
+     * @apiGroup  Official
+     * @apiVersion 3.0.0
+     * @apiDescription 微信端-个人选菜-查看餐次已经订餐数量
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/order/dinner/count?dinner_id=1&ordering_date=2020-12-31
+     * @apiParam (请求参数说明) {int} dinner_id  餐次id
+     * @apiParam (请求参数说明) {string} ordering_date  日期
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"count":3}}
+     * @apiSuccess (返回参数说明) {int} count 订餐数量
+     */
+    public function getDinnerOrderedCount()
+    {
+        $dinnerId = Request::param('dinner_id');
+        $orderingDate = Request::param('ordering_date');
+        $data = (new OrderStatisticService())->getDinnerOrderedCount($dinnerId, $orderingDate);
+        return json(new SuccessMessageWithData(['data' => $data]));
     }
 
 

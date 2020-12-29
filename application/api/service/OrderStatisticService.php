@@ -8,6 +8,7 @@ use app\api\model\AccountRecordsV;
 use app\api\model\CanteenT;
 use app\api\model\CompanyAccountT;
 use app\api\model\CompanyStaffT;
+use app\api\model\ConsumptionStrategyT;
 use app\api\model\DinnerT;
 use app\api\model\MaterialPriceV;
 use app\api\model\MaterialReportDetailT;
@@ -28,6 +29,7 @@ use app\api\model\StaffCanteenV;
 use app\api\model\SubFoodT;
 use app\lib\enum\CommonEnum;
 use app\lib\enum\OrderEnum;
+use app\lib\enum\StrategyEnum;
 use app\lib\exception\ParameterException;
 use app\lib\exception\SaveException;
 use app\lib\Num;
@@ -1079,7 +1081,7 @@ class OrderStatisticService
                 foreach ($statistic as $k2 => $v2) {
                     if ($v == $v2[$field]) {
                         array_push($dinnerStatistic, [
-                            'statistic_id' =>$k,
+                            'statistic_id' => $k,
                             'dinner_id' => $v2['dinner_id'],
                             'dinner' => $v2['dinner'],
                             'order_count' => $v2['order_count'],
@@ -1357,6 +1359,30 @@ class OrderStatisticService
         return [
             'url' => config('setting.domain') . $url
         ];
+    }
+
+    public function getDinnerOrderedCount($dinnerId,$orderingDate)
+    {
+        $strategy = ConsumptionStrategyT::where('d_id', $dinnerId)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->find();
+        if (!$strategy) {
+            throw new ParameterException(['msg' => "餐次消费策略未设置"]);
+        }
+        $consumptionType = $strategy->consumption_type;
+        if ($consumptionType == StrategyEnum::CONSUMPTION_TIMES_ONE) {
+            $count = OrderT::dinnerStatistic($dinnerId,$orderingDate);
+        } else if ($consumptionType == StrategyEnum::CONSUMPTION_TIMES_MORE) {
+            $count = OrderParentT::dinnerStatistic($dinnerId,$orderingDate);
+
+        } else {
+            throw new ParameterException(['msg' => '消费策略异常']);
+        }
+
+        return [
+            'count' => $count
+        ];
+
     }
 
 }
