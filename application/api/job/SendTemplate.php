@@ -116,6 +116,7 @@ class SendTemplate
                     $url = $templateConfig->url;
                     //发送模板
                     $machine = MachineT::get($machineId);
+                    $fail = [];
                     foreach ($reminder as $k => $v) {
                         $data = [
                             'first' => "消费机处于异常状态，请及时处理！",
@@ -126,9 +127,16 @@ class SendTemplate
                         ];
                         if ($templateConfig) {
                             $res = (new Template())->send($v['openid'], $template_id, $url, $data);
-                            LogService::saveJob(json_encode($res));
+                            if ($res['errorcode'] != 0) {
+                                $data['res'] = $res;
+                                array_push($fail, $data);
+                            }
                         }
                     }
+                    if (count($fail)) {
+                        LogService::saveJob($machineId,json_encode($fail));
+                    }
+
                 }
 
 
