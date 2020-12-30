@@ -23,14 +23,9 @@ class Template //extends Base
         ];
 
         $app = Factory::officialAccount($config);
-
-        LogService::saveJob($openid);
-        LogService::saveJob($template_id);
-        LogService::saveJob('', json_encode($data));
         $res = $app->template_message->send([
             'touser' => $openid,
             'template_id' => $template_id,
-            //   'url' => $url,
             'data' => $data,
         ]);
 

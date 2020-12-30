@@ -35,13 +35,13 @@ class SendTemplate
         $isJobDone = $this->doJob($data);
         if ($isJobDone) {
             // 如果任务执行成功，删除任务
-            LogService::saveJob("<warn>账户清零微信通知队列任务执行成功！" . "</warn>\n", json_encode($data));
+            LogService::saveJob("<warn>微信通知队列任务执行成功！" . "</warn>\n", json_encode($data));
             $job->delete();
         } else {
-            LogService::saveJob("<warn>账户清零微信通知队列任务执行失败！" . "</warn>\n", json_encode($data));
+            LogService::saveJob("<warn>微信通知队列任务执行失败！" . "</warn>\n", json_encode($data));
             if ($job->attempts() > 3) {
                 //通过这个方法可以检查这个任务已经重试了几次了
-                LogService::saveJob("<warn>账户清零微信通知队列已经重试超过3次，现在已经删除该任务" . "</warn>\n");
+                LogService::saveJob("<warn>微信通知队列已经重试超过3次，现在已经删除该任务" . "</warn>\n");
                 $job->delete();
             } else {
                 $job->release(3); //重发任务
@@ -134,7 +134,7 @@ class SendTemplate
                         }
                     }
                     if (count($fail)) {
-                        LogService::saveJob($machineId,json_encode($fail));
+                        LogService::saveJob($machineId, json_encode($fail));
                     }
 
                 }
@@ -148,10 +148,10 @@ class SendTemplate
 
     }
 
-    private function sendClearAccountTemplate($accountId)
+    public function sendClearAccountTemplate($accountId)
     {
         //获取账户信息
-        $account = CompanyAccountT::accountWithBalance($accountId);
+        $account = CompanyAccountT::accountWithDepartment($accountId);
         $accountName = $account['name'];
         $departmentAll = $account['department_all'];
         if ($departmentAll == CommonEnum::STATE_IS_OK) {
@@ -161,31 +161,37 @@ class SendTemplate
             $departments = $account['departments'];
             $departmentIdArr = [];
             foreach ($departments as $k => $v) {
-                array_push($departmentIdArr, $v['id']);
+                array_push($departmentIdArr, $v['department_id']);
             }
             $departmentId = implode(',', $departmentIdArr);
         }
-        $staff = CompanyStaffT::getStaffWithUId($accountId, $account->company_id, $departmentId);
+        $staff = CompanyStaffT::getStaffWithUId($accountId, $account['company_id'], $departmentId);
         //发送模板
         $fail = [];
         foreach ($staff as $k => $v) {
+
             if (empty($v['user']['openid'])) {
                 continue;
             }
-            if (empty($v['account']) || $v['account']['money'] <= 0) {
+            if (empty($v['account']) || $v['account'][0]['money'] <= 0) {
                 continue;
             }
             $data = [
                 'first' => "您的" . $accountName . "余额将在3天后清零！",
-                'keyword1' => $v['account']['money'] . "元",
+                'keyword1' => $v['account'][0]['money'] . "元",
                 'keyword2' => date('Y-m-d H:i', strtotime($account['next_time'])),
                 'remark' => "建议您及时消费。"
             ];
             $templateConfig = OfficialTemplateT::template('clearAccount');
             if ($templateConfig) {
-                $res = (new Template())->send($v['user']['openid'], $templateConfig->template_id, $templateConfig->url, $data);
-                $data['res'] = $res;
-                array_push($fail, $data);
+               // $openid = $v['user']['openid'];
+                $openid = "opArc0cmt12nD5SWHT9MaOLtU-zw";
+                $res = (new Template())->send($openid, $templateConfig->template_id, $templateConfig->url, $data);
+                if ($res['errrorcode'] !== 0) {
+                    $data['res'] = $res;
+                    array_push($fail, $data);
+
+                }
             }
         }
         if (count($fail)) {
