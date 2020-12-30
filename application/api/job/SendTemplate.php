@@ -179,15 +179,14 @@ class SendTemplate
             $data = [
                 'first' => "您的" . $accountName . "余额将在3天后清零！",
                 'keyword1' => $v['account'][0]['money'] . "元",
-                'keyword2' => date('Y-m-d H:i', strtotime($account['next_time'])),
+                'keyword2' => date('Y-m-d H:i:s', strtotime($account['next_time'])),
                 'remark' => "建议您及时消费。"
             ];
             $templateConfig = OfficialTemplateT::template('clearAccount');
             if ($templateConfig) {
-               // $openid = $v['user']['openid'];
-                $openid = "opArc0cmt12nD5SWHT9MaOLtU-zw";
+                $openid = $v['user']['openid'];
                 $res = (new Template())->send($openid, $templateConfig->template_id, $templateConfig->url, $data);
-                if ($res['errrorcode'] !== 0) {
+                if ($res['errorcode'] !== 0) {
                     $data['res'] = $res;
                     array_push($fail, $data);
 

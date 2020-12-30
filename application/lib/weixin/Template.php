@@ -17,7 +17,6 @@ class Template //extends Base
             'secret' => '53a7e229d559c314c5c19221d4745e77',
             'token' => 'canteen',
             'aes_key' => 'wQs4Ltd93z92pf69xybU7f26HQEAFAy44eMo713KLmX',
-
             // 指定 API 调用返回结果的类型：array(default)/collection/object/raw/自定义类名
             'response_type' => 'array',
         ];
