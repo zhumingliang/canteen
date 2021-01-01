@@ -134,7 +134,7 @@ class SendTemplate
                         }
                     }
                     if (count($fail)) {
-                        LogService::saveJob($machineId, json_encode($fail));
+                        LogService::saveJob("消费机离线提醒失败：" . $machineId, json_encode($fail));
                     }
 
                 }
