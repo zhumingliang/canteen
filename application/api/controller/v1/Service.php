@@ -157,6 +157,7 @@ class Service extends BaseController
     {
         $accountId = Request::param('id');
         $type = Request::param('type');
+        LogService::saveJob('begin:'.$accountId.';'.$type);
         (new AccountService())->sendTemplate($type,$accountId);
         return json(new SuccessMessage());
 

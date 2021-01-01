@@ -70,11 +70,12 @@ use function GuzzleHttp\Psr7\str;
 class
 Index extends BaseController
 {
+    /** @var string 任务周期 */
+    public $expression = '* * * * * *';
+
     public function index()
     {
 
-        $res = (new SendTemplate())->sendClearAccountTemplate(22);
-        print_r($res);
         /*$company = CompanyT::where('state', CommonEnum::STATE_IS_OK)->select();
         $account = [];
         foreach ($company as $k => $v) {
@@ -109,6 +110,23 @@ Index extends BaseController
         (new CompanyAccountT())->saveAll($account);*/
 
     }
+
+
+    protected function spliceIntoPosition($position, $value)
+    {
+        $segments = explode(' ', $this->expression);
+
+        $segments[$position - 1] = $value;
+
+        return $this->expression(implode(' ', $segments));
+    }
+
+    public function expression($expression)
+    {
+        $this->expression = $expression;
+        return $this;
+    }
+
 
     private function toDateChinese($date)
     {
