@@ -127,6 +127,7 @@ class SendTemplate
                         ];
                         if ($templateConfig) {
                             $res = (new Template())->send($v['openid'], $template_id, $url, $data);
+                            LogService::saveJob(json_encode($res));
                             if ($res['errorcode'] != 0) {
                                 $data['res'] = $res;
                                 array_push($fail, $data);
