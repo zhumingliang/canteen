@@ -21,7 +21,7 @@ class ImageService
         }
         $path = '/static/image/' . $info->getSaveName();
         $srcPath = dirname($_SERVER['SCRIPT_FILENAME']) . '/static/image/' . $info->getSaveName();
-        $savePath = dirname($_SERVER['SCRIPT_FILENAME']) . '/static/image/wechat/'.'a.jpg';
+        $savePath = dirname($_SERVER['SCRIPT_FILENAME']) . '/static/image/wechat/'.$info->getFilename();
         Image::mkThumbnail($srcPath, 165, 200, $savePath);
         return ['url' => $path];
     }
