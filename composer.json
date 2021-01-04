@@ -24,7 +24,8 @@
         "naixiaoxin/think-wechat": "^1.6",
         "workerman/gatewayclient": "^3.0",
         "topthink/think-migration": "2.0.*",
-        "topthink/think-queue": "2.0.x-dev"
+        "topthink/think-queue": "2.0.x-dev",
+      "ext-gd": "*"
     },
     "autoload": {
         "psr-4": {

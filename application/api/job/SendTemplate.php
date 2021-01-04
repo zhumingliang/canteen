@@ -120,10 +120,10 @@ class SendTemplate
                     foreach ($reminder as $k => $v) {
                         $data = [
                             'first' => "消费机处于异常状态，请及时处理！",
-                            'keyword1' => "异常报警：网络异常",
-                            'keyword2' => "机器名：" . $machine->name,
-                            'keyword3' => "异常时间：" . date('Y-m-d H:i'),
-                            'remark' => "建议现场查看消费机的异常显示。"
+                            'keyword1' => "网络异常",
+                            'keyword2' => $machine->name,
+                            'keyword3' =>  date('Y-m-d H:i'),
+                            'remark' => "建议现场查看消费机的异常提示。"
                         ];
                         if ($templateConfig) {
                             $res = (new Template())->send($v['openid'], $template_id, $url, $data);
@@ -134,7 +134,7 @@ class SendTemplate
                         }
                     }
                     if (count($fail)) {
-                        LogService::saveJob("消费机离线提醒失败：" . $machineId, json_encode($fail));
+                        LogService::saveJob($machineId, json_encode($fail));
                     }
 
                 }
