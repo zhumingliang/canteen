@@ -27,7 +27,7 @@ class ImageService
         }
         $saveName = $savePath . '/' . $info->getFilename();
         Image::mkThumbnail($srcPath, 165, 200, $saveName);
-        return ['url' => $saveName];
+        return ['url' => '/static/image/wechat/' . date('Ymd') . '/' . $info->getFilename()];
     }
 
     public function saveCompanyQRCode($url)
