@@ -5,6 +5,7 @@ namespace app\api\service;
 
 
 use app\lib\exception\SaveException;
+use app\lib\Image;
 
 class ImageService
 {
@@ -18,7 +19,10 @@ class ImageService
         if (!$info) {
             throw new SaveException();
         }
-        return ['url' => '/static/image/' . $info->getSaveName()];
+        $path = '/static/image/' . $info->getSaveName();
+        $savePath = '/static/image/wechat/' . $info->getSaveName();
+        Image::mkThumbnail($path, 165, 200, $savePath);
+        return ['url' => $path];
     }
 
     public function saveCompanyQRCode($url)
