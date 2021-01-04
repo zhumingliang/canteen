@@ -21,8 +21,12 @@ class ImageService
         }
         $path = '/static/image/' . $info->getSaveName();
         $srcPath = dirname($_SERVER['SCRIPT_FILENAME']) . '/static/image/' . $info->getSaveName();
-        $savePath = dirname($_SERVER['SCRIPT_FILENAME']) . '/static/image/wechat/'.$info->getFilename();
-        Image::mkThumbnail($srcPath, 165, 200, $savePath);
+        $savePath = dirname($_SERVER['SCRIPT_FILENAME']) . '/static/image/wechat/' . date('Ymd');
+        if (!is_dir($savePath)) {
+            mkdir(iconv("UTF-8", "GBK", $savePath), 0777, true);
+        }
+        $saveName = $savePath . '/' . $info->getFilename();
+        Image::mkThumbnail($srcPath, 165, 200, $saveName);
         return ['url' => $path];
     }
 

@@ -75,11 +75,7 @@ Index extends BaseController
 
     public function index()
     {
-        $id = "150,183,200,378,380,382";
-        $ids = explode(',', $id);
-        foreach ($ids as $k => $v) {
-            (new SendTemplate())->sendMachineOffLineTemplate($v);
-        }
+        echo date('Ymd');
 
         /*$company = CompanyT::where('state', CommonEnum::STATE_IS_OK)->select();
         $account = [];
