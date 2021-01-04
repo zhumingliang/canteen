@@ -75,7 +75,7 @@ Index extends BaseController
 
     public function index()
     {
-        echo date('Ymd');
+      echo date('Y') . '年' .date('m') . '月';
 
         /*$company = CompanyT::where('state', CommonEnum::STATE_IS_OK)->select();
         $account = [];
