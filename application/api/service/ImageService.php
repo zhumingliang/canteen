@@ -27,7 +27,7 @@ class ImageService
         }
         $saveName = $savePath . '/' . $info->getFilename();
         Image::mkThumbnail($srcPath, 165, 200, $saveName);
-        return ['url' => $path];
+        return ['url' => $saveName];
     }
 
     public function saveCompanyQRCode($url)
