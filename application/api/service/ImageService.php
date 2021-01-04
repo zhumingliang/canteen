@@ -20,7 +20,7 @@ class ImageService
             throw new SaveException();
         }
         $path = '/static/image/' . $info->getSaveName();
-        $srcPath = dirname($_SERVER['SCRIPT_FILENAME']) . '/static/image' . $info->getSaveName();
+        $srcPath = dirname($_SERVER['SCRIPT_FILENAME']) . '/static/image/' . $info->getSaveName();
         $savePath = dirname($_SERVER['SCRIPT_FILENAME']) . '/static/image/wechat/' . $info->getSaveName();
         Image::mkThumbnail($srcPath, 165, 200, $savePath);
         return ['url' => $path];
