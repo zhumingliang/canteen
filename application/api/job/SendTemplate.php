@@ -125,10 +125,11 @@ class SendTemplate
         if (count($info)) {
             $fail = [];
             foreach ($info as $k => $v) {
+                $date = explode('-', $v['pay_date']);
                 $data = [
                     'first' => "您好，" . $v['pay_date'] . "月份缴费账单已经生成",
                     'keyword1' => abs($v['pay_money']) . "元",
-                    'keyword2' => $v['pay_begin_date'] . '到' . $v['pay_end_date'],
+                    'keyword2' => $date[0] . '年' . $date[1] . '月' .$v['pay_begin_date'].'日' . '到' . $date[0] . '年' . $date[1] . '月' .$v['pay_end_date'].'日',
                     'remark' => "请您及时缴费"
                 ];
                 $res = (new Template())->send($v['openid'], $templateId, $url, $data);
