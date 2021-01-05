@@ -5,6 +5,7 @@ namespace app\api\controller\v1;
 
 
 use app\api\controller\BaseController;
+use app\api\job\SendTemplate;
 use app\api\job\UploadExcel;
 use app\api\model\AccountRecordsT;
 use app\api\model\CanteenT;
@@ -54,6 +55,7 @@ use app\lib\exception\SuccessMessage;
 use app\lib\exception\SuccessMessageWithData;
 use app\lib\Num;
 use app\lib\printer\Printer;
+use app\lib\weixin\Template;
 use app\model\LogT;
 use think\Db;
 use think\db\Where;
@@ -68,6 +70,9 @@ use function GuzzleHttp\Psr7\str;
 class
 Index extends BaseController
 {
+    /** @var string 任务周期 */
+    public $expression = '* * * * * *';
+
     public function index()
     {
         /*$company = CompanyT::where('state', CommonEnum::STATE_IS_OK)->select();
@@ -105,9 +110,62 @@ Index extends BaseController
 
     }
 
+
+    protected function spliceIntoPosition($position, $value)
+    {
+        $segments = explode(' ', $this->expression);
+
+        $segments[$position - 1] = $value;
+
+        return $this->expression(implode(' ', $segments));
+    }
+
+    public function expression($expression)
+    {
+        $this->expression = $expression;
+        return $this;
+    }
+
+
+    private function toDateChinese($date)
+    {
+
+        $date_arr = explode('-', $date);
+        $arr = [];
+        foreach ($date_arr as $index => &$val) {
+            if (mb_strlen($val) == 4) {
+                $arr[] = preg_split('/(?<!^)(?!$)/u', $val);
+            } else {
+                if ($val > 10) {
+                    $v[] = 10;
+                    $v[] = $val % 10;
+                    $arr[] = $v;
+                    unset($v);
+                } else {
+                    $arr[][] = $val;
+                }
+            }
+        }
+        $cn = array("一", "二", "三", "四", "五", "六", "七", "八", "九", "十", "零");
+        $num = array("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "0");
+        $str_time = '';
+        for ($i = 0; $i < count($arr); $i++) {
+            foreach ($arr[$i] as $index => $item) {
+                $str_time .= $cn[array_search($item, $num)];
+            }
+            if ($i == 0) {
+                $str_time .= '年';
+            } elseif ($i == 1) {
+                $str_time .= '月';
+            } elseif ($i == 2) {
+                $str_time .= '日';
+            }
+        }
+        return $str_time;
+    }
+
     public function test($param = "")
     {
-        $this->clearAccounts();
 
 
         /*   echo UserBalanceV::userBalance(94,'13822329629');
@@ -203,9 +261,9 @@ Index extends BaseController
                 CompanyAccountT::update(['next_time' => $nextTime], ['id' => $accountId]);
             }
 
-           // Db::commit();
+            // Db::commit();
         } catch (\Exception $e) {
-           echo $e->getMessage();
+            echo $e->getMessage();
             Db::rollback();
         }
     }

@@ -4,6 +4,8 @@
 namespace app\api\service;
 
 
+use app\api\model\AutomaticFoodT;
+use app\api\model\AutomaticT;
 use app\api\model\CanteenModuleV;
 use app\api\model\FoodCommentT;
 use app\api\model\FoodDayStateT;
@@ -90,7 +92,7 @@ class FoodService extends BaseService
         }
         //检测菜品是否上架
         if ($this->checkFoodUp($params['id'])) {
-            throw new ParameterException(['msg'=>'菜品上架中，不能删除']);
+            throw new ParameterException(['msg' => '菜品上架中，不能删除']);
         }
         $food->state = CommonEnum::STATE_IS_FAIL;
         $res = $food->save();
@@ -372,6 +374,105 @@ class FoodService extends BaseService
             'food' => $food,
             'canteenScore' => (new CanteenService())->canteenScore($canteen_id)
         ];
+    }
+
+    public function saveAutoConfig($params)
+    {
+        try {
+            Db::startTrans();
+            $autoData = [];
+            $autoData['canteen_id'] = $params['canteen_id'];
+            $autoData['dinner_id'] = $params['dinner_id'];
+            $autoData['auto_week'] = $params['auto_week'];
+            $autoData['repeat_week'] = $params['repeat_week'];
+            $autoData['state'] = CommonEnum::STATE_IS_OK;
+            if (AutomaticT::checkExits($autoData['dinner_id'], $autoData['repeat_week'])) {
+                throw new ParameterException(['msg' => "该餐次指定重复周期已经设置"]);
+            }
+
+            $auto = AutomaticT::create($autoData);
+            if (!$auto) {
+                throw new SaveException(['msg' => '保存自动上架配置失败']);
+            }
+            $detail = \GuzzleHttp\json_decode($params['detail'], true);
+            if (empty($detail) || empty($detail['add'])) {
+                throw new SaveException(['msg' => '上架菜品不能为空']);
+            }
+            $this->prefixAutoFoods($auto->id, $detail['add'], []);
+            Db::commit();
+        } catch (Exception $e) {
+            Db::rollback();
+            throw $e;
+        }
+
+
+    }
+
+    public function updateAutoConfig($params)
+    {
+        try {
+            Db::startTrans();
+            if (!empty($params['dinner_id'] || !empty($params['repeat_week']))) {
+                $check = AutomaticT::checkExits($params['dinner_id'], $params['repeat_week']);
+                if ($check->id != $params['id']) {
+                    throw new ParameterException(['msg' => "该餐次指定重复周期已经设置"]);
+                }
+
+            }
+            $auto = AutomaticT::update($params);
+            if (!$auto) {
+                throw new SaveException(['msg' => '修改自动上架配置失败']);
+            }
+            if (!empty($params['detail'])) {
+                $detail = \GuzzleHttp\json_decode($params['detail'], true);
+                $add = empty($detail['add']) ? [] : $detail['add'];
+                $cancel = empty($detail['cancel']) ? [] : $detail['cancel'];
+                $this->prefixAutoFoods($params['id'], $add, $cancel);
+            }
+            Db::commit();
+        } catch (Exception $e) {
+            Db::rollback();
+            throw $e;
+        }
+
+
+    }
+
+    private function prefixAutoFoods($autoId, $add, $cancel)
+    {
+        $data = [];
+        if (count($add)) {
+            foreach ($add as $k => $v) {
+                $menuId = $v['menu_id'];
+                $foods = $v['foods'];
+                if (count($foods)) {
+                    foreach ($foods as $k2 => $v2) {
+                        array_push($data, [
+                            'auto_id' => $autoId,
+                            'state', CommonEnum::STATE_IS_OK,
+                            'food_id' => $v2,
+                            'menu_id' => $menuId
+                        ]);
+
+                    }
+                }
+            }
+        }
+        if (count($cancel)) {
+            foreach ($cancel as $k => $v) {
+                array_push($data, [
+                    'id' => $v,
+                    'state' => CommonEnum::STATE_IS_OK
+                ]);
+            }
+
+        }
+        if (count($data)) {
+            $save = (new AutomaticFoodT())->saveAll($data);
+            if (!$save) {
+                throw new SaveException(['msg' => "自动上架菜品明细保存失败"]);
+            }
+        }
     }
 
 }

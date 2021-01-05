@@ -26,7 +26,8 @@ class Food extends BaseValidate
         'img_url' => 'require|isNotEmpty',
         'day' => 'require|isNotEmpty',
         'taste' => 'require|in:1,2,3,4,5',
-        'service' => 'require|in:1,2,3,4,5',
+        'auto_week' => 'require|in:0,1,2,3,4,5,6',
+        'repeat_week' => 'require|in:0,1,2,3,4,5,6',
     ];
 
     protected $scene = [
@@ -40,5 +41,6 @@ class Food extends BaseValidate
         'foodsForOfficialPersonChoice' => ['dinner_id'],
         'saveComment' => ['food_id', 'taste', 'service'],
         'infoToComment' => ['food_id'],
+        'saveAutoConfig' => ['food_id'],
     ];
 }

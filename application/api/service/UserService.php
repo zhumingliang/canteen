@@ -13,6 +13,7 @@ use app\api\model\UserT;
 use app\lib\enum\CommonEnum;
 use app\lib\enum\UserEnum;
 use app\lib\exception\AuthException;
+use app\lib\exception\ParameterException;
 use app\lib\exception\UpdateException;
 use think\facade\Request;
 use zml\tp_tools\Redis;
@@ -169,6 +170,7 @@ class UserService
             return $data;
         }
         $qrcode = $staff->qrcode;
+        echo $qrcode;
         if (strtotime($qrcode->expiry_date) >= time()) {
             return [
                 'usernmae' => $staff->username,
@@ -251,5 +253,20 @@ class UserService
             return "";
         }
         return $staff->username;
+    }
+
+    public function getOpenidWithStaffId($staffId)
+    {
+        $staff = CompanyStaffT::get($staffId);
+        $phone = $staff->phone;
+        $user = UserT::where('phone', $phone)
+            ->where('outsiders', CommonEnum::STATE_IS_FAIL)
+            ->find();
+        if (!$user) {
+            throw new ParameterException(['msg' => "用户没有微信信息"]);
+
+        }
+        return $user->openid;
+
     }
 }

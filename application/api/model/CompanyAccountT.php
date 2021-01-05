@@ -31,6 +31,11 @@ class CompanyAccountT extends Model
         return $this->hasMany('AccountDepartmentT', 'account_id', 'id');
     }
 
+    public function records()
+    {
+        return $this->hasMany('AccountRecordsT', 'account_id', 'id');
+    }
+
 
     public static function accounts($companyId)
     {
@@ -82,6 +87,7 @@ class CompanyAccountT extends Model
             ->find();
         return $accounts;
     }
+
 
     public static function accountsWithSorts($companyId)
     {
@@ -142,6 +148,37 @@ class CompanyAccountT extends Model
             ->where('state', CommonEnum::STATE_IS_OK)
             ->select()->toArray();
         return $accounts;
+    }
+
+    public static function accountWithBalance($id)
+    {
+        $account = self::where('id', $id)
+            ->with([
+                'departments' => function ($query) {
+                    $query->where('state', CommonEnum::STATE_IS_OK)->field('id,account_id');
+                },
+                'records'=>function($query){
+                    $query->where('state', CommonEnum::STATE_IS_OK)
+                        ->field('id,account_id,money');
+                }
+            ])
+            ->hidden(['create_time', 'update_time', 'admin_id'])
+            ->find()->toArray();
+        return $account;
+    }
+
+
+    public static function accountWithDepartment($id)
+    {
+        $account = self::where('id', $id)
+            ->with([
+                'departments' => function ($query) {
+                    $query->where('state', CommonEnum::STATE_IS_OK)->field('id,department_id,account_id');
+                }
+            ])
+            ->hidden(['create_time', 'update_time', 'admin_id'])
+            ->find()->toArray();
+        return $account;
     }
 
 

@@ -330,7 +330,7 @@ class DepartmentService
                     throw  new SaveException();
                 }
             }
-            Db::commit();
+             Db::commit();
         } catch (Exception $e) {
             Db::rollback();
             throw $e;
@@ -424,6 +424,9 @@ class DepartmentService
         $canteen_arr = explode('|', $canteen);
 
         foreach ($canteen_arr as $k => $v) {
+            if (!strlen($v)) {
+                continue;
+            }
             $c_id = $this->checkParamExits($canteens, $v);
             if (!$c_id) {
                 $fail = [
@@ -501,7 +504,11 @@ class DepartmentService
 
         if (in_array('card', $consumptionTypeArr)) {
             $data['card_num'] = $card_num;
-            $data['birthday'] = gmdate("Y-m-d", ($birthday - 25569) * 86400);
+            if (count(explode('-', $birthday)) == 3) {
+                $data['birthday'] = $birthday;
+            } else {
+                $data['birthday'] = gmdate("Y-m-d", ($birthday - 25569) * 86400);
+            }
         }
 
         if (in_array('face', $consumptionTypeArr)) {

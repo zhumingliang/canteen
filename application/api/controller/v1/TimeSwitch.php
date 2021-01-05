@@ -28,8 +28,26 @@ class TimeSwitch
         $off_time = $param['off_time'];
         $repeat = $param['repeat'];
         $device = $param['device'];
+        $devices = explode(',',$device);
         $company_id = Token::getCurrentTokenVar('current_company_id');
         $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
+//        $company_id = 78;
+//        $canteen_id = 146;
+        $exist_devices = Db::table('canteen_machine_timeswitch_t')
+            ->where('canteen_id',$canteen_id)
+            ->where('company_id',$company_id)
+            ->where('status',1)
+            ->field('device')
+            ->select();
+        foreach ($exist_devices as $exist_device){
+            $exist_device = $exist_device['device'];
+            $exist_device = explode(',',$exist_device);
+            foreach ($devices as $device2){
+                if (in_array($device2,$exist_device)){
+                    throw new AuthException(['msg' => $device2."号消费机已设定定时开关"]);
+                }
+            }
+        }
         if (empty($on_time)){
             throw new AuthException(['msg' => '请选择开启时间']);
         }
@@ -55,7 +73,10 @@ class TimeSwitch
         ];
         $insert = Db::table('canteen_machine_timeswitch_t')
             ->insert($data);
-        $this->sendData($on_time,$off_time,$repeat,$device,1);
+        $id = Db::table('canteen_machine_timeswitch_t')->getLastInsID();
+        foreach ($devices as $device2){
+            $this->sendData($id,$on_time,$off_time,$repeat,$device2,1);
+        }
         if ($insert){
             return json(new SuccessMessage());
         }else{
@@ -67,11 +88,34 @@ class TimeSwitch
     //更新定时开关
     public function updateTimeSwitch(){
         $id = Request::param('id');
+        $before= Db::table('canteen_machine_timeswitch_t')
+            ->where('id',$id)
+            ->find();
+        $before_device = $before['device'];
+        $before_device = explode(',',$before_device);
         $param = Request::param();
         $on_time = $param['on_time'];
         $off_time = $param['off_time'];
         $repeat = $param['repeat'];
         $device = $param['device'];
+        $devices = explode(',',$device);
+        $company_id = $before['company_id'];
+        $canteen_id = $before['canteen_id'];
+        $exist_devices = Db::table('canteen_machine_timeswitch_t')
+            ->where('canteen_id',$canteen_id)
+            ->where('company_id',$company_id)
+            ->where('status',1)
+            ->field('device')
+            ->select();
+        foreach ($exist_devices as $exist_device){
+            $exist_device = $exist_device['device'];
+            $exist_device = explode(',',$exist_device);
+            foreach ($devices as $device2){
+                if (in_array($device2,$exist_device)){
+                    throw new AuthException(['msg' => $device2."号消费机已设定定时开关"]);
+                }
+            }
+        }
         if (empty($on_time)){
             throw new AuthException(['msg' => '请选择开启时间']);
         }
@@ -92,11 +136,18 @@ class TimeSwitch
             'status' => 1,
             'update_time' => date('Y-m-d H:i:s'),
         ];
-        $insert = Db::table('canteen_machine_timeswitch_t')
+        $update = Db::table('canteen_machine_timeswitch_t')
             ->where('id',$id)
             ->update($data);
-        $this->sendData($on_time,$off_time,$repeat,$device,1);
-        if ($insert){
+        foreach ($before_device as $before_device2){
+            if (!in_array($before_device2,$devices)){
+                $this->sendData($id,$before['on_time'],$before['off_time'],$before['repeat'],$before_device2,2);
+            }
+        }
+        foreach ($devices as $device2){
+            $this->sendData($id,$on_time,$off_time,$repeat,$device2,1);
+        }
+        if ($update){
             return json(new SuccessMessage());
         }else{
             throw new SaveException();
@@ -108,9 +159,9 @@ class TimeSwitch
         $company_id = Token::getCurrentTokenVar('current_company_id');
         $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
         $table = Db::table('canteen_machine_timeswitch_t')
-                ->where('canteen_id',$canteen_id)
-                ->where('company_id',$company_id)
-                ->select();
+            ->where('canteen_id',$canteen_id)
+            ->where('company_id',$company_id)
+            ->select();
         return json(new SuccessMessageWithData(['data' => $table]));
     }
 
@@ -124,7 +175,7 @@ class TimeSwitch
         $repeat = $time['repeat'];
         $devices = explode(',',$devices);
         foreach ($devices as $device){
-             $this->sendData($on_time,$off_time,$repeat,$device,2);
+            $this->sendData($id,$on_time,$off_time,$repeat,$device,2);
         }
         $delete = Db::table('canteen_machine_timeswitch_t')->where('id',$id)->delete();
         if ($delete){
@@ -146,7 +197,7 @@ class TimeSwitch
         $status = $time['status'];
         if ($status == 1){
             foreach ($devices as $device){
-                $this->sendData($on_time,$off_time,$repeat,$device,2);
+                $this->sendData($id,$on_time,$off_time,$repeat,$device,2);
             }
             $switch = Db::table('canteen_machine_timeswitch_t')
                 ->where('id',$id)
@@ -157,8 +208,25 @@ class TimeSwitch
                 throw new SaveException();
             }
         }else {
+            $canteen_id = $time['canteen_id'];
+            $company_id = $time['company_id'];
+            $exist_devices = Db::table('canteen_machine_timeswitch_t')
+                ->where('canteen_id',$canteen_id)
+                ->where('company_id',$company_id)
+                ->where('status',1)
+                ->field('device')
+                ->select();
+            foreach ($exist_devices as $exist_device){
+                $exist_device = $exist_device['device'];
+                $exist_device = explode(',',$exist_device);
+                foreach ($devices as $device2){
+                    if (in_array($device2,$exist_device)){
+                        throw new AuthException(['msg' => $device2."号消费机已设定定时开关"]);
+                    }
+                }
+            }
             foreach ($devices as $device) {
-                $this->sendData($on_time,$off_time,$repeat,$device,1);
+                $this->sendData($id,$on_time,$off_time,$repeat,$device,1);
             }
             $switch = Db::table('canteen_machine_timeswitch_t')
                 ->where('id', $id)
@@ -172,11 +240,12 @@ class TimeSwitch
     }
 
     //发送开关至消费机
-    public function sendData($on_time,$off_time,$repeat,$device,$status){
+    public function sendData($id,$on_time,$off_time,$repeat,$device,$status){
         $jobHandlerClassName = 'app\api\job\SendSort2'; //负责处理队列任务的类
         $jobQueueName = "sendSortQueue";//队列名称
         $websocketCode = $this->saveRedisSortCode();
         $jobData = [
+            'id' => $id,
             'off_time' => $off_time,
             'on_time' => $on_time,
             'repeat' => $repeat,
@@ -196,7 +265,7 @@ class TimeSwitch
         $company_id = Token::getCurrentTokenVar('current_company_id');
         $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
         $devices = Db::table('canteen_machine_t')->where('belong_id',$canteen_id)
-                    ->where('company_id',$company_id)->field('id,name')->select();
+            ->where('company_id',$company_id)->where('state',1)->field('id,name')->select();
         return json(new SuccessMessageWithData(['data' => $devices]));
 
     }

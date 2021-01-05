@@ -192,6 +192,7 @@ Route::post('api/:version/order/personChoice/outside/save', 'api/:version.Order/
 Route::post('api/:version/order/online/save', 'api/:version.Order/orderingOnline');
 Route::get('api/:version/order/userOrdering', 'api/:version.Order/userOrdering');
 Route::get('api/:version/order/online/info', 'api/:version.Order/infoForOnline');
+Route::get('api/:version/order/dinner/count', 'api/:version.Order/getDinnerOrderedCount');
 Route::get('api/:version/order/personChoice/info', 'api/:version.Order/infoForPersonChoiceOnline');
 Route::get('api/:version/order/personalChoice/info', 'api/:version.Order/personalChoiceInfo');
 Route::post('api/:version/order/cancel', 'api/:version.Order/orderCancel');
@@ -310,6 +311,7 @@ Route::rule('api/:version/service/printer', 'api/:version.Service/printer');
 Route::rule('api/:version/service/canteen/config', 'api/:version.Service/configForOffLine');
 Route::rule('api/:version/service/canteen/orders', 'api/:version.Service/orderForOffline');
 Route::rule('api/:version/service/company/staffs', 'api/:version.Service/staffsForOffline');
+Route::rule('api/:version/service/template', 'api/:version.Service/sendTemplate');
 
 Route::post('api/:version/outsider/save', 'api/:version.Outsider/saveCanteen');
 Route::get('api/:version/outsiders', 'api/:version.Outsider/outsiders');
@@ -353,3 +355,14 @@ Route::get('api/:version/timeswitch/showTimeSwitch', 'api/:version.TimeSwitch/sh
 Route::post('api/:version/timeswitch/deleteTimeSwitch', 'api/:version.TimeSwitch/deleteTimeSwitch');
 Route::post('api/:version/timeswitch/switchButton', 'api/:version.TimeSwitch/switchButton');
 Route::get('api/:version/timeswitch/showDevice', 'api/:version.TimeSwitch/showDevice');
+
+Route::get('api/:version/nextmonthpay/getOrderConsumption', 'api/:version.NextMonthPay/getOrderConsumption');
+Route::get('api/:version/nextmonthpay/paymentStatistic', 'api/:version.NextMonthPay/paymentStatistic');
+Route::get('api/:version/nextmonthpay/isNextMonthPay', 'api/:version.NextMonthPay/isNextMonthPay');
+Route::get('api/:version/nextmonthpay/getNextMonthPayInfo', 'api/:version.NextMonthPay/getNextMonthPayInfo');
+Route::post('api/:version/nextmonthpay/paySetting', 'api/:version.NextMonthPay/paySetting');
+Route::post('api/:version/nextmonthpay/stateSetting', 'api/:version.NextMonthPay/stateSetting');
+Route::get('api/:version/nextmonthpay/remind', 'api/:version.NextMonthPay/remind');
+Route::post('api/:version/nextmonthpay/payMoney', 'api/:version.NextMonthPay/payMoney');
+Route::post('api/:version/nextmonthpay/payMoney', 'api/:version.NextMonthPay/payMoney');
+Route::post('api/:version/nextmonthpay/payMoneyAll', 'api/:version.NextMonthPay/payMoneyAll');

@@ -5,6 +5,7 @@ namespace app\api\controller\v1;
 
 
 use app\api\controller\BaseController;
+use app\api\service\AccountService;
 use app\api\service\CompanyService;
 use app\api\service\ConsumptionService;
 use app\api\service\LogService;
@@ -37,7 +38,6 @@ class Service extends BaseController
     public function printer()
     {
         $params = Request::param();
-        LogService::save(json_encode($params));
         (new ConsumptionService())->sortTask($params['canteenID'], 0, $params['orderID'], $params['sortCode'], $params['consumptionType']);
         (new \app\lib\printer\Printer())->printOrderDetail($params['canteenID'], $params['orderID'], $params['sortCode'], $params['consumptionType']);
         return json(new SuccessMessage());
@@ -147,6 +147,19 @@ class Service extends BaseController
     {
         $staffs = (new OffLineService())->staffsForOffline();
         return json(new SuccessMessageWithData(['data' => $staffs]));
+    }
+
+    /**
+     * 账户定时清零
+     * 消费机离线提醒
+     */
+    public function sendTemplate()
+    {
+        $accountId = Request::param('id');
+        $type = Request::param('type');
+        (new AccountService())->sendTemplate($type,$accountId);
+        return json(new SuccessMessage());
+
     }
 
 }

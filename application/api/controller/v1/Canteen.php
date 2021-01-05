@@ -446,7 +446,9 @@ class Canteen extends BaseController
      *       "code": "dadas12121",
      *       "pwd": "a111",
      *       "out": 1,
-     *       "sort_code": 1
+     *       "sort_code": 1,
+     *       "remind":1,
+     * "reminder":{"add":"1,2"}
      *     }
      * @apiParam (请求参数说明) {string} name  设备名称
      * @apiParam (请求参数说明) {int} company_id  企业id
@@ -458,6 +460,9 @@ class Canteen extends BaseController
      * @apiParam (请求参数说明) {string} pwd  设备登陆密码
      * @apiParam (请求参数说明) {int} out  设备使用类别：1：外部食堂；2 ：内部食堂;3 无
      * @apiParam (请求参数说明) {int} sort_code  是否接收排队序列 1： 接收；2 ： 不接收
+     * @apiParam (请求参数说明) {int} remind  是否离线提醒 1： 是；2 ： 否
+     * @apiParam (请求参数说明) {obj} reminder 离线提醒用户
+     * @apiParam (请求参数说明) {string} add  新增提醒用户id（ 用户id），多个用都好分割
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
@@ -506,7 +511,9 @@ class Canteen extends BaseController
      *       "code": "dadas12121",
      *       "pwd": "a111",
      *       "out": 1,
-     *       "sort_code": 1
+     *       "sort_code": 1,
+     *       "remind":1,
+     *       "reminder":{"add":"1,2","cancel":"3,4"}
      *     }
      * @apiParam (请求参数说明) {int} id  设备id
      * @apiParam (请求参数说明) {int} face_id  消费机关联人脸识别机的id
@@ -516,6 +523,10 @@ class Canteen extends BaseController
      * @apiParam (请求参数说明) {string} pwd  设备登陆密码
      * @apiParam (请求参数说明) {int} out  设备使用类别：1：外部食堂；2 ：内部食堂;3 无
      * @apiParam (请求参数说明) {int} sort_code  是否接收排队序列 1： 接收；2 ： 不接收
+     * @apiParam (请求参数说明) {int} remind  是否离线提醒 1： 是；2 ： 否
+     * @apiParam (请求参数说明) {obj} reminder 离线提醒用户
+     * @apiParam (请求参数说明) {string} add  新增提醒用户id（ 用户id），多个用都好分割
+     * @apiParam (请求参数说明) {string} cancel  删除提醒用户id（ 不是用户id，是用户和消费机提醒绑定id），多个用都好分割
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
@@ -649,7 +660,7 @@ class Canteen extends BaseController
      * @apiParam (请求参数说明) {int} belong_id  归属id：饭堂id/小卖部id（和machine_type一一对应）
      * @apiParam (请求参数说明) {int} machine_type 设备类别：canteen：饭堂；shop：小卖部
      * @apiSuccessExample {json} 返回样例:
-     * {"msg":"ok","errorCode":0,"code":200,"data":{"total":1,"per_page":"20","current_page":1,"last_page":1,"data":[{"id":2,"machine_type":"canteen","name":"刷卡器1号","code":"a111111","number":"001","state":1}]}}
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"total":1,"per_page":"20","current_page":1,"last_page":1,"data":[{"id":375,"machine_type":"canteen","name":"1","code":"1","number":"1","out":1,"sort_code":1,"face_id":"1","remind":1,"reminder":[{"id":5,"staff_id":466,"machine_id":375,"openid":"oSi030oELLvP4suMSvOxTAF8HrLE","username":"langb"},{"id":6,"staff_id":467,"machine_id":375,"openid":"oSi030kipGt9N0uyDqdJdJEM23B4","username":"爱萝卜00"}]}]}}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
      * @apiSuccess (返回参数说明) {string} msg 信息描述
      * @apiSuccess (返回参数说明) {int} total 数据总数
@@ -665,6 +676,10 @@ class Canteen extends BaseController
      * @apiSuccess (返回参数说明) {int} out  设备使用类别：1：外部食堂；2 ：内部食堂;3 无
      * @apiSuccess (返回参数说明) {int} sort_code  是否接收排队序列 1： 接收；2 ： 不接收
      * @apiSuccess (返回参数说明) {int} state 状态：1|正常；2|异常
+     * @apiSuccess (返回参数说明) {int} remind 是否离线提醒：1|是；2|否
+     * @apiSuccess (返回参数说明) {obj} reminder 提醒用户
+     * @apiSuccess (返回参数说明) {int} id 设备和用户关联id
+     * @apiSuccess (返回参数说明) {string} username 用户姓名
      */
     public function machines($page = 1, $size = 20)
     {
@@ -685,7 +700,7 @@ class Canteen extends BaseController
      * @apiParam (请求参数说明) {int} size 每页多少条数据
      * @apiParam (请求参数说明) {int} company_id 企业id
      * @apiSuccessExample {json} 返回样例:
-     * {"msg":"ok","errorCode":0,"code":200,"data":{"total":1,"per_page":"20","current_page":1,"last_page":1,"data":[{"id":2,"machine_type":"canteen","name":"刷卡器1号","code":"a111111","number":"001","state":1}]}}
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"total":1,"per_page":"20","current_page":1,"last_page":1,"data":[{"id":2,"machine_type":"canteen","name":"刷卡器1号","code":"a111111","number":"001","state":1,"remind":1}]}}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
      * @apiSuccess (返回参数说明) {string} msg 信息描述
      * @apiSuccess (返回参数说明) {int} total 数据总数
@@ -699,6 +714,7 @@ class Canteen extends BaseController
      * @apiSuccess (返回参数说明) {string} name 设备硬件名称
      * @apiSuccess (返回参数说明) {int} face_id  消费机关联人脸识别机的id
      * @apiSuccess (返回参数说明) {int} state 状态：1|正常；2|异常
+     * @apiSuccess (返回参数说明) {int} remind 是否离线提醒：1|是；2|否
      */
     public function companyMachines($page = 1, $size = 20)
     {
