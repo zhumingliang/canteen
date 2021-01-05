@@ -355,3 +355,14 @@ Route::get('api/:version/timeswitch/showTimeSwitch', 'api/:version.TimeSwitch/sh
 Route::post('api/:version/timeswitch/deleteTimeSwitch', 'api/:version.TimeSwitch/deleteTimeSwitch');
 Route::post('api/:version/timeswitch/switchButton', 'api/:version.TimeSwitch/switchButton');
 Route::get('api/:version/timeswitch/showDevice', 'api/:version.TimeSwitch/showDevice');
+
+Route::get('api/:version/nextmonthpay/getOrderConsumption', 'api/:version.NextMonthPay/getOrderConsumption');
+Route::get('api/:version/nextmonthpay/paymentStatistic', 'api/:version.NextMonthPay/paymentStatistic');
+Route::get('api/:version/nextmonthpay/isNextMonthPay', 'api/:version.NextMonthPay/isNextMonthPay');
+Route::get('api/:version/nextmonthpay/getNextMonthPayInfo', 'api/:version.NextMonthPay/getNextMonthPayInfo');
+Route::post('api/:version/nextmonthpay/paySetting', 'api/:version.NextMonthPay/paySetting');
+Route::post('api/:version/nextmonthpay/stateSetting', 'api/:version.NextMonthPay/stateSetting');
+Route::get('api/:version/nextmonthpay/remind', 'api/:version.NextMonthPay/remind');
+Route::post('api/:version/nextmonthpay/payMoney', 'api/:version.NextMonthPay/payMoney');
+Route::post('api/:version/nextmonthpay/payMoney', 'api/:version.NextMonthPay/payMoney');
+Route::post('api/:version/nextmonthpay/payMoneyAll', 'api/:version.NextMonthPay/payMoneyAll');

@@ -5,6 +5,7 @@ namespace app\api\controller\v1;
 
 
 use app\api\controller\BaseController;
+use app\api\job\SendTemplate;
 use app\api\job\UploadExcel;
 use app\api\model\AccountRecordsT;
 use app\api\model\CanteenT;
@@ -54,6 +55,7 @@ use app\lib\exception\SuccessMessage;
 use app\lib\exception\SuccessMessageWithData;
 use app\lib\Num;
 use app\lib\printer\Printer;
+use app\lib\weixin\Template;
 use app\model\LogT;
 use think\Db;
 use think\db\Where;
@@ -68,11 +70,13 @@ use function GuzzleHttp\Psr7\str;
 class
 Index extends BaseController
 {
+    /** @var string 任务周期 */
+    public $expression = '* * * * * *';
+
     public function index()
     {
-        $date=\date('Y-m-d');
-        echo $date;
-        echo $this-> toDateChinese($date);
+      echo date('Y') . '年' .date('m') . '月';
+
         /*$company = CompanyT::where('state', CommonEnum::STATE_IS_OK)->select();
         $account = [];
         foreach ($company as $k => $v) {
@@ -107,6 +111,24 @@ Index extends BaseController
         (new CompanyAccountT())->saveAll($account);*/
 
     }
+
+
+    protected function spliceIntoPosition($position, $value)
+    {
+        $segments = explode(' ', $this->expression);
+
+        $segments[$position - 1] = $value;
+
+        return $this->expression(implode(' ', $segments));
+    }
+
+    public function expression($expression)
+    {
+        $this->expression = $expression;
+        return $this;
+    }
+
+
     private function toDateChinese($date)
     {
 

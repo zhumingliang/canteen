@@ -90,7 +90,7 @@ class FoodService extends BaseService
         }
         //检测菜品是否上架
         if ($this->checkFoodUp($params['id'])) {
-            throw new ParameterException(['msg'=>'菜品上架中，不能删除']);
+            throw new ParameterException(['msg' => '菜品上架中，不能删除']);
         }
         $food->state = CommonEnum::STATE_IS_FAIL;
         $res = $food->save();
@@ -372,6 +372,11 @@ class FoodService extends BaseService
             'food' => $food,
             'canteenScore' => (new CanteenService())->canteenScore($canteen_id)
         ];
+    }
+
+    public function saveAutoConfig($params)
+    {
+
     }
 
 }

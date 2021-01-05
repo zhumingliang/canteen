@@ -155,11 +155,25 @@ class CompanyAccountT extends Model
         $account = self::where('id', $id)
             ->with([
                 'departments' => function ($query) {
-                    $query->where('state', CommonEnum::STATE_IS_OK)->field('id');
+                    $query->where('state', CommonEnum::STATE_IS_OK)->field('id,account_id');
                 },
                 'records'=>function($query){
                     $query->where('state', CommonEnum::STATE_IS_OK)
-                        ->field('id,money');
+                        ->field('id,account_id,money');
+                }
+            ])
+            ->hidden(['create_time', 'update_time', 'admin_id'])
+            ->find()->toArray();
+        return $account;
+    }
+
+
+    public static function accountWithDepartment($id)
+    {
+        $account = self::where('id', $id)
+            ->with([
+                'departments' => function ($query) {
+                    $query->where('state', CommonEnum::STATE_IS_OK)->field('id,department_id,account_id');
                 }
             ])
             ->hidden(['create_time', 'update_time', 'admin_id'])

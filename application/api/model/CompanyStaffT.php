@@ -355,13 +355,17 @@ class CompanyStaffT extends Model
     {
         $staffs = self::where(function ($query) use ($companyId, $departmentIds) {
             if ($departmentIds) {
-                $query->whereIn('d_id', $departmentIds);
+                if (count(explode(',', $departmentIds)) > 1) {
+                    $query->whereIn('d_id', $departmentIds);
+                } else {
+                    $query->where('d_id', $departmentIds);
+                }
             } else {
                 $query->where('company_id', $companyId);
             }
 
-        })->with([
-
+        })->where('state', CommonEnum::STATE_IS_OK)
+            ->with([
             'user' => function ($query) {
                 $query->field('phone,openid');
 
@@ -372,8 +376,8 @@ class CompanyStaffT extends Model
                     ->group('staff_id');
             }
 
-        ])->field('id,phone,username')
-            ->select();
+        ]) ->field('id,phone,username')
+            ->select()->toArray();
 
         return $staffs;
 

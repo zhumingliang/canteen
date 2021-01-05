@@ -11,7 +11,9 @@ use app\api\model\MachineT;
 use app\api\model\OfficialTemplateT;
 use app\api\service\CanteenService;
 use app\api\service\LogService;
+use app\api\service\NextMonthPayService;
 use app\lib\enum\CommonEnum;
+use app\lib\exception\ParameterException;
 use app\lib\weixin\Template;
 use think\Exception;
 use think\queue\Job;
@@ -35,13 +37,13 @@ class SendTemplate
         $isJobDone = $this->doJob($data);
         if ($isJobDone) {
             // 如果任务执行成功，删除任务
-            LogService::saveJob("<warn>账户清零微信通知队列任务执行成功！" . "</warn>\n", json_encode($data));
+            LogService::saveJob("<warn>微信通知队列任务执行成功！" . "</warn>\n", json_encode($data));
             $job->delete();
         } else {
-            LogService::saveJob("<warn>账户清零微信通知队列任务执行失败！" . "</warn>\n", json_encode($data));
+            LogService::saveJob("<warn>微信通知队列任务执行失败！" . "</warn>\n", json_encode($data));
             if ($job->attempts() > 3) {
                 //通过这个方法可以检查这个任务已经重试了几次了
-                LogService::saveJob("<warn>账户清零微信通知队列已经重试超过3次，现在已经删除该任务" . "</warn>\n");
+                LogService::saveJob("<warn>微信通知队列已经重试超过3次，现在已经删除该任务" . "</warn>\n");
                 $job->delete();
             } else {
                 $job->release(3); //重发任务
@@ -78,71 +80,115 @@ class SendTemplate
             $type = $data['type'];
             $id = $data['id'];
             $ids = explode(',', $id);
+            $templateConfig = OfficialTemplateT::template($type);
+            if (empty($templateConfig)) {
+                throw new ParameterException(['msg' => $type . "模板未配置"]);
+
+            }
+            $templateId = $templateConfig->template_id;
+            $url = $templateConfig->url;
             if ($type == "clearAccount") {
                 //账户清零通知
                 if (count($ids)) {
                     foreach ($ids as $k => $v) {
-                        $this->sendClearAccountTemplate($v);
+                        $this->sendClearAccountTemplate($v, $templateId, $url);
                     }
                 }
             } else if ($type == "machine") {
                 //设备异常通知
                 if (count($ids)) {
                     foreach ($ids as $k => $v) {
-                        $this->sendMachineOffLineTemplate($v);
+                        $this->sendMachineOffLineTemplate($v, $templateId, $url);
                     }
                 }
 
+            } else if ($type == "payment") {
+                if (count($ids)) {
+                    foreach ($ids as $k => $v) {
+                        $this->sendPaymentTemplate($v, $templateId, $url);
+                    }
+                }
             }
-
+            return true;
 
         } catch (Exception $e) {
             LogService::saveJob('微信通知失败类型（' . $type . '）:' . $e->getMessage(), json_encode($data));
+            return false;
         }
 
     }
 
-    private function sendMachineOffLineTemplate($machineId)
+    public function sendPaymentTemplate($companyId, $templateId, $url)
     {
-        //检测是否在线
-        $check = (new CanteenService())->checkMachineState($machineId);
-        if ($check == CommonEnum::STATE_IS_FAIL) {
-            $reminder = MachineReminderT::reminders($machineId);
-            if (count($reminder)) {
-                $templateConfig = OfficialTemplateT::template('machine');
-                $template_id = $templateConfig->template_id;
-                $url = $templateConfig->url;
-                //发送模板
-                $fail = [];
-                $machine = MachineT::get($machineId);
-                foreach ($reminder as $k => $v) {
-                    $data = [
-                        'first' => "消费机处于异常状态，请及时处理！",
-                        'keyword1' => "异常报警：网络异常",
-                        'keyword2' => "机器名：" . $machine->name,
-                        'keyword3' => "异常时间：" . date('Y-m-d H:i'),
-                        'remark' => "建议现场查看消费机的异常显示。"
-                    ];
-                    if ($templateConfig) {
-                        $res = (new Template())->send($v['openid'], $template_id, $url, $data);
-                        $data['res'] = $res;
-                        array_push($fail, $data);
-                    }
-                }
-                if (count($fail)) {
-                    LogService::saveJob('消费机离线微信通知失败:', json_encode($data));
+
+        $info = (new NextMonthPayService())->getPayRemindInfo($companyId);
+        if (count($info)) {
+            $fail = [];
+            foreach ($info as $k => $v) {
+                $data = [
+                    'first' => "您好，" . $v['pay_date'] . "月份缴费账单已经生成",
+                    'keyword1' => abs($v['pay_money']) . "元",
+                    'keyword2' =>date('Y') . '年' .date('m') . '月' .$v['pay_begin_date'].'日' . '到' .date('Y') . '年' .date('m') . '月' .$v['pay_end_date'].'日',
+                    'remark' => "请您及时缴费"
+                ];
+                $res = (new Template())->send($v['openid'], $templateId, $url, $data);
+                if ($res['errcode'] != 0) {
+                    $data['res'] = $res;
+                    array_push($fail, $data);
                 }
             }
-
-
+            if (count($fail)) {
+                LogService::saveJob('账户清零微信通知失败:', json_encode($fail));
+            }
         }
+
 
     }
 
-    private function sendClearAccountTemplate($accountId)
+    public function sendMachineOffLineTemplate($machineId, $templateId, $url)
+    {
+        try {
+            //检测是否在线
+            $check = (new CanteenService())->checkMachineState($machineId);
+            if ($check == CommonEnum::STATE_IS_FAIL) {
+                $reminder = MachineReminderT::reminders($machineId);
+                if (count($reminder)) {
+                    //发送模板
+                    $machine = MachineT::get($machineId);
+                    $fail = [];
+                    foreach ($reminder as $k => $v) {
+                        $data = [
+                            'first' => "消费机处于异常状态，请及时处理！",
+                            'keyword1' => "网络异常",
+                            'keyword2' => $machine->name,
+                            'keyword3' => date('Y-m-d H:i'),
+                            'remark' => "建议现场查看消费机的异常提示。"
+                        ];
+                        $res = (new Template())->send($v['openid'], $templateId, $url, $data);
+                        if ($res['errcode'] != 0) {
+                            $data['res'] = $res;
+                            array_push($fail, $data);
+                        }
+                    }
+                    if (count($fail)) {
+                        LogService::saveJob('消费机状态异常微信通知失败:', json_encode($fail));
+                    }
+
+                }
+
+
+            }
+        } catch (Exception $e) {
+            LogService::saveJob($e->getMessage());
+        }
+
+
+    }
+
+    public function sendClearAccountTemplate($accountId, $templateId, $url)
     {
         //获取账户信息
-        $account = CompanyAccountT::accountWithBalance($accountId);
+        $account = CompanyAccountT::accountWithDepartment($accountId);
         $accountName = $account['name'];
         $departmentAll = $account['department_all'];
         if ($departmentAll == CommonEnum::STATE_IS_OK) {
@@ -152,35 +198,36 @@ class SendTemplate
             $departments = $account['departments'];
             $departmentIdArr = [];
             foreach ($departments as $k => $v) {
-                array_push($departmentIdArr, $v['id']);
+                array_push($departmentIdArr, $v['department_id']);
             }
             $departmentId = implode(',', $departmentIdArr);
         }
-        $staff = CompanyStaffT::getStaffWithUId($accountId, $account->company_id, $departmentId);
+        $staff = CompanyStaffT::getStaffWithUId($accountId, $account['company_id'], $departmentId);
         //发送模板
         $fail = [];
         foreach ($staff as $k => $v) {
+
             if (empty($v['user']['openid'])) {
                 continue;
             }
-            if (empty($v['account']) || $v['account']['money'] <= 0) {
+            if (empty($v['account']) || $v['account'][0]['money'] <= 0) {
                 continue;
             }
             $data = [
                 'first' => "您的" . $accountName . "余额将在3天后清零！",
-                'keyword1' => $v['account']['money'] . "元",
-                'keyword2' => date('Y-m-d H:i', strtotime($account['next_time'])),
+                'keyword1' => $v['account'][0]['money'] . "元",
+                'keyword2' => date('Y-m-d H:i:s', strtotime($account['next_time'])),
                 'remark' => "建议您及时消费。"
             ];
-            $templateConfig = OfficialTemplateT::template('clearAccount');
-            if ($templateConfig) {
-                $res = (new Template())->send($v['user']['openid'], $templateConfig->template_id, $templateConfig->url, $data);
+            $openid = $v['user']['openid'];
+            $res = (new Template())->send($openid, $templateId, $url, $data);
+            if ($res['errcode'] !== 0) {
                 $data['res'] = $res;
                 array_push($fail, $data);
             }
         }
         if (count($fail)) {
-            LogService::saveJob('账户清零微信通知失败:', json_encode($data));
+            LogService::saveJob('账户清零微信通知失败:', json_encode($fail));
         }
     }
 

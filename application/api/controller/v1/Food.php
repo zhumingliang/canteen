@@ -419,5 +419,13 @@ class Food extends BaseController
         return json(new SuccessMessageWithData(['data' => $foods]));
     }
 
+    public function saveAutoConfig()
+    {
+        $params = Request::param();
+        (new FoodService())->saveAutoConfig($params);
+        return json(new SuccessMessage());
+
+    }
+
 
 }
