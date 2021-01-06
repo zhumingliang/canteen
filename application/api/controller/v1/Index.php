@@ -78,12 +78,17 @@ Index extends BaseController
 
     public function index()
     {
-        $company_id = 122;
-        $admin_id = 1;
-        $data = (new ExcelService())->saveExcel('$staffs_excel');
-        $dataList = (new WalletService())->prefixSupplementUploadData($company_id, $admin_id, $data);
-      print_r($dataList);
-       // $cash = (new RechargeSupplementT())->saveAll($dataList);
+        $config = [
+            'app_id' => config('wechat.official_account.default.app_id'),
+            'secret' => config('wechat.official_account.default.secret'),
+            'token' => 'canteen',
+            'aes_key' => config('wechat.official_account.default.aes_key'),
+            // 指定 API 调用返回结果的类型：array(default)/collection/object/raw/自定义类名
+            'response_type' => 'array',
+        ];
+        print_r($config);
+
+        // $cash = (new RechargeSupplementT())->saveAll($dataList);
         /*$company = CompanyT::where('state', CommonEnum::STATE_IS_OK)->select();
         $account = [];
         foreach ($company as $k => $v) {
