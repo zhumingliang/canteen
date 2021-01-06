@@ -132,6 +132,7 @@ class SendTemplate
                     'remark' => "请您及时缴费"
                 ];
                 $res = (new Template())->send($v['openid'], $templateId, $url, $data);
+                LogService::saveJob(json_encode($res));
                 if ($res['errcode'] != 0) {
                     $data['res'] = $res;
                     array_push($fail, $data);
