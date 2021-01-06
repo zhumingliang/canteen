@@ -200,4 +200,78 @@ class NextMonthPayService
             return $data;
         }
     }
+
+
+    //导出
+    public function exportNextMonthPayStatistic($time_begin, $time_end, $company_id, $department_id, $status, $pay_method, $username, $phone)
+    {
+        $info = $this->nextMonthOutput($time_begin, $time_end, $company_id, $department_id, $status, $pay_method, $username, $phone);
+        $statistic = $info['statistic'];
+        $header = ['序号', '时间', '部门', '姓名', '手机号码', '应缴费用', '缴费状态', '缴费时间', '缴费途径', '早餐数量', '早餐金额（元）', '午餐数量', '午餐金额（元）', '合计数量', '合计金额（元）', '备注'];
+        $reports = $this->prefixConsumptionStatistic($statistic);
+        $file_name = "缴费查询报表";
+        $url = (new ExcelService())->makeExcel($header, $reports, $file_name);
+        return [
+            'url' => config('setting.domain') . $url
+        ];
+    }
+
+    private function prefixConsumptionStatistic($statistic)
+    {
+        $dataList = [];
+        if (!empty($statistic)) {
+            $endData = $this->addDinnerToStatistic($statistic);
+            foreach ($statistic as $k2 => $v2) {
+                $data = $this->addDinnerToStatistic($statistic);
+                if (key_exists($v2['dinner_id'] . 'count', $data)) {
+                    $data[$v2['dinner_id'] . 'count'] = $v2['order_count'];
+                    $endData[$v2['dinner_id'] . 'count'] += $v2['order_count'];
+                }
+                if (key_exists($v2['dinner_id'] . 'money', $data)) {
+                    $data[$v2['dinner_id'] . 'money'] = $v2['order_money'];
+                    $endData[$v2['dinner_id'] . 'money'] += $v2['order_money'];
+                }
+
+            }
+            array_push($dataList, $data);
+        }
+        array_push($dataList, $endData);
+        return $dataList;
+    }
+
+    private function addDinnerToStatistic($statistic)
+    {
+        $data = [
+            'number' => '总合计',
+            'statistic' => ''
+        ];
+        foreach ($statistic as $k => $v) {
+            $data[$v['id'] . 'count'] = 0;
+            $data[$v['id'] . 'money'] = 0;
+        }
+        return $data;
+    }
+    public function nextMonthOutput($time_begin, $time_end, $company_id, $department_id, $status,
+                                    $pay_method, $username, $phone)
+    {
+        $userList = (new NextmonthPayT())->consumerList($time_begin, $time_end, $company_id, $department_id, $status,
+            $pay_method, $username, $phone);
+        $statistic = (new NextmonthPayT())->dinnerStatistic($time_begin, $time_end, $company_id, $department_id, $status,
+            $pay_method, $username, $phone);
+        $data = $userList['data'];
+        foreach ($data as $k => $v) {
+            $dinnerStatistic = [];
+            foreach ($statistic as $k2 => $v2) {
+                if ($v['staff_id'] == $v2['staff_id'] && $v['pay_date'] == $v2['pay_date']) {
+                    array_push($dinnerStatistic, $statistic[$k2]);
+                    unset($statistic[$k2]);
+                }
+                $data[$k]['dinnerStatistic'] = $dinnerStatistic;
+            }
+        }
+        $userList['data'] = $data;
+        return [
+            'statistic' => $userList
+        ];
+    }
 }

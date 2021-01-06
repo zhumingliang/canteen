@@ -559,6 +559,15 @@ IF
               ->field('staff_id,dinner_id,dinner,sum(order_count) as order_count,sum(order_money) as order_money')
               ->group('dinner')->select();
       }*/
-
+    public function getOrderConsumption($c_id, $consumption_date)
+    {
+        $dateArr = explode('-',$consumption_date);
+        $list = self::where('company_id', $c_id)
+            ->where('year(consumption_date) ='. $dateArr[0])
+            ->where('month(consumption_date) ='.$dateArr[1])
+            ->select()
+            ->toArray();
+        return $list;
+    }
 
 }

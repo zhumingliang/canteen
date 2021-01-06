@@ -12,22 +12,23 @@ use app\lib\exception\AuthException;
 use app\lib\exception\SaveException;
 use app\lib\exception\SuccessMessage;
 use app\lib\exception\SuccessMessageWithData;
+use app\lib\exception\UpdateException;
 use think\facade\Request;
 
 class NextMonthPay extends BaseController
 {
+    //用于测试--begin
     public function getOrderConsumption()
     {
         (new NextMonthPayService())->handle();
         return json(new SuccessMessage());
     }
-
     public function remind()
     {
-        (new NextMonthPayService())->getPayRemindInfo(87);
+        $data = (new NextMonthPayService())->getPayRemindInfo(87);
         return json(new SuccessMessage());
     }
-
+    //--end
     /**
      * CMS管理端-缴费管理-缴费查询
      */
@@ -112,74 +113,96 @@ class NextMonthPay extends BaseController
         $state = Request::param('state');
         //更新时间
         $update_time = date('Y-m-d H:i:s');
-        $data = NextmonthPaySettingT::where('id', $id)->update(['state' => $state, 'update_time' => $update_time]);
+        //接收最大可透支金额
+        $max_over_money = Request::param('max_over_money');
+        //可缴费时间
+        $is_pay_day = Request::param('is_pay_day');
+        //未缴费是否允许订餐
+        $is_order = Request::param('is_order');
+        //提醒时间
+        $remind_time = Request::param('remind_time');
+        //提醒频率
+        $remind_rate = Request::param('remind_rate');
+        $data = [
+            'state' => $state,
+            'update_time' => $update_time,
+            'max_over_money' => $max_over_money,
+            'is_pay_day' => $is_pay_day,
+            'is_order' => $is_order,
+            'remind_time' => $remind_time,
+            'remind_rate' => $remind_rate
+        ];
+        $data = NextmonthPaySettingT::where('id', $id)
+            ->update($data);
         if ($data > 0) {
             return json(new SuccessMessage());
         } else {
-            throw new AuthException(['msg' => '更改失败']);
+            throw new UpdateException();
         }
     }
 
     /**
      * 缴费
      */
-    public function payMoney(){
+    public function payMoney()
+    {
         //员工id
-        $staff_id=Request::param('staff_id');
+        $staff_id = Request::param('staff_id');
         //公司id
-        $company_id=Request::param('company_id');
+        $company_id = Request::param('company_id');
         //员工手机号
-        $phone=Request::param('phone');
+        $phone = Request::param('phone');
         //欠费时间
-        $pay_date=Request::param('pay_date');
+        $pay_date = Request::param('pay_date');
         //备注
-        $pay_remark=Request::param('pay_remark');
+        $pay_remark = Request::param('pay_remark');
         //缴费时间
-        $pay_time=date('Y-m-d H:i:s');
+        $pay_time = date('Y-m-d H:i:s');
         //更新时间
-        $update_time=date('Y-m-d H:i:s');
+        $update_time = date('Y-m-d H:i:s');
         //欠费总金额
-        $pay_money=Request::param('pay_money');
+        $pay_money = Request::param('pay_money');
         //管理员id
-        $admin_id=Request::param('admin_id');
+        $admin_id = Request::param('admin_id');
         //员工姓名
-        $username=Request::param('username');
+        $username = Request::param('username');
 
-        $data=NextmonthPayT::where(['staff_id'=>$staff_id,'company_id'=>$company_id,'phone'=>$phone,'pay_date'=>$pay_date,'state'=>2])
-            ->update(['pay_method'=>2,'pay_time'=>$pay_time,'update_time'=>$update_time,'pay_remark'=>$pay_remark,'state'=>1]);
+        $data = NextmonthPayT::where(['staff_id' => $staff_id, 'company_id' => $company_id, 'phone' => $phone, 'pay_date' => $pay_date, 'state' => 2])
+            ->update(['pay_method' => 2, 'pay_time' => $pay_time, 'update_time' => $update_time, 'pay_remark' => $pay_remark, 'state' => 1]);
         //生成订单编号
-        $order_num=makeOrderNo();
+        $order_num = makeOrderNo();
         //平衡支付表
-        $dt=[
-            'company_id'=>$company_id,
-            'u_id'=>$admin_id,
-            'money'=>$pay_money,
-            'order_num'=>$order_num,
-            'method_id'=>2,
-            'status'=>'paid',
-            'create_time'=>date('Y-m-d H:i:s'),
-            'state'=>1,
-            'paid_at'=>time(),
-            'staff_id'=>$staff_id,
-            'update_time'=>$update_time,
-            'type'=>'recharge',
-            'order_id'=>0,
-            'refund'=>2,
-            'outsider'=>2,
-            'username'=>$username,
-            'phone'=>$phone,
-            'times'=>'one'
+        $dt = [
+            'company_id' => $company_id,
+            'u_id' => $admin_id,
+            'money' => $pay_money,
+            'order_num' => $order_num,
+            'method_id' => 2,
+            'status' => 'paid',
+            'create_time' => date('Y-m-d H:i:s'),
+            'state' => 1,
+            'paid_at' => time(),
+            'staff_id' => $staff_id,
+            'update_time' => $update_time,
+            'type' => 'recharge',
+            'order_id' => 0,
+            'refund' => 2,
+            'outsider' => 2,
+            'username' => $username,
+            'phone' => $phone,
+            'times' => 'one'
         ];
-        $pay_data=PayT::create($dt);
+        $pay_data = PayT::create($dt);
 
-        if($pay_data ){
+        if ($pay_data) {
             return json(new SuccessMessage());
 
-        }else{
+        } else {
             throw new SaveException();
         }
 
     }
+
     /**
      * 批量缴费
      */
@@ -187,7 +210,7 @@ class NextMonthPay extends BaseController
         //批量传入员工id
         $staff_ids=Request::param('staff_ids');
         //公司id
-        $company_id=Request::param('company_id');
+        $company_ids=Request::param('company_id');
         //员工手机号
         $phones=Request::param('phones');
         //欠费时间
@@ -210,14 +233,15 @@ class NextMonthPay extends BaseController
         $pay_date=explode(',',$pay_dates);
         $pay_money=explode(',',$pay_moneys);
         $username=explode(',',$usernames);
+        $company_id=explode(',',$company_ids);
         foreach ($staff_id as $k1=>$v1){
-            $data=NextmonthPayT::where(['state'=>2,'staff_id'=>$staff_id[$k1],'company_id'=>$company_id,'phone'=>$phone[$k1],'pay_date'=>$pay_date[$k1]])
+            $data=NextmonthPayT::where(['state'=>2,'staff_id'=>$staff_id[$k1],'company_id'=>$company_id[$k1],'phone'=>$phone[$k1],'pay_date'=>$pay_date[$k1]])
                 ->update(['state'=>1,'pay_method'=>2,'pay_time'=>$pay_time,'update_time'=>$update_time,'pay_remark'=>$pay_remark]);
             //生成订单编号
             $order_num=makeOrderNo();
             //平衡支付
             $dt=[
-                'company_id'=>$company_id,
+                'company_id'=>$company_id[$k1],
                 'u_id'=>$admin_id,
                 'money'=>$pay_money[$k1],
                 'order_num'=>$order_num,
@@ -246,4 +270,16 @@ class NextMonthPay extends BaseController
 
     }
 
+    /**
+     * 导出后台查询列表
+     */
+    public function nextMonthOutput($company_id = 0, $department_id = 0, $status = 0, $pay_method = 0,
+                                    $username = '', $phone = '')
+    {
+
+        $time_begin = Request::param('time_begin');
+        $time_end = Request::param('time_end');
+        $statistic = (new NextMonthPayService())->exportNextMonthPayStatistic($time_begin, $time_end, $company_id, $department_id, $status, $pay_method, $username, $phone);
+        return json(new SuccessMessageWithData(['data' => $statistic]));
+    }
 }
