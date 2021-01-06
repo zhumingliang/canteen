@@ -126,7 +126,8 @@ class SendTemplate
             $fail = [];
 
             foreach ($info as $k => $v) {
-                echo 1;
+                LogService::saveJob(1);
+
                 LogService::saveJob($v);
                 $data = [
                     'first' => "您好，" . $v['pay_date'] . "月份缴费账单已经生成",
@@ -134,7 +135,8 @@ class SendTemplate
                     'keyword2' => date('Y') . '年' . date('m') . '月' . $v['pay_begin_date'] . '日' . '到' . date('Y') . '年' . date('m') . '月' . $v['pay_end_date'] . '日',
                     'remark' => "请您及时缴费"
                 ];
-              echo 2;
+                LogService::saveJob(2);
+
                 if (!empty($v['openid'])) {
                     $res = (new Template())->send($v['openid'], $templateId, $url, $data);
                     if (empty($res['errcode']) || $res['errcode'] != 0) {
@@ -142,7 +144,7 @@ class SendTemplate
                         array_push($fail, $data);
                     }
                 }
-                echo 3;
+                LogService::saveJob(3);
 
             }
             if (count($fail)) {
