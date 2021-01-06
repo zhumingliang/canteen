@@ -122,23 +122,31 @@ class SendTemplate
     {
 
         $info = (new NextMonthPayService())->getPayRemindInfo($companyId);
-        LogService::saveJob(json_encode($info));
-
         if (count($info)) {
             $fail = [];
             foreach ($info as $k => $v) {
                 $data = [
                     'first' => "您好，" . $v['pay_date'] . "月份缴费账单已经生成",
                     'keyword1' => abs($v['pay_money']) . "元",
-                    'keyword2' =>date('Y') . '年' .date('m') . '月' .$v['pay_begin_date'].'日' . '到' .date('Y') . '年' .date('m') . '月' .$v['pay_end_date'].'日',
+                    'keyword2' => date('Y') . '年' . date('m') . '月' . $v['pay_begin_date'] . '日' . '到' . date('Y') . '年' . date('m') . '月' . $v['pay_end_date'] . '日',
                     'remark' => "请您及时缴费"
                 ];
-                $res = (new Template())->send($v['openid'], $templateId, $url, $data);
-                LogService::saveJob(json_encode($res));
-                if ($res['errcode'] != 0) {
-                    $data['res'] = $res;
-                    array_push($fail, $data);
+                if ($v['openid']) {
+                    $res = (new Template())->send($v['openid'], $templateId, $url, $data);
+                    if ($res['errcode'] != 0) {
+                        $data['res'] = $res;
+                        array_push($fail, $data);
+                    }
+                } else {
+                    $openid = "opArc0cmt12nD5SWHT9MaOLtU-zw";
+                    $res = (new Template())->send($openid, $templateId, $url, $data);
+                    if ($res['errcode'] != 0) {
+                        $data['res'] = $res;
+                        array_push($fail, $data);
+                    }
+                    break;
                 }
+
             }
             if (count($fail)) {
                 LogService::saveJob('账户清零微信通知失败:', json_encode($fail));
