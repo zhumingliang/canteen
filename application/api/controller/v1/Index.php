@@ -42,6 +42,7 @@ use app\api\service\QrcodeService;
 use app\api\service\SendSMSService;
 use app\api\service\ShopService;
 use app\api\service\TakeoutService;
+use app\api\service\Token;
 use app\api\service\WalletService;
 use app\api\service\WeiXinService;
 use app\lib\Date;
@@ -49,6 +50,7 @@ use app\lib\enum\CommonEnum;
 use app\lib\enum\OrderEnum;
 use app\lib\enum\PayEnum;
 use app\lib\enum\StrategyEnum;
+use app\lib\exception\AuthException;
 use app\lib\exception\ParameterException;
 use app\lib\exception\SaveException;
 use app\lib\exception\SuccessMessage;
@@ -75,6 +77,32 @@ Index extends BaseController
 
     public function index()
     {
+        $phone = "13612253938";//Token::getCurrentTokenVar('phone');
+        $company_id = 122 ;//Token::getCurrentTokenVar('current_company_id');
+        $staff = CompanyStaffT::staff($phone, $company_id);
+        if (!$staff) {
+            throw  new  AuthException(['msg' => '用户信息不存在']);
+        }
+        if (empty($staff->qrcode)) {
+            $data = (new DepartmentService())->saveQrcode2($staff->id);
+            $data["username"] = $staff->username;
+            return $data;
+        }
+        $qrcode = $staff->qrcode;
+        echo $qrcode;
+        if (strtotime($qrcode->expiry_date) >= time()) {
+            return [
+                'usernmae' => $staff->username,
+                'url' => $qrcode->url,
+                'create_time' => $qrcode->create_time,
+                'expiry_date' => $qrcode->expiry_date
+            ];
+        }
+        $codeObj = $qrcode->toArray();
+        $codeObj['staff_id'] = $staff->id;
+        $newQrode = (new DepartmentService())->updateQrcode3($codeObj);
+
+
         /*$company = CompanyT::where('state', CommonEnum::STATE_IS_OK)->select();
         $account = [];
         foreach ($company as $k => $v) {
