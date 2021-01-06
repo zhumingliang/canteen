@@ -124,7 +124,9 @@ class SendTemplate
         $info = (new NextMonthPayService())->getPayRemindInfo($companyId);
         if (count($info)) {
             $fail = [];
+
             foreach ($info as $k => $v) {
+                LogService::saveJob(json_encode($v));
                 $data = [
                     'first' => "您好，" . $v['pay_date'] . "月份缴费账单已经生成",
                     'keyword1' => abs($v['pay_money']) . "元",
