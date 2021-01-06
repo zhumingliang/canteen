@@ -122,6 +122,8 @@ class SendTemplate
     {
 
         $info = (new NextMonthPayService())->getPayRemindInfo($companyId);
+        LogService::saveJob(json_encode($info));
+
         if (count($info)) {
             $fail = [];
             foreach ($info as $k => $v) {
