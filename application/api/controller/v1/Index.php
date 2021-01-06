@@ -24,6 +24,7 @@ use app\api\model\OrderUnusedV;
 use app\api\model\PayNonghangConfigT;
 use app\api\model\PayT;
 use app\api\model\RechargeCashT;
+use app\api\model\RechargeSupplementT;
 use app\api\model\RechargeV;
 use app\api\model\StaffCardT;
 use app\api\model\StaffQrcodeT;
@@ -77,32 +78,12 @@ Index extends BaseController
 
     public function index()
     {
-        $phone = "13612253938";//Token::getCurrentTokenVar('phone');
-        $company_id = 122 ;//Token::getCurrentTokenVar('current_company_id');
-        $staff = CompanyStaffT::staff($phone, $company_id);
-        if (!$staff) {
-            throw  new  AuthException(['msg' => '用户信息不存在']);
-        }
-        if (empty($staff->qrcode)) {
-            $data = (new DepartmentService())->saveQrcode2($staff->id);
-            $data["username"] = $staff->username;
-            return $data;
-        }
-        $qrcode = $staff->qrcode;
-        echo $qrcode;
-        if (strtotime($qrcode->expiry_date) >= time()) {
-            return [
-                'usernmae' => $staff->username,
-                'url' => $qrcode->url,
-                'create_time' => $qrcode->create_time,
-                'expiry_date' => $qrcode->expiry_date
-            ];
-        }
-        $codeObj = $qrcode->toArray();
-        $codeObj['staff_id'] = $staff->id;
-        $newQrode = (new DepartmentService())->updateQrcode3($codeObj);
-
-
+        $company_id = 122;
+        $admin_id = 1;
+        $data = (new ExcelService())->saveExcel('$staffs_excel');
+        $dataList = (new WalletService())->prefixSupplementUploadData($company_id, $admin_id, $data);
+      print_r($dataList);
+       // $cash = (new RechargeSupplementT())->saveAll($dataList);
         /*$company = CompanyT::where('state', CommonEnum::STATE_IS_OK)->select();
         $account = [];
         foreach ($company as $k => $v) {

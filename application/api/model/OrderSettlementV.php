@@ -304,9 +304,6 @@ class OrderSettlementV extends Model
                     ->leftJoin('canteen_company_department_t c', '`b`.`d_id` = `c`.`id`')
                     ->leftJoin('canteen_shop_t d', '`a`.`shop_id` = `d`.`id`')
                     ->where(function ($query) use ($company_ids, $canteen_id, $dinner_id) {
-                        if (!empty($dinner_id)) {
-                            $query->where('a.dinner_id', $dinner_id);
-                        } else {
                             if (!empty($canteen_id)) {
                                 $query->where('a.shop_id', $canteen_id);
                             } else {
@@ -316,7 +313,6 @@ class OrderSettlementV extends Model
                                     $query->where('a.company_id', $company_ids);
                                 }
                             }
-                        }
 
                     })
                     ->where('a.create_time', '>=', $time_begin)
