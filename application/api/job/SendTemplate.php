@@ -131,25 +131,17 @@ class SendTemplate
                     'keyword2' => date('Y') . '年' . date('m') . '月' . $v['pay_begin_date'] . '日' . '到' . date('Y') . '年' . date('m') . '月' . $v['pay_end_date'] . '日',
                     'remark' => "请您及时缴费"
                 ];
-                if ($v['openid']) {
+                if (!empty($v['openid'])) {
                     $res = (new Template())->send($v['openid'], $templateId, $url, $data);
-                    if ($res['errcode'] != 0) {
+                    if (empty($res['errcode']) || $res['errcode'] != 0) {
                         $data['res'] = $res;
                         array_push($fail, $data);
                     }
-                } else {
-                    $openid = "opArc0cmt12nD5SWHT9MaOLtU-zw";
-                    $res = (new Template())->send($openid, $templateId, $url, $data);
-                    if ($res['errcode'] != 0) {
-                        $data['res'] = $res;
-                        array_push($fail, $data);
-                    }
-                    break;
                 }
 
             }
             if (count($fail)) {
-                LogService::saveJob('账户清零微信通知失败:', json_encode($fail));
+                LogService::saveJob('次月缴费微信通知失败:', json_encode($fail));
             }
         }
 
