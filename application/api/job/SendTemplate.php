@@ -46,7 +46,7 @@ class SendTemplate
                 LogService::saveJob("<warn>微信通知队列已经重试超过3次，现在已经删除该任务" . "</warn>\n");
                 $job->delete();
             } else {
-                $job->release(3); //重发任务
+                $job->release(1); //重发任务
             }
         }
     }
@@ -120,23 +120,19 @@ class SendTemplate
 
     public function sendPaymentTemplate($companyId, $templateId, $url)
     {
+        LogService::saveJob($companyId.'-'.$templateId.'-'.$url);
 
         $info = (new NextMonthPayService())->getPayRemindInfo($companyId);
         if (count($info)) {
             $fail = [];
 
             foreach ($info as $k => $v) {
-                LogService::saveJob(1);
-
-                LogService::saveJob(json_encode($v));
                 $data = [
                     'first' => "您好，" . $v['pay_date'] . "月份缴费账单已经生成",
                     'keyword1' => abs($v['pay_money']) . "元",
                     'keyword2' => date('Y') . '年' . date('m') . '月' . $v['pay_begin_date'] . '日' . '到' . date('Y') . '年' . date('m') . '月' . $v['pay_end_date'] . '日',
                     'remark' => "请您及时缴费"
                 ];
-                LogService::saveJob(2);
-
                 if (!empty($v['openid'])) {
                     $res = (new Template())->send($v['openid'], $templateId, $url, $data);
                     if (empty($res['errcode']) || $res['errcode'] != 0) {
@@ -144,8 +140,6 @@ class SendTemplate
                         array_push($fail, $data);
                     }
                 }
-                LogService::saveJob(3);
-
             }
             if (count($fail)) {
                 LogService::saveJob('次月缴费微信通知失败:', json_encode($fail));
