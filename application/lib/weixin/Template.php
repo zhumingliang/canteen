@@ -7,7 +7,7 @@ namespace app\lib\weixin;
 use app\api\service\LogService;
 use EasyWeChat\Factory;
 
-class Template extends Base
+class Template //extends Base
 {
 
     public function send($openid, $template_id, $url, $data)
