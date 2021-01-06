@@ -157,8 +157,11 @@ class NextMonthPayService
         $paySetting = NextmonthPaySettingT::where('c_id', $company_id)
             ->where('state', CommonEnum::STATE_IS_OK)
             ->field('is_pay_day')
-            ->find();
-        $payDayArr = explode('-', $paySetting->is_pay_day);
+            ->find()->toArray();
+        if (empty($paySetting['is_pay_day'])){
+            return  [];
+        }
+        $payDayArr = explode('-', $paySetting['is_pay_day']);
         $payBeginDay = $payDayArr[0];
         $payEndDay = $payDayArr[1];
         //判断是否在可缴费时间

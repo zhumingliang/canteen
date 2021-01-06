@@ -41,13 +41,15 @@ class SendTemplate
             $job->delete();
         } else {
             LogService::saveJob("<warn>微信通知队列任务执行失败！" . "</warn>\n", json_encode($data));
-            if ($job->attempts() > 3) {
-                //通过这个方法可以检查这个任务已经重试了几次了
-                LogService::saveJob("<warn>微信通知队列已经重试超过3次，现在已经删除该任务" . "</warn>\n");
-                $job->delete();
-            } else {
-                $job->release(1); //重发任务
-            }
+            $job->delete();
+
+            /* if ($job->attempts() > 3) {
+                 //通过这个方法可以检查这个任务已经重试了几次了
+                 LogService::saveJob("<warn>微信通知队列已经重试超过3次，现在已经删除该任务" . "</warn>\n");
+                 $job->delete();
+             } else {
+                 $job->release(1); //重发任务
+             }*/
         }
     }
 
@@ -120,12 +122,9 @@ class SendTemplate
 
     public function sendPaymentTemplate($companyId, $templateId, $url)
     {
-        LogService::saveJob($companyId.'-'.$templateId.'-'.$url);
-
         $info = (new NextMonthPayService())->getPayRemindInfo($companyId);
         if (count($info)) {
             $fail = [];
-
             foreach ($info as $k => $v) {
                 $data = [
                     'first' => "您好，" . $v['pay_date'] . "月份缴费账单已经生成",

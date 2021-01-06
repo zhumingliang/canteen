@@ -37,6 +37,7 @@ use app\api\service\CompanyService;
 use app\api\service\ConsumptionService;
 use app\api\service\DepartmentService;
 use app\api\service\ExcelService;
+use app\api\service\NextMonthPayService;
 use app\api\service\NoticeService;
 use app\api\service\OrderService;
 use app\api\service\QrcodeService;
@@ -78,15 +79,8 @@ Index extends BaseController
 
     public function index()
     {
-        $config = [
-            'app_id' => config('wechat.official_account.default.app_id'),
-            'secret' => config('wechat.official_account.default.secret'),
-            'token' => 'canteen',
-            'aes_key' => config('wechat.official_account.default.aes_key'),
-            // 指定 API 调用返回结果的类型：array(default)/collection/object/raw/自定义类名
-            'response_type' => 'array',
-        ];
-        print_r($config);
+        $info = (new NextMonthPayService())->getPayRemindInfo(69);
+
 
         // $cash = (new RechargeSupplementT())->saveAll($dataList);
         /*$company = CompanyT::where('state', CommonEnum::STATE_IS_OK)->select();
