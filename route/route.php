@@ -137,6 +137,9 @@ Route::get('api/:version/foods/menu', 'api/:version.Food/foodsForOfficialMenu');
 Route::get('api/:version/food', 'api/:version.Food/food');
 Route::get('api/:version/food/info/comment', 'api/:version.Food/infoToComment');
 Route::post('api/:version/food/material/update', 'api/:version.Food/updateMaterial');
+Route::post('api/:version/food/automatic/save', 'api/:version.Food/saveAutoConfig');
+Route::post('api/:version/food/automatic/update', 'api/:version.Food/updateAutoConfig');
+Route::get('api/:version/food/automatic', 'api/:version.Food/automatic');
 
 Route::post('api/:version/material/save', 'api/:version.Material/save');
 Route::post('api/:version/material/update', 'api/:version.Material/update');

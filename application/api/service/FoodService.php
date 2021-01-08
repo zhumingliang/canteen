@@ -462,10 +462,9 @@ class FoodService extends BaseService
             foreach ($cancel as $k => $v) {
                 array_push($data, [
                     'id' => $v,
-                    'state' => CommonEnum::STATE_IS_OK
+                    'state' => CommonEnum::STATE_IS_FAIL
                 ]);
             }
-
         }
         if (count($data)) {
             $save = (new AutomaticFoodT())->saveAll($data);
@@ -473,6 +472,12 @@ class FoodService extends BaseService
                 throw new SaveException(['msg' => "自动上架菜品明细保存失败"]);
             }
         }
+    }
+
+    public function automatic($id)
+    {
+        $auto = AutomaticT::info($id);
+        return $auto;
     }
 
 }

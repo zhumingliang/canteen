@@ -419,12 +419,101 @@ class Food extends BaseController
         return json(new SuccessMessageWithData(['data' => $foods]));
     }
 
+    /**
+     * @api {POST} /api/v1/food/automatic/save  微信端--自动上架--新增配置
+     * @apiGroup   Official
+     * @apiVersion 3.0.0
+     * @apiDescription    微信端--自动上架--新增配置
+     * @apiExample {post}  请求样例:
+     *    {
+     *       "canteen_id": 1,
+     *       "dinner_id": 5,
+     *       "auto_week": 5,
+     *       "repeat_week": 1,
+     *       "detail":{"add":[{"menu_id":1,"foods":[1,2,3]}]}
+     *     }
+     * @apiParam (请求参数说明) {int} canteen_id  饭堂id
+     * @apiParam (请求参数说明) {int} dinner_id   餐次id
+     * @apiParam (请求参数说明) {int} auto_week 每周菜品上架时间：0-6：周日-周六
+     * @apiParam (请求参数说明) {int} repeat_week 每周菜品重复上架时间：0-6：周日-周六
+     * @apiParam (请求参数说明) {string} detail  上架菜品内容
+     * @apiParam (请求参数说明) {string} add  上架菜品信息
+     * @apiParam (请求参数说明) {int} menu_id  菜品id
+     * @apiParam (请求参数说明) {string} foods  菜品信息：菜品id集合
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     */
     public function saveAutoConfig()
     {
         $params = Request::param();
         (new FoodService())->saveAutoConfig($params);
         return json(new SuccessMessage());
 
+    }
+
+    /**
+     * @api {POST} /api/v1/food/automatic/save  微信端--自动上架--修改配置
+     * @apiGroup   Official
+     * @apiVersion 3.0.0
+     * @apiDescription    微信端--自动上架--修改配置
+     * @apiExample {post}  请求样例:
+     *    {
+     *       "id": 1,
+     *       "auto_week": 5,
+     *       "repeat_week": 1,
+     *       "detail":{"add":[{"menu_id":1,"foods":[1,2,3]}],"cancel":[1,2]}
+     *     }
+     * @apiParam (请求参数说明) {int} id 配置id
+     * @apiParam (请求参数说明) {int} auto_week 每周菜品上架时间：0-6：周日-周六
+     * @apiParam (请求参数说明) {int} repeat_week 每周菜品重复上架时间：0-6：周日-周六
+     * @apiParam (请求参数说明) {string} detail  上架菜品内容
+     * @apiParam (请求参数说明) {string} add  上架菜品信息
+     * @apiParam (请求参数说明) {int} menu_id  菜品id
+     * @apiParam (请求参数说明) {string} foods  菜品信息：菜品id集合
+     * @apiParam (请求参数说明) {string} cancel  取消菜品集合：注意不是菜品id 是菜品和配置关联id
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     */
+    public function updateAutoConfig()
+    {
+        $params = Request::param();
+        (new FoodService())->updateAutoConfig($params);
+        return json(new SuccessMessage());
+
+    }
+
+    /**
+     * @api {GET} /api/v1/food/automatic 微信端-自动上架-获取饭堂所有配置
+     * @apiGroup  Official
+     * @apiVersion 3.0.0
+     * @apiDescription 微信端-自动上架-获取饭堂所有配置
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/food/automatic?canteen_id=107
+     * @apiParam (请求参数说明) {int} canteen_id 饭堂id
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":[{"id":1,"canteen_id":107,"dinner_id":107,"auto_week":1,"repeat_week":2,"state":1,"foods":[{"id":1,"food_id":86,"auto_id":1,"menu_id":82,"state":1,"create_time":"2021-01-07 11:09:22","update_time":"2021-01-07 11:09:22"},{"id":2,"food_id":90,"auto_id":1,"menu_id":82,"state":1,"create_time":"2021-01-07 11:09:22","update_time":"2021-01-07 11:09:22"}]}]}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {String} msg 信息描述
+     * @apiSuccess (返回参数说明) {int} id 配置id
+     * @apiSuccess (返回参数说明) {int} canteen_id  饭堂id
+     * @apiSuccess (返回参数说明) {int} dinner_id   餐次id
+     * @apiSuccess (返回参数说明) {int} auto_week 每周菜品上架时间：0-6：周日-周六
+     * @apiSuccess (返回参数说明) {int} repeat_week 每周菜品重复上架时间：0-6：周日-周六
+     * @apiSuccess (返回参数说明) {obj} foods  自动上架菜品
+     * @apiSuccess (返回参数说明) {int} id  自动配置和菜品关联id
+     * @apiSuccess (返回参数说明) {int} id  自动配置和菜品关联id
+     * @apiSuccess (返回参数说明) {int} menu_id  菜品归属菜单id
+     * @apiSuccess (返回参数说明) {int} food_id  菜品id
+     */
+    public function automatic()
+    {
+        $canteenId = Request::param('canteen_id');
+        $info = (new FoodService())->automatic($canteenId);
+        return json(new SuccessMessageWithData(['data' => $info]));
     }
 
 
