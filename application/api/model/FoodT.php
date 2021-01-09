@@ -23,13 +23,12 @@ class FoodT extends BaseModel
         return $this->hasMany('FoodCommentT', 'f_id', 'id');
     }
 
-    public static function foodsForOfficialManager($menu_id, $food_type, $page, $size)
+    public static function foodsForOfficialManager($canteenId)
     {
-        $foods = self::where('m_id', $menu_id)
-            ->where('f_type', $food_type)
+        $foods = self::where('c_id', $canteenId)
             ->where('state', CommonEnum::STATE_IS_OK)
-            ->field('id,name,img_url,price,external_price')
-            ->paginate($size, false, ['page' => $page])->toArray();
+            ->field('id,m_id,name,img_url,price,external_price')
+            ->select()->toArray();
         return $foods;
     }
 
@@ -37,10 +36,10 @@ class FoodT extends BaseModel
     {
         $info = self::where('id', $food_id)
             ->with([
-                'comments'=> function ($query) {
+                'comments' => function ($query) {
                     $query->field('id,u_id,f_id,taste,service,remark')
                         ->order('create_time desc')
-                        ->limit(0,3);
+                        ->limit(0, 3);
                 },
             ])
             ->field('id,name,price,external_price,img_url,chef')

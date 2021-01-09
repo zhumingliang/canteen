@@ -13,6 +13,7 @@ use app\api\model\FoodDayStateV;
 use app\api\model\FoodMaterialT;
 use app\api\model\FoodT;
 use app\api\model\FoodV;
+use app\api\model\MenuT;
 use app\lib\enum\CommonEnum;
 use app\lib\enum\FoodEnum;
 use app\lib\exception\ParameterException;
@@ -215,35 +216,101 @@ class FoodService extends BaseService
 
     }
 
-    public function foodsForOfficialManager($menu_id, $food_type, $day, $canteen_id, $page, $size)
+    public function foodsForOfficialManager($canteenId, $dinnerId, $day)
     {
-        $foods = FoodT::foodsForOfficialManager($menu_id, $food_type, $page, $size);
-        $foods['data'] = $this->prefixFoodDayStatus($foods['data'], $day, $canteen_id);
-        return $foods;
+        //获取菜单配置
+        $menus = MenuT::dinnerMenusCategory($dinnerId);
+        //获取所有菜品信息
+        $foods = FoodT::foodsForOfficialManager($canteenId);
+        //获取自动上架配置
+        $auto = AutomaticT::infoToDinner($canteenId, $dinnerId);
+        //获取选定日期已上架的菜品
+        $foodDay = FoodDayStateT::FoodStatus($canteenId, $dinnerId, $day);
+
+        return $this->prefixFoodDayStatus($menus, $foods, $auto, $foodDay, $day);
     }
 
-    private function prefixFoodDayStatus($foods, $day, $canteen_id)
+    private function prefixFoodDayStatus($menus, $foods, $auto, $foodDay, $day)
     {
-        if (!count($foods)) {
-            return $foods;
+
+        foreach ($menus as $k => $v) {
+            $menuFood = [];
+            if (count($foods)) {
+                foreach ($foods as $k2 => $v2) {
+                    if ($v['id'] == $v2['m_id']) {
+                        array_push($menuFood, [
+                            'food_id' => $v2['id'],
+                            'name' => $v2['name'],
+                            'img_url' => $v2['img_url'],
+                            'status' => $this->checkFoodStatus($v2['id'], $auto, $foodDay, $day)
+                        ]);
+                        unset($foods[$k2]);
+                        continue;
+                    }
+
+                }
+
+            }
+            $menus[$k]['foods'] = $menuFood;
         }
-        //获取指定时间菜品状态
-        $foodDay = FoodDayStateT::FoodStatus($canteen_id, $day);
-        foreach ($foods as $k => $v) {
-            $status = 2;
-            $default = 2;
-            if (!empty($foodDay)) {
-                foreach ($foodDay as $k2 => $v2) {
-                    if ($v['id'] == $v2['f_id']) {
-                        $status = $v2['status'];
-                        $default = $v2['default'];
+        return $menus;
+
+
+        /* if (!count($foods)) {
+             return $foods;
+         }
+         //获取指定时间菜品状态
+         $foodDay = FoodDayStateT::FoodStatus($canteen_id, $day);
+         foreach ($foods as $k => $v) {
+             $status = 2;
+             $default = 2;
+             if (!empty($foodDay)) {
+                 foreach ($foodDay as $k2 => $v2) {
+                     if ($v['id'] == $v2['f_id']) {
+                         $status = $v2['status'];
+                         $default = $v2['default'];
+                     }
+                 }
+             }
+             $foods[$k]['status'] = $status;
+             $foods[$k]['default'] = $default;
+         }
+         return $foods;*/
+    }
+
+    private function checkFoodStatus($foodId, $auto, $foodDay, $day)
+    {
+        //状态有三种：上架1/待上架2/未上架3
+        //设置了自动上架菜品：待上架/未上架
+        //未设置自动上架菜品：已上架/未上架
+
+        if (!count($auto)) {
+            $status = FoodEnum::STATUS_DOWN;
+            if (count($foodDay)) {
+                foreach ($foodDay as $k => $v) {
+                    if ($foodId == $v['food_id']) {
+                        $status = FoodEnum::STATUS_UP;
+                        break;
                     }
                 }
             }
-            $foods[$k]['status'] = $status;
-            $foods[$k]['default'] = $default;
+            return $status;
         }
-        return $foods;
+
+        $foods = $auto[0]['foods'];
+        $status = FoodEnum::STATUS_DOWN;
+        if (count($foods)) {
+            foreach ($foods as $k => $v) {
+                if ($foodId == $v['food_id']) {
+                    $status = $day == date('Y-m-d') ? FoodEnum::STATUS_UP : FoodEnum::STATUS_READY;
+                    break;
+                }
+
+            }
+        }
+        return $status;
+
+
     }
 
     public function handelFoodsDayStatus($params)

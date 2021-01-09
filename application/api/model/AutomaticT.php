@@ -41,4 +41,21 @@ class AutomaticT extends Model
 
     }
 
+
+    public static function infoToDinner($canteenId,$dinnerId)
+    {
+        $info = self::where('canteen_id', $canteenId)
+            ->where('dinner_id',$dinnerId)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->with([
+                'foods' => function ($query) {
+                    $query->where('state', CommonEnum::STATE_IS_OK);
+                }
+            ])
+            //->hidden(['create_time', 'update_time'])
+            ->select()->toArray();
+        return $info;
+
+    }
+
 }
