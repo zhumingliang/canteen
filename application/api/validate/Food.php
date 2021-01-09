@@ -14,7 +14,7 @@ class Food extends BaseValidate
         'dinner_id' => 'require|isPositiveInteger',
         'f_type' => 'require|in:1,2',
         'food_type' => 'require|in:1,2',
-        'status' => 'require|in:1,2',
+        'status' => 'require|in:1,2,3',
         'default' => 'require|in:1,2',
         'menu_id' => 'require|isPositiveInteger',
         'm_d_id' => 'require|isPositiveInteger',

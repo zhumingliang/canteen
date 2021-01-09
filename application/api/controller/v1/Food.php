@@ -266,17 +266,17 @@ class Food extends BaseController
      * @apiDescription   微信端-菜品管理-菜品状态操作
      * @apiExample {post}  请求样例:
      *    {
-     *       "food_id": 1，
      *       "canteen_id": 1，
+     *       "dinner_id": 1，
+     *       "food_id": 1，
      *       "day": 2019-09-01，
-     *       "status": 1，
-     *       "default": 1，
+     *       "status": 1
      *     }
-     * @apiParam (请求参数说明) {int} food_id  菜品ID
      * @apiParam (请求参数说明) {int} canteen_id  饭堂ID
+     * @apiParam (请求参数说明) {int} dinner_id  餐次id
+     * @apiParam (请求参数说明) {int} food_id  菜品ID
      * @apiParam (请求参数说明) {String} day 日期
-     * @apiParam (请求参数说明) {int} status 菜品状态：1|上架；2|下架
-     * @apiParam (请求参数说明) {int} default 菜品默认状态：1|默认；2|非默认
+     * @apiParam (请求参数说明) {int} status 菜品状态：1:上架；3:下架
      * @apiSuccessExample {json} 返回样例:
      *{"msg":"ok","errorCode":0}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误

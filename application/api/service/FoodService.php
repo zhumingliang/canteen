@@ -19,6 +19,7 @@ use app\lib\enum\FoodEnum;
 use app\lib\exception\ParameterException;
 use app\lib\exception\SaveException;
 use app\lib\exception\UpdateException;
+use Monolog\Handler\IFTTTHandler;
 use think\Db;
 use think\Exception;
 use think\Model;
@@ -278,28 +279,6 @@ class FoodService extends BaseService
             $menus[$k]['foods'] = $menuFood;
         }
         return $menus;
-
-
-        /* if (!count($foods)) {
-             return $foods;
-         }
-         //获取指定时间菜品状态
-         $foodDay = FoodDayStateT::FoodStatus($canteen_id, $day);
-         foreach ($foods as $k => $v) {
-             $status = 2;
-             $default = 2;
-             if (!empty($foodDay)) {
-                 foreach ($foodDay as $k2 => $v2) {
-                     if ($v['id'] == $v2['f_id']) {
-                         $status = $v2['status'];
-                         $default = $v2['default'];
-                     }
-                 }
-             }
-             $foods[$k]['status'] = $status;
-             $foods[$k]['default'] = $default;
-         }
-         return $foods;*/
     }
 
     private function checkFoodStatus($foodId, $auto, $foodDay, $day)
@@ -332,6 +311,16 @@ class FoodService extends BaseService
 
             }
         }
+
+
+        if (count($foodDay)) {
+            foreach ($foodDay as $k => $v) {
+                if ($foodId == $v['food_id']) {
+                    $status = $v['status'];
+                    break;
+                }
+            }
+        }
         return $status;
 
 
@@ -340,52 +329,60 @@ class FoodService extends BaseService
     public function handelFoodsDayStatus($params)
     {
         $day = $params['day'];
-        $food_id = $params['food_id'];
-        $canteen_id = $params['canteen_id'];
-        if (!empty($params['default'])) {
-            if (!$this->checkStatus($food_id, $day, $params['default'])) {
-                throw new SaveException(['msg' => '默认菜式数量已达到最大值']);
-            }
-        }
-        $dayFood = FoodDayStateT::where('f_id', $food_id)
+        $foodId = $params['food_id'];
+        $canteenId = $params['canteen_id'];
+        $dinnerId = $params['dinner_id'];
+
+        //获取自动上架配置
+        $auto = AutomaticT::infoToDinner($canteenId, $dinnerId);
+        $dayFood = FoodDayStateT::where('f_id', $foodId)
             ->where('day', $day)
             ->find();
-
         if (!$dayFood) {
             $data = [
-                'f_id' => $food_id,
-                'canteen_id' => $canteen_id,
+                'f_id' => $foodId,
+                'canteen_id' => $canteenId,
                 'day' => $day,
-                'user_id' => Token::getCurrentUid()
+                'user_id' => Token::getCurrentUid(),
+
             ];
-            if (!empty($params['status'])) {
+            if (!count($auto)) {
                 $data['status'] = $params['status'];
-            }
-            if (!empty($params['default'])) {
-                $data['default'] = $params['default'];
-                if ($params['default'] == CommonEnum::STATE_IS_OK) {
-                    $data['status'] = CommonEnum::STATE_IS_OK;
+            } else {
+                if ($day == date('Y-m-d')) {
+                    $data['status'] = $params['status'];
+                } else {
+                    $data['status'] = $params['status'] == FoodEnum::STATUS_DOWN ? $params['status'] : FoodEnum::STATUS_READY;
                 }
+
             }
+
             if (!FoodDayStateT::create($data)) {
                 throw new SaveException(['msg' => '新增菜品信息状态失败']);
             }
-            return true;
-        }
-        if (!empty($params['status'])) {
-            $dayFood->status = $params['status'];
-        }
-        if (!empty($params['default'])) {
-            $dayFood->default = $params['default'];
-            if ($params['default'] == CommonEnum::STATE_IS_OK) {
-                $dayFood->status = CommonEnum::STATE_IS_OK;
+        } else {
+            if ($params['status'] == FoodEnum::STATUS_DOWN) {
+                $dayFood->status = $params['status'];
+            } else {
+                if (!count($auto)) {
+                    $dayFood->status = $params['status'];
+                } else {
+                    if ($day == date('Y-m-d')) {
+                        $dayFood->status = $params['status'];
+                    } else {
+                        $dayFood->status = $params['status'] == FoodEnum::STATUS_DOWN ? $params['status'] : FoodEnum::STATUS_READY;
+                    }
+
+                }
+            }
+            $dayFood->update_time = date('Y-m-d H:i:s');
+            if (!$dayFood->save()) {
+                throw new UpdateException (['msg' => '修改菜品信息状态失败']);
+
             }
         }
-        $dayFood->update_time = date('Y-m-d H:i:s');
-        if (!$dayFood->save()) {
-            throw new UpdateException (['msg' => '修改菜品信息状态失败']);
 
-        }
+
     }
 
     private function checkStatus($food_id, $day, $status)
