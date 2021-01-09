@@ -241,6 +241,8 @@ class FoodService extends BaseService
                         array_push($menuFood, [
                             'food_id' => $v2['id'],
                             'name' => $v2['name'],
+                            'price' => $v2['price'],
+                            'external_price' => $v2['external_price'],
                             'img_url' => $v2['img_url'],
                             'status' => $this->checkFoodStatus($v2['id'], $auto, $foodDay, $day)
                         ]);
