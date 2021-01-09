@@ -227,7 +227,29 @@ class FoodService extends BaseService
         //获取选定日期已上架的菜品
         $foodDay = FoodDayStateT::FoodStatus($canteenId, $dinnerId, $day);
 
-        return $this->prefixFoodDayStatus($menus, $foods, $auto, $foodDay, $day);
+        $nextAuto = $this->getNextAuto($auto);
+        $data = $this->prefixFoodDayStatus($menus, $foods, $auto, $foodDay, $day);
+        return [
+            'nextAuto' => $nextAuto,
+            'foodData' => $data
+        ];
+    }
+
+    private function getNextAuto($auto)
+    {
+        if (!count($auto)) {
+            return 0;
+        }
+        $autoWeek = $auto[0]['auto_week'];
+        // $repeatWeek = $auto[0]['repeat_week'];
+        $w = date('w');
+        if ($w == $autoWeek) {
+            return date('Y-m-d', strtotime('+7 day', time())) . ' 00:00';
+        } else {
+            return date('Y-m-d', strtotime('+' . (7 - abs($w - $autoWeek)) . ' day', time())) . ' 00:00';
+        }
+
+
     }
 
     private function prefixFoodDayStatus($menus, $foods, $auto, $foodDay, $day)

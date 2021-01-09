@@ -235,9 +235,11 @@ class Food extends BaseController
      * @apiParam (请求参数说明) {int} dinner_id 餐次id
      * @apiParam (请求参数说明) {String} day 日期
      * @apiSuccessExample {json} 返回样例:
-     * {"msg":"ok","errorCode":0,"code":200,"data":[{"id":179,"name":"点心","foods":[{"food_id":228,"name":"芋头糍","status":3},{"food_id":257,"name":"面包","status":3},{"food_id":258,"name":"油条","status":3},{"food_id":259,"name":"果粽","status":3},{"food_id":310,"name":"番薯","status":3},{"food_id":311,"name":"玉米","status":3},{"food_id":332,"name":"凌粉糍","status":3},{"food_id":449,"name":"千层糕","status":3}]},{"id":185,"name":"面类","foods":[{"food_id":226,"name":"面","status":3},{"food_id":233,"name":"蒸河粉","status":3},{"food_id":239,"name":"蒸粉卷","status":3}]},{"id":186,"name":"粥类","foods":[{"food_id":222,"name":"白粥","status":3},{"food_id":260,"name":"金瓜小米鸡蛋粥","status":3},{"food_id":262,"name":"鱼片瘦肉粥","status":3},{"food_id":284,"name":"豆奶","status":3},{"food_id":285,"name":"麦片鸡蛋粥","status":3},{"food_id":328,"name":"皮蛋瘦肉粥","status":3},{"food_id":379,"name":"白果腐竹瘦肉粥","status":3},{"food_id":422,"name":"苦瓜瘦肉粥","status":3}]},{"id":187,"name":"粉类","foods":[{"food_id":227,"name":"龙骨酸菜粉","status":3},{"food_id":234,"name":"老鸡药材汤粉","status":3},{"food_id":240,"name":"莲藕龙骨柴鱼汤粉","status":3},{"food_id":256,"name":"九仔鸭汤粉","status":3},{"food_id":263,"name":"肉丝榨菜粉","status":3},{"food_id":270,"name":"蒸米粉","status":3},{"food_id":273,"name":"肠粉","status":3},{"food_id":283,"name":"茶树菇龙骨汤粉","status":3},{"food_id":304,"name":"菜干龙骨汤粉","status":3},{"food_id":309,"name":"油盐粉","status":3},{"food_id":325,"name":"牛腩粉","status":3},{"food_id":380,"name":"四味龙骨汤粉","status":3}]},{"id":188,"name":"菜类","foods":[]}]}
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"nextAuto":"2021-01-11 00:00","foodData":[{"id":82,"name":"包子","foods":[]},{"id":109,"name":"测试0021","foods":[]}]}}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
      * @apiSuccess (返回参数说明) {String} msg 信息描述
+     * @apiSuccess (返回参数说明) {string} nextAuto 下次自动上架时间：为0 则未设置自动上架
+     * @apiSuccess (返回参数说明) {obj} foodData 菜品信息
      * @apiSuccess (返回参数说明) {int} id 菜类id
      * @apiSuccess (返回参数说明) {int} name 菜类名称
      * @apiSuccess (返回参数说明) {obj} foods 菜品信息
