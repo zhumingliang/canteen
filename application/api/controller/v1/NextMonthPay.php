@@ -294,7 +294,6 @@ class NextMonthPay extends BaseController
         //接收企业id
         $company_id=Request::param('company_id');
         $data=NextmonthPaySettingT::where(['c_id'=>$company_id,'state'=>1])->find();
-        print_r($data);
         if(empty($data)){
             throw new AuthException();
         }
