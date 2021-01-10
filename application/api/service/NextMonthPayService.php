@@ -201,56 +201,107 @@ class NextMonthPayService
         }
     }
 
-
     //导出
-    public function exportNextMonthPayStatistic($time_begin, $time_end, $company_id, $department_id, $status, $pay_method, $username, $phone)
-    {
-        $info = $this->nextMonthOutput($time_begin, $time_end, $company_id, $department_id, $status, $pay_method, $username, $phone);
-        $statistic = $info['statistic'];
-        $header = ['序号', '时间', '部门', '姓名', '手机号码', '应缴费用', '缴费状态', '缴费时间', '缴费途径', '早餐数量', '早餐金额（元）', '午餐数量', '午餐金额（元）', '合计数量', '合计金额（元）', '备注'];
-        $reports = $this->prefixConsumptionStatistic($statistic);
-        $file_name = "缴费查询报表";
+    public function exportNextMonthPayStatistic($time_begin, $time_end, $company_id, $department_id, $status, $pay_method, $username, $phone){
+
+        $statistic=$this->nextMonthOutput($time_begin, $time_end, $company_id, $department_id, $status, $pay_method, $username, $phone);
+
+        $dinner=(new NextmonthPayT())->dinnerNames($company_id);
+        $header = ['序号', '时间', '部门', '姓名', '手机号码','应缴费用','缴费状态','缴费时间','缴费途径','订餐总数量'];
+
+        $header = $this->addDinnerToHeader($header, $dinner);
+
+        $reports = $this->prefixConsumptionStatistic($statistic,$dinner);
+
+        $file_name="缴费查询报表";
         $url = (new ExcelService())->makeExcel($header, $reports, $file_name);
+
         return [
-            'url' => config('setting.domain') . $url
+
+            'url' => 'http://' . $_SERVER['HTTP_HOST'] . $url
         ];
     }
 
-    private function prefixConsumptionStatistic($statistic)
+    private function addDinnerToHeader($header, $dinner)
     {
-        $dataList = [];
-        if (!empty($statistic)) {
-            $endData = $this->addDinnerToStatistic($statistic);
-            foreach ($statistic as $k2 => $v2) {
-                $data = $this->addDinnerToStatistic($statistic);
-                if (key_exists($v2['dinner_id'] . 'count', $data)) {
-                    $data[$v2['dinner_id'] . 'count'] = $v2['order_count'];
-                    $endData[$v2['dinner_id'] . 'count'] += $v2['order_count'];
-                }
-                if (key_exists($v2['dinner_id'] . 'money', $data)) {
-                    $data[$v2['dinner_id'] . 'money'] = $v2['order_money'];
-                    $endData[$v2['dinner_id'] . 'money'] += $v2['order_money'];
-                }
-
-            }
-            array_push($dataList, $data);
+        foreach ($dinner as $k => $v) {
+            array_push($header, $v['dinner'] . "数量", $v['dinner'] . '金额（元）');
         }
-        array_push($dataList, $endData);
-        return $dataList;
+
+        return $header;
+
     }
 
-    private function addDinnerToStatistic($statistic)
+    private function prefixConsumptionStatistic($statistic,$dinner){
+        $dataList=[];
+
+        if(!empty($statistic)){
+            $endData = $this->addDinnerToStatistic($dinner);
+            foreach ($statistic as $k=>$v){
+                $dinner_statistic = array_key_exists('dinnerStatistic', $v) ? $v['dinnerStatistic'] : $v['dinner_statistic'];
+                $data = $this->addDinnerToStatistic($dinner);
+                $data['number'] = $k + 1;
+                $data['pay_date']=empty($v['pay_date']) ? '':$v['pay_date'];
+                $data['department']=empty($v['department']) ? '':$v['department'];
+                $data['username']=empty($v['username']) ? '':$v['username'];
+                $data['phone']=empty($v['phone']) ? '':$v['phone'];
+                $data['pay_money']=empty($v['pay_money']) ? '':$v['pay_money'];
+                $data['state']=empty($v['state']) ? '':$v['state'];
+                $data['pay_time']=empty($v['pay_time']) ? '':$v['pay_time'];
+                $data['pay_method']=empty($v['pay_method']) ? '':$v['pay_method'];
+                if (empty($dinner_statistic)) {
+                    continue;
+                }
+                foreach ($dinner_statistic as $k3 => $v3) {
+                    if (key_exists($v3['dinner_id'] . 'count', $data)) {
+                        $data[$v3['dinner_id'] . 'count'] = $v3['order_count'];
+                        $endData[$v3['dinner_id'] . 'count'] += $v3['order_count'];
+
+                    }
+
+                    if (key_exists($v3['dinner_id'] . 'money', $data)) {
+                        $data[$v3['dinner_id'] . 'money'] = $v3['order_money'];
+                        $endData[$v3['dinner_id'] . 'money'] += $v3['order_money'];
+
+                    }
+
+                }
+                $data['count']=empty($v['count']) ? 0 :$v['count'];
+
+
+                array_push($dataList, $data);
+            }
+
+        }
+        $endData['count']=array_sum(array_column($dataList,'count'));
+        array_push($dataList, $endData);
+        return $dataList;
+
+    }
+
+    private function addDinnerToStatistic($dinner)
     {
         $data = [
             'number' => '总合计',
-            'statistic' => ''
+            'pay_date' => '',
+            'department'=>'',
+            'username'=>'',
+            'phone'=>'',
+            'pay_money'=>'',
+            'state'=>'',
+            'pay_time'=>'',
+            'pay_method'=>'',
+            'count'=>''
+
         ];
-        foreach ($statistic as $k => $v) {
-            $data[$v['id'] . 'count'] = 0;
-            $data[$v['id'] . 'money'] = 0;
+        foreach ($dinner as $k => $v) {
+            $data[$v['dinner_id'] . 'count'] = 0;
+            $data[$v['dinner_id'] . 'money'] = 0;
         }
         return $data;
+
     }
+
     public function nextMonthOutput($time_begin, $time_end, $company_id, $department_id, $status,
                                     $pay_method, $username, $phone)
     {
@@ -258,20 +309,19 @@ class NextMonthPayService
             $pay_method, $username, $phone);
         $statistic = (new NextmonthPayT())->dinnerStatistic($time_begin, $time_end, $company_id, $department_id, $status,
             $pay_method, $username, $phone);
-        $data = $userList['data'];
+        $data = $userList;
         foreach ($data as $k => $v) {
             $dinnerStatistic = [];
             foreach ($statistic as $k2 => $v2) {
                 if ($v['staff_id'] == $v2['staff_id'] && $v['pay_date'] == $v2['pay_date']) {
+
                     array_push($dinnerStatistic, $statistic[$k2]);
                     unset($statistic[$k2]);
                 }
                 $data[$k]['dinnerStatistic'] = $dinnerStatistic;
             }
         }
-        $userList['data'] = $data;
-        return [
-            'statistic' => $userList
-        ];
+
+        return $data;
     }
 }

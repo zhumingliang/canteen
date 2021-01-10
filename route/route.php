@@ -369,3 +369,4 @@ Route::get('api/:version/nextmonthpay/remind', 'api/:version.NextMonthPay/remind
 Route::post('api/:version/nextmonthpay/payMoney', 'api/:version.NextMonthPay/payMoney');
 Route::post('api/:version/nextmonthpay/payMoney', 'api/:version.NextMonthPay/payMoney');
 Route::post('api/:version/nextmonthpay/payMoneyAll', 'api/:version.NextMonthPay/payMoneyAll');
+Route::post('api/:version/nextmonthpay/selectPaySetting', 'api/:version.NextMonthPay/selectPaySetting');

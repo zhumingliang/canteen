@@ -29,6 +29,7 @@ class NextMonthPay extends BaseController
         return json(new SuccessMessage());
     }
     //--end
+
     /**
      * CMS管理端-缴费管理-缴费查询
      */
@@ -271,15 +272,26 @@ class NextMonthPay extends BaseController
     }
 
     /**
-     * 导出后台查询列表
+     * 导出后台查询列表(Route::post('api/:version/nextmonthpay/nextMonthOutput', 'api/:version.NextMonthPay/nextMonthOutput');)
      */
     public function nextMonthOutput($company_id = 0, $department_id = 0, $status = 0, $pay_method = 0,
-                                    $username = '', $phone = '')
-    {
+                                    $username = '', $phone = ''){
 
         $time_begin = Request::param('time_begin');
         $time_end = Request::param('time_end');
         $statistic = (new NextMonthPayService())->exportNextMonthPayStatistic($time_begin, $time_end, $company_id, $department_id, $status, $pay_method, $username, $phone);
         return json(new SuccessMessageWithData(['data' => $statistic]));
+    }
+    /**
+     * 查询缴费策略(Route::post('api/:version/nextmonthpay/selectPaySetting', 'api/:version.NextMonthPay/selectPaySetting');)
+     */
+    public function selectPaySetting(){
+        //接收企业id
+        $company_id=Request::param('company_id');
+        $data=NextmonthPaySettingT::where(['c_id'=>$company_id,'state'=>1])->find();
+        if(empty($data)){
+            throw new AuthException();
+        }
+        return json(new SuccessMessageWithData(['data'=>$data]));
     }
 }

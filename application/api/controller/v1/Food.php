@@ -514,5 +514,10 @@ class Food extends BaseController
         return json(new SuccessMessageWithData(['data' => $info]));
     }
 
+    public function upAll()
+    {
+
+    }
+
 
 }
