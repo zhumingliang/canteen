@@ -64,41 +64,46 @@ class NextMonthPay extends BaseController
     /**
      * 设置缴费策略（Route::post('api/:version/nextmonthpay/paySetting', 'api/:version.NextMonthPay/paySetting');）
      */
-    public function paySetting()
-    {
+    public function paySetting(){
         //接收企业id
-        $c_id = Request::param('c_id');
+        $c_id=Request::param('c_id');
         //接收最大可透支金额
-        $max_over_money = Request::param('max_over_money');
+        $max_over_money=Request::param('max_over_money');
         //可缴费时间
-        $is_pay_day = Request::param('is_pay_day');
+        $is_pay_day=Request::param('is_pay_day');
         //未缴费是否允许订餐
-        $is_order = Request::param('is_order');
+        $is_order=Request::param('is_order');
         //提醒时间
-        $remind_time = Request::param('remind_time');
+        $remind_time=Request::param('remind_time');
         //提醒频率
-        $remind_rate = Request::param('remind_rate');
+        $remind_rate=Request::param('remind_rate');
         //创建时间
-        $create_time = date('Y-m-d H:i:s');
+        $create_time=date('Y-m-d H:i:s');
         //更新时间
-        $update_time = date('Y-m-d H:i:s');
-        $data = [
-            'c_id' => $c_id,
-            'max_over_money' => $max_over_money,
-            'is_pay_day' => $is_pay_day,
-            'is_order' => $is_order,
-            'remind_time' => $remind_time,
-            'remind_rate' => $remind_rate,
-            'create_time' => $create_time,
-            'update_time' => $update_time,
-            'state' => 1
+        $update_time=date('Y-m-d H:i:s');
+        //判断当前企业是否已经存在在使用的策略
+        $dt=NextmonthPaySettingT::where(['c_id'=>$c_id,'state'=>1])->select();
+        if($dt){
+            throw new SaveException(['msg'=>'当前企业已设置缴费策略']);
+        }
+        $data=[
+            'c_id'=>$c_id,
+            'max_over_money'=>$max_over_money,
+            'is_pay_day'=>$is_pay_day,
+            'is_order'=>$is_order,
+            'remind_time'=>$remind_time,
+            'remind_rate'=>$remind_rate,
+            'create_time'=>$create_time,
+            'update_time'=>$update_time,
+            'state'=>1
         ];
-        $id = NextmonthPaySettingT::create($data)->id;
 
-        if ($id) {
-            return json(new SuccessMessageWithData(['data' => ['id' => $id]]));
-        } else {
-            throw new AuthException(['msg' => '设置失败']);
+        $id=NextmonthPaySettingT::create($data)->id;
+
+        if($id){
+            return json(new SuccessMessageWithData(['data'=>['id'=>$id]]));
+        }else{
+            throw new AuthException(['msg'=>'设置失败']);
         }
 
     }
@@ -289,6 +294,7 @@ class NextMonthPay extends BaseController
         //接收企业id
         $company_id=Request::param('company_id');
         $data=NextmonthPaySettingT::where(['c_id'=>$company_id,'state'=>1])->find();
+        print_r($data);
         if(empty($data)){
             throw new AuthException();
         }

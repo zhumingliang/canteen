@@ -568,4 +568,13 @@ class FoodService extends BaseService
         return $auto;
     }
 
+    public function upAll($canteenId, $dinnerId, $day)
+    {
+        //获取自动上架配置
+        $auto = AutomaticT::infoToDinner($canteenId, $dinnerId);
+        $foodDay = FoodDayStateT::FoodStatus($canteenId, $dinnerId, $day);
+        //$auto
+
+    }
+
 }

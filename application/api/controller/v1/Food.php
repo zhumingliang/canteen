@@ -516,6 +516,11 @@ class Food extends BaseController
 
     public function upAll()
     {
+        $canteenId = Request::param('canteen_id');
+        $dinnerId = Request::param('dinner_id');
+        $day = Request::param('day');
+        (new FoodService())->upAll($canteenId, $dinnerId, $day);
+        return json(new SuccessMessage());
 
     }
 

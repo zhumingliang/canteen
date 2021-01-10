@@ -44,5 +44,6 @@ class Food extends BaseValidate
         'saveAutoConfig' => ['canteen_id', 'dinner_id', 'auto_week', 'repeat_week'],
         'updateAutoConfig' => ['id'],
         'automatic' => ['canteen_id'],
+        'upAll' => ['canteen_id','dinner_id','day'],
     ];
 }
