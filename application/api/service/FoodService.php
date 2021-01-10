@@ -19,6 +19,7 @@ use app\lib\enum\FoodEnum;
 use app\lib\exception\ParameterException;
 use app\lib\exception\SaveException;
 use app\lib\exception\UpdateException;
+use EasyWeChat\Factory;
 use Monolog\Handler\IFTTTHandler;
 use think\Db;
 use think\Exception;
@@ -573,7 +574,51 @@ class FoodService extends BaseService
         //获取自动上架配置
         $auto = AutomaticT::infoToDinner($canteenId, $dinnerId);
         $foodDay = FoodDayStateT::FoodStatus($canteenId, $dinnerId, $day);
-        //$auto
+        $foodList = [];
+        if (!count($auto)) {
+            $autoFoods = $auto[0]['foods'];
+            foreach ($autoFoods as $k => $v) {
+                if (!count($foodDay)) {
+                    array_push($foodList, [
+                        'f_id' => $v['food_id'],
+                        'status' => FoodEnum::STATUS_UP,
+                        'day' => $day,
+                        'user_id' => 0,
+                        'canteen_id' => $auto[0]['canteen_id'],
+                        'default' => CommonEnum::STATE_IS_FAIL,
+                        'dinner_id' => $auto[0]['dinner_id']
+                    ]);
+                } else {
+                    $exit = false;
+                    foreach ($foodDay as $k2 => $v2) {
+                        if ($v['food_id'] == $v2['f_id']) {
+                            $exit = true;
+                            unset($foodDay[$k2]);
+                            break;
+                        }
+                    }
+                    if (!$exit) {
+                        array_push($foodList, [
+                            'f_id' => $v['food_id'],
+                            'status' => FoodEnum::STATUS_UP,
+                            'day' => $day,
+                            'user_id' => 0,
+                            'canteen_id' => $auto[0]['canteen_id'],
+                            'default' => CommonEnum::STATE_IS_FAIL,
+                            'dinner_id' => $auto[0]['dinner_id']
+                        ]);
+                    }
+                }
+            }
+
+        }
+
+        if (count($foodList)) {
+            $save = (new FoodDayStateT())->saveAll($foodList);
+            if (!$save) {
+                throw new SaveException(['msg' => '上架失败']);
+            }
+        }
 
     }
 
