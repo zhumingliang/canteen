@@ -15,6 +15,7 @@ use app\api\service\NextMonthPayService;
 use app\lib\enum\CommonEnum;
 use app\lib\exception\ParameterException;
 use app\lib\weixin\Template;
+use app\lib\weixin\Template2;
 use think\Exception;
 use think\queue\Job;
 
@@ -133,7 +134,7 @@ class SendTemplate
                     'remark' => "请您及时缴费"
                 ];
                 if (!empty($v['openid'])) {
-                    $res = (new Template())->send($v['openid'], $templateId, $url, $data);
+                    $res = (new Template2())->send($v['openid'], $templateId, $url, $data);
                     if (empty($res['errcode']) || $res['errcode'] != 0) {
                         $data['res'] = $res;
                         array_push($fail, $data);
@@ -167,7 +168,7 @@ class SendTemplate
                             'keyword3' => date('Y-m-d H:i'),
                             'remark' => "建议现场查看消费机的异常提示。"
                         ];
-                        $res = (new Template())->send($v['openid'], $templateId, $url, $data);
+                        $res = (new Template2())->send($v['openid'], $templateId, $url, $data);
                         if ($res['errcode'] != 0) {
                             $data['res'] = $res;
                             array_push($fail, $data);
@@ -223,7 +224,7 @@ class SendTemplate
                 'remark' => "建议您及时消费。"
             ];
             $openid = $v['user']['openid'];
-            $res = (new Template())->send($openid, $templateId, $url, $data);
+            $res = (new Template2())->send($openid, $templateId, $url, $data);
             if ($res['errcode'] !== 0) {
                 $data['res'] = $res;
                 array_push($fail, $data);

@@ -7,7 +7,7 @@ namespace app\lib\weixin;
 use app\api\service\LogService;
 use EasyWeChat\Factory;
 
-class Template extends Base
+class Template2
 {
 
     public function send($openid, $template_id, $url, $data)
@@ -21,7 +21,7 @@ class Template extends Base
                 'response_type' => 'array',
             ];*/
 
-      /*  $config = [
+        $config = [
             'app_id' => config('wechat.official_account.default.app_id'),
             'secret' => config('wechat.official_account.default.secret'),
             'token' => 'canteen',
@@ -31,8 +31,7 @@ class Template extends Base
         ];
 
         $app = Factory::officialAccount($config);
-        $res = $app->template_message->send([*/
-        $res = $this->app->template_message->send([
+        $res = $app->template_message->send([
             'touser' => $openid,
             'template_id' => $template_id,
             'data' => $data,

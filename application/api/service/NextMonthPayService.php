@@ -10,6 +10,7 @@ use app\api\model\OfficialTemplateT;
 use app\api\model\OrderConsumptionV;
 use app\api\model\UserT;
 use app\lib\enum\CommonEnum;
+use app\lib\exception\AuthException;
 use app\lib\exception\SaveException;
 use app\lib\weixin\Template;
 use think\Exception;
@@ -205,7 +206,9 @@ class NextMonthPayService
     public function exportNextMonthPayStatistic($time_begin, $time_end, $company_id, $department_id, $status, $pay_method, $username, $phone){
 
         $statistic=$this->nextMonthOutput($time_begin, $time_end, $company_id, $department_id, $status, $pay_method, $username, $phone);
-
+        if(empty($statistic)){
+            throw new AuthException(['msg'=>'导出数据为空']);
+        }
         $dinner=(new NextmonthPayT())->dinnerNames($company_id);
         $header = ['序号', '时间', '部门', '姓名', '手机号码','应缴费用','缴费状态','缴费时间','缴费途径','订餐总数量'];
 

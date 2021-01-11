@@ -6,6 +6,7 @@ namespace app\api\controller\v1;
 
 use app\api\controller\BaseController;
 use app\api\model\ShopOrderT;
+use app\api\model\StaffCardT;
 use app\api\model\StaffCardV;
 use app\api\service\ShopService;
 use app\api\service\WalletService;
@@ -151,13 +152,13 @@ class Pos extends BaseController
         $birthday = Request::param('birthday');
         $companyId = Request::param('company_id');
         if (empty($phone)) {
-            throw new Exception("手机号码不能为空！！");
+            throw new AuthException(['msg' => '手机号码不能为空！！']);
         }
         if (empty($birthday)) {
-            throw new Exception("出生日期不能为空！！");
+            throw new AuthException(['msg' => '出生日期不能为空！！']);
         }
         if (empty($companyId)) {
-            throw new Exception("企业id不能为空！！");
+            throw new AuthException(['msg' => '企业id不能为空！！']);
         }
         $data = db('company_staff_t')->where('phone', $phone)
             ->where('birthday', $birthday)
@@ -398,7 +399,7 @@ class Pos extends BaseController
         }
         if ($type == 'refund') {
             $newId = $save->id;
-            (new ShopService())->handleReduceOrder($id, $newId, $company_id, $staff_id, $money,$refundData);
+            (new ShopService())->handleReduceOrder($id, $newId, $company_id, $staff_id, $money, $refundData);
         }
     }
 
@@ -427,16 +428,16 @@ class Pos extends BaseController
         if ($user['state'] != 1) {
             throw new AuthException(['msg' => '绑卡失败，账号已停用']);
         }
-//        $staff_id = $user['id'];
         if (StaffCardV::checkCardExits($company_id, $card_code)) {
             throw new ParameterException(['msg' => '卡号已经存在，不能重复绑定']);
         }
-//        $sql = "select id from canteen_staff_card_t where (state = 1 or state = 2) and (staff_id = '" . $staff_id . "' or card_code = '" . $card_code . "')";
-//        $cardInfo = Db::query($sql);
-//
-//        if (!empty($cardInfo)) {
-//            throw new AuthException(['msg' => '该卡或账号已被绑定，请先注销后再绑卡']);
-//        }
+        //获取用户是否存在已经绑定的卡
+        $card = StaffCardT::where('staff_id', $user['id'])->find();
+        if ($card) {
+            if (in_array($card->state, [1, 2])) {
+                throw new ParameterException(['msg' => '用户已经绑定卡，不能重复绑定']);
+            }
+        }
         db('staff_card_t')
             ->whereOr('staff_id', $user['id'])
             ->whereOr('card_code', $card_code)
