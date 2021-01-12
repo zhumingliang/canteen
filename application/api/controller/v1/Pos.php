@@ -36,7 +36,7 @@ class Pos extends BaseController
         if (empty($cardCode)) {
             throw new AuthException(['msg' => '请刷卡登录']);
         }
-        $sql = "select t1.state as card_state,t2.state as staff_state,t3.name from canteen_staff_card_t t1 left join canteen_company_staff_t t2 on t1.staff_id=t2.id left join canteen_staff_type_t t3 on t2.t_id=t3.id where t2.company_id='" . $companyId . "' and t1.card_code='" . $cardCode . "' and t2.state=1";
+        $sql = "select t1.state as card_state,t2.state as staff_state,t3.name from canteen_staff_card_t t1 left join canteen_company_staff_t t2 on t1.staff_id=t2.id left join canteen_staff_type_t t3 on t2.t_id=t3.id where t2.company_id='" . $companyId . "' and t1.card_code='" . $cardCode . "' and t2.state=1 order by t1.create_time desc";
         $name = Db::query($sql);
         if (empty($name)) {
             throw new AuthException(['msg' => '找不到管理员信息']);
@@ -432,16 +432,12 @@ class Pos extends BaseController
             throw new ParameterException(['msg' => '卡号已经存在，不能重复绑定']);
         }
         //获取用户是否存在已经绑定的卡
-        $card = StaffCardT::where('staff_id', $user['id'])->find();
+        $card = StaffCardT::where('staff_id', $user['id'])->order('create_time desc')->find();
         if ($card) {
             if (in_array($card->state, [1, 2])) {
                 throw new ParameterException(['msg' => '用户已经绑定卡，不能重复绑定']);
             }
         }
-        db('staff_card_t')
-            ->whereOr('staff_id', $user['id'])
-            ->whereOr('card_code', $card_code)
-            ->delete();
         $data = [
             'staff_id' => $user['id'],
             'card_code' => $card_code,
