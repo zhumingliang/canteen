@@ -343,6 +343,7 @@ class FoodService extends BaseService
             $data = [
                 'f_id' => $foodId,
                 'canteen_id' => $canteenId,
+                'dinner_id' => $dinnerId,
                 'day' => $day,
                 'user_id' => Token::getCurrentUid(),
 

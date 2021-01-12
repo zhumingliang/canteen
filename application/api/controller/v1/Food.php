@@ -228,9 +228,7 @@ class Food extends BaseController
      * @apiVersion 3.0.0
      * @apiDescription 微信端-菜品管理-菜品信息
      * @apiExample {get}  请求样例:
-     * http://canteen.tonglingok.com/api/v1/foods/officialManager?$page=1&size=100&menu_id=1&food_type=2&day=2019-09-02&canteen_id=3
-     * @apiParam (请求参数说明) {int} page 当前页码
-     * @apiParam (请求参数说明) {int} size 每页多少条数据
+     * http://canteen.tonglingok.com/api/v1/foods/officialManager?dinner_id=1&day=2019-09-02&canteen_id=3
      * @apiParam (请求参数说明) {String} canteen_id 饭堂ID
      * @apiParam (请求参数说明) {int} dinner_id 餐次id
      * @apiParam (请求参数说明) {String} day 日期
