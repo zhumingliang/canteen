@@ -292,7 +292,7 @@ class FoodService extends BaseService
             $status = FoodEnum::STATUS_DOWN;
             if (count($foodDay)) {
                 foreach ($foodDay as $k => $v) {
-                    if ($foodId == $v['food_id']) {
+                    if ($foodId == $v['f_id']) {
                         $status = FoodEnum::STATUS_UP;
                         break;
                     }
