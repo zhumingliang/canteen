@@ -91,7 +91,7 @@ class Pos extends BaseController
         if (empty($cardCode)) {
             throw new AuthException(['msg' => '未接收到卡号']);
         }
-        $sql = "select t1.username ,t2.name as department_name ,t1.phone ,t3.state,t1.birthday from canteen_company_staff_t t1 left join canteen_company_department_t t2 on t1.d_id=t2.id left join canteen_staff_card_t t3 on t1.id=t3.staff_id where t3.card_code='" . $cardCode . "' and t1.company_id='" . $companyId . "' and t1.state=1";
+        $sql = "select t1.username ,t2.name as department_name ,t1.phone ,t3.state,t1.birthday from canteen_company_staff_t t1 left join canteen_company_department_t t2 on t1.d_id=t2.id left join canteen_staff_card_t t3 on t1.id=t3.staff_id where t3.card_code='" . $cardCode . "' and t1.company_id='" . $companyId . "' and t1.state=1 order by t3.create_time desc";
         $data = Db::query($sql);
 
         return json(new SuccessMessageWithData(['data' => $data]));
@@ -170,7 +170,7 @@ class Pos extends BaseController
         if (empty($data)) {
             throw new AuthException(['msg' => '查询信息错误，未找到卡号']);
         } else {
-            $data2 = db('staff_card_t')->where('staff_id', $uId)->find();
+            $data2 = db('staff_card_t')->where('staff_id', $uId)->order('create_time desc')->find();
             $cardCode = $data2['card_code'];
             return json(new SuccessMessageWithData(['data' => ['username' => $username, 'card_code' => $cardCode, 'state' => $state]]));
         }
