@@ -9,7 +9,7 @@ use app\lib\Image;
 
 class ImageService
 {
-    public function upload($file)
+    public function upload($type, $file)
     {
         $path = dirname($_SERVER['SCRIPT_FILENAME']) . '/static/image';
         if (!is_dir($path)) {
@@ -19,15 +19,19 @@ class ImageService
         if (!$info) {
             throw new SaveException();
         }
-        $path = '/static/image/' . $info->getSaveName();
-        $srcPath = dirname($_SERVER['SCRIPT_FILENAME']) . '/static/image/' . $info->getSaveName();
-        $savePath = dirname($_SERVER['SCRIPT_FILENAME']) . '/static/image/wechat/' . date('Ymd');
-        if (!is_dir($savePath)) {
-            mkdir(iconv("UTF-8", "GBK", $savePath), 0777, true);
+        if ($type == "food") {
+            $srcPath = dirname($_SERVER['SCRIPT_FILENAME']) . '/static/image/' . $info->getSaveName();
+            $savePath = dirname($_SERVER['SCRIPT_FILENAME']) . '/static/image/wechat/' . date('Ymd');
+            if (!is_dir($savePath)) {
+                mkdir(iconv("UTF-8", "GBK", $savePath), 0777, true);
+            }
+            $saveName = $savePath . '/' . $info->getFilename();
+            Image::mkThumbnail($srcPath, 165, 200, $saveName);
+            $path = '/static/image/wechat/' . date('Ymd') . '/' . $info->getFilename();
+        } else {
+            $path = '/static/image/' . $info->getSaveName();
         }
-        $saveName = $savePath . '/' . $info->getFilename();
-        Image::mkThumbnail($srcPath, 165, 200, $saveName);
-        return ['url' => '/static/image/wechat/' . date('Ymd') . '/' . $info->getFilename()];
+        return ['url' => $path];
     }
 
     public function saveCompanyQRCode($url)

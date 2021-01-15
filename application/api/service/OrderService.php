@@ -494,6 +494,10 @@ class OrderService extends BaseService
 
             }
         }
+        if (!count($data_list)) {
+            throw new ParameterException(['msg' => '菜品明细为空']);
+        }
+
         if ($consumptionTimes == 'one') {
             $res = (new OrderDetailT())->saveAll($data_list);
         } else {
