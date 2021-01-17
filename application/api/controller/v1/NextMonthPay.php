@@ -13,6 +13,7 @@ use app\lib\exception\SaveException;
 use app\lib\exception\SuccessMessage;
 use app\lib\exception\SuccessMessageWithData;
 use app\lib\exception\UpdateException;
+use think\Db;
 use think\facade\Request;
 
 class NextMonthPay extends BaseController
@@ -113,38 +114,36 @@ class NextMonthPay extends BaseController
     /**
      * 设置缴费策略状态开关（Route::post('api/:version/nextmonthpay/stateSetting', 'api/:version.NextMonthPay/stateSetting');）
      */
-    public function stateSetting()
-    {
+    public function stateSetting(){
         //缴费策略id
-        $id = Request::param('id');
+        $id=Request::param('id');
         //次月缴费开关状态
-        $state = Request::param('state');
+        $state=Request::param('state');
         //更新时间
-        $update_time = date('Y-m-d H:i:s');
+        $update_time=date('Y-m-d H:i:s');
         //接收最大可透支金额
-        $max_over_money = Request::param('max_over_money');
+        $max_over_money=Request::param('max_over_money');
         //可缴费时间
-        $is_pay_day = Request::param('is_pay_day');
+        $is_pay_day=Request::param('is_pay_day');
         //未缴费是否允许订餐
-        $is_order = Request::param('is_order');
+        $is_order=Request::param('is_order');
         //提醒时间
-        $remind_time = Request::param('remind_time');
+        $remind_time=Request::param('remind_time');
         //提醒频率
-        $remind_rate = Request::param('remind_rate');
-        $data = [
-            'state' => $state,
-            'update_time' => $update_time,
-            'max_over_money' => $max_over_money,
-            'is_pay_day' => $is_pay_day,
-            'is_order' => $is_order,
-            'remind_time' => $remind_time,
-            'remind_rate' => $remind_rate
+        $remind_rate=Request::param('remind_rate');
+        $data=[
+            'state'=>$state,
+            'update_time'=>$update_time,
+            'max_over_money'=>$max_over_money,
+            'is_pay_day'=>$is_pay_day,
+            'is_order'=>$is_order,
+            'remind_time'=>$remind_time,
+            'remind_rate'=>$remind_rate
         ];
-        $data = NextmonthPaySettingT::where('id', $id)
-            ->update($data);
-        if ($data > 0) {
-            return json(new SuccessMessage());
-        } else {
+        $data=Db::table('canteen_nextmonth_pay_setting_t')->where('id',$id)->update($data);
+        if($data > 0){
+            return json( new SuccessMessage());
+        }else{
             throw new UpdateException();
         }
     }
