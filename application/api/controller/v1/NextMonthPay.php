@@ -307,8 +307,7 @@ class NextMonthPay extends BaseController
     {
         //接收企业id
         $company_id = Request::param('company_id');
-        $data = NextmonthPaySettingT::where(['c_id' => $company_id, 'state' => 1])->find();
-
+        $data = NextmonthPaySettingT::where(['c_id' => $company_id])->find();
         return json(new SuccessMessageWithData(['data' => $data]));
     }
 }
