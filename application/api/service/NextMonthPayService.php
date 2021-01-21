@@ -210,9 +210,10 @@ class NextMonthPayService
             throw new AuthException(['msg'=>'导出数据为空']);
         }
         $dinner=(new NextmonthPayT())->dinnerNames($company_id);
-        $header = ['序号', '时间', '部门', '姓名', '手机号码','应缴费用','缴费状态','缴费时间','缴费途径','订餐总数量'];
+        $header = ['序号', '时间', '部门', '姓名', '手机号码','应缴费用','缴费状态','缴费时间','缴费途径','订餐合计数量','订餐合计金额（元）','缴费备注'];
 
         $header = $this->addDinnerToHeader($header, $dinner);
+        print_r($header);
 
         $reports = $this->prefixConsumptionStatistic($statistic,$dinner);
 
@@ -224,17 +225,16 @@ class NextMonthPayService
             'url' => 'http://' . $_SERVER['HTTP_HOST'] . $url
         ];
     }
-
     private function addDinnerToHeader($header, $dinner)
     {
         foreach ($dinner as $k => $v) {
-            array_push($header, $v['dinner'] . "数量", $v['dinner'] . '金额（元）');
+            //array_push($header, $v['dinner'] . "数量", $v['dinner'] . '金额（元）');
+            array_splice($header,-3,0,[$v['dinner'] . "数量", $v['dinner'] . '金额（元）']);
         }
 
         return $header;
 
     }
-
     private function prefixConsumptionStatistic($statistic,$dinner){
         $dataList=[];
 
@@ -248,10 +248,11 @@ class NextMonthPayService
                 $data['department']=empty($v['department']) ? '':$v['department'];
                 $data['username']=empty($v['username']) ? '':$v['username'];
                 $data['phone']=empty($v['phone']) ? '':$v['phone'];
-                $data['pay_money']=empty($v['pay_money']) ? '':$v['pay_money'];
+                $data['pay_money']=empty($v['pay_money']) ? '':abs($v['pay_money']);
                 $data['state']=empty($v['state']) ? '':$v['state'];
                 $data['pay_time']=empty($v['pay_time']) ? '':$v['pay_time'];
                 $data['pay_method']=empty($v['pay_method']) ? '':$v['pay_method'];
+                $data['pay_remark']=empty($v['pay_remark']) ?'':$v['pay_remark'];
                 if (empty($dinner_statistic)) {
                     continue;
                 }
@@ -263,13 +264,14 @@ class NextMonthPayService
                     }
 
                     if (key_exists($v3['dinner_id'] . 'money', $data)) {
-                        $data[$v3['dinner_id'] . 'money'] = $v3['order_money'];
-                        $endData[$v3['dinner_id'] . 'money'] += $v3['order_money'];
+                        $data[$v3['dinner_id'] . 'money'] = abs($v3['order_money']);
+                        $endData[$v3['dinner_id'] . 'money'] +=abs($v3['order_money']);
 
                     }
 
                 }
                 $data['count']=empty($v['count']) ? 0 :$v['count'];
+                $data['allMoney']=empty($v['pay_money']) ? 0 : abs($v['pay_money']);
 
 
                 array_push($dataList, $data);
@@ -277,11 +279,11 @@ class NextMonthPayService
 
         }
         $endData['count']=array_sum(array_column($dataList,'count'));
+        $endData['allMoney']=array_sum(array_column($dataList,'allMoney'));
         array_push($dataList, $endData);
         return $dataList;
 
     }
-
     private function addDinnerToStatistic($dinner)
     {
         $data = [
@@ -293,14 +295,16 @@ class NextMonthPayService
             'pay_money'=>'',
             'state'=>'',
             'pay_time'=>'',
-            'pay_method'=>'',
-            'count'=>''
+            'pay_method'=>''
 
         ];
         foreach ($dinner as $k => $v) {
             $data[$v['dinner_id'] . 'count'] = 0;
             $data[$v['dinner_id'] . 'money'] = 0;
         }
+        $data['count']='';
+        $data['allMoney']='';
+        $data['pay_remark']='';
         return $data;
 
     }

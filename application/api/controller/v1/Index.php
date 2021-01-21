@@ -82,6 +82,9 @@ Index extends BaseController
 
     public function index()
     {
+        $money = UserBalanceV::userBalanceGroupByEffective2(6690);
+        print_r($money);
+
     }
 
 

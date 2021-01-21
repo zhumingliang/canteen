@@ -116,7 +116,7 @@ class NextmonthPayT extends Model
         })
             ->where('pay_date', '>=', $time_begin)
             ->where('pay_date', '<=', $time_end)
-            ->field('pay_date,department,username,staff_id,phone,sum(order_money) as pay_money, sum(order_count) as count,(case state when 1 then "已缴费"  else "未缴费" end ) as state,pay_time, (case pay_method when 1 then "农行" when 2 then "补缴"  end) as pay_method')
+            ->field('pay_date,department,username,staff_id,phone,sum(order_money) as pay_money, sum(order_count) as count,(case state when 1 then "已缴费"  else "未缴费" end ) as state,pay_time, (case pay_method when 1 then "农行" when 2 then "补缴"  end) as pay_method,pay_remark')
             ->group('staff_id,pay_date')
             ->select()->toArray();
         return $list;
