@@ -23,4 +23,6 @@ class FoodDayStateT extends Model
 
     }
 
+
+
 }

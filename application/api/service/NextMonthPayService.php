@@ -213,8 +213,6 @@ class NextMonthPayService
         $header = ['序号', '时间', '部门', '姓名', '手机号码','应缴费用','缴费状态','缴费时间','缴费途径','订餐合计数量','订餐合计金额（元）','缴费备注'];
 
         $header = $this->addDinnerToHeader($header, $dinner);
-        print_r($header);
-
         $reports = $this->prefixConsumptionStatistic($statistic,$dinner);
 
         $file_name="缴费查询报表";

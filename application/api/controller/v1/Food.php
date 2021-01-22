@@ -541,4 +541,33 @@ class Food extends BaseController
     }
 
 
+    /**
+     * @api {POST} /api/v1/food/auto/upAll  微信端--自动上架--立即全部下架
+     * @apiGroup   Official
+     * @apiVersion 3.0.0
+     * @apiDescription    微信端--自动上架--立即全部下架
+     * @apiExample {post}  请求样例:
+     *    {
+     *       "canteen_id": 1,
+     *       "dinner_id": 5,
+     *       "day": 2021-01-10
+     *     }
+     * @apiParam (请求参数说明) {int} canteen_id  饭堂id
+     * @apiParam (请求参数说明) {int} dinner_id   餐次id
+     * @apiParam (请求参数说明) {string} day 上架日期
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     */
+    public function downAll()
+    {
+        $canteenId = Request::param('canteen_id');
+        $dinnerId = Request::param('dinner_id');
+        $day = Request::param('day');
+        (new FoodService())->downAll($canteenId, $dinnerId, $day);
+        return json(new SuccessMessage());
+    }
+
+
 }

@@ -578,6 +578,20 @@ class FoodService extends BaseService
         return $auto;
     }
 
+    public function downAll($canteenId, $dinnerId, $day)
+    {
+        $res = FoodDayStateT::update(['state' => CommonEnum::STATE_IS_FAIL], [
+            'canteen_id' => $canteenId,
+            'dinner_id' => $dinnerId,
+            'day' => $day
+        ]);
+
+        if (!$res) {
+            throw new UpdateException(['msg' => '批量下架失败']);
+        }
+    }
+
+
     public function upAll($canteenId, $dinnerId, $day)
     {
         //获取自动上架配置
