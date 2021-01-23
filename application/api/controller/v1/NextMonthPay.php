@@ -21,7 +21,8 @@ class NextMonthPay extends BaseController
     //用于测试--begin
     public function getOrderConsumption()
     {
-        (new NextMonthPayService())->handle();
+        $company_id = Request::param('company_id');
+        (new NextMonthPayService())->handle($company_id);
         return json(new SuccessMessage());
     }
 
@@ -114,36 +115,37 @@ class NextMonthPay extends BaseController
     /**
      * 设置缴费策略状态开关（Route::post('api/:version/nextmonthpay/stateSetting', 'api/:version.NextMonthPay/stateSetting');）
      */
-    public function stateSetting(){
+    public function stateSetting()
+    {
         //缴费策略id
-        $id=Request::param('id');
+        $id = Request::param('id');
         //次月缴费开关状态
-        $state=Request::param('state');
+        $state = Request::param('state');
         //更新时间
-        $update_time=date('Y-m-d H:i:s');
+        $update_time = date('Y-m-d H:i:s');
         //接收最大可透支金额
-        $max_over_money=Request::param('max_over_money');
+        $max_over_money = Request::param('max_over_money');
         //可缴费时间
-        $is_pay_day=Request::param('is_pay_day');
+        $is_pay_day = Request::param('is_pay_day');
         //未缴费是否允许订餐
-        $is_order=Request::param('is_order');
+        $is_order = Request::param('is_order');
         //提醒时间
-        $remind_time=Request::param('remind_time');
+        $remind_time = Request::param('remind_time');
         //提醒频率
-        $remind_rate=Request::param('remind_rate');
-        $data=[
-            'state'=>$state,
-            'update_time'=>$update_time,
-            'max_over_money'=>$max_over_money,
-            'is_pay_day'=>$is_pay_day,
-            'is_order'=>$is_order,
-            'remind_time'=>$remind_time,
-            'remind_rate'=>$remind_rate
+        $remind_rate = Request::param('remind_rate');
+        $data = [
+            'state' => $state,
+            'update_time' => $update_time,
+            'max_over_money' => $max_over_money,
+            'is_pay_day' => $is_pay_day,
+            'is_order' => $is_order,
+            'remind_time' => $remind_time,
+            'remind_rate' => $remind_rate
         ];
-        $data=Db::table('canteen_nextmonth_pay_setting_t')->where('id',$id)->update($data);
-        if($data > 0){
-            return json( new SuccessMessage());
-        }else{
+        $data = Db::table('canteen_nextmonth_pay_setting_t')->where('id', $id)->update($data);
+        if ($data > 0) {
+            return json(new SuccessMessage());
+        } else {
             throw new UpdateException();
         }
     }
@@ -285,8 +287,12 @@ class NextMonthPay extends BaseController
                                     $username = '', $phone = '')
     {
         $company_id = Request::param('company_id');
+        $canteen_id = Request::param('canteen_id');
         if (empty($company_id)) {
             throw new AuthException(['msg' => '请选择企业']);
+        }
+        if (empty($canteen_id)) {
+            throw new AuthException(['msg' => '请选择饭堂']);
         }
         $time_begin = Request::param('time_begin');
         if (empty($time_begin)) {
@@ -296,7 +302,7 @@ class NextMonthPay extends BaseController
         if (empty($time_end)) {
             throw new AuthException(['msg' => '请选择欠费时间的结束时间']);
         }
-        $statistic = (new NextMonthPayService())->exportNextMonthPayStatistic($time_begin, $time_end, $company_id, $department_id, $status, $pay_method, $username, $phone);
+        $statistic = (new NextMonthPayService())->exportNextMonthPayStatistic($time_begin, $time_end, $company_id, $canteen_id, $department_id, $status, $pay_method, $username, $phone);
         return json(new SuccessMessageWithData(['data' => $statistic]));
     }
 

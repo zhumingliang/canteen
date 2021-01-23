@@ -36,6 +36,7 @@ class NextmonthPayT extends Model
         })
             ->where('pay_date', '>=', $time_begin)
             ->where('pay_date', '<=', $time_end)
+            ->where('staff_id', '>', 0)
             ->field('company_id,pay_date,department,username,staff_id,phone,sum(order_money) as pay_money,state,pay_time,pay_method')
             ->group('staff_id,pay_date')
             ->paginate($size, false, ['page' => $page])->toArray();
@@ -70,6 +71,7 @@ class NextmonthPayT extends Model
         })
             ->where('pay_date', '>=', $time_begin)
             ->where('pay_date', '<=', $time_end)
+            ->where('staff_id', '>', 0)
             ->field('staff_id,username,dinner_id,dinner,sum(order_count) as order_count,sum(order_money) as order_money,pay_date')
             ->group('staff_id,pay_date,dinner')
             ->select()->toArray();
@@ -116,13 +118,17 @@ class NextmonthPayT extends Model
         })
             ->where('pay_date', '>=', $time_begin)
             ->where('pay_date', '<=', $time_end)
+            ->where('staff_id', '>', 0)
             ->field('pay_date,department,username,staff_id,phone,sum(order_money) as pay_money, sum(order_count) as count,(case state when 1 then "已缴费"  else "未缴费" end ) as state,pay_time, (case pay_method when 1 then "农行" when 2 then "补缴"  end) as pay_method,pay_remark')
             ->group('staff_id,pay_date')
             ->select()->toArray();
         return $list;
     }
-    public function dinnerNames($company_id){
-        $info=self::where('company_id',$company_id)
+
+    public function dinnerNames($company_id, $canteen_id)
+    {
+        $info = self::where('company_id', $company_id)
+            ->where('canteen_id', $canteen_id)
             ->field('dinner_id,dinner')
             ->group('dinner_id')
             ->select();
