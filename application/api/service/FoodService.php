@@ -598,7 +598,10 @@ class FoodService extends BaseService
         $auto = AutomaticT::infoToDinner($canteenId, $dinnerId);
         $foodDay = FoodDayStateT::FoodStatus($canteenId, $dinnerId, $day);
         $foodList = [];
-        if (!count($auto)) {
+        if (count($auto)) {
+            if (empty($auto[0]['foods'])) {
+                throw new ParameterException(['msg' =>"自动上架菜品未设置"]);
+            }
             $autoFoods = $auto[0]['foods'];
             foreach ($autoFoods as $k => $v) {
                 if (!count($foodDay)) {

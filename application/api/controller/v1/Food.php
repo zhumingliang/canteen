@@ -542,7 +542,7 @@ class Food extends BaseController
 
 
     /**
-     * @api {POST} /api/v1/food/auto/upAll  微信端--自动上架--立即全部下架
+     * @api {POST} /api/v1/food/auto/downAll  微信端--自动上架--立即全部下架
      * @apiGroup   Official
      * @apiVersion 3.0.0
      * @apiDescription    微信端--自动上架--立即全部下架
