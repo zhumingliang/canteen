@@ -140,8 +140,8 @@ Route::post('api/:version/food/material/update', 'api/:version.Food/updateMateri
 Route::post('api/:version/food/automatic/save', 'api/:version.Food/saveAutoConfig');
 Route::post('api/:version/food/automatic/update', 'api/:version.Food/updateAutoConfig');
 Route::get('api/:version/food/automatic', 'api/:version.Food/automatic');
-Route::get('api/:version/food/auto/upAll', 'api/:version.Food/upAll');
-Route::get('api/:version/food/auto/downAll', 'api/:version.Food/downAll');
+Route::post('api/:version/food/auto/upAll', 'api/:version.Food/upAll');
+Route::post('api/:version/food/auto/downAll', 'api/:version.Food/downAll');
 
 Route::post('api/:version/material/save', 'api/:version.Material/save');
 Route::post('api/:version/material/update', 'api/:version.Material/update');

@@ -283,26 +283,23 @@ class NextMonthPay extends BaseController
     /**
      * 导出后台查询列表(Route::post('api/:version/nextmonthpay/nextMonthOutput', 'api/:version.NextMonthPay/nextMonthOutput');)
      */
-    public function nextMonthOutput($department_id = 0, $status = 0, $pay_method = 0,
-                                    $username = '', $phone = '')
-    {
-        $company_id = Request::param('company_id');
-        $canteen_id = Request::param('canteen_id');
-        if (empty($company_id)) {
-            throw new AuthException(['msg' => '请选择企业']);
+    public function nextMonthOutput( $department_id = 0, $status = 0, $pay_method = 0,
+                                     $username = '', $phone = ''){
+        $company_id=Request::param('company_id');
+
+        if(empty($company_id)){
+            throw new AuthException(['msg'=>'请选择企业']);
         }
-        if (empty($canteen_id)) {
-            throw new AuthException(['msg' => '请选择饭堂']);
-        }
+
         $time_begin = Request::param('time_begin');
-        if (empty($time_begin)) {
-            throw new AuthException(['msg' => '请选择欠费时间的开始时间']);
+        if(empty($time_begin)){
+            throw new AuthException(['msg'=>'请选择欠费时间的开始时间']);
         }
         $time_end = Request::param('time_end');
-        if (empty($time_end)) {
-            throw new AuthException(['msg' => '请选择欠费时间的结束时间']);
+        if(empty($time_end)){
+            throw new AuthException(['msg'=>'请选择欠费时间的结束时间']);
         }
-        $statistic = (new NextMonthPayService())->exportNextMonthPayStatistic($time_begin, $time_end, $company_id, $canteen_id, $department_id, $status, $pay_method, $username, $phone);
+        $statistic = (new NextMonthPayService())->exportNextMonthPayStatistic($time_begin, $time_end, $company_id, $department_id, $status, $pay_method, $username, $phone);
         return json(new SuccessMessageWithData(['data' => $statistic]));
     }
 
