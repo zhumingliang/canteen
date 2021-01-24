@@ -580,7 +580,7 @@ class FoodService extends BaseService
 
     public function downAll($canteenId, $dinnerId, $day)
     {
-        $res = FoodDayStateT::update(['state' => CommonEnum::STATE_IS_FAIL], [
+        $res = FoodDayStateT::update(['status' => CommonEnum::STATE_IS_FAIL], [
             'canteen_id' => $canteenId,
             'dinner_id' => $dinnerId,
             'day' => $day
