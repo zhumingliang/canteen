@@ -450,7 +450,7 @@ class Food extends BaseController
     }
 
     /**
-     * @api {POST} /api/v1/food/automatic/save  微信端--自动上架--修改配置
+     * @api {POST} /api/v1/food/automatic/update  微信端--自动上架--修改配置
      * @apiGroup   Official
      * @apiVersion 3.0.0
      * @apiDescription    微信端--自动上架--修改配置

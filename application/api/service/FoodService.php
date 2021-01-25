@@ -512,7 +512,7 @@ class FoodService extends BaseService
             Db::startTrans();
             if (!empty($params['dinner_id'] || !empty($params['repeat_week']))) {
                 $check = AutomaticT::checkExits($params['dinner_id'], $params['repeat_week']);
-                if ($check->id != $params['id']) {
+                if ($check->id > 0 && $check->id != $params['id']) {
                     throw new ParameterException(['msg' => "该餐次指定重复周期已经设置"]);
                 }
 
@@ -600,7 +600,7 @@ class FoodService extends BaseService
         $foodList = [];
         if (count($auto)) {
             if (empty($auto[0]['foods'])) {
-                throw new ParameterException(['msg' =>"自动上架菜品未设置"]);
+                throw new ParameterException(['msg' => "自动上架菜品未设置"]);
             }
             $autoFoods = $auto[0]['foods'];
             foreach ($autoFoods as $k => $v) {
