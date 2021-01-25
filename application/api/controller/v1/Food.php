@@ -386,8 +386,9 @@ class Food extends BaseController
      * @apiVersion 3.0.0
      * @apiDescription 微信端-菜谱查询-菜品列表
      * @apiExample {get}  请求样例:
-     * http://canteen.tonglingok.com/api/v1/foods/foods/menu?dinner_id=6
+     * http://canteen.tonglingok.com/api/v1/foods/foods/menu?dinner_id=6&day=2021-10-26
      * @apiParam (请求参数说明) {int} dinner_id 餐次ID
+     * @apiParam (请求参数说明) {string} day 指定日期
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200,"data":[{"id":1,"category":"荤菜","status":1,"count":3,"foods":[{"id":3,"day":"2019-09-07","f_id":1,"status":1,"default":2,"m_id":1,"d_id":6,"name":"红烧牛肉","price":5,"img_url":"\/static\/image\/20190810\/ab9ce8ff0e2c5adb40263641b24f36d4.png","f_type":2,"chef":"李大厨","des":"适合**人群，有利于***不适合***人群","materials":[{"id":1,"f_id":3,"name":"牛肉","count":15,"unit":"kg"},{"id":2,"f_id":3,"name":"土豆","count":10,"unit":"kg"},{"id":3,"f_id":3,"name":"西红柿","count":10,"unit":"kg"}]}]},{"id":2,"category":"汤","status":2,"count":0,"foods":[]}]}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
@@ -411,7 +412,8 @@ class Food extends BaseController
     public function foodsForOfficialMenu()
     {
         $d_id = Request::param('dinner_id');
-        $foods = (new FoodService())->foodsForOfficialMenu($d_id);
+        $day = Request::param('day');
+        $foods = (new FoodService())->foodsForOfficialMenu($day,$d_id);
         return json(new SuccessMessageWithData(['data' => $foods]));
     }
 
