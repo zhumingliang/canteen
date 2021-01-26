@@ -7,6 +7,7 @@ namespace app\api\service;
 use app\api\model\AutomaticFoodT;
 use app\api\model\AutomaticT;
 use app\api\model\CanteenModuleV;
+use app\api\model\DinnerT;
 use app\api\model\FoodCommentT;
 use app\api\model\FoodDayStateT;
 use app\api\model\FoodDayStateV;
@@ -229,9 +230,13 @@ class FoodService extends BaseService
         //获取选定日期已上架的菜品
         $foodDay = FoodDayStateT::FoodStatus($canteenId, $dinnerId, $day);
 
+        //获取餐次是否固定消费
+        $dinner = DinnerT::get($dinnerId);
+
         $nextAuto = $this->getNextAuto($auto);
         $data = $this->prefixFoodDayStatus($menus, $foods, $auto, $foodDay, $day);
         return [
+            'fixed' => $dinner->fixed,
             'nextAuto' => $nextAuto,
             'foodData' => $data
         ];
@@ -427,9 +432,9 @@ class FoodService extends BaseService
         return $foods;
     }
 
-    public function foodsForOfficialMenu($day,$d_id)
+    public function foodsForOfficialMenu($day, $d_id)
     {
-        $foods = FoodDayStateV::foodsForOfficialMenu($day,$d_id);
+        $foods = FoodDayStateV::foodsForOfficialMenu($day, $d_id);
         $menus = (new MenuService())->dinnerMenus($d_id);
         $foods = $this->prefixPersonChoiceFoods($foods, $menus);
         return $foods;

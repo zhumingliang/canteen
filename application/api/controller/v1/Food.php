@@ -233,9 +233,10 @@ class Food extends BaseController
      * @apiParam (请求参数说明) {int} dinner_id 餐次id
      * @apiParam (请求参数说明) {String} day 日期
      * @apiSuccessExample {json} 返回样例:
-     * {"msg":"ok","errorCode":0,"code":200,"data":{"nextAuto":"2021-01-11 00:00","foodData":[{"id":82,"name":"包子","foods":[]},{"id":109,"name":"测试0021","foods":[]}]}}
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"fixed":2,"nextAuto":"2021-01-11 00:00","foodData":[{"id":82,"name":"包子","foods":[]},{"id":109,"name":"测试0021","foods":[]}]}}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
      * @apiSuccess (返回参数说明) {String} msg 信息描述
+     * @apiSuccess (返回参数说明) {int} fixed 是否为固定消费：1：是；2：否
      * @apiSuccess (返回参数说明) {string} nextAuto 下次自动上架时间：为0 则未设置自动上架
      * @apiSuccess (返回参数说明) {obj} foodData 菜品信息
      * @apiSuccess (返回参数说明) {int} id 菜类id
