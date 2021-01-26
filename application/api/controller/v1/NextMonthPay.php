@@ -220,7 +220,7 @@ class NextMonthPay extends BaseController
         //批量传入员工id
         $staff_ids = Request::param('staff_ids');
         //公司id
-        $company_ids = Request::param('company_id');
+        $company_id = Request::param('company_id');
         //员工手机号
         $phones = Request::param('phones');
         //欠费时间
@@ -243,10 +243,12 @@ class NextMonthPay extends BaseController
         $pay_date = explode(',', $pay_dates);
         $pay_money = explode(',', $pay_moneys);
         $username = explode(',', $usernames);
-        $company_id = explode(',', $company_ids);
+        $company_id = explode(',', $company_id);
+        $pay_remark = explode(',', $pay_remark);
         foreach ($staff_id as $k1 => $v1) {
             $data = NextmonthPayT::where(['state' => 2, 'staff_id' => $staff_id[$k1], 'company_id' => $company_id[$k1], 'phone' => $phone[$k1], 'pay_date' => $pay_date[$k1]])
-                ->update(['state' => 1, 'pay_method' => 2, 'pay_time' => $pay_time, 'update_time' => $update_time, 'pay_remark' => $pay_remark]);
+                ->update(['state' => 1, 'pay_method' => 2, 'pay_time' => $pay_time, 'update_time' => $update_time, 'pay_remark' => $pay_remark[$k1]]);
+
             //生成订单编号
             $order_num = makeOrderNo();
             //平衡支付
@@ -283,21 +285,22 @@ class NextMonthPay extends BaseController
     /**
      * 导出后台查询列表(Route::post('api/:version/nextmonthpay/nextMonthOutput', 'api/:version.NextMonthPay/nextMonthOutput');)
      */
-    public function nextMonthOutput( $department_id = 0, $status = 0, $pay_method = 0,
-                                     $username = '', $phone = ''){
-        $company_id=Request::param('company_id');
+    public function nextMonthOutput($department_id = 0, $status = 0, $pay_method = 0,
+                                    $username = '', $phone = '')
+    {
+        $company_id = Request::param('company_id');
 
-        if(empty($company_id)){
-            throw new AuthException(['msg'=>'请选择企业']);
+        if (empty($company_id)) {
+            throw new AuthException(['msg' => '请选择企业']);
         }
 
         $time_begin = Request::param('time_begin');
-        if(empty($time_begin)){
-            throw new AuthException(['msg'=>'请选择欠费时间的开始时间']);
+        if (empty($time_begin)) {
+            throw new AuthException(['msg' => '请选择欠费时间的开始时间']);
         }
         $time_end = Request::param('time_end');
-        if(empty($time_end)){
-            throw new AuthException(['msg'=>'请选择欠费时间的结束时间']);
+        if (empty($time_end)) {
+            throw new AuthException(['msg' => '请选择欠费时间的结束时间']);
         }
         $statistic = (new NextMonthPayService())->exportNextMonthPayStatistic($time_begin, $time_end, $company_id, $department_id, $status, $pay_method, $username, $phone);
         return json(new SuccessMessageWithData(['data' => $statistic]));
