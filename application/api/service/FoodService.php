@@ -273,6 +273,7 @@ class FoodService extends BaseService
                             'default' => $check['default'],
                             'name' => $v2['name'],
                             'price' => $v2['price'],
+                            'desc' => $v2['desc'],
                             'external_price' => $v2['external_price'],
                             'img_url' => $v2['img_url'],
                             'status' => $check['status']

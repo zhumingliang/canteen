@@ -28,7 +28,7 @@ class FoodT extends BaseModel
         $foods = self::where('c_id', $canteenId)
             ->where('f_type', $foodType)
             ->where('state', CommonEnum::STATE_IS_OK)
-            ->field('id,m_id,name,img_url,price,external_price')
+            ->field('id,m_id,name,img_url,price,external_price,desc')
             ->select()->toArray();
         return $foods;
     }
