@@ -23,9 +23,10 @@ class FoodT extends BaseModel
         return $this->hasMany('FoodCommentT', 'f_id', 'id');
     }
 
-    public static function foodsForOfficialManager($canteenId)
+    public static function foodsForOfficialManager($canteenId,$foodType)
     {
         $foods = self::where('c_id', $canteenId)
+            ->where('f_type', $foodType)
             ->where('state', CommonEnum::STATE_IS_OK)
             ->field('id,m_id,name,img_url,price,external_price')
             ->select()->toArray();

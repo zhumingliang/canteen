@@ -219,12 +219,12 @@ class FoodService extends BaseService
 
     }
 
-    public function foodsForOfficialManager($canteenId, $dinnerId, $day)
+    public function foodsForOfficialManager($canteenId, $dinnerId, $day, $foodType)
     {
         //获取菜单配置
         $menus = MenuT::dinnerMenusCategory($dinnerId);
         //获取所有菜品信息
-        $foods = FoodT::foodsForOfficialManager($canteenId);
+        $foods = FoodT::foodsForOfficialManager($canteenId, $foodType);
         //获取自动上架配置
         $auto = AutomaticT::infoToDinner($canteenId, $dinnerId);
         //获取选定日期已上架的菜品
@@ -267,13 +267,15 @@ class FoodService extends BaseService
             if (count($foods)) {
                 foreach ($foods as $k2 => $v2) {
                     if ($v['id'] == $v2['m_id']) {
+                        $check = $this->checkFoodStatus($v2['id'], $auto, $foodDay, $day);
                         array_push($menuFood, [
                             'food_id' => $v2['id'],
+                            'default' => $check['default'],
                             'name' => $v2['name'],
                             'price' => $v2['price'],
                             'external_price' => $v2['external_price'],
                             'img_url' => $v2['img_url'],
-                            'status' => $this->checkFoodStatus($v2['id'], $auto, $foodDay, $day)
+                            'status' => $check['status']
                         ]);
                         unset($foods[$k2]);
                         continue;
@@ -292,6 +294,7 @@ class FoodService extends BaseService
         //状态有三种：上架1/待上架2/未上架3
         //设置了自动上架菜品：待上架/未上架
         //未设置自动上架菜品：已上架/未上架
+        $default = CommonEnum::STATE_IS_FAIL;
 
         if (!count($auto)) {
             $status = FoodEnum::STATUS_DOWN;
@@ -299,11 +302,15 @@ class FoodService extends BaseService
                 foreach ($foodDay as $k => $v) {
                     if ($foodId == $v['f_id']) {
                         $status = $v['status'];
+                        $default = $v['default'];
                         break;
                     }
                 }
             }
-            return $status;
+            return [
+                'default' => $default,
+                'status' => $status
+            ];
         }
 
         $foods = $auto[0]['foods'];
@@ -322,6 +329,7 @@ class FoodService extends BaseService
         if (count($foodDay)) {
             foreach ($foodDay as $k => $v) {
                 if ($foodId == $v['f_id']) {
+                    $default = $v['default'];
                     if ($day == date('Y-m-d')) {
                         $status = $v['status'];
                     } else {
@@ -335,7 +343,10 @@ class FoodService extends BaseService
                 }
             }
         }
-        return $status;
+        return [
+            'default' => $default,
+            'status' => $status
+        ];
 
 
     }
@@ -346,7 +357,11 @@ class FoodService extends BaseService
         $foodId = $params['food_id'];
         $canteenId = $params['canteen_id'];
         $dinnerId = $params['dinner_id'];
-
+       /* if (!empty($params['default'])) {
+            if (!$this->checkStatus($foodId, $day, $params['default'])) {
+                throw new SaveException(['msg' => '默认菜式数量已达到最大值']);
+            }
+        }*/
         //获取自动上架配置
         $auto = AutomaticT::infoToDinner($canteenId, $dinnerId);
         $dayFood = FoodDayStateT::where('f_id', $foodId)
