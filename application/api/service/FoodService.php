@@ -523,6 +523,36 @@ class FoodService extends BaseService
                 throw new SaveException(['msg' => '上架菜品不能为空']);
             }
             $this->prefixAutoFoods($auto->id, $detail['add'], []);
+
+            //判断配置中是否包含今天，包含则上架今日菜品
+            if (date('w') == $params['repeat_week']) {
+                $add = $detail['add'];
+                $foodList = [];
+                foreach ($add as $k => $v) {
+                    $foods = $v['foods'];
+                    if (count($foods)) {
+                        foreach ($foods as $k2 => $v2) {
+                            array_push($foodList, [
+                                'f_id' => $v2,
+                                'status' => FoodEnum::STATUS_UP,
+                                'day' => date('Y-m-d'),
+                                'user_id' => 0,
+                                'canteen_id' => $params['canteen_id'],
+                                'default' => CommonEnum::STATE_IS_FAIL,
+                                'dinner_id' => $params['dinner_id']
+                            ]);
+                        }
+                    }
+                }
+
+                if (count($foodList)) {
+                    $save = (new FoodDayStateT())->saveAll($foodList);
+                    if (!$save) {
+                        throw new SaveException(['msg' => "上架今日菜品失败"]);
+                    }
+                }
+            }
+
             Db::commit();
         } catch (Exception $e) {
             Db::rollback();
