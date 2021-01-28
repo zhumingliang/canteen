@@ -357,11 +357,11 @@ class FoodService extends BaseService
         $foodId = $params['food_id'];
         $canteenId = $params['canteen_id'];
         $dinnerId = $params['dinner_id'];
-       /* if (!empty($params['default'])) {
+        if (!empty($params['default'])) {
             if (!$this->checkStatus($foodId, $day, $params['default'])) {
                 throw new SaveException(['msg' => '默认菜式数量已达到最大值']);
             }
-        }*/
+        }
         //获取自动上架配置
         $auto = AutomaticT::infoToDinner($canteenId, $dinnerId);
         $dayFood = FoodDayStateT::where('f_id', $foodId)
@@ -373,6 +373,7 @@ class FoodService extends BaseService
                 'canteen_id' => $canteenId,
                 'dinner_id' => $dinnerId,
                 'day' => $day,
+                'default' => empty($params['default']) ? CommonEnum::STATE_IS_OK : $params['default'],
                 'user_id' => Token::getCurrentUid(),
 
             ];
@@ -403,6 +404,10 @@ class FoodService extends BaseService
                         $dayFood->status = $params['status'] == FoodEnum::STATUS_DOWN ? $params['status'] : FoodEnum::STATUS_READY;
                     }
 
+                }
+
+                if (!empty($params['default'])) {
+                    $dayFood->default = $params['default'];
                 }
             }
             $dayFood->update_time = date('Y-m-d H:i:s');

@@ -256,7 +256,7 @@ class Food extends BaseController
         $dinnerId = Request::param('dinner_id');
         $day = Request::param('day');
         $foodType = Request::param('food_type');
-        $foods = (new FoodService())->foodsForOfficialManager($canteenId, $dinnerId, $day,$foodType);
+        $foods = (new FoodService())->foodsForOfficialManager($canteenId, $dinnerId, $day, $foodType);
         return json(new SuccessMessageWithData(['data' => $foods]));
     }
 
@@ -279,6 +279,7 @@ class Food extends BaseController
      * @apiParam (请求参数说明) {int} food_id  菜品ID
      * @apiParam (请求参数说明) {String} day 日期
      * @apiParam (请求参数说明) {int} status 菜品状态：1:上架；3:下架
+     * @apiParam (请求参数说明) {int} default 菜品默认状态：1|默认；2|非默认
      * @apiSuccessExample {json} 返回样例:
      *{"msg":"ok","errorCode":0}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
