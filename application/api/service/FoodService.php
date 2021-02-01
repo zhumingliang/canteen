@@ -325,11 +325,13 @@ class FoodService extends BaseService
 
             }
         }
+
         if (count($foodDay)) {
             foreach ($foodDay as $k => $v) {
                 if ($foodId == $v['f_id']) {
                     $default = $v['default'];
-                    if ($day == date('Y-m-d')) {
+                    $status = $v['status'];
+                   /* if ($day == date('Y-m-d')) {
                         $status = $v['status'];
                     } else {
                         if ($v['status'] != FoodEnum::STATUS_DOWN) {
@@ -337,7 +339,7 @@ class FoodService extends BaseService
                         } else {
                             $status = FoodEnum::STATUS_DOWN;
                         }
-                    }
+                    }*/
                     break;
                 }
             }
