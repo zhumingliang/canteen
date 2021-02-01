@@ -325,8 +325,6 @@ class FoodService extends BaseService
 
             }
         }
-
-
         if (count($foodDay)) {
             foreach ($foodDay as $k => $v) {
                 if ($foodId == $v['f_id']) {
@@ -378,7 +376,8 @@ class FoodService extends BaseService
                 'user_id' => Token::getCurrentUid(),
 
             ];
-            if (!count($auto)) {
+            $data['status'] = $params['status'];
+         /*   if (!count($auto)) {
                 $data['status'] = $params['status'];
             } else {
                 if ($day == date('Y-m-d')) {
@@ -387,13 +386,17 @@ class FoodService extends BaseService
                     $data['status'] = $params['status'] == FoodEnum::STATUS_DOWN ? $params['status'] : FoodEnum::STATUS_READY;
                 }
 
-            }
+            }*/
 
             if (!FoodDayStateT::create($data)) {
                 throw new SaveException(['msg' => '新增菜品信息状态失败']);
             }
         } else {
-            if ($params['status'] == FoodEnum::STATUS_DOWN) {
+            $dayFood->status = $params['status'];
+            if (!empty($params['default'])) {
+                $dayFood->default = $params['default'];
+            }
+     /*       if ($params['status'] == FoodEnum::STATUS_DOWN) {
                 $dayFood->status = $params['status'];
             } else {
                 if (!count($auto)) {
@@ -410,7 +413,7 @@ class FoodService extends BaseService
                 if (!empty($params['default'])) {
                     $dayFood->default = $params['default'];
                 }
-            }
+            }*/
             $dayFood->update_time = date('Y-m-d H:i:s');
             if (!$dayFood->save()) {
                 throw new UpdateException (['msg' => '修改菜品信息状态失败']);
@@ -419,6 +422,24 @@ class FoodService extends BaseService
         }
 
 
+    }
+
+    private function checkHandelStatus($auto, $day, $status)
+    {
+
+        if (!count($auto)) {
+            return $status;
+        } else {
+            if ($day == date('Y-m-d')) {
+                return $status;
+            } else {
+                //检测当前时间
+
+                return $status == FoodEnum::STATUS_DOWN ?
+                    $status : FoodEnum::STATUS_READY;
+            }
+
+        }
     }
 
     private function checkStatus($food_id, $day, $status)
