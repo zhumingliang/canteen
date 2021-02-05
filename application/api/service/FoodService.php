@@ -25,6 +25,7 @@ use Monolog\Handler\IFTTTHandler;
 use think\Db;
 use think\Exception;
 use think\Model;
+use function GuzzleHttp\Psr7\str;
 
 class FoodService extends BaseService
 {
@@ -226,7 +227,8 @@ class FoodService extends BaseService
         //获取所有菜品信息
         $foods = FoodT::foodsForOfficialManager($canteenId, $foodType);
         //获取自动上架配置
-        $auto = AutomaticT::infoToDinner($canteenId, $dinnerId);
+        $dayWeek = date('w', strtotime($day));
+        $auto = AutomaticT::infoToDinner($canteenId, $dinnerId, $dayWeek);
         //获取选定日期已上架的菜品
         $foodDay = FoodDayStateT::FoodStatus($canteenId, $dinnerId, $day);
 
@@ -260,7 +262,7 @@ class FoodService extends BaseService
 
     private function getCurrentAutoDay($day, $foodDay, $auto)
     {
-        if (!count($auto)) {
+        if (!$auto) {
             return 0;
         }
         if (count($foodDay)) {
@@ -268,7 +270,7 @@ class FoodService extends BaseService
         }
         //获取选择日期的周几信息
         $dayWeek = date('w', strtotime($day));
-        $autoWeek = $auto[0]['auto_week'];
+        $autoWeek = $auto->auto_week;
         $dayWeek = $dayWeek == 0 ? 7 : $dayWeek;
         $autoWeek = $autoWeek == 0 ? 7 : $autoWeek;
         if ($dayWeek >= $autoWeek) {
@@ -316,7 +318,7 @@ class FoodService extends BaseService
         //未设置自动上架菜品：已上架/未上架
         $default = CommonEnum::STATE_IS_FAIL;
 
-        if (!count($auto)) {
+        if (!$auto) {
             $status = FoodEnum::STATUS_DOWN;
             if (count($foodDay)) {
                 foreach ($foodDay as $k => $v) {
@@ -333,7 +335,7 @@ class FoodService extends BaseService
             ];
         }
 
-        $foods = $auto[0]['foods'];
+        $foods = $auto['foods'];
         $status = FoodEnum::STATUS_DOWN;
         if (count($foods)) {
             foreach ($foods as $k => $v) {
@@ -383,7 +385,8 @@ class FoodService extends BaseService
             }
         }
         //获取自动上架配置
-        $auto = AutomaticT::infoToDinner($canteenId, $dinnerId);
+        //$dayWeeek = date('w', strtotime($day));
+       // $auto = AutomaticT::infoToDinner($canteenId, $dinnerId,$dayWeeek);
         $dayFood = FoodDayStateT::where('f_id', $foodId)
             ->where('day', $day)
             ->find();
@@ -694,14 +697,15 @@ class FoodService extends BaseService
     public function upAll($canteenId, $dinnerId, $day)
     {
         //获取自动上架配置
-        $auto = AutomaticT::infoToDinner($canteenId, $dinnerId);
+        $dayWeek = date('w', strtotime($day));
+        $auto = AutomaticT::infoToDinner($canteenId, $dinnerId, $dayWeek);
         $foodDay = FoodDayStateT::FoodStatus($canteenId, $dinnerId, $day);
         $foodList = [];
-        if (count($auto)) {
-            if (empty($auto[0]['foods'])) {
+        if ($auto) {
+            if (!count($auto['foods'])) {
                 throw new ParameterException(['msg' => "自动上架菜品未设置"]);
             }
-            $autoFoods = $auto[0]['foods'];
+            $autoFoods = $auto['foods'];
             foreach ($autoFoods as $k => $v) {
                 if (!count($foodDay)) {
                     array_push($foodList, [
@@ -728,9 +732,9 @@ class FoodService extends BaseService
                             'status' => FoodEnum::STATUS_UP,
                             'day' => $day,
                             'user_id' => 0,
-                            'canteen_id' => $auto[0]['canteen_id'],
+                            'canteen_id' => $auto['canteen_id'],
                             'default' => CommonEnum::STATE_IS_FAIL,
-                            'dinner_id' => $auto[0]['dinner_id']
+                            'dinner_id' => $auto['dinner_id']
                         ]);
                     }
                 }
@@ -739,10 +743,10 @@ class FoodService extends BaseService
         }
 
         if (count($foodList)) {
-            /* $save = (new FoodDayStateT())->saveAll($foodList);
-             if (!$save) {
-                 throw new SaveException(['msg' => '上架失败']);
-             }*/
+            $save = (new FoodDayStateT())->saveAll($foodList);
+            if (!$save) {
+                throw new SaveException(['msg' => '上架失败']);
+            }
         }
 
     }

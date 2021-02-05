@@ -42,10 +42,11 @@ class AutomaticT extends Model
     }
 
 
-    public static function infoToDinner($canteenId,$dinnerId)
+    public static function infoToDinner($canteenId, $dinnerId, $dayWeek)
     {
         $info = self::where('canteen_id', $canteenId)
-            ->where('dinner_id',$dinnerId)
+            ->where('dinner_id', $dinnerId)
+            ->where('repeat_week', $dayWeek)
             ->where('state', CommonEnum::STATE_IS_OK)
             ->with([
                 'foods' => function ($query) {
@@ -53,7 +54,7 @@ class AutomaticT extends Model
                 }
             ])
             //->hidden(['create_time', 'update_time'])
-            ->select()->toArray();
+            ->find();
         return $info;
 
     }
