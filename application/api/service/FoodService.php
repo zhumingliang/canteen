@@ -606,6 +606,7 @@ class FoodService extends BaseService
                 $cancel = empty($detail['cancel']) ? [] : $detail['cancel'];
                 $this->prefixAutoFoods($params['id'], $add, $cancel);
             }
+
             Db::commit();
         } catch (Exception $e) {
             Db::rollback();
@@ -719,10 +720,10 @@ class FoodService extends BaseService
         }
 
         if (count($foodList)) {
-            $save = (new FoodDayStateT())->saveAll($foodList);
+           /* $save = (new FoodDayStateT())->saveAll($foodList);
             if (!$save) {
                 throw new SaveException(['msg' => '上架失败']);
-            }
+            }*/
         }
 
     }
