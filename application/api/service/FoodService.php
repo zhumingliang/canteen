@@ -236,7 +236,7 @@ class FoodService extends BaseService
         $dinner = DinnerT::get($dinnerId);
 
         //$nextAuto = $this->getNextAuto($auto);
-        $nextAuto = $this->getCurrentAutoDay($day, $auto);
+        $nextAuto = $this->getCurrentAutoDay($day, $foodDay, $auto);
         $data = $this->prefixFoodDayStatus($menus, $foods, $auto, $foodDay, $day);
         return [
             'fixed' => $dinner->fixed,
@@ -260,9 +260,12 @@ class FoodService extends BaseService
         }
     }
 
-    private function getCurrentAutoDay($day, $auto)
+    private function getCurrentAutoDay($day, $foodDay, $auto)
     {
         if (!$auto) {
+            return 0;
+        }
+        if (count($foodDay)) {
             return 0;
         }
         //获取选择日期的周几信息
