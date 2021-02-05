@@ -267,7 +267,7 @@ class FoodService extends BaseService
             return 0;
         }
         //获取选择日期的周几信息
-        $dayWeek = date('w', $day);
+        $dayWeek = date('w', strtotime($day));
         $autoWeek = $auto[0]['auto_week'];
         $dayWeek = $dayWeek == 0 ? 7 : $dayWeek;
         $autoWeek = $autoWeek == 0 ? 7 : $autoWeek;
