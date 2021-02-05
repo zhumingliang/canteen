@@ -233,7 +233,8 @@ class FoodService extends BaseService
         //获取餐次是否固定消费
         $dinner = DinnerT::get($dinnerId);
 
-        $nextAuto = $this->getNextAuto($auto);
+        //$nextAuto = $this->getNextAuto($auto);
+        $nextAuto = $this->getCurrentAutoDay($day, $foodDay, $auto);
         $data = $this->prefixFoodDayStatus($menus, $foods, $auto, $foodDay, $day);
         return [
             'fixed' => $dinner->fixed,
@@ -255,8 +256,26 @@ class FoodService extends BaseService
         } else {
             return date('Y-m-d', strtotime('+' . (7 - abs($w - $autoWeek)) . ' day', time())) . ' 00:00';
         }
+    }
 
-
+    private function getCurrentAutoDay($day, $foodDay, $auto)
+    {
+        if (!count($auto)) {
+            return 0;
+        }
+        if (count($foodDay)) {
+            return 0;
+        }
+        //获取选择日期的周几信息
+        $dayWeek = date('w', $day);
+        $autoWeek = $auto[0]['auto_week'];
+        $dayWeek = $dayWeek == 0 ? 7 : $dayWeek;
+        $autoWeek = $autoWeek == 0 ? 7 : $autoWeek;
+        if ($dayWeek >= $autoWeek) {
+            return addDay(7 + $dayWeek - $autoWeek, $day) . ' 00:00';
+        } else {
+            return addDay(7 - ($autoWeek - $dayWeek), $day) . ' 00:00';
+        }
     }
 
     private function prefixFoodDayStatus($menus, $foods, $auto, $foodDay, $day)
@@ -331,15 +350,15 @@ class FoodService extends BaseService
                 if ($foodId == $v['f_id']) {
                     $default = $v['default'];
                     $status = $v['status'];
-                   /* if ($day == date('Y-m-d')) {
-                        $status = $v['status'];
-                    } else {
-                        if ($v['status'] != FoodEnum::STATUS_DOWN) {
-                            $status = FoodEnum::STATUS_READY;
-                        } else {
-                            $status = FoodEnum::STATUS_DOWN;
-                        }
-                    }*/
+                    /* if ($day == date('Y-m-d')) {
+                         $status = $v['status'];
+                     } else {
+                         if ($v['status'] != FoodEnum::STATUS_DOWN) {
+                             $status = FoodEnum::STATUS_READY;
+                         } else {
+                             $status = FoodEnum::STATUS_DOWN;
+                         }
+                     }*/
                     break;
                 }
             }
@@ -379,16 +398,16 @@ class FoodService extends BaseService
 
             ];
             $data['status'] = $params['status'];
-         /*   if (!count($auto)) {
-                $data['status'] = $params['status'];
-            } else {
-                if ($day == date('Y-m-d')) {
-                    $data['status'] = $params['status'];
-                } else {
-                    $data['status'] = $params['status'] == FoodEnum::STATUS_DOWN ? $params['status'] : FoodEnum::STATUS_READY;
-                }
-
-            }*/
+            /*   if (!count($auto)) {
+                   $data['status'] = $params['status'];
+               } else {
+                   if ($day == date('Y-m-d')) {
+                       $data['status'] = $params['status'];
+                   } else {
+                       $data['status'] = $params['status'] == FoodEnum::STATUS_DOWN ? $params['status'] : FoodEnum::STATUS_READY;
+                   }
+   
+               }*/
 
             if (!FoodDayStateT::create($data)) {
                 throw new SaveException(['msg' => '新增菜品信息状态失败']);
@@ -398,24 +417,24 @@ class FoodService extends BaseService
             if (!empty($params['default'])) {
                 $dayFood->default = $params['default'];
             }
-     /*       if ($params['status'] == FoodEnum::STATUS_DOWN) {
-                $dayFood->status = $params['status'];
-            } else {
-                if (!count($auto)) {
-                    $dayFood->status = $params['status'];
-                } else {
-                    if ($day == date('Y-m-d')) {
-                        $dayFood->status = $params['status'];
-                    } else {
-                        $dayFood->status = $params['status'] == FoodEnum::STATUS_DOWN ? $params['status'] : FoodEnum::STATUS_READY;
-                    }
-
-                }
-
-                if (!empty($params['default'])) {
-                    $dayFood->default = $params['default'];
-                }
-            }*/
+            /*       if ($params['status'] == FoodEnum::STATUS_DOWN) {
+                       $dayFood->status = $params['status'];
+                   } else {
+                       if (!count($auto)) {
+                           $dayFood->status = $params['status'];
+                       } else {
+                           if ($day == date('Y-m-d')) {
+                               $dayFood->status = $params['status'];
+                           } else {
+                               $dayFood->status = $params['status'] == FoodEnum::STATUS_DOWN ? $params['status'] : FoodEnum::STATUS_READY;
+                           }
+       
+                       }
+       
+                       if (!empty($params['default'])) {
+                           $dayFood->default = $params['default'];
+                       }
+                   }*/
             $dayFood->update_time = date('Y-m-d H:i:s');
             if (!$dayFood->save()) {
                 throw new UpdateException (['msg' => '修改菜品信息状态失败']);
@@ -720,10 +739,10 @@ class FoodService extends BaseService
         }
 
         if (count($foodList)) {
-           /* $save = (new FoodDayStateT())->saveAll($foodList);
-            if (!$save) {
-                throw new SaveException(['msg' => '上架失败']);
-            }*/
+            /* $save = (new FoodDayStateT())->saveAll($foodList);
+             if (!$save) {
+                 throw new SaveException(['msg' => '上架失败']);
+             }*/
         }
 
     }
