@@ -273,10 +273,10 @@ class FoodService extends BaseService
         $autoWeek = $auto->auto_week;
         $dayWeek = $dayWeek == 0 ? 7 : $dayWeek;
         $autoWeek = $autoWeek == 0 ? 7 : $autoWeek;
-        if ($dayWeek >= $autoWeek) {
-            return addDay(7 + $dayWeek - $autoWeek, $day) . ' 00:00';
+        if ($dayWeek > $autoWeek) {
+            return addDay(0 - ($dayWeek - $autoWeek), $day) . ' 00:00';
         } else {
-            return addDay(7 - ($autoWeek - $dayWeek), $day) . ' 00:00';
+            return addDay(($autoWeek - $dayWeek) - 7, $day) . ' 00:00';
         }
     }
 
@@ -386,7 +386,7 @@ class FoodService extends BaseService
         }
         //获取自动上架配置
         //$dayWeeek = date('w', strtotime($day));
-       // $auto = AutomaticT::infoToDinner($canteenId, $dinnerId,$dayWeeek);
+        // $auto = AutomaticT::infoToDinner($canteenId, $dinnerId,$dayWeeek);
         $dayFood = FoodDayStateT::where('f_id', $foodId)
             ->where('day', $day)
             ->find();
@@ -692,7 +692,6 @@ class FoodService extends BaseService
             throw new UpdateException(['msg' => '批量下架失败']);
         }
     }
-
 
     public function upAll($canteenId, $dinnerId, $day)
     {
