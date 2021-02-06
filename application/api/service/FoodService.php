@@ -388,6 +388,7 @@ class FoodService extends BaseService
         //$dayWeeek = date('w', strtotime($day));
         // $auto = AutomaticT::infoToDinner($canteenId, $dinnerId,$dayWeeek);
         $dayFood = FoodDayStateT::where('f_id', $foodId)
+            ->where('dinner_id', $dinnerId)
             ->where('day', $day)
             ->find();
         if (!$dayFood) {
@@ -744,45 +745,43 @@ class FoodService extends BaseService
         $auto = AutomaticT::infoToDinner($canteenId, $dinnerId, $dayWeek);
         $foodDay = FoodDayStateT::FoodStatus($canteenId, $dinnerId, $day);
         $foodList = [];
+        $alreadyFoods = [];
+        if (count($foodDay)) {
+            foreach ($foodDay as $k => $v) {
+                if (in_array([$v['f_id']], $alreadyFoods)) {
+                    continue;
+                }
+                if ($v['status'] != FoodEnum::STATUS_DOWN) {
+                    array_push($foodList, [
+                        'id' => $v['id'],
+                        'status' => FoodEnum::STATUS_UP
+                    ]);
+                }
+                array_push($alreadyFoods, $v['f_id']);
+            }
+        }
+
         if ($auto) {
             if (!count($auto['foods'])) {
                 throw new ParameterException(['msg' => "自动上架菜品未设置"]);
             }
             $autoFoods = $auto['foods'];
             foreach ($autoFoods as $k => $v) {
-                if (!count($foodDay)) {
-                    array_push($foodList, [
-                        'f_id' => $v['food_id'],
-                        'status' => FoodEnum::STATUS_UP,
-                        'day' => $day,
-                        'user_id' => 0,
-                        'canteen_id' => $auto['canteen_id'],
-                        'default' => CommonEnum::STATE_IS_FAIL,
-                        'dinner_id' => $auto['dinner_id']
-                    ]);
-                } else {
-                    $exit = false;
-                    foreach ($foodDay as $k2 => $v2) {
-                        if ($v['food_id'] == $v2['f_id']) {
-                            $exit = true;
-                            unset($foodDay[$k2]);
-                            break;
-                        }
-                    }
-                    if (!$exit) {
-                        array_push($foodList, [
-                            'f_id' => $v['food_id'],
-                            'status' => FoodEnum::STATUS_UP,
-                            'day' => $day,
-                            'user_id' => 0,
-                            'canteen_id' => $auto['canteen_id'],
-                            'default' => CommonEnum::STATE_IS_FAIL,
-                            'dinner_id' => $auto['dinner_id']
-                        ]);
-                    }
+                if (in_array([$v['food_id']], $alreadyFoods)) {
+                    continue;
                 }
-            }
+                array_push($foodList, [
+                    'f_id' => $v['food_id'],
+                    'status' => FoodEnum::STATUS_UP,
+                    'day' => $day,
+                    'user_id' => 0,
+                    'canteen_id' => $canteenId,
+                    'default' => CommonEnum::STATE_IS_FAIL,
+                    'dinner_id' => $dinnerId
+                ]);
+                array_push($alreadyFoods, $v['food_id']);
 
+            }
         }
 
         if (count($foodList)) {
