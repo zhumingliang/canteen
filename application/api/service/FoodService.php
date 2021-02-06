@@ -682,15 +682,59 @@ class FoodService extends BaseService
 
     public function downAll($canteenId, $dinnerId, $day)
     {
-        $res = FoodDayStateT::update(['status' => FoodEnum::STATUS_DOWN], [
-            'canteen_id' => $canteenId,
-            'dinner_id' => $dinnerId,
-            'day' => $day
-        ]);
-
-        if (!$res) {
-            throw new UpdateException(['msg' => '批量下架失败']);
+        //检查是否配置自动上架
+        $autoFoods = [];
+        $foodList = [];
+        $alreadyFoods = [];
+        $dayWeek = date('w', strtotime($day));
+        $auto = AutomaticT::infoToDinner($canteenId, $dinnerId, $dayWeek);
+        if ($auto && count($auto['foods'])) {
+            $autoFoods = $auto['foods'];
         }
+        $foodDay = FoodDayStateT::FoodStatus($canteenId, $dinnerId, $day);
+        if (count($foodDay)) {
+            foreach ($foodDay as $k => $v) {
+                if (in_array([$v['f_id']], $alreadyFoods)) {
+                    continue;
+                }
+                if ($v['status'] == FoodEnum::STATUS_UP) {
+                    array_push($foodList, [
+                        'id' => $v['id'],
+                        'status' => FoodEnum::STATUS_DOWN
+                    ]);
+                }
+                array_push($alreadyFoods, $v['f_id']);
+            }
+        }
+
+        if (count($autoFoods)) {
+            foreach ($autoFoods as $k => $v) {
+                if (in_array([$v['food_id']], $alreadyFoods)) {
+                    continue;
+                }
+                array_push($foodList, [
+                    'f_id' => $v['food_id'],
+                    'status' => FoodEnum::STATUS_DOWN,
+                    'day' => $day,
+                    'user_id' => 0,
+                    'canteen_id' => $canteenId,
+                    'default' => CommonEnum::STATE_IS_FAIL,
+                    'dinner_id' => $dinnerId
+                ]);
+                array_push($alreadyFoods, $v['food_id']);
+
+            }
+        }
+
+
+        if (count($foodList)) {
+            $save = (new FoodDayStateT())->saveAll($foodList);
+            if (!$save) {
+                throw new SaveException(['msg' => '批量下架失败']);
+            }
+        }
+
+
     }
 
     public function upAll($canteenId, $dinnerId, $day)
