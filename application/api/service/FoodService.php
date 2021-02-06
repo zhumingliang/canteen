@@ -713,9 +713,9 @@ class FoodService extends BaseService
                         'status' => FoodEnum::STATUS_UP,
                         'day' => $day,
                         'user_id' => 0,
-                        'canteen_id' => $auto[0]['canteen_id'],
+                        'canteen_id' => $auto['canteen_id'],
                         'default' => CommonEnum::STATE_IS_FAIL,
-                        'dinner_id' => $auto[0]['dinner_id']
+                        'dinner_id' => $auto['dinner_id']
                     ]);
                 } else {
                     $exit = false;
