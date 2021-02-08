@@ -576,5 +576,15 @@ class Food extends BaseController
         return json(new SuccessMessage());
     }
 
+    public function readyUpFoods()
+    {
+        $canteenId = Request::param('canteen_id');
+        $dinnerId = Request::param('dinner_id');
+        $day = Request::param('day');
+        $foodType = Request::param('food_type');
+        $foods = (new FoodService())->readyUpFoods($canteenId, $dinnerId, $day,$foodType);
+        return json(new SuccessMessageWithData(['data' => $foods]));
+    }
+
 
 }

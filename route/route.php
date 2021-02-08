@@ -142,6 +142,7 @@ Route::post('api/:version/food/automatic/update', 'api/:version.Food/updateAutoC
 Route::get('api/:version/food/automatic', 'api/:version.Food/automatic');
 Route::post('api/:version/food/auto/upAll', 'api/:version.Food/upAll');
 Route::post('api/:version/food/auto/downAll', 'api/:version.Food/downAll');
+Route::get('api/:version/food/auto/ready', 'api/:version.Food/readyUpFoods');
 
 Route::post('api/:version/material/save', 'api/:version.Material/save');
 Route::post('api/:version/material/update', 'api/:version.Material/update');

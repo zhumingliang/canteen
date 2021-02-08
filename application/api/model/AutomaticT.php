@@ -59,4 +59,28 @@ class AutomaticT extends Model
 
     }
 
+
+    public static function infoToDinner2($canteenId, $dinnerId, $dayWeek)
+    {
+        $info = self::where('canteen_id', $canteenId)
+            ->where('dinner_id', $dinnerId)
+            ->where('repeat_week', $dayWeek)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->with([
+                'foods' => function ($query) {
+                    $query->where('state', CommonEnum::STATE_IS_OK)
+                        ->with([
+                            'food' => function ($query2) {
+                                $query2->field('id,name,img_url');
+                            }
+                        ]);
+                }
+            ])
+            //->hidden(['create_time', 'update_time'])
+            ->find();
+        return $info;
+
+    }
+
+
 }
