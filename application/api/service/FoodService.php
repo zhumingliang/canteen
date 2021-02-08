@@ -340,7 +340,7 @@ class FoodService extends BaseService
         if (count($foods)) {
             foreach ($foods as $k => $v) {
                 if ($foodId == $v['food_id']) {
-                    if ($day == date('Y-m-d') && date('Y-m-d', $v['create_time']) != date('Y-m-d')) {
+                    if ($day == date('Y-m-d') && date('Y-m-d',strtotime( $v['create_time'])) != date('Y-m-d')) {
                         $status = FoodEnum::STATUS_UP;
                     } else {
                         $status = FoodEnum::STATUS_READY;
