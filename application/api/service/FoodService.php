@@ -265,9 +265,9 @@ class FoodService extends BaseService
         if (!$auto) {
             return 0;
         }
-        if (count($foodDay)) {
+      /*  if (count($foodDay)) {
             return 0;
-        }
+        }*/
         //获取选择日期的周几信息
         $dayWeek = date('w', strtotime($day));
         $autoWeek = $auto->auto_week;
