@@ -417,9 +417,9 @@ class FoodService extends BaseService
                 if ($foodId == $v['f_id']) {
                     $default = $v['default'];
                     $status = $v['status'];
-                    if ($status != FoodEnum::STATUS_UP) {
+                  /*  if ($status != FoodEnum::STATUS_UP) {
                         $status = FoodEnum::STATUS_READY;
-                    }
+                    }*/
                 }
                 $needReturn = true;
             }
