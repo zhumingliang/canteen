@@ -824,12 +824,10 @@ class FoodService extends BaseService
                 if (in_array([$v['f_id']], $alreadyFoods)) {
                     continue;
                 }
-                if ($v['status'] == FoodEnum::STATUS_UP) {
-                    array_push($foodList, [
-                        'id' => $v['id'],
-                        'status' => FoodEnum::STATUS_DOWN
-                    ]);
-                }
+                array_push($foodList, [
+                    'id' => $v['id'],
+                    'status' => FoodEnum::STATUS_DOWN
+                ]);
                 array_push($alreadyFoods, $v['f_id']);
             }
         }
