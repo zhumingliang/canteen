@@ -231,7 +231,6 @@ class FoodService extends BaseService
         $auto = AutomaticT::infoToDinner($canteenId, $dinnerId, $dayWeek);
         //获取选定日期已上架的菜品
         $foodDay = FoodDayStateT::FoodStatus($canteenId, $dinnerId, $day);
-
         //获取餐次是否固定消费
         $dinner = DinnerT::get($dinnerId);
 
@@ -472,13 +471,14 @@ class FoodService extends BaseService
     private
     function checkUpTime($autoWeek, $repeatWeek, $day)
     {
+
         $repeatWeek = $repeatWeek == 0 ? 7 : $repeatWeek;
         $autoWeek = $autoWeek == 0 ? 7 : $autoWeek;
         if ($repeatWeek >= $autoWeek) {
-            $upTime = addDay(7 + $autoWeek - $repeatWeek, $day);
-        } else {
             $upTime = reduceDay(7 - ($repeatWeek - $autoWeek), $day);
 
+        } else {
+            $upTime = reduceDay(($autoWeek - $repeatWeek) + 7, $day);
         }
         return strtotime(date('Y-m-d')) >= strtotime($upTime);
 
@@ -511,7 +511,7 @@ class FoodService extends BaseService
                 'dinner_id' => $dinnerId,
                 'day' => $day,
                 'default' => empty($params['default']) ? CommonEnum::STATE_IS_OK : $params['default'],
-                'user_id' => Token::getCurrentUid(),
+                'user_id' => 1   // Token::getCurrentUid(),
 
             ];
             $data['status'] = $params['status'];
