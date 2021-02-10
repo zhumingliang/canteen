@@ -283,7 +283,6 @@ class FoodService extends BaseService
 
     private function prefixFoodDayStatus($menus, $foods, $auto, $foodDay, $day)
     {
-
         foreach ($menus as $k => $v) {
             $menuFood = [];
             if (count($foods)) {
@@ -400,7 +399,6 @@ class FoodService extends BaseService
                 'status' => $status
             ];
         }
-
         //设置自动上架
         //判断是否到了上架时间
         $autoWeek = $auto['auto_week'];
@@ -447,9 +445,10 @@ class FoodService extends BaseService
         foreach ($foodDay as $k => $v) {
             if ($foodId == $v['f_id']) {
                 $default = $v['default'];
-                $status = $v['status'] == FoodEnum::STATUS_UP ? FoodEnum::STATUS_UP : FoodEnum::STATUS_DOWN;
+                //  $status = $v['status'] == FoodEnum::STATUS_UP ? FoodEnum::STATUS_UP : FoodEnum::STATUS_DOWN;
+                $status = $v['status'] == FoodEnum::STATUS_DOWN ? FoodEnum::STATUS_DOWN : $v['status'];
+                $needReturn = true;
             }
-            $needReturn = true;
         }
         if ($needReturn) {
             return [
@@ -476,11 +475,11 @@ class FoodService extends BaseService
         $repeatWeek = $repeatWeek == 0 ? 7 : $repeatWeek;
         $autoWeek = $autoWeek == 0 ? 7 : $autoWeek;
         if ($repeatWeek >= $autoWeek) {
-            $upTime = reduceDay(7 - ($repeatWeek - $autoWeek), $day);
-        } else {
             $upTime = addDay(7 + $autoWeek - $repeatWeek, $day);
-        }
+        } else {
+            $upTime = reduceDay(7 - ($repeatWeek - $autoWeek), $day);
 
+        }
         return strtotime(date('Y-m-d')) >= strtotime($upTime);
 
 
@@ -505,7 +504,6 @@ class FoodService extends BaseService
             ->where('dinner_id', $dinnerId)
             ->where('day', $day)
             ->find();
-
         if (!$dayFood) {
             $data = [
                 'f_id' => $foodId,
@@ -541,8 +539,7 @@ class FoodService extends BaseService
             if (!empty($params['default'])) {
                 $dayFood->default = $params['default'];
             }
-
-            $dayFood->update_time = date('Y-m-d H:i:s');
+            $dayFood->update_timee = date('Y-m-d H:i:s');
             if (!$dayFood->save()) {
                 throw new UpdateException (['msg' => '修改菜品信息状态失败']);
 
