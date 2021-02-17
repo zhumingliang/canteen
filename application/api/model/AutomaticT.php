@@ -54,7 +54,7 @@ class AutomaticT extends Model
                 }
             ])
             //->hidden(['create_time', 'update_time'])
-            ->find();
+           ->find();
         return $info;
 
     }

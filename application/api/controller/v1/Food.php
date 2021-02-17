@@ -576,15 +576,17 @@ class Food extends BaseController
         return json(new SuccessMessage());
     }
 
-    public function readyUpFoods()
+
+    public function handleAutoAll()
     {
+
         $canteenId = Request::param('canteen_id');
         $dinnerId = Request::param('dinner_id');
+        $type = Request::param('type');
         $day = Request::param('day');
-        $foodType = Request::param('food_type');
-        $foods = (new FoodService())->readyUpFoods($canteenId, $dinnerId, $day,$foodType);
-        return json(new SuccessMessageWithData(['data' => $foods]));
+        $foods = Request::param('foods');
+        (new FoodService())->handleAutoAll($type,$canteenId, $dinnerId, $day,$foods);
+        return json(new SuccessMessage());
     }
-
 
 }
