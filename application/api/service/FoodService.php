@@ -701,7 +701,7 @@ class FoodService extends BaseService
                             array_push($foodList, [
                                 'f_id' => $v2,
                                 'status' => FoodEnum::STATUS_UP,
-                                'day' => addDay($repeatWeek - $add, date('Y-m-d')),
+                                'day' => addDay($repeatWeek - $week, date('Y-m-d')),
                                 'user_id' => 0,
                                 'canteen_id' => $params['canteen_id'],
                                 'default' => CommonEnum::STATE_IS_FAIL,
