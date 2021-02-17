@@ -810,7 +810,6 @@ class FoodService extends BaseService
         if ($auto && count($auto['foods'])) {
             $autoFoods = $auto['foods'];
         }
-        $foodDay = FoodDayStateT::FoodStatus($canteenId, $dinnerId, $day);
         $status = FoodEnum::STATUS_DOWN;
         if (count($autoFoods)) {
             $autoWeek = $auto['auto_week'];
@@ -821,21 +820,14 @@ class FoodService extends BaseService
             }
         }
 
-        if (count($foodDay)) {
-            foreach ($foodDay as $k => $v) {
-                if (in_array($v['f_id'], $alreadyFoods)) {
-                    continue;
-                }
-                array_push($foodList, [
-                    'id' => $v['id'],
-                    'status' => $status
-                ]);
-                array_push($alreadyFoods, $v['f_id']);
-            }
-        }
+        //清除所有信息
+        FoodDayStateT::destroy(function ($query) use ($canteenId, $dinnerId, $day) {
+            $query->where('canteen_id', $canteenId)
+                ->where('dinner_id', $dinnerId)
+                ->where('day', '=', $day);
+        });
         if (count($autoFoods)) {
             foreach ($autoFoods as $k => $v) {
-
                 if (in_array($v['food_id'], $alreadyFoods)) {
                     continue;
                 }
@@ -890,12 +882,14 @@ class FoodService extends BaseService
             foreach ($foodDay as $k => $v) {
                 if (in_array($v['f_id'], $alreadyFoods)) {
                     continue;
+                } else {
+                    array_push($foodList, [
+                        'id' => $v['id'],
+                        'status' => $status
+                    ]);
+                    array_push($alreadyFoods, $v['f_id']);
                 }
-                array_push($foodList, [
-                    'id' => $v['id'],
-                    'status' => $status
-                ]);
-                array_push($alreadyFoods, $v['f_id']);
+
             }
         }
 
