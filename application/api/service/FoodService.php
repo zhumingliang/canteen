@@ -265,18 +265,15 @@ class FoodService extends BaseService
         if (!$auto) {
             return 0;
         }
-        /*  if (count($foodDay)) {
-              return 0;
-          }*/
         //获取选择日期的周几信息
-        $dayWeek = date('w', strtotime($day));
+        $repeatWeek = date('w', strtotime($day));
         $autoWeek = $auto->auto_week;
-        $dayWeek = $dayWeek == 0 ? 7 : $dayWeek;
+        $repeatWeek = $repeatWeek == 0 ? 7 : $repeatWeek;
         $autoWeek = $autoWeek == 0 ? 7 : $autoWeek;
-        if ($dayWeek > $autoWeek) {
-            return addDay(0 - ($dayWeek - $autoWeek), $day) . ' 00:00';
+        if ($repeatWeek >= $autoWeek) {
+            return reduceDay(7 + ($repeatWeek - $autoWeek), $day);
         } else {
-            return addDay(($autoWeek - $dayWeek) - 7, $day) . ' 00:00';
+            return reduceDay(7 - ($autoWeek - $repeatWeek), $day);
         }
     }
 
