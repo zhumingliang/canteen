@@ -505,13 +505,18 @@ class FoodService extends BaseService
             ->find();
 
         if (!$dayFood) {
+            FoodDayStateT::destroy(function ($query) use ($foodId, $dinnerId, $day) {
+                $query->where('f_id', $foodId)
+                    ->where('dinner_id', $dinnerId)
+                    ->where('day', $day);
+            });
             $data = [
                 'f_id' => $foodId,
                 'canteen_id' => $canteenId,
                 'dinner_id' => $dinnerId,
                 'day' => $day,
                 'default' => empty($params['default']) ? CommonEnum::STATE_IS_OK : $params['default'],
-                'user_id' => 1   // Token::getCurrentUid(),
+                'user_id' => Token::getCurrentUid(),
 
             ];
             $data['status'] = $params['status'];
