@@ -417,8 +417,9 @@ class FoodService extends BaseService
                     /*  if ($status != FoodEnum::STATUS_UP) {
                           $status = FoodEnum::STATUS_READY;
                       }*/
+                    $needReturn = true;
+
                 }
-                $needReturn = true;
             }
             if ($needReturn) {
                 return [
@@ -477,10 +478,7 @@ class FoodService extends BaseService
 
         if ($repeatWeek >= $autoWeek) {
             $upTime = reduceDay(7 + ($repeatWeek - $autoWeek), $day);
-
-
         } else {
-
             $upTime = reduceDay(7 - ($autoWeek - $repeatWeek), $day);
         }
         return strtotime(date('Y-m-d')) >= strtotime($upTime);
