@@ -467,9 +467,12 @@ class FoodService extends BaseService
     }
 
     private
-    function checkUpTime($autoWeek, $repeatWeek, $day)
+    function checkUpTime($autoWeek, $repeatWeek, $day = '')
     {
 
+        if (!strlen($day)) {
+            $day = date('Y-m-d');
+        }
         $repeatWeek = $repeatWeek == 0 ? 7 : $repeatWeek;
         $autoWeek = $autoWeek == 0 ? 7 : $autoWeek;
 
@@ -684,8 +687,8 @@ class FoodService extends BaseService
             }
             $this->prefixAutoFoods($auto->id, $detail['add'], []);
 
-            //判断配置中是否包含今天，包含则上架今日菜品
-            if (date('w') == $params['repeat_week']) {
+            //判断最近一次上架时间是否已经到了
+            if ($this->checkUpTime($params['auto_week'], $params['repeat_week'])) {
                 $add = $detail['add'];
                 $foodList = [];
                 foreach ($add as $k => $v) {
