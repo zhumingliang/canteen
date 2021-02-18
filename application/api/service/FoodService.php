@@ -687,12 +687,16 @@ class FoodService extends BaseService
             $this->prefixAutoFoods($auto->id, $detail['add'], []);
 
             //判断最近一次上架时间是否已经到了
+            //判断当前时间有没有超过下一次的上架时间
             $week = date('w');
             $week = $week == 0 ? 7 : $week;
             $repeatWeek = $params['repeat_week'] == 0 ? 7 : $params['repeat_week'];
+            $autoWeek = $params['auto_week'] == 0 ? 7 : $params['auto_week'];
+
+            $add = $detail['add'];
+            $foodList = [];
             if ($week <= $repeatWeek) {
-                $add = $detail['add'];
-                $foodList = [];
+
                 foreach ($add as $k => $v) {
                     $foods = $v['foods'];
                     if (count($foods)) {
@@ -709,14 +713,33 @@ class FoodService extends BaseService
                         }
                     }
                 }
+            }
 
-                if (count($foodList)) {
-                    $save = (new FoodDayStateT())->saveAll($foodList);
-                    if (!$save) {
-                        throw new SaveException(['msg' => "上架今日菜品失败"]);
+            if ($week >= $autoWeek) {
+                foreach ($add as $k => $v) {
+                    $foods = $v['foods'];
+                    if (count($foods)) {
+                        foreach ($foods as $k2 => $v2) {
+                            array_push($foodList, [
+                                'f_id' => $v2,
+                                'status' => FoodEnum::STATUS_UP,
+                                'day' => addDay($repeatWeek - $week + 7, date('Y-m-d')),
+                                'user_id' => 0,
+                                'canteen_id' => $params['canteen_id'],
+                                'default' => CommonEnum::STATE_IS_FAIL,
+                                'dinner_id' => $params['dinner_id']
+                            ]);
+                        }
                     }
                 }
             }
+            if (count($foodList)) {
+                $save = (new FoodDayStateT())->saveAll($foodList);
+                if (!$save) {
+                    throw new SaveException(['msg' => "上架今日菜品失败"]);
+                }
+            }
+
 
             Db::commit();
         } catch (Exception $e) {
