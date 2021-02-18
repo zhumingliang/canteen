@@ -442,7 +442,6 @@ class FoodService extends BaseService
         foreach ($foodDay as $k => $v) {
             if ($foodId == $v['f_id']) {
                 $default = $v['default'];
-                //  $status = $v['status'] == FoodEnum::STATUS_UP ? FoodEnum::STATUS_UP : FoodEnum::STATUS_DOWN;
                 $status = $v['status'] == FoodEnum::STATUS_DOWN ? FoodEnum::STATUS_DOWN : $v['status'];
                 $needReturn = true;
             }
@@ -456,7 +455,7 @@ class FoodService extends BaseService
 
         foreach ($autoFoods as $k => $v) {
             if ($foodId == $v['food_id']) {
-                $status = FoodEnum::STATUS_READY;
+                $status = FoodEnum::STATUS_UP;
                 break;
             }
         }
