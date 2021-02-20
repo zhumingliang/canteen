@@ -754,6 +754,8 @@ class FoodService extends BaseService
     function updateAutoConfig($params)
     {
         try {
+
+
             Db::startTrans();
             if (!empty($params['dinner_id'] || !empty($params['repeat_week']))) {
                 $check = AutomaticT::checkExits($params['dinner_id'], $params['repeat_week']);
@@ -839,14 +841,14 @@ class FoodService extends BaseService
             $autoFoods = $auto['foods'];
         }
         $status = FoodEnum::STATUS_DOWN;
-     /*   if (count($autoFoods)) {
-            $autoWeek = $auto['auto_week'];
-            $repeatWeek = $auto['repeat_week'];
-            if (!$this->checkUpTime($autoWeek, $repeatWeek, $day)) {
-                //未到上架时间-处理为待上架
-                $status = FoodEnum::STATUS_READY;
-            }
-        }*/
+        /*   if (count($autoFoods)) {
+               $autoWeek = $auto['auto_week'];
+               $repeatWeek = $auto['repeat_week'];
+               if (!$this->checkUpTime($autoWeek, $repeatWeek, $day)) {
+                   //未到上架时间-处理为待上架
+                   $status = FoodEnum::STATUS_READY;
+               }
+           }*/
 
         //清除所有信息
         FoodDayStateT::destroy(function ($query) use ($canteenId, $dinnerId, $day) {
