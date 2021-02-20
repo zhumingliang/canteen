@@ -126,7 +126,7 @@ class OrderParentT extends Model
                     $query->field('id,name');
                 }
             ])
-            ->field('id,address_id,company_id,outsider,dinner_id,fixed,type,count,money,sub_money,delivery_fee,create_time,ordering_date,remark,ordering_type')
+            ->field('id,state,address_id,company_id,outsider,dinner_id,fixed,type,count,money,sub_money,delivery_fee,create_time,ordering_date,remark,ordering_type')
             ->find();
 
         return $info;
@@ -168,7 +168,7 @@ class OrderParentT extends Model
                     $query->field('id,name');
                 }
             ])
-            ->field('id,u_id,dinner_id,canteen_id,ordering_date')
+            ->field('id,state,u_id,dinner_id,canteen_id,ordering_date')
             ->find();
         return $info;
     }
