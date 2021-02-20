@@ -245,19 +245,22 @@ class FoodService extends BaseService
         ];
     }
 
-    private function getNextAuto($auto)
+    private function getNextAuto($autoWeek, $day = "")
     {
-        if (!$auto) {
-            return 0;
+        if (!strlen($day)) {
+            $day = date('Y-m-d');
         }
-        $autoWeek = $auto['auto_week'];
-        // $repeatWeek = $auto[0]['repeat_week'];
-        $w = date('w');
-        if ($w == $autoWeek) {
-            return date('Y-m-d', strtotime('+7 day', time())) . ' 00:00';
+        $week = date('w', strtotime($day));
+
+        $week = $week == 0 ? 7 : $week;
+        $autoWeek = $autoWeek == 0 ? 7 : $autoWeek;
+        //获取下一个自动上架的日期
+        if ($week >= $autoWeek) {
+            $nextAutoDay = addDay(7 - ($week - $autoWeek), $day);
         } else {
-            return date('Y-m-d', strtotime('+' . (7 - abs($w - $autoWeek)) . ' day', time())) . ' 00:00';
+            $nextAutoDay = addDay(7 + ($autoWeek - $week), $day);
         }
+        return $nextAutoDay;
     }
 
     private function getCurrentAutoDay($day, $foodDay, $auto)
@@ -438,6 +441,7 @@ class FoodService extends BaseService
         }
 
         //已过上架时间
+        //还需处理上架之后但是修改了auto配置的菜品（foodDayStateT中,创建时间早于auto配置中修改时间）
         $needReturn = false;
         foreach ($foodDay as $k => $v) {
             if ($foodId == $v['f_id']) {
@@ -454,7 +458,7 @@ class FoodService extends BaseService
         }
 
         foreach ($autoFoods as $k => $v) {
-            if ($foodId == $v['food_id']) {
+            if ($foodId == $v['food_id'] && (strtotime($v['effective_time']) >= strtotime($day))) {
                 $status = FoodEnum::STATUS_UP;
                 break;
             }
@@ -680,11 +684,12 @@ class FoodService extends BaseService
             if (!$auto) {
                 throw new SaveException(['msg' => '保存自动上架配置失败']);
             }
-            $detail =$params['detail'];
+            $detail = $params['detail'];
             if (empty($detail) || empty($detail['add'])) {
                 throw new SaveException(['msg' => '上架菜品不能为空']);
             }
-            $this->prefixAutoFoods($auto->id, $detail['add'], []);
+            $nextAutoDay = $this->getNextAuto($params['auto_week']);
+            $this->prefixAutoFoods($auto->id, $nextAutoDay, $detail['add'], []);
 
             //判断最近一次上架时间是否已经到了
             //判断当前时间有没有超过下一次的上架时间
@@ -696,7 +701,6 @@ class FoodService extends BaseService
             $add = $detail['add'];
             $foodList = [];
             if ($week <= $repeatWeek) {
-
                 foreach ($add as $k => $v) {
                     $foods = $v['foods'];
                     if (count($foods)) {
@@ -739,8 +743,6 @@ class FoodService extends BaseService
                     throw new SaveException(['msg' => "上架今日菜品失败"]);
                 }
             }
-
-
             Db::commit();
         } catch (Exception $e) {
             Db::rollback();
@@ -769,11 +771,18 @@ class FoodService extends BaseService
                 throw new SaveException(['msg' => '修改自动上架配置失败']);
             }
             if (!empty($params['detail'])) {
-                // $detail = json_decode($params['detail'], true);
                 $detail = $params['detail'];
                 $add = empty($detail['add']) ? [] : $detail['add'];
                 $cancel = empty($detail['cancel']) ? [] : $detail['cancel'];
-                $this->prefixAutoFoods($params['id'], $add, $cancel);
+                if (!empty($params['auto_week'])) {
+                    $autoWeek = $params['auto_week'];
+                } else {
+                    $auto = AutomaticT::get($params['id']);
+                    $autoWeek = $auto->auto_week;
+                }
+                $nextAutoDay = $this->getNextAuto($autoWeek);
+                $this->prefixAutoFoods($params['id'], $nextAutoDay, $add, $cancel);
+
             }
 
             Db::commit();
@@ -786,7 +795,7 @@ class FoodService extends BaseService
     }
 
     private
-    function prefixAutoFoods($autoId, $add, $cancel)
+    function prefixAutoFoods($autoId, $effectiveTime, $add, $cancel)
     {
         $data = [];
         if (count($add)) {
@@ -799,7 +808,8 @@ class FoodService extends BaseService
                             'auto_id' => $autoId,
                             'state' => CommonEnum::STATE_IS_OK,
                             'food_id' => $v2,
-                            'menu_id' => $menuId
+                            'menu_id' => $menuId,
+                            'effective_time' => $effectiveTime
                         ]);
 
                     }
@@ -810,7 +820,8 @@ class FoodService extends BaseService
             foreach ($cancel as $k => $v) {
                 array_push($data, [
                     'id' => $v,
-                    'state' => CommonEnum::STATE_IS_FAIL
+                    'state' => CommonEnum::STATE_IS_FAIL,
+                    'effective_time' => $effectiveTime
                 ]);
             }
         }
