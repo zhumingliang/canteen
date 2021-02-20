@@ -245,7 +245,7 @@ class FoodService extends BaseService
         ];
     }
 
-    private function getNextAuto($autoWeek, $day = "")
+    private function getNextAuto($autoWeek, $repeatWeek, $day = "")
     {
         if (!strlen($day)) {
             $day = date('Y-m-d');
@@ -253,6 +253,7 @@ class FoodService extends BaseService
         $week = date('w', strtotime($day));
 
         $week = $week == 0 ? 7 : $week;
+        $repeatWeek = $repeatWeek == 0 ? 7 : $repeatWeek;
         $autoWeek = $autoWeek == 0 ? 7 : $autoWeek;
         //获取下一个自动上架的日期
         if ($week >= $autoWeek) {
@@ -260,7 +261,13 @@ class FoodService extends BaseService
         } else {
             $nextAutoDay = addDay(7 + ($autoWeek - $week), $day);
         }
-        return $nextAutoDay;
+
+        if ($repeatWeek >= $autoWeek) {
+            return addDay(7 + ($repeatWeek - $autoWeek), $nextAutoDay);
+        } else {
+            return addDay(7 - ($autoWeek - $repeatWeek), $nextAutoDay);
+        }
+
     }
 
     private function getCurrentAutoDay($day, $foodDay, $auto)
@@ -692,8 +699,8 @@ class FoodService extends BaseService
             if (empty($detail) || empty($detail['add'])) {
                 throw new SaveException(['msg' => '上架菜品不能为空']);
             }
-            $nextAutoDay = $this->getNextAuto($params['auto_week']);
-            $this->prefixAutoFoods($auto->id, $nextAutoDay, $detail['add'], []);
+            $nextUpDay = $this->getNextAuto($params['auto_week'], $params['repeat_week']);
+            $this->prefixAutoFoods($auto->id, $nextUpDay, $detail['add'], []);
 
             //判断最近一次上架时间是否已经到了
             //判断当前时间有没有超过下一次的上架时间
