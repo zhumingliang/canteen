@@ -839,14 +839,14 @@ class FoodService extends BaseService
             $autoFoods = $auto['foods'];
         }
         $status = FoodEnum::STATUS_DOWN;
-        if (count($autoFoods)) {
+     /*   if (count($autoFoods)) {
             $autoWeek = $auto['auto_week'];
             $repeatWeek = $auto['repeat_week'];
             if (!$this->checkUpTime($autoWeek, $repeatWeek, $day)) {
                 //未到上架时间-处理为待上架
                 $status = FoodEnum::STATUS_READY;
             }
-        }
+        }*/
 
         //清除所有信息
         FoodDayStateT::destroy(function ($query) use ($canteenId, $dinnerId, $day) {

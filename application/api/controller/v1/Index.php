@@ -8,6 +8,7 @@ use app\api\controller\BaseController;
 use app\api\job\SendTemplate;
 use app\api\job\UploadExcel;
 use app\api\model\AccountRecordsT;
+use app\api\model\AutomaticT;
 use app\api\model\CanteenT;
 use app\api\model\CompanyAccountT;
 use app\api\model\CompanyStaffT;
@@ -16,6 +17,7 @@ use app\api\model\ConsumptionLogT;
 use app\api\model\ConsumptionRecordsV;
 use app\api\model\ConsumptionStrategyT;
 use app\api\model\DinnerT;
+use app\api\model\FoodDayStateT;
 use app\api\model\OfficialTemplateT;
 use app\api\model\OrderConsumptionV;
 use app\api\model\OrderingV;
@@ -30,7 +32,6 @@ use app\api\model\RechargeSupplementT;
 use app\api\model\RechargeV;
 use app\api\model\StaffCardT;
 use app\api\model\StaffQrcodeT;
-use app\api\model\Submitequity;
 use app\api\model\UserBalanceV;
 use app\api\service\AccountService;
 use app\api\service\AddressService;
@@ -52,6 +53,7 @@ use app\api\service\WalletService;
 use app\api\service\WeiXinService;
 use app\lib\Date;
 use app\lib\enum\CommonEnum;
+use app\lib\enum\FoodEnum;
 use app\lib\enum\OrderEnum;
 use app\lib\enum\PayEnum;
 use app\lib\enum\StrategyEnum;
@@ -63,7 +65,6 @@ use app\lib\exception\SuccessMessageWithData;
 use app\lib\Num;
 use app\lib\printer\Printer;
 use app\lib\weixin\Template;
-use app\model\LogT;
 use think\Db;
 use think\db\Where;
 use think\Exception;
@@ -82,9 +83,104 @@ Index extends BaseController
 
     public function index()
     {
+        $this->autoUpFoods();
+    }
+
+    public function autoUpFoods()
+    {
+        try {
+            //查询出今日需要处理的自动上架
+            $w = 6;
+            $auto = AutomaticT::auto2($w);
+            if (count($auto)) {
+                foreach ($auto as $k => $v) {
+                    $repeatWeek = $v['repeat_week'];
+                    $repeatDay = $this->getRepeatDay($repeatWeek);
+                    $this->upAll($v, $repeatDay);
+                }
+            }
+        } catch (\Exception $e) {
+            echo $e->getMessage();
+
+
+        }
+
+
+    }
+
+    public function upAll($auto, $day)
+    {
+        $canteenId = $auto['canteen_id'];
+        $dinnerId = $auto['dinner_id'];
+        $foodDay = FoodDayStateT::FoodStatus($canteenId, $dinnerId, $day);
+        $foodList = [];
+        $alreadyFoods = [];
+        $cancelFoods = [];
+        if (count($foodDay)) {
+            foreach ($foodDay as $k => $v) {
+                if (in_array($v['f_id'], $alreadyFoods) || in_array($v['f_id'], $cancelFoods)) {
+                    continue;
+                }
+                if ($v['status'] != FoodEnum::STATUS_DOWN) {
+                    array_push($foodList, [
+                        'id' => $v['id'],
+                        'status' => FoodEnum::STATUS_UP
+                    ]);
+                    array_push($alreadyFoods, $v['f_id']);
+
+                } else {
+                    array_push($cancelFoods, $v['f_id']);
+
+                }
+            }
+        }
+
+        print_r($cancelFoods);
+
+        if ($auto) {
+            if (!count($auto['foods'])) {
+                throw new ParameterException(['msg' => "自动上架菜品未设置"]);
+            }
+            $autoFoods = $auto['foods'];
+            foreach ($autoFoods as $k => $v) {
+                if (in_array($v['food_id'], $alreadyFoods) || in_array($v['food_id'], $cancelFoods)) {
+                    continue;
+                }else{
+                    array_push($foodList, [
+                        'f_id' => $v['food_id'],
+                        'status' => FoodEnum::STATUS_UP,
+                        'day' => $day,
+                        'user_id' => 0,
+                        'canteen_id' => $canteenId,
+                        'default' => CommonEnum::STATE_IS_FAIL,
+                        'dinner_id' => $dinnerId
+                    ]);
+                    array_push($alreadyFoods, $v['food_id']);
+
+                }
+
+            }
+        }
+
+        print_r($foodList);
+
+        /* if (count($foodList)) {
+             $save = (new FoodDayStateT())->saveAll($foodList);
+             if (!$save) {
+                 throw new SaveException(['msg' => '上架失败']);
+             }
+         }*/
+
     }
 
 
+    private function getRepeatDay($repeatWeek)
+    {
+        $w = date('w') == 0 ? 7 : date('w');
+        $repeatWeek = $repeatWeek == 0 ? 7 : $repeatWeek;
+        return addDay(7 + ($repeatWeek - $w), \date('Y-m-d'));
+
+    }
 
 
     // $cash = (new RechargeSupplementT())->saveAll($dataList);
@@ -121,62 +217,6 @@ Index extends BaseController
 
     (new CompanyAccountT())->saveAll($account);*/
 
-
-    protected
-    function spliceIntoPosition($position, $value)
-    {
-        $segments = explode(' ', $this->expression);
-
-        $segments[$position - 1] = $value;
-
-        return $this->expression(implode(' ', $segments));
-    }
-
-    public
-    function expression($expression)
-    {
-        $this->expression = $expression;
-        return $this;
-    }
-
-
-    private
-    function toDateChinese($date)
-    {
-
-        $date_arr = explode('-', $date);
-        $arr = [];
-        foreach ($date_arr as $index => &$val) {
-            if (mb_strlen($val) == 4) {
-                $arr[] = preg_split('/(?<!^)(?!$)/u', $val);
-            } else {
-                if ($val > 10) {
-                    $v[] = 10;
-                    $v[] = $val % 10;
-                    $arr[] = $v;
-                    unset($v);
-                } else {
-                    $arr[][] = $val;
-                }
-            }
-        }
-        $cn = array("一", "二", "三", "四", "五", "六", "七", "八", "九", "十", "零");
-        $num = array("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "0");
-        $str_time = '';
-        for ($i = 0; $i < count($arr); $i++) {
-            foreach ($arr[$i] as $index => $item) {
-                $str_time .= $cn[array_search($item, $num)];
-            }
-            if ($i == 0) {
-                $str_time .= '年';
-            } elseif ($i == 1) {
-                $str_time .= '月';
-            } elseif ($i == 2) {
-                $str_time .= '日';
-            }
-        }
-        return $str_time;
-    }
 
     public
     function test($param = "")
