@@ -458,8 +458,12 @@ class FoodService extends BaseService
         }
 
         foreach ($autoFoods as $k => $v) {
-            if ($foodId == $v['food_id'] && (strtotime($v['effective_time']) <= strtotime($day))) {
-                $status = FoodEnum::STATUS_UP;
+            if ($foodId == $v['food_id']) {
+                if (strtotime($v['effective_time']) < strtotime($day)) {
+                    $status = FoodEnum::STATUS_UP;
+                } else {
+                    $status = FoodEnum::STATUS_READY;
+                }
                 break;
             }
         }
