@@ -234,7 +234,6 @@ class FoodService extends BaseService
         //获取餐次是否固定消费
         $dinner = DinnerT::get($dinnerId);
 
-        //$nextAuto = $this->getNextAuto($auto);
         $nextAuto = $this->getCurrentAutoDay($day, $foodDay, $auto);
         $data = $this->prefixFoodDayStatus($menus, $foods, $auto, $foodDay, $day);
         return [
@@ -263,9 +262,15 @@ class FoodService extends BaseService
         }
 
         if ($repeatWeek >= $autoWeek) {
-            return addDay(7 + ($repeatWeek - $autoWeek), $nextAutoDay);
+            return [
+                'nextAuto' => $nextAutoDay,
+                'nextUp' => addDay(7 + ($repeatWeek - $autoWeek), $nextAutoDay)
+            ];
         } else {
-            return addDay(7 - ($autoWeek - $repeatWeek), $nextAutoDay);
+            return [
+                'nextAuto' => $nextAutoDay,
+                'nextUp' => addDay(7 - ($autoWeek - $repeatWeek), $nextAutoDay)
+            ];
         }
 
     }
@@ -699,8 +704,8 @@ class FoodService extends BaseService
             if (empty($detail) || empty($detail['add'])) {
                 throw new SaveException(['msg' => '上架菜品不能为空']);
             }
-            $nextUpDay = $this->getNextAuto($params['auto_week'], $params['repeat_week']);
-            $this->prefixAutoFoods($auto->id, $nextUpDay, $detail['add'], []);
+            $nextDay = $this->getNextAuto($params['auto_week'], $params['repeat_week']);
+            $this->prefixAutoFoods($auto->id, $nextDay['nextUp'], $nextDay['nextAuto'], $detail['add'], []);
 
             //判断最近一次上架时间是否已经到了
             //判断当前时间有没有超过下一次的上架时间
@@ -791,8 +796,8 @@ class FoodService extends BaseService
                     $auto = AutomaticT::get($params['id']);
                     $autoWeek = $auto->auto_week;
                 }
-                $nextAutoDay = $this->getNextAuto($autoWeek, $params['repeat_week']);
-                $this->prefixAutoFoods($params['id'], $nextAutoDay, $add, $cancel);
+                $nextDay = $this->getNextAuto($autoWeek, $params['repeat_week']);
+                $this->prefixAutoFoods($params['id'], $nextDay['nextUp'], $nextDay['nextAuto'], $add, $cancel);
 
             }
 
@@ -806,7 +811,7 @@ class FoodService extends BaseService
     }
 
     private
-    function prefixAutoFoods($autoId, $effectiveTime, $add, $cancel)
+    function prefixAutoFoods($autoId, $effectiveTime, $nextAutoDay, $add, $cancel)
     {
         $data = [];
         if (count($add)) {
@@ -820,7 +825,8 @@ class FoodService extends BaseService
                             'state' => CommonEnum::STATE_IS_OK,
                             'food_id' => $v2,
                             'menu_id' => $menuId,
-                            'effective_time' => $effectiveTime
+                            'effective_time' => $effectiveTime,
+                            'next_auto_time' => $nextAutoDay
                         ]);
 
                     }
@@ -832,7 +838,8 @@ class FoodService extends BaseService
                 array_push($data, [
                     'id' => $v,
                     'state' => CommonEnum::STATE_IS_FAIL,
-                    'effective_time' => $effectiveTime
+                    'effective_time' => $effectiveTime,
+                    'next_auto_time' => $nextAutoDay
                 ]);
             }
         }
