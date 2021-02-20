@@ -680,7 +680,7 @@ class FoodService extends BaseService
             if (!$auto) {
                 throw new SaveException(['msg' => '保存自动上架配置失败']);
             }
-            $detail = \GuzzleHttp\json_decode($params['detail'], true);
+            $detail =$params['detail'];
             if (empty($detail) || empty($detail['add'])) {
                 throw new SaveException(['msg' => '上架菜品不能为空']);
             }
