@@ -769,7 +769,7 @@ class FoodService extends BaseService
                 throw new SaveException(['msg' => '修改自动上架配置失败']);
             }
             if (!empty($params['detail'])) {
-                $detail = json_decode($params['detail'], true);
+              //  $detail = json_decode($params['detail'], true);
                 $add = empty($detail['add']) ? [] : $detail['add'];
                 $cancel = empty($detail['cancel']) ? [] : $detail['cancel'];
                 $this->prefixAutoFoods($params['id'], $add, $cancel);
