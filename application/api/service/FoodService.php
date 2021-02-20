@@ -775,7 +775,7 @@ class FoodService extends BaseService
                 $this->prefixAutoFoods($params['id'], $add, $cancel);
             }
 
-            Db::commit();
+             Db::commit();
         } catch (Exception $e) {
             Db::rollback();
             throw $e;
@@ -796,7 +796,7 @@ class FoodService extends BaseService
                     foreach ($foods as $k2 => $v2) {
                         array_push($data, [
                             'auto_id' => $autoId,
-                            'state', CommonEnum::STATE_IS_OK,
+                            'state' => CommonEnum::STATE_IS_OK,
                             'food_id' => $v2,
                             'menu_id' => $menuId
                         ]);
@@ -813,6 +813,7 @@ class FoodService extends BaseService
                 ]);
             }
         }
+        print_r($data);
         if (count($data)) {
             $save = (new AutomaticFoodT())->saveAll($data);
             if (!$save) {
