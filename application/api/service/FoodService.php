@@ -474,7 +474,7 @@ class FoodService extends BaseService
                 if (strtotime($v['effective_time']) < strtotime($day)) {
                     $status = FoodEnum::STATUS_UP;
                 } else {
-                    $status = FoodEnum::STATUS_READY;
+                    $status = FoodEnum::STATUS_DOWN;
                 }
                 break;
             }
