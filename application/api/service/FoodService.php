@@ -771,7 +771,6 @@ class FoodService extends BaseService
             if (!empty($params['detail'])) {
                 // $detail = json_decode($params['detail'], true);
                 $detail = $params['detail'];
-                print_r($detail);
                 $add = empty($detail['add']) ? [] : $detail['add'];
                 $cancel = empty($detail['cancel']) ? [] : $detail['cancel'];
                 $this->prefixAutoFoods($params['id'], $add, $cancel);
