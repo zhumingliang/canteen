@@ -791,7 +791,7 @@ class FoodService extends BaseService
                     $auto = AutomaticT::get($params['id']);
                     $autoWeek = $auto->auto_week;
                 }
-                $nextAutoDay = $this->getNextAuto($autoWeek);
+                $nextAutoDay = $this->getNextAuto($autoWeek, $params['repeat_week']);
                 $this->prefixAutoFoods($params['id'], $nextAutoDay, $add, $cancel);
 
             }
