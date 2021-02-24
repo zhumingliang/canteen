@@ -38,7 +38,7 @@ class Food extends BaseValidate
         'food' => ['id'],
         'foodsForOfficialManager' => ['day', 'dinner_id', 'canteen_id'],
         'handelFoodsDayStatus' => ['food_id', 'status', 'dinner_id', 'day', 'canteen_id'],
-        'foodsForOfficialPersonChoice' => ['dinner_id'],
+       // 'foodsForOfficialPersonChoice' => ['dinner_id'],
         'saveComment' => ['food_id', 'taste', 'service'],
         'infoToComment' => ['food_id'],
         'saveAutoConfig' => ['canteen_id', 'dinner_id', 'auto_week', 'repeat_week'],
