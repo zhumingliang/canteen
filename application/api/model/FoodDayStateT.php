@@ -23,6 +23,14 @@ class FoodDayStateT extends Model
 
     }
 
+    public static function haveFoodDay($canteen_id){
+        return self::where('canteen_id', $canteen_id)
+            ->where('day', '>=', date('Y-m-d'))
+            ->field('dinner_id,day')
+            ->group('dinner_id,day')
+            ->select()->toArray();
+    }
+
 
 
 }

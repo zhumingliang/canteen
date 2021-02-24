@@ -4,6 +4,7 @@
 namespace app\api\service\v2;
 
 
+use app\api\model\FoodDayStateT;
 use app\api\model\FoodDayStateV;
 use app\api\model\MenuT;
 use app\api\service\MenuService;
@@ -44,6 +45,14 @@ class FoodService
         }
 
         return $dinner;
+    }
+
+    public function haveFoodDay()
+    {
+        $canteen_id = 315;//Token::getCurrentTokenVar('current_canteen_id');
+        $day = FoodDayStateT::haveFoodDay($canteen_id);
+        return $day;
+
     }
 
 }

@@ -46,4 +46,25 @@ class Food extends BaseController
     }
 
 
+    /**
+     * @api {GET} /api/v2/food/day 微信端-个人选菜-查看餐次有选菜日期
+     * @apiGroup  Official
+     * @apiVersion 3.0.0
+     * @apiDescription 微信端-个人选菜-菜品列表
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v2/food/day
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":[{"dinner_id":477,"day":"2021-02-26"},{"dinner_id":478,"day":"2021-02-26"},{"dinner_id":479,"day":"2021-02-26"},{"dinner_id":479,"day":"2021-03-05"}]}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {String} msg 信息描述
+     * @apiSuccess (返回参数说明) {int} dinner_id 餐次id
+     * @apiSuccess (返回参数说明) {string} day 已配日期
+     */
+    public function haveFoodDay()
+    {
+        $day = (new FoodService())->haveFoodDay();
+        return json(new SuccessMessageWithData(['data' => $day]));
+    }
+
+
 }
