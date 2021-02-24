@@ -40,7 +40,7 @@ class FoodService
                     $menus[$k2]['foods'] = $data;
                 }
             }
-            $dinner[$k]['menu'] = $menus;
+            $dinner[$k]['menus'] = $menus;
 
         }
 
