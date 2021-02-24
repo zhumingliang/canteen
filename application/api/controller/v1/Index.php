@@ -40,6 +40,7 @@ use app\api\service\CompanyService;
 use app\api\service\ConsumptionService;
 use app\api\service\DepartmentService;
 use app\api\service\ExcelService;
+use app\api\service\FoodService;
 use app\api\service\LogService;
 use app\api\service\NextMonthPayService;
 use app\api\service\NoticeService;
@@ -89,16 +90,20 @@ Index extends BaseController
     public function autoUpFoods()
     {
         try {
-            //查询出今日需要处理的自动上架
-            $w = 6;
-            $auto = AutomaticT::auto2($w);
-            if (count($auto)) {
-                foreach ($auto as $k => $v) {
-                    $repeatWeek = $v['repeat_week'];
-                    $repeatDay = $this->getRepeatDay($repeatWeek);
-                    $this->upAll($v, $repeatDay);
-                }
-            }
+            $nextDay = (new FoodService())->getNextAuto(3, 4,"2021-02-23");
+            print_r($nextDay);
+
+            /*  //查询出今日需要处理的自动上架
+              $w = date('w');
+              $auto = AutomaticT::auto2($w);
+              print_r($auto);
+              if (count($auto)) {
+                  foreach ($auto as $k => $v) {
+                      $repeatWeek = $v['repeat_week'];
+                      $repeatDay = $this->getRepeatDay($repeatWeek);
+                    //  $this->upAll($v, $repeatDay);
+                  }
+              }*/
         } catch (\Exception $e) {
             echo $e->getMessage();
 
@@ -145,7 +150,7 @@ Index extends BaseController
             foreach ($autoFoods as $k => $v) {
                 if (in_array($v['food_id'], $alreadyFoods) || in_array($v['food_id'], $cancelFoods)) {
                     continue;
-                }else{
+                } else {
                     array_push($foodList, [
                         'f_id' => $v['food_id'],
                         'status' => FoodEnum::STATUS_UP,

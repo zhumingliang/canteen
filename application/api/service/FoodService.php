@@ -244,7 +244,7 @@ class FoodService extends BaseService
         ];
     }
 
-    private function getNextAuto($autoWeek, $repeatWeek, $day = "")
+    public function getNextAuto($autoWeek, $repeatWeek, $day = "")
     {
         if (!strlen($day)) {
             $day = date('Y-m-d');
@@ -258,7 +258,7 @@ class FoodService extends BaseService
         if ($week >= $autoWeek) {
             $nextAutoDay = addDay(7 - ($week - $autoWeek), $day);
         } else {
-            $nextAutoDay = addDay(7 + ($autoWeek - $week), $day);
+            $nextAutoDay = addDay($autoWeek - $week, $day);
         }
 
         if ($repeatWeek >= $autoWeek) {
