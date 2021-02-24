@@ -49,7 +49,7 @@ class FoodService
 
     public function haveFoodDay()
     {
-        $canteen_id = 315;//Token::getCurrentTokenVar('current_canteen_id');
+        $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
         $day = FoodDayStateT::haveFoodDay($canteen_id);
         return $day;
 
