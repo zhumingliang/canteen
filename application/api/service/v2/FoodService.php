@@ -29,8 +29,8 @@ class FoodService
         foreach ($dinner as $k => $v) {
             $menus = $v['menus'];
             if (count($menus)) {
-                $data = [];
                 foreach ($menus as $k2 => $v2) {
+                    $data = [];
                     foreach ($foods as $k3 => $v3) {
                         if ($v2['id'] == $v3['m_id']) {
                             array_push($data, $foods[$k3]);
