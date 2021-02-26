@@ -930,23 +930,18 @@ class FoodService extends BaseService
         $foodList = [];
         $alreadyFoods = [];
         $status = FoodEnum::STATUS_UP;
-        if (count($autoFoods)) {
-            $autoWeek = $auto['auto_week'];
-            $repeatWeek = $auto['repeat_week'];
-            if (!$this->checkUpTime($autoWeek, $repeatWeek, $day)) {
-                //未到上架时间-处理为待上架
-                $status = FoodEnum::STATUS_READY;
-            }
-        }
+
         if (count($foodDay)) {
             foreach ($foodDay as $k => $v) {
                 if (in_array($v['f_id'], $alreadyFoods)) {
                     continue;
                 } else {
-                    array_push($foodList, [
-                        'id' => $v['id'],
-                        'status' => $status
-                    ]);
+                    if ($v['status'] != FoodEnum::STATUS_DOWN) {
+                        array_push($foodList, [
+                            'id' => $v['id'],
+                            'status' => $status
+                        ]);
+                    }
                     array_push($alreadyFoods, $v['f_id']);
                 }
 
