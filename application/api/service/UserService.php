@@ -170,7 +170,6 @@ class UserService
             return $data;
         }
         $qrcode = $staff->qrcode;
-        echo $qrcode;
         if (strtotime($qrcode->expiry_date) >= time()) {
             return [
                 'usernmae' => $staff->username,

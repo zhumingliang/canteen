@@ -8,13 +8,17 @@ use app\api\controller\BaseController;
 use app\api\job\SendTemplate;
 use app\api\job\UploadExcel;
 use app\api\model\AccountRecordsT;
+use app\api\model\AutomaticT;
 use app\api\model\CanteenT;
 use app\api\model\CompanyAccountT;
 use app\api\model\CompanyStaffT;
 use app\api\model\CompanyT;
+use app\api\model\ConsumptionLogT;
 use app\api\model\ConsumptionRecordsV;
 use app\api\model\ConsumptionStrategyT;
 use app\api\model\DinnerT;
+use app\api\model\FoodDayStateT;
+use app\api\model\OfficialTemplateT;
 use app\api\model\OrderConsumptionV;
 use app\api\model\OrderingV;
 use app\api\model\OrderParentT;
@@ -24,10 +28,10 @@ use app\api\model\OrderUnusedV;
 use app\api\model\PayNonghangConfigT;
 use app\api\model\PayT;
 use app\api\model\RechargeCashT;
+use app\api\model\RechargeSupplementT;
 use app\api\model\RechargeV;
 use app\api\model\StaffCardT;
 use app\api\model\StaffQrcodeT;
-use app\api\model\Submitequity;
 use app\api\model\UserBalanceV;
 use app\api\service\AccountService;
 use app\api\service\AddressService;
@@ -36,19 +40,25 @@ use app\api\service\CompanyService;
 use app\api\service\ConsumptionService;
 use app\api\service\DepartmentService;
 use app\api\service\ExcelService;
+use app\api\service\FoodService;
+use app\api\service\LogService;
+use app\api\service\NextMonthPayService;
 use app\api\service\NoticeService;
 use app\api\service\OrderService;
 use app\api\service\QrcodeService;
 use app\api\service\SendSMSService;
 use app\api\service\ShopService;
 use app\api\service\TakeoutService;
+use app\api\service\Token;
 use app\api\service\WalletService;
 use app\api\service\WeiXinService;
 use app\lib\Date;
 use app\lib\enum\CommonEnum;
+use app\lib\enum\FoodEnum;
 use app\lib\enum\OrderEnum;
 use app\lib\enum\PayEnum;
 use app\lib\enum\StrategyEnum;
+use app\lib\exception\AuthException;
 use app\lib\exception\ParameterException;
 use app\lib\exception\SaveException;
 use app\lib\exception\SuccessMessage;
@@ -56,7 +66,6 @@ use app\lib\exception\SuccessMessageWithData;
 use app\lib\Num;
 use app\lib\printer\Printer;
 use app\lib\weixin\Template;
-use app\model\LogT;
 use think\Db;
 use think\db\Where;
 use think\Exception;
@@ -75,96 +84,147 @@ Index extends BaseController
 
     public function index()
     {
-        /*$company = CompanyT::where('state', CommonEnum::STATE_IS_OK)->select();
-        $account = [];
-        foreach ($company as $k => $v) {
-            $data = [
-                'company_id' => $v['id'],
-                'type' => 1,
-                'department_all' => 1,
-                'name' => '个人账户',
-                'fixed_type' => 1,
-                'clear' => CommonEnum::STATE_IS_FAIL,
-                'sort' => 1,
-                'state' => CommonEnum::STATE_IS_OK
-            ];
-            array_push($account, $data);
-        }
-        $nonghang = PayNonghangConfigT::
-        where('state', CommonEnum::STATE_IS_OK)->select();
-        foreach ($nonghang as $k => $v) {
-            $data = [
-                'company_id' => $v['company_id'],
-                'type' => 1,
-                'department_all' => 1,
-                'name' => '农行账户',
-                'fixed_type' => 2,
-                'clear' => CommonEnum::STATE_IS_FAIL,
-                'sort' => 2,
-                'state' => CommonEnum::STATE_IS_OK
-            ];
-            array_push($account, $data);
+        $this->autoUpFoods();
+    }
+
+    public function autoUpFoods()
+    {
+        try {
+            $nextDay = (new FoodService())->getNextAuto(3, 4,"2021-02-23");
+            print_r($nextDay);
+
+            /*  //查询出今日需要处理的自动上架
+              $w = date('w');
+              $auto = AutomaticT::auto2($w);
+              print_r($auto);
+              if (count($auto)) {
+                  foreach ($auto as $k => $v) {
+                      $repeatWeek = $v['repeat_week'];
+                      $repeatDay = $this->getRepeatDay($repeatWeek);
+                    //  $this->upAll($v, $repeatDay);
+                  }
+              }*/
+        } catch (\Exception $e) {
+            echo $e->getMessage();
+
+
         }
 
-        (new CompanyAccountT())->saveAll($account);*/
 
     }
 
-
-    protected function spliceIntoPosition($position, $value)
+    public function upAll($auto, $day)
     {
-        $segments = explode(' ', $this->expression);
+        $canteenId = $auto['canteen_id'];
+        $dinnerId = $auto['dinner_id'];
+        $foodDay = FoodDayStateT::FoodStatus($canteenId, $dinnerId, $day);
+        $foodList = [];
+        $alreadyFoods = [];
+        $cancelFoods = [];
+        if (count($foodDay)) {
+            foreach ($foodDay as $k => $v) {
+                if (in_array($v['f_id'], $alreadyFoods) || in_array($v['f_id'], $cancelFoods)) {
+                    continue;
+                }
+                if ($v['status'] != FoodEnum::STATUS_DOWN) {
+                    array_push($foodList, [
+                        'id' => $v['id'],
+                        'status' => FoodEnum::STATUS_UP
+                    ]);
+                    array_push($alreadyFoods, $v['f_id']);
 
-        $segments[$position - 1] = $value;
-
-        return $this->expression(implode(' ', $segments));
-    }
-
-    public function expression($expression)
-    {
-        $this->expression = $expression;
-        return $this;
-    }
-
-
-    private function toDateChinese($date)
-    {
-
-        $date_arr = explode('-', $date);
-        $arr = [];
-        foreach ($date_arr as $index => &$val) {
-            if (mb_strlen($val) == 4) {
-                $arr[] = preg_split('/(?<!^)(?!$)/u', $val);
-            } else {
-                if ($val > 10) {
-                    $v[] = 10;
-                    $v[] = $val % 10;
-                    $arr[] = $v;
-                    unset($v);
                 } else {
-                    $arr[][] = $val;
+                    array_push($cancelFoods, $v['f_id']);
+
                 }
             }
         }
-        $cn = array("一", "二", "三", "四", "五", "六", "七", "八", "九", "十", "零");
-        $num = array("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "0");
-        $str_time = '';
-        for ($i = 0; $i < count($arr); $i++) {
-            foreach ($arr[$i] as $index => $item) {
-                $str_time .= $cn[array_search($item, $num)];
+
+        print_r($cancelFoods);
+
+        if ($auto) {
+            if (!count($auto['foods'])) {
+                throw new ParameterException(['msg' => "自动上架菜品未设置"]);
             }
-            if ($i == 0) {
-                $str_time .= '年';
-            } elseif ($i == 1) {
-                $str_time .= '月';
-            } elseif ($i == 2) {
-                $str_time .= '日';
+            $autoFoods = $auto['foods'];
+            foreach ($autoFoods as $k => $v) {
+                if (in_array($v['food_id'], $alreadyFoods) || in_array($v['food_id'], $cancelFoods)) {
+                    continue;
+                } else {
+                    array_push($foodList, [
+                        'f_id' => $v['food_id'],
+                        'status' => FoodEnum::STATUS_UP,
+                        'day' => $day,
+                        'user_id' => 0,
+                        'canteen_id' => $canteenId,
+                        'default' => CommonEnum::STATE_IS_FAIL,
+                        'dinner_id' => $dinnerId
+                    ]);
+                    array_push($alreadyFoods, $v['food_id']);
+
+                }
+
             }
         }
-        return $str_time;
+
+        print_r($foodList);
+
+        /* if (count($foodList)) {
+             $save = (new FoodDayStateT())->saveAll($foodList);
+             if (!$save) {
+                 throw new SaveException(['msg' => '上架失败']);
+             }
+         }*/
+
     }
 
-    public function test($param = "")
+
+    private function getRepeatDay($repeatWeek)
+    {
+        $w = date('w') == 0 ? 7 : date('w');
+        $repeatWeek = $repeatWeek == 0 ? 7 : $repeatWeek;
+        return addDay(7 + ($repeatWeek - $w), \date('Y-m-d'));
+
+    }
+
+
+    // $cash = (new RechargeSupplementT())->saveAll($dataList);
+    /*$company = CompanyT::where('state', CommonEnum::STATE_IS_OK)->select();
+    $account = [];
+    foreach ($company as $k => $v) {
+        $data = [
+            'company_id' => $v['id'],
+            'type' => 1,
+            'department_all' => 1,
+            'name' => '个人账户',
+            'fixed_type' => 1,
+            'clear' => CommonEnum::STATE_IS_FAIL,
+            'sort' => 1,
+            'state' => CommonEnum::STATE_IS_OK
+        ];
+        array_push($account, $data);
+    }
+    $nonghang = PayNonghangConfigT::
+    where('state', CommonEnum::STATE_IS_OK)->select();
+    foreach ($nonghang as $k => $v) {
+        $data = [
+            'company_id' => $v['company_id'],
+            'type' => 1,
+            'department_all' => 1,
+            'name' => '农行账户',
+            'fixed_type' => 2,
+            'clear' => CommonEnum::STATE_IS_FAIL,
+            'sort' => 2,
+            'state' => CommonEnum::STATE_IS_OK
+        ];
+        array_push($account, $data);
+    }
+
+    (new CompanyAccountT())->saveAll($account);*/
+
+
+    public
+    function test($param = "")
     {
 
 
@@ -198,14 +258,16 @@ Index extends BaseController
 
     }
 
-    public function token()
+    public
+    function token()
     {
         return json(\app\api\service\Token::getCurrentTokenVar());
 
     }
 
 
-    public function clearAccounts()
+    public
+    function clearAccounts()
     {
 
         Db::startTrans();
@@ -268,7 +330,8 @@ Index extends BaseController
         }
     }
 
-    private function checkClearTime($nextTime)
+    private
+    function checkClearTime($nextTime)
     {
         return true;
         $now = strtotime(date('Y-m-d H:i'));
@@ -281,7 +344,8 @@ Index extends BaseController
 
     }
 
-    private function getNextClearTime($clearType, $first, $end, $dayCount, $time_begin)
+    private
+    function getNextClearTime($clearType, $first, $end, $dayCount, $time_begin)
     {
         if ($clearType == "day") {
             return addDay($dayCount, $time_begin) . ' ' . "23:59";

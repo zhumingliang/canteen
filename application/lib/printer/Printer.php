@@ -155,7 +155,7 @@ class Printer extends PrinterBase
         //print_r($printRes);
         if ($printRes['msg'] == 'ok' && $printRes['ret'] == 0) {
             return true;
-        }else {
+        } else {
             LogService::save('打印机打印异常：' . json_encode($printRes));
         }
         return false;
@@ -315,6 +315,9 @@ class Printer extends PrinterBase
 
         $canteenName = "外卖订单";
         $order = (new OrderStatisticService())->infoToPrint($orderID, $consumptionType);
+        if ($order['state'] == CommonEnum::STATE_IS_FAIL) {
+            return true;
+        }
         $name = $order['address']['name'];
         $phone = $order['address']['phone'];
         $address = $order['address']['province'] .

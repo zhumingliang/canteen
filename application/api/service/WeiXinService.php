@@ -27,6 +27,12 @@ class WeiXinService
 
         $menus = [
             [
+                "name" => "进入饭堂",
+                "type" => "view",
+                "url" => $url
+            ]
+        ];/* $menus = [
+            [
                 "name" => "云饭堂3.0",
                 "sub_button" => [
                     ["type" => "view",
@@ -35,7 +41,7 @@ class WeiXinService
                     ]
                 ]
             ]
-        ];
+        ];*/
         print_r($menus);
         $res = $this->app->menu->create($menus);
         if (!$res) {

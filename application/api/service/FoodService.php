@@ -7,20 +7,25 @@ namespace app\api\service;
 use app\api\model\AutomaticFoodT;
 use app\api\model\AutomaticT;
 use app\api\model\CanteenModuleV;
+use app\api\model\DinnerT;
 use app\api\model\FoodCommentT;
 use app\api\model\FoodDayStateT;
 use app\api\model\FoodDayStateV;
 use app\api\model\FoodMaterialT;
 use app\api\model\FoodT;
 use app\api\model\FoodV;
+use app\api\model\MenuT;
 use app\lib\enum\CommonEnum;
 use app\lib\enum\FoodEnum;
 use app\lib\exception\ParameterException;
 use app\lib\exception\SaveException;
 use app\lib\exception\UpdateException;
+use EasyWeChat\Factory;
+use Monolog\Handler\IFTTTHandler;
 use think\Db;
 use think\Exception;
 use think\Model;
+use function GuzzleHttp\Psr7\str;
 
 class FoodService extends BaseService
 {
@@ -215,89 +220,384 @@ class FoodService extends BaseService
 
     }
 
-    public function foodsForOfficialManager($menu_id, $food_type, $day, $canteen_id, $page, $size)
+    public function foodsForOfficialManager($canteenId, $dinnerId, $day, $foodType)
     {
-        $foods = FoodT::foodsForOfficialManager($menu_id, $food_type, $page, $size);
-        $foods['data'] = $this->prefixFoodDayStatus($foods['data'], $day, $canteen_id);
-        return $foods;
+        //获取菜单配置
+        $menus = MenuT::dinnerMenusCategory($dinnerId);
+        //获取所有菜品信息
+        $foods = FoodT::foodsForOfficialManager($canteenId, $foodType);
+        //获取自动上架配置
+        $dayWeek = date('w', strtotime($day));
+        $auto = AutomaticT::infoToDinner($canteenId, $dinnerId, $dayWeek);
+        //获取选定日期已上架的菜品
+        $foodDay = FoodDayStateT::FoodStatus($canteenId, $dinnerId, $day);
+        //获取餐次是否固定消费
+        $dinner = DinnerT::get($dinnerId);
+
+        $nextAuto = $this->getCurrentAutoDay($day, $foodDay, $auto);
+        $data = $this->prefixFoodDayStatus($menus, $foods, $auto, $foodDay, $day);
+        return [
+            'fixed' => $dinner->fixed,
+            'auto' => empty($auto) ? 0 : 1,
+            'nextAuto' => $nextAuto,
+            'foodData' => $data
+        ];
     }
 
-    private function prefixFoodDayStatus($foods, $day, $canteen_id)
+    public function getNextAuto($autoWeek, $repeatWeek, $day = "")
     {
-        if (!count($foods)) {
-            return $foods;
+        if (!strlen($day)) {
+            $day = date('Y-m-d');
         }
-        //获取指定时间菜品状态
-        $foodDay = FoodDayStateT::FoodStatus($canteen_id, $day);
-        foreach ($foods as $k => $v) {
-            $status = 2;
-            $default = 2;
-            if (!empty($foodDay)) {
-                foreach ($foodDay as $k2 => $v2) {
-                    if ($v['id'] == $v2['f_id']) {
-                        $status = $v2['status'];
-                        $default = $v2['default'];
+        $week = date('w', strtotime($day));
+
+        $week = $week == 0 ? 7 : $week;
+        $repeatWeek = $repeatWeek == 0 ? 7 : $repeatWeek;
+        $autoWeek = $autoWeek == 0 ? 7 : $autoWeek;
+        //获取下一个自动上架的日期
+        if ($week >= $autoWeek) {
+            $nextAutoDay = addDay(7 - ($week - $autoWeek), $day);
+        } else {
+            $nextAutoDay = addDay($autoWeek - $week, $day);
+        }
+
+        if ($repeatWeek >= $autoWeek) {
+            return [
+                'nextAuto' => $nextAutoDay,
+                'nextUp' => addDay(7 + ($repeatWeek - $autoWeek), $nextAutoDay)
+            ];
+        } else {
+            return [
+                'nextAuto' => $nextAutoDay,
+                'nextUp' => addDay(7 - ($autoWeek - $repeatWeek), $nextAutoDay)
+            ];
+        }
+
+    }
+
+    private function getCurrentAutoDay($day, $foodDay, $auto)
+    {
+        if (!$auto) {
+            return 0;
+        }
+        //获取选择日期的周几信息
+        $repeatWeek = date('w', strtotime($day));
+        $autoWeek = $auto->auto_week;
+        $repeatWeek = $repeatWeek == 0 ? 7 : $repeatWeek;
+        $autoWeek = $autoWeek == 0 ? 7 : $autoWeek;
+        if ($repeatWeek >= $autoWeek) {
+            return reduceDay(7 + ($repeatWeek - $autoWeek), $day);
+        } else {
+            return reduceDay(7 - ($autoWeek - $repeatWeek), $day);
+        }
+    }
+
+    private function prefixFoodDayStatus($menus, $foods, $auto, $foodDay, $day)
+    {
+        foreach ($menus as $k => $v) {
+            $menuFood = [];
+            if (count($foods)) {
+                foreach ($foods as $k2 => $v2) {
+                    if ($v['id'] == $v2['m_id']) {
+                        $check = $this->checkFoodStatus2($v2['id'], $auto, $foodDay, $day);
+                        array_push($menuFood, [
+                            'food_id' => $v2['id'],
+                            'default' => $check['default'],
+                            'name' => $v2['name'],
+                            'price' => $v2['price'],
+                            'des' => $v2['des'],
+                            'external_price' => $v2['external_price'],
+                            'img_url' => $v2['img_url'],
+                            'status' => $check['status']
+                        ]);
+                        unset($foods[$k2]);
+                        continue;
+                    }
+
+                }
+
+            }
+            $menus[$k]['foods'] = $menuFood;
+        }
+        return $menus;
+    }
+
+    private function checkFoodStatus($foodId, $auto, $foodDay, $day)
+    {
+        //状态有三种：上架1/待上架2/未上架3
+        //设置了自动上架菜品：待上架/未上架/
+        //未设置自动上架菜品：已上架/未上架
+        $default = CommonEnum::STATE_IS_FAIL;
+
+        //未设置自动上架
+        if (!$auto) {
+            $status = FoodEnum::STATUS_DOWN;
+            if (count($foodDay)) {
+                foreach ($foodDay as $k => $v) {
+                    if ($foodId == $v['f_id']) {
+                        $status = $v['status'];
+                        $default = $v['default'];
+                        break;
                     }
                 }
             }
-            $foods[$k]['status'] = $status;
-            $foods[$k]['default'] = $default;
+            return [
+                'default' => $default,
+                'status' => $status
+            ];
         }
-        return $foods;
+
+        $foods = $auto['foods'];
+        $status = FoodEnum::STATUS_DOWN;
+        if (count($foods)) {
+            foreach ($foods as $k => $v) {
+                if ($foodId == $v['food_id']) {
+                    if ($day == date('Y-m-d') && date('Y-m-d', strtotime($v['create_time'])) != date('Y-m-d')) {
+                        $status = FoodEnum::STATUS_UP;
+                    } else {
+                        $status = FoodEnum::STATUS_READY;
+                    }
+                    break;
+                }
+
+            }
+        }
+
+        if (count($foodDay)) {
+            foreach ($foodDay as $k => $v) {
+                if ($foodId == $v['f_id']) {
+                    $default = $v['default'];
+                    $status = $v['status'];
+                    /* if ($day == date('Y-m-d')) {
+                         $status = $v['status'];
+                     } else {
+                         if ($v['status'] != FoodEnum::STATUS_DOWN) {
+                             $status = FoodEnum::STATUS_READY;
+                         } else {
+                             $status = FoodEnum::STATUS_DOWN;
+                         }
+                     }*/
+                    break;
+                }
+            }
+        }
+        return [
+            'default' => $default,
+            'status' => $status
+        ];
+
+
     }
 
-    public function handelFoodsDayStatus($params)
+    private function checkFoodStatus2($foodId, $auto, $foodDay, $day)
+    {
+        $default = CommonEnum::STATE_IS_FAIL;
+        $status = FoodEnum::STATUS_DOWN;
+        //未配置自动上架
+        if (!$auto) {
+            $status = FoodEnum::STATUS_DOWN;
+            if (count($foodDay)) {
+                foreach ($foodDay as $k => $v) {
+                    if ($foodId == $v['f_id']) {
+                        $status = $v['status'];
+                        $default = $v['default'];
+                        break;
+                    }
+                }
+            }
+            return [
+                'default' => $default,
+                'status' => $status
+            ];
+        }
+        //设置自动上架
+        //判断是否到了上架时间
+        $autoWeek = $auto['auto_week'];
+        $repeatWeek = $auto['repeat_week'];
+        $checkAlready = $this->checkUpTime($autoWeek, $repeatWeek, $day);
+        $autoFoods = $auto['foods'];
+        if (!$checkAlready) {
+            //未到上架时间
+            //1.点击了上架-上架状态
+            //2.点击了待上架-待上架状态
+            //3非配置菜品-未上架
+            $needReturn = false;
+            foreach ($foodDay as $k => $v) {
+                if ($foodId == $v['f_id']) {
+                    $default = $v['default'];
+                    $status = $v['status'];
+                    /*  if ($status != FoodEnum::STATUS_UP) {
+                          $status = FoodEnum::STATUS_READY;
+                      }*/
+                    $needReturn = true;
+
+                }
+            }
+            if ($needReturn) {
+                return [
+                    'default' => $default,
+                    'status' => $status
+                ];
+            }
+            foreach ($autoFoods as $k => $v) {
+                if ($foodId == $v['food_id']) {
+                    $status = FoodEnum::STATUS_READY;
+                    break;
+                }
+            }
+            return [
+                'default' => $default,
+                'status' => $status
+            ];
+
+        }
+
+        //已过上架时间
+        //还需处理上架之后但是修改了auto配置的菜品（foodDayStateT中,创建时间早于auto配置中修改时间）
+        $needReturn = false;
+        foreach ($foodDay as $k => $v) {
+            if ($foodId == $v['f_id']) {
+                $default = $v['default'];
+                $status = $v['status'] == FoodEnum::STATUS_DOWN ? FoodEnum::STATUS_DOWN : $v['status'];
+                $needReturn = true;
+            }
+        }
+        if ($needReturn) {
+            return [
+                'default' => $default,
+                'status' => $status
+            ];
+        }
+
+        foreach ($autoFoods as $k => $v) {
+            if ($foodId == $v['food_id']) {
+                if (strtotime($v['effective_time']) < strtotime($day)) {
+                    $status = FoodEnum::STATUS_UP;
+                } else {
+                    $status = FoodEnum::STATUS_DOWN;
+                }
+                break;
+            }
+        }
+        return [
+            'default' => $default,
+            'status' => $status
+        ];
+    }
+
+    private
+    function checkUpTime($autoWeek, $repeatWeek, $day = '')
+    {
+
+        if (!strlen($day)) {
+            $day = date('Y-m-d');
+        }
+        $repeatWeek = $repeatWeek == 0 ? 7 : $repeatWeek;
+        $autoWeek = $autoWeek == 0 ? 7 : $autoWeek;
+
+        if ($repeatWeek >= $autoWeek) {
+            $upTime = reduceDay(7 + ($repeatWeek - $autoWeek), $day);
+        } else {
+            $upTime = reduceDay(7 - ($autoWeek - $repeatWeek), $day);
+        }
+        return strtotime(date('Y-m-d')) >= strtotime($upTime);
+
+
+    }
+
+    public
+    function handelFoodsDayStatus($params)
     {
         $day = $params['day'];
-        $food_id = $params['food_id'];
-        $canteen_id = $params['canteen_id'];
+        $foodId = $params['food_id'];
+        $canteenId = $params['canteen_id'];
+        $dinnerId = $params['dinner_id'];
         if (!empty($params['default'])) {
-            if (!$this->checkStatus($food_id, $day, $params['default'])) {
+            if (!$this->checkStatus($foodId, $day, $params['default'])) {
                 throw new SaveException(['msg' => '默认菜式数量已达到最大值']);
             }
         }
-        $dayFood = FoodDayStateT::where('f_id', $food_id)
+        //获取自动上架配置
+        $dayWeek = date('w', strtotime($day));
+        $auto = AutomaticT::infoToDinner($canteenId, $dinnerId, $dayWeek);
+
+        $dayFood = FoodDayStateT::where('f_id', $foodId)
+            ->where('dinner_id', $dinnerId)
             ->where('day', $day)
             ->find();
 
         if (!$dayFood) {
+            FoodDayStateT::destroy(function ($query) use ($foodId, $dinnerId, $day) {
+                $query->where('f_id', $foodId)
+                    ->where('dinner_id', $dinnerId)
+                    ->where('day', $day);
+            });
             $data = [
-                'f_id' => $food_id,
-                'canteen_id' => $canteen_id,
+                'f_id' => $foodId,
+                'canteen_id' => $canteenId,
+                'dinner_id' => $dinnerId,
                 'day' => $day,
-                'user_id' => Token::getCurrentUid()
+                'default' => empty($params['default']) ? CommonEnum::STATE_IS_OK : $params['default'],
+                'user_id' => Token::getCurrentUid(),
+
             ];
-            if (!empty($params['status'])) {
-                $data['status'] = $params['status'];
-            }
-            if (!empty($params['default'])) {
-                $data['default'] = $params['default'];
-                if ($params['default'] == CommonEnum::STATE_IS_OK) {
-                    $data['status'] = CommonEnum::STATE_IS_OK;
+            $data['status'] = $params['status'];
+            if ($auto) {
+                $autoWeek = $auto['auto_week'];
+                $repeatWeek = $auto['repeat_week'];
+
+                if (!$this->checkUpTime($autoWeek, $repeatWeek, $day)) {
+                    //未到上架时间
+                    $data['status'] = $params['status'] == FoodEnum::STATUS_DOWN ? FoodEnum::STATUS_DOWN : FoodEnum::STATUS_READY;
                 }
             }
             if (!FoodDayStateT::create($data)) {
                 throw new SaveException(['msg' => '新增菜品信息状态失败']);
             }
-            return true;
-        }
-        if (!empty($params['status'])) {
+        } else {
             $dayFood->status = $params['status'];
-        }
-        if (!empty($params['default'])) {
-            $dayFood->default = $params['default'];
-            if ($params['default'] == CommonEnum::STATE_IS_OK) {
-                $dayFood->status = CommonEnum::STATE_IS_OK;
+            if ($auto) {
+                $autoWeek = $auto['auto_week'];
+                $repeatWeek = $auto['repeat_week'];
+                if (!$this->checkUpTime($autoWeek, $repeatWeek, $day)) {
+                    //未到上架时间
+                    $dayFood->status = $params['status'] == FoodEnum::STATUS_DOWN ? FoodEnum::STATUS_DOWN : FoodEnum::STATUS_READY;
+                }
+            }
+            if (!empty($params['default'])) {
+                $dayFood->default = $params['default'];
+            }
+            $dayFood->update_timee = date('Y-m-d H:i:s');
+            if (!$dayFood->save()) {
+                throw new UpdateException (['msg' => '修改菜品信息状态失败']);
+
             }
         }
-        $dayFood->update_time = date('Y-m-d H:i:s');
-        if (!$dayFood->save()) {
-            throw new UpdateException (['msg' => '修改菜品信息状态失败']);
+
+
+    }
+
+    private
+    function checkHandelStatus($auto, $day, $status)
+    {
+
+        if (!count($auto)) {
+            return $status;
+        } else {
+            if ($day == date('Y-m-d')) {
+                return $status;
+            } else {
+                //检测当前时间
+
+                return $status == FoodEnum::STATUS_DOWN ?
+                    $status : FoodEnum::STATUS_READY;
+            }
 
         }
     }
 
-    private function checkStatus($food_id, $day, $status)
+    private
+    function checkStatus($food_id, $day, $status)
     {
         if ($status == CommonEnum::STATE_IS_FAIL) {
             return true;
@@ -321,7 +621,8 @@ class FoodService extends BaseService
 
     }
 
-    public function foodsForOfficialPersonChoice($d_id)
+    public
+    function foodsForOfficialPersonChoice($d_id)
     {
         $foods = FoodDayStateV::foodsForOfficialPersonChoice($d_id);
         $menus = (new MenuService())->dinnerMenus($d_id);
@@ -329,15 +630,17 @@ class FoodService extends BaseService
         return $foods;
     }
 
-    public function foodsForOfficialMenu($d_id)
+    public
+    function foodsForOfficialMenu($day, $d_id)
     {
-        $foods = FoodDayStateV::foodsForOfficialMenu($d_id);
+        $foods = FoodDayStateV::foodsForOfficialMenu($day, $d_id);
         $menus = (new MenuService())->dinnerMenus($d_id);
         $foods = $this->prefixPersonChoiceFoods($foods, $menus);
         return $foods;
     }
 
-    private function prefixPersonChoiceFoods($foods, $menus)
+    private
+    function prefixPersonChoiceFoods($foods, $menus)
     {
         if (!count($foods)) {
             return $foods;
@@ -356,7 +659,8 @@ class FoodService extends BaseService
         return $menus;
     }
 
-    public function saveComment($params)
+    public
+    function saveComment($params)
     {
         $params['u_id'] = Token::getCurrentUid();
         $params['f_id'] = $params['food_id'];
@@ -366,7 +670,8 @@ class FoodService extends BaseService
         }
     }
 
-    public function infoToComment($food_id)
+    public
+    function infoToComment($food_id)
     {
         $food = FoodT::infoForComment($food_id);
         $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
@@ -376,7 +681,8 @@ class FoodService extends BaseService
         ];
     }
 
-    public function saveAutoConfig($params)
+    public
+    function saveAutoConfig($params)
     {
         try {
             Db::startTrans();
@@ -394,11 +700,65 @@ class FoodService extends BaseService
             if (!$auto) {
                 throw new SaveException(['msg' => '保存自动上架配置失败']);
             }
-            $detail = \GuzzleHttp\json_decode($params['detail'], true);
+            $detail = $params['detail'];
             if (empty($detail) || empty($detail['add'])) {
                 throw new SaveException(['msg' => '上架菜品不能为空']);
             }
-            $this->prefixAutoFoods($auto->id, $detail['add'], []);
+            $nextDay = $this->getNextAuto($params['auto_week'], $params['repeat_week']);
+            $this->prefixAutoFoods($auto->id, $nextDay['nextUp'], $nextDay['nextAuto'], $detail['add'], []);
+
+            //判断最近一次上架时间是否已经到了
+            //判断当前时间有没有超过下一次的上架时间
+            $week = date('w');
+            $week = $week == 0 ? 7 : $week;
+            $repeatWeek = $params['repeat_week'] == 0 ? 7 : $params['repeat_week'];
+            $autoWeek = $params['auto_week'] == 0 ? 7 : $params['auto_week'];
+
+            $add = $detail['add'];
+            $foodList = [];
+            if ($week <= $repeatWeek) {
+                foreach ($add as $k => $v) {
+                    $foods = $v['foods'];
+                    if (count($foods)) {
+                        foreach ($foods as $k2 => $v2) {
+                            array_push($foodList, [
+                                'f_id' => $v2,
+                                'status' => FoodEnum::STATUS_UP,
+                                'day' => addDay($repeatWeek - $week, date('Y-m-d')),
+                                'user_id' => 0,
+                                'canteen_id' => $params['canteen_id'],
+                                'default' => CommonEnum::STATE_IS_FAIL,
+                                'dinner_id' => $params['dinner_id']
+                            ]);
+                        }
+                    }
+                }
+            }
+
+            if ($week >= $autoWeek) {
+                foreach ($add as $k => $v) {
+                    $foods = $v['foods'];
+                    if (count($foods)) {
+                        foreach ($foods as $k2 => $v2) {
+                            array_push($foodList, [
+                                'f_id' => $v2,
+                                'status' => FoodEnum::STATUS_UP,
+                                'day' => addDay($repeatWeek - $week + 7, date('Y-m-d')),
+                                'user_id' => 0,
+                                'canteen_id' => $params['canteen_id'],
+                                'default' => CommonEnum::STATE_IS_FAIL,
+                                'dinner_id' => $params['dinner_id']
+                            ]);
+                        }
+                    }
+                }
+            }
+            if (count($foodList)) {
+                $save = (new FoodDayStateT())->saveAll($foodList);
+                if (!$save) {
+                    throw new SaveException(['msg' => "上架今日菜品失败"]);
+                }
+            }
             Db::commit();
         } catch (Exception $e) {
             Db::rollback();
@@ -408,13 +768,16 @@ class FoodService extends BaseService
 
     }
 
-    public function updateAutoConfig($params)
+    public
+    function updateAutoConfig($params)
     {
         try {
+
+
             Db::startTrans();
             if (!empty($params['dinner_id'] || !empty($params['repeat_week']))) {
                 $check = AutomaticT::checkExits($params['dinner_id'], $params['repeat_week']);
-                if ($check->id != $params['id']) {
+                if ($check->id > 0 && $check->id != $params['id']) {
                     throw new ParameterException(['msg' => "该餐次指定重复周期已经设置"]);
                 }
 
@@ -424,11 +787,20 @@ class FoodService extends BaseService
                 throw new SaveException(['msg' => '修改自动上架配置失败']);
             }
             if (!empty($params['detail'])) {
-                $detail = \GuzzleHttp\json_decode($params['detail'], true);
+                $detail = $params['detail'];
                 $add = empty($detail['add']) ? [] : $detail['add'];
                 $cancel = empty($detail['cancel']) ? [] : $detail['cancel'];
-                $this->prefixAutoFoods($params['id'], $add, $cancel);
+                if (!empty($params['auto_week'])) {
+                    $autoWeek = $params['auto_week'];
+                } else {
+                    $auto = AutomaticT::get($params['id']);
+                    $autoWeek = $auto->auto_week;
+                }
+                $nextDay = $this->getNextAuto($autoWeek, $params['repeat_week']);
+                $this->prefixAutoFoods($params['id'], $nextDay['nextUp'], $nextDay['nextAuto'], $add, $cancel);
+
             }
+
             Db::commit();
         } catch (Exception $e) {
             Db::rollback();
@@ -438,7 +810,8 @@ class FoodService extends BaseService
 
     }
 
-    private function prefixAutoFoods($autoId, $add, $cancel)
+    private
+    function prefixAutoFoods($autoId, $effectiveTime, $nextAutoDay, $add, $cancel)
     {
         $data = [];
         if (count($add)) {
@@ -449,9 +822,11 @@ class FoodService extends BaseService
                     foreach ($foods as $k2 => $v2) {
                         array_push($data, [
                             'auto_id' => $autoId,
-                            'state', CommonEnum::STATE_IS_OK,
+                            'state' => CommonEnum::STATE_IS_OK,
                             'food_id' => $v2,
-                            'menu_id' => $menuId
+                            'menu_id' => $menuId,
+                            'effective_time' => $effectiveTime,
+                            'next_auto_time' => $nextAutoDay
                         ]);
 
                     }
@@ -462,10 +837,11 @@ class FoodService extends BaseService
             foreach ($cancel as $k => $v) {
                 array_push($data, [
                     'id' => $v,
-                    'state' => CommonEnum::STATE_IS_OK
+                    'state' => CommonEnum::STATE_IS_FAIL,
+                    'effective_time' => $effectiveTime,
+                    'next_auto_time' => $nextAutoDay
                 ]);
             }
-
         }
         if (count($data)) {
             $save = (new AutomaticFoodT())->saveAll($data);
@@ -474,5 +850,178 @@ class FoodService extends BaseService
             }
         }
     }
+
+    public
+    function automatic($id)
+    {
+        $auto = AutomaticT::info($id);
+        return $auto;
+    }
+
+    public
+    function downAll($canteenId, $dinnerId, $day)
+    {
+        //检查是否配置自动上架
+        $autoFoods = [];
+        $foodList = [];
+        $alreadyFoods = [];
+        $dayWeek = date('w', strtotime($day));
+        $auto = AutomaticT::infoToDinner($canteenId, $dinnerId, $dayWeek);
+        if ($auto && count($auto['foods'])) {
+            $autoFoods = $auto['foods'];
+        }
+        $status = FoodEnum::STATUS_DOWN;
+        /*   if (count($autoFoods)) {
+               $autoWeek = $auto['auto_week'];
+               $repeatWeek = $auto['repeat_week'];
+               if (!$this->checkUpTime($autoWeek, $repeatWeek, $day)) {
+                   //未到上架时间-处理为待上架
+                   $status = FoodEnum::STATUS_READY;
+               }
+           }*/
+
+        //清除所有信息
+        FoodDayStateT::destroy(function ($query) use ($canteenId, $dinnerId, $day) {
+            $query->where('canteen_id', $canteenId)
+                ->where('dinner_id', $dinnerId)
+                ->where('day', '=', $day);
+        });
+        if (count($autoFoods)) {
+            foreach ($autoFoods as $k => $v) {
+                if (in_array($v['food_id'], $alreadyFoods)) {
+                    continue;
+                }
+                array_push($foodList, [
+                    'f_id' => $v['food_id'],
+                    'status' => $status,
+                    'day' => $day,
+                    'user_id' => 0,
+                    'canteen_id' => $canteenId,
+                    'default' => CommonEnum::STATE_IS_FAIL,
+                    'dinner_id' => $dinnerId
+                ]);
+                array_push($alreadyFoods, $v['food_id']);
+
+            }
+        }
+
+
+        if (count($foodList)) {
+            $save = (new FoodDayStateT())->saveAll($foodList);
+            if (!$save) {
+                throw new SaveException(['msg' => '批量下架失败']);
+            }
+        }
+
+
+    }
+
+    public
+    function upAll($canteenId, $dinnerId, $day)
+    {
+        //获取自动上架配置
+        $autoFoods = [];
+        $dayWeek = date('w', strtotime($day));
+        $auto = AutomaticT::infoToDinner($canteenId, $dinnerId, $dayWeek);
+        if ($auto && count($auto['foods'])) {
+            $autoFoods = $auto['foods'];
+        }
+        $foodDay = FoodDayStateT::FoodStatus($canteenId, $dinnerId, $day);
+        $foodList = [];
+        $alreadyFoods = [];
+        $status = FoodEnum::STATUS_UP;
+        if (count($autoFoods)) {
+            $autoWeek = $auto['auto_week'];
+            $repeatWeek = $auto['repeat_week'];
+            if (!$this->checkUpTime($autoWeek, $repeatWeek, $day)) {
+                //未到上架时间-处理为待上架
+                $status = FoodEnum::STATUS_READY;
+            }
+        }
+        if (count($foodDay)) {
+            foreach ($foodDay as $k => $v) {
+                if (in_array($v['f_id'], $alreadyFoods)) {
+                    continue;
+                } else {
+                    array_push($foodList, [
+                        'id' => $v['id'],
+                        'status' => $status
+                    ]);
+                    array_push($alreadyFoods, $v['f_id']);
+                }
+
+            }
+        }
+
+        if ($auto) {
+            if (!count($auto['foods'])) {
+                throw new ParameterException(['msg' => "自动上架菜品未设置"]);
+            }
+            $autoFoods = $auto['foods'];
+            foreach ($autoFoods as $k => $v) {
+                if (in_array($v['food_id'], $alreadyFoods)) {
+                    continue;
+                }
+                array_push($foodList, [
+                    'f_id' => $v['food_id'],
+                    'status' => FoodEnum::STATUS_UP,
+                    'day' => $day,
+                    'user_id' => 0,
+                    'canteen_id' => $canteenId,
+                    'default' => CommonEnum::STATE_IS_FAIL,
+                    'dinner_id' => $dinnerId
+                ]);
+                array_push($alreadyFoods, $v['food_id']);
+
+            }
+        }
+
+        if (count($foodList)) {
+            $save = (new FoodDayStateT())->saveAll($foodList);
+            if (!$save) {
+                throw new SaveException(['msg' => '上架失败']);
+            }
+        }
+
+    }
+
+    public function handleAutoAll($type, $canteenId, $dinnerId, $day, $foods)
+    {
+        //获取自动上架配置
+        $autoFoods = [];
+        $foodList = [];
+        $alreadyFoods = [];
+        $timed = true;
+        $dayWeek = date('w', strtotime($day));
+        $auto = AutomaticT::infoToDinner($canteenId, $dinnerId, $dayWeek);
+        if ($auto && count($auto['foods'])) {
+            $autoFoods = $auto['foods'];
+            $autoWeek = $auto['auto_week'];
+            $repeatWeek = $auto['repeat_week'];
+            $timed = $this->checkUpTime($autoWeek, $repeatWeek, $day);
+
+        }
+        $foodDay = FoodDayStateT::FoodStatus($canteenId, $dinnerId, $day);
+
+        $handleFoods = explode(',', $foods);
+        if (!count($handleFoods)) {
+            throw new ParameterException(['msg' => '操作菜品为空']);
+        }
+        foreach ($foodDay as $k => $v) {
+            if ($timed) {
+                $status = $type;
+            } else {
+                $status = $type == FoodEnum::STATUS_DOWN;
+            }
+            if (in_array($v['f_id'], $handleFoods)) {
+                array_push($foodList, [
+                    'id' => $v['id'],
+                    'status' => $type
+                ]);
+            }
+
+        }
+    }
+
 
 }

@@ -865,7 +865,12 @@ class WalletService
 
     private function getConsumptionDate($value)
     {
-        return gmdate("Y-m-d", ($value - 25569) * 86400);
+        if (count(explode('/',$value))==3||count(explode('-',$value))==3){
+            return  $value;
+        }else{
+            return gmdate("Y-m-d", ($value - 25569) * 86400);
+
+        }
 
     }
 

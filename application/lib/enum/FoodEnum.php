@@ -14,4 +14,10 @@ class FoodEnum
     const CHOICE = 2;
 
     const NO_CHOICE = 1;
+
+    const  STATUS_UP = 1;
+
+    const  STATUS_READY = 2;
+
+    const  STATUS_DOWN = 3;
 }

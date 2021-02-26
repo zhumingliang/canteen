@@ -1448,7 +1448,7 @@ class Order extends BaseController
     public function getOrderMoney()
     {
         $params = Request::param();
-        $money = (new  OrderService())->getOrderMoney($params);
+        $money = (new OrderService())->getOrderMoney($params);
         return json(new SuccessMessageWithData(['data' => $money]));
     }
 

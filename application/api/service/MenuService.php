@@ -92,6 +92,12 @@ class MenuService
         return $menus;
     }
 
+    public function canteenMenus2($canteen_id)
+    {
+        $menus = DinnerT::canteenDinnerMenus2($canteen_id);
+        return $menus;
+    }
+
     public function dinnerMenus($dinner_id)
     {
         $menus = MenuT::dinnerMenus($dinner_id);

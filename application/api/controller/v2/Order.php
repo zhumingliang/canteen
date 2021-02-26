@@ -4,6 +4,8 @@
 namespace app\api\controller\v2;
 
 
+use app\api\service\OrderService;
+use app\api\service\v2\OrderService as OrderServiceV2;
 use app\api\service\OrderStatisticService;
 use app\lib\exception\SuccessMessageWithData;
 use think\facade\Request;
@@ -188,6 +190,54 @@ class Order
             $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_ids, $phone, $order_type);
         return json(new SuccessMessageWithData(['data' => $statistic]));
 
+    }
+
+
+    /**
+     * @api {POST} /api/v2/order/money 微信端-个人选菜-提交订单时查看金额信息
+     * @apiGroup   Official
+     * @apiVersion 3.0.0
+     * @apiDescription    微信端-个人选菜-提交订单时查看金额信息
+     * @apiExample {post}  请求样例:
+     *    {
+     *       "ordering_date": "2019-09-07",
+     *       "dinner_id": 1,
+     *       "dinner": "早餐",
+     *       "type": 1,
+     *       "ordering_type": "person_choice",
+     *       "count": 1,
+     *       "detail":[{"menu_id":1,"foods":[{"food_id":1,"name":"商品1","price":5,""count":1},{"food_id":2,"name":"商品1","price":5,"count":1}]}]
+     *     }
+     * @apiParam (请求参数说明) {string} ordering_date  订餐日期
+     * @apiParam (请求参数说明) {string} ordering_type  订餐类型：person_choice 个人选菜；online 在线预订餐
+     * @apiParam (请求参数说明) {int} dinner_id 餐次id
+     * @apiParam (请求参数说明) {int} dinner 餐次名称
+     * @apiParam (请求参数说明) {int} type 就餐类别：1|食堂；2|外卖
+     * @apiParam (请求参数说明) {int} count 订餐数量
+     * @apiParam (请求参数说明) {obj} detail 订餐菜品明细
+     * @apiParam (请求参数说明) {string} detail|menu_id 菜品类别id
+     * @apiParam (请求参数说明) {obj} detail|foods 菜品明细
+     * @apiParam (请求参数说明) {string} foods|food_id 菜品id
+     * @apiParam (请求参数说明) {string} foods|price 菜品实时单价
+     * @apiParam (请求参数说明) {string} foods|count 菜品数量
+     * @apiParam (请求参数说明) {string} foods|name 菜品名称
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"money":1,"sub_money":2,"delivery_fee":2}}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     * @apiSuccess (返回参数说明) {int} money 扣费标准金额
+     * @apiSuccess (返回参数说明) {int} sub_money 扣费附加金额
+     * @apiSuccess (返回参数说明) {int} meal_money 订餐就餐扣费标准金额
+     * @apiSuccess (返回参数说明) {int} meal_sub_money 订餐就餐扣费附加金额
+     * @apiSuccess (返回参数说明) {int} no_meal_money 订餐未就餐扣费标准金额
+     * @apiSuccess (返回参数说明) {int} no_meal_sub_money 订餐未就餐附加金额
+     * @apiSuccess (返回参数说明) {int} delivery_fee 外卖配送费
+     */
+    public function getOrderMoney()
+    {
+        $params = Request::param();
+        $money = (new  OrderServiceV2())->getOrderMoney($params);
+        return json(new SuccessMessageWithData(['data' => $money]));
     }
 
 

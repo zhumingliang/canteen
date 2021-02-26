@@ -86,13 +86,13 @@ class TakeoutService
         //批量发送模板
         foreach ($oneIDArr as $k => $v) {
             $order = OrderT::infoToReceive($v);
-            if ($order) {
+            if ($order&&$order['state']==CommonEnum::STATE_IS_OK) {
                 $this->sendReceiveTemplate($order['user']['openid'], $order['ordering_date'], $order['dinner']['name'], $order['canteen']['name']);
             }
         }
         foreach ($moreIDArr as $k => $v) {
             $order = OrderParentT::infoToReceive($v);
-            if ($order) {
+            if ($order&&$order['state']==CommonEnum::STATE_IS_OK) {
                 $this->sendReceiveTemplate($order['user']['openid'], $order['ordering_date'], $order['dinner']['name'], $order['canteen']['name']);
             }
         }

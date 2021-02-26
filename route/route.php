@@ -137,6 +137,13 @@ Route::get('api/:version/foods/menu', 'api/:version.Food/foodsForOfficialMenu');
 Route::get('api/:version/food', 'api/:version.Food/food');
 Route::get('api/:version/food/info/comment', 'api/:version.Food/infoToComment');
 Route::post('api/:version/food/material/update', 'api/:version.Food/updateMaterial');
+Route::post('api/:version/food/automatic/save', 'api/:version.Food/saveAutoConfig');
+Route::post('api/:version/food/automatic/update', 'api/:version.Food/updateAutoConfig');
+Route::get('api/:version/food/automatic', 'api/:version.Food/automatic');
+Route::post('api/:version/food/auto/upAll', 'api/:version.Food/upAll');
+Route::post('api/:version/food/auto/downAll', 'api/:version.Food/downAll');
+Route::get('api/:version/food/auto/ready', 'api/:version.Food/readyUpFoods');
+Route::get('api/:version/food/day', 'api/:version.Food/haveFoodDay');
 
 Route::post('api/:version/material/save', 'api/:version.Material/save');
 Route::post('api/:version/material/update', 'api/:version.Material/update');
@@ -366,3 +373,5 @@ Route::get('api/:version/nextmonthpay/remind', 'api/:version.NextMonthPay/remind
 Route::post('api/:version/nextmonthpay/payMoney', 'api/:version.NextMonthPay/payMoney');
 Route::post('api/:version/nextmonthpay/payMoney', 'api/:version.NextMonthPay/payMoney');
 Route::post('api/:version/nextmonthpay/payMoneyAll', 'api/:version.NextMonthPay/payMoneyAll');
+Route::post('api/:version/nextmonthpay/selectPaySetting', 'api/:version.NextMonthPay/selectPaySetting');
+Route::post('api/:version/nextmonthpay/nextMonthOutput', 'api/:version.NextMonthPay/nextMonthOutput');

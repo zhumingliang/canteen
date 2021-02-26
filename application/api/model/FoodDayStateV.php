@@ -30,10 +30,19 @@ class FoodDayStateV extends BaseModel
         return $foods;
     }
 
-    public static function foodsForOfficialMenu($d_id)
+    public static function foodsForOfficialPersonChoiceWithDay($day)
+    {
+        $foods = self:: where('day', $day)
+            ->where('status',CommonEnum::STATE_IS_OK)
+            ->where('f_type',FoodEnum::CHOICE)
+            ->select()->toArray();
+        return $foods;
+    }
+
+    public static function foodsForOfficialMenu($day,$d_id)
     {
         $foods = self:: where('d_id', $d_id)
-            ->whereTime('day', '>=', date('Y-m-d H:i:s'))
+            ->where('day',$day)
             ->where('status',CommonEnum::STATE_IS_OK)
             ->where('f_type',FoodEnum::NO_CHOICE)
             ->with([

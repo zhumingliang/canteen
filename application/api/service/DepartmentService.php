@@ -504,7 +504,7 @@ class DepartmentService
 
         if (in_array('card', $consumptionTypeArr)) {
             $data['card_num'] = $card_num;
-            if (count(explode('-', $birthday)) == 3) {
+            if (count(explode('-', $birthday)) == 3||count(explode('/', $birthday)) == 3) {
                 $data['birthday'] = $birthday;
             } else {
                 $data['birthday'] = gmdate("Y-m-d", ($birthday - 25569) * 86400);
