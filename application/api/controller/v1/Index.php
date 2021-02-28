@@ -84,13 +84,14 @@ Index extends BaseController
 
     public function index()
     {
-        $this->autoUpFoods();
+        $staff = CompanyStaffT::where('face_code', "44980200")->find();
+        print_r($staff);
     }
 
     public function autoUpFoods()
     {
         try {
-            $nextDay = (new FoodService())->getNextAuto(3, 4,"2021-02-23");
+            $nextDay = (new FoodService())->getNextAuto(3, 4, "2021-02-23");
             print_r($nextDay);
 
             /*  //查询出今日需要处理的自动上架

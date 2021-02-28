@@ -13,6 +13,7 @@ use app\api\model\FoodDayStateT;
 use app\api\model\FoodDayStateV;
 use app\api\model\FoodMaterialT;
 use app\api\model\FoodT;
+use app\api\model\FoodUpStatusT;
 use app\api\model\FoodV;
 use app\api\model\MenuT;
 use app\lib\enum\CommonEnum;
@@ -920,12 +921,9 @@ class FoodService extends BaseService
     function upAll($canteenId, $dinnerId, $day)
     {
         //获取自动上架配置
-        $autoFoods = [];
         $dayWeek = date('w', strtotime($day));
         $auto = AutomaticT::infoToDinner($canteenId, $dinnerId, $dayWeek);
-        if ($auto && count($auto['foods'])) {
-            $autoFoods = $auto['foods'];
-        }
+
         $foodDay = FoodDayStateT::FoodStatus($canteenId, $dinnerId, $day);
         $foodList = [];
         $alreadyFoods = [];
@@ -976,6 +974,12 @@ class FoodService extends BaseService
             if (!$save) {
                 throw new SaveException(['msg' => '上架失败']);
             }
+
+            if (!FoodUpStatusT::info($dinnerId, $day))
+                //保存已上架状态
+                if (!FoodUpStatusT::saveInfo($dinnerId, $day, CommonEnum::STATE_IS_OK)) {
+                    throw new SaveException(['msg' => '保存上架状态失败']);
+                }
         }
 
     }
