@@ -234,10 +234,13 @@ class FoodService extends BaseService
         $foodDay = FoodDayStateT::FoodStatus($canteenId, $dinnerId, $day);
         //获取餐次是否固定消费
         $dinner = DinnerT::get($dinnerId);
+        //判断餐次是否已经上架
+        $up = FoodUpStatusT::info($dinnerId, $day);
 
         $nextAuto = $this->getCurrentAutoDay($day, $foodDay, $auto);
         $data = $this->prefixFoodDayStatus($menus, $foods, $auto, $foodDay, $day);
         return [
+            'up' => empty($up) ? 0 : 1,
             'fixed' => $dinner->fixed,
             'auto' => empty($auto) ? 0 : 1,
             'nextAuto' => $nextAuto,
