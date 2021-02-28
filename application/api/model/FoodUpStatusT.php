@@ -13,7 +13,7 @@ class FoodUpStatusT extends Model
         $data = [
             'dinner_id' => $dinnerId,
             'day' => $day,
-            $status
+            'status'=>$status
         ];
         return self::create($data);
 
