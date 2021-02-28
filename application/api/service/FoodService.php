@@ -720,7 +720,9 @@ class FoodService extends BaseService
 
             $add = $detail['add'];
             $foodList = [];
+            $upList = [];
             if ($week <= $repeatWeek) {
+                $day = addDay($repeatWeek - $week, date('Y-m-d'));
                 foreach ($add as $k => $v) {
                     $foods = $v['foods'];
                     if (count($foods)) {
@@ -728,18 +730,24 @@ class FoodService extends BaseService
                             array_push($foodList, [
                                 'f_id' => $v2,
                                 'status' => FoodEnum::STATUS_UP,
-                                'day' => addDay($repeatWeek - $week, date('Y-m-d')),
+                                'day' => $day,
                                 'user_id' => 0,
                                 'canteen_id' => $params['canteen_id'],
                                 'default' => CommonEnum::STATE_IS_FAIL,
                                 'dinner_id' => $params['dinner_id']
                             ]);
                         }
+                        array_push($upList, [
+                            'dinner_id' => $params['dinner_id'],
+                            'day' => $day,
+                            'status' => CommonEnum::STATE_IS_OK
+                        ]);
                     }
                 }
             }
 
             if ($week >= $autoWeek) {
+                $day = addDay($repeatWeek - $week + 7, date('Y-m-d'));
                 foreach ($add as $k => $v) {
                     $foods = $v['foods'];
                     if (count($foods)) {
@@ -747,13 +755,18 @@ class FoodService extends BaseService
                             array_push($foodList, [
                                 'f_id' => $v2,
                                 'status' => FoodEnum::STATUS_UP,
-                                'day' => addDay($repeatWeek - $week + 7, date('Y-m-d')),
+                                'day' => $day,
                                 'user_id' => 0,
                                 'canteen_id' => $params['canteen_id'],
                                 'default' => CommonEnum::STATE_IS_FAIL,
                                 'dinner_id' => $params['dinner_id']
                             ]);
                         }
+                        array_push($upList, [
+                            'dinner_id' => $params['dinner_id'],
+                            'day' => $day,
+                            'status' => CommonEnum::STATE_IS_OK
+                        ]);
                     }
                 }
             }
@@ -761,6 +774,12 @@ class FoodService extends BaseService
                 $save = (new FoodDayStateT())->saveAll($foodList);
                 if (!$save) {
                     throw new SaveException(['msg' => "上架今日菜品失败"]);
+                }
+            }
+            if (count($upList)) {
+                $save = (new FoodUpStatusT())->saveAll($foodList);
+                if (!$save) {
+                    throw new SaveException(['msg' => "保存上架今日失败"]);
                 }
             }
             Db::commit();
