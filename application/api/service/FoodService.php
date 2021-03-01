@@ -566,7 +566,8 @@ class FoodService extends BaseService
             }
         } else {
             $dayFood->status = $params['status'];
-            if ($auto) {
+            $up = FoodUpStatusT::info($dinnerId, $day);
+            if (empty($up)&&$auto){
                 $autoWeek = $auto['auto_week'];
                 $repeatWeek = $auto['repeat_week'];
                 if (!$this->checkUpTime($autoWeek, $repeatWeek, $day)) {
