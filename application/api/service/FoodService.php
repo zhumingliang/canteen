@@ -237,8 +237,9 @@ class FoodService extends BaseService
         //判断餐次是否已经上架
         $up = FoodUpStatusT::info($dinnerId, $day);
 
+
         $nextAuto = $this->getCurrentAutoDay($day, $foodDay, $auto);
-        $data = $this->prefixFoodDayStatus($menus, $foods, $auto, $foodDay, $day);
+        $data = $this->prefixFoodDayStatus($menus, $foods, $auto, $foodDay, $day, $up);
         return [
             'up' => empty($up) ? 0 : 1,
             'fixed' => $dinner->fixed,
@@ -296,14 +297,14 @@ class FoodService extends BaseService
         }
     }
 
-    private function prefixFoodDayStatus($menus, $foods, $auto, $foodDay, $day)
+    private function prefixFoodDayStatus($menus, $foods, $auto, $foodDay, $day, $up)
     {
         foreach ($menus as $k => $v) {
             $menuFood = [];
             if (count($foods)) {
                 foreach ($foods as $k2 => $v2) {
                     if ($v['id'] == $v2['m_id']) {
-                        $check = $this->checkFoodStatus2($v2['id'], $auto, $foodDay, $day);
+                        $check = $this->checkFoodStatus2($v2['id'], $auto, $foodDay, $day, $up);
                         array_push($menuFood, [
                             'food_id' => $v2['id'],
                             'default' => $check['default'],
@@ -393,7 +394,7 @@ class FoodService extends BaseService
 
     }
 
-    private function checkFoodStatus2($foodId, $auto, $foodDay, $day)
+    private function checkFoodStatus2($foodId, $auto, $foodDay, $day, $up)
     {
         $default = CommonEnum::STATE_IS_FAIL;
         $status = FoodEnum::STATUS_DOWN;
@@ -430,9 +431,6 @@ class FoodService extends BaseService
                 if ($foodId == $v['f_id']) {
                     $default = $v['default'];
                     $status = $v['status'];
-                    /*  if ($status != FoodEnum::STATUS_UP) {
-                          $status = FoodEnum::STATUS_READY;
-                      }*/
                     $needReturn = true;
 
                 }
@@ -443,6 +441,14 @@ class FoodService extends BaseService
                     'status' => $status
                 ];
             }
+
+            if ($up) {
+                return [
+                    'default' => $default,
+                    'status' => FoodEnum::STATUS_DOWN
+                ];
+            }
+
             foreach ($autoFoods as $k => $v) {
                 if ($foodId == $v['food_id']) {
                     $status = FoodEnum::STATUS_READY;
