@@ -530,6 +530,7 @@ class FoodService extends BaseService
         //获取自动上架配置
         $dayWeek = date('w', strtotime($day));
         $auto = AutomaticT::infoToDinner($canteenId, $dinnerId, $dayWeek);
+        $up = FoodUpStatusT::info($dinnerId, $day);
 
         $dayFood = FoodDayStateT::where('f_id', $foodId)
             ->where('dinner_id', $dinnerId)
@@ -552,7 +553,7 @@ class FoodService extends BaseService
 
             ];
             $data['status'] = $params['status'];
-            if ($auto) {
+            if (empty($up)&&$auto){
                 $autoWeek = $auto['auto_week'];
                 $repeatWeek = $auto['repeat_week'];
 
@@ -566,7 +567,6 @@ class FoodService extends BaseService
             }
         } else {
             $dayFood->status = $params['status'];
-            $up = FoodUpStatusT::info($dinnerId, $day);
             if (empty($up)&&$auto){
                 $autoWeek = $auto['auto_week'];
                 $repeatWeek = $auto['repeat_week'];
