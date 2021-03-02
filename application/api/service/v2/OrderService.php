@@ -34,8 +34,10 @@ class OrderService
                 foreach ($dayOrders as $k2 => $v2) {
                     $foods = $v2['detail'];
                     if (count($foods)) {
+                        $prepareOrderId = QRcodeNUmber();
                         array_push($prepareOderList, [
                             'prepare_id' => $prepareId,
+                            'prepare_order_id' => $prepareOrderId,
                             'ordering_date' => $orderingDate,
                             'company_id' => $companyId,
                             'canteen_id' => $canteenId,
@@ -46,6 +48,14 @@ class OrderService
                             'type' => $orderType
                         ]);
                         foreach ($foods as $k3 => $v3) {
+                            array_push($prepareOderFoodList, [
+                                'prepare_order_id' => $prepareOrderId,
+                                'food_id'=>$v3['food_id'],
+                                'price'=>$v3['price'],
+                                'name'=>$v3['name'],
+                                'count'=>$v3['count'],
+                                'm_id'=>$v2['m_id'],
+                                ]);
 
                         }
 

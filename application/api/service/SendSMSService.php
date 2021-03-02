@@ -50,6 +50,7 @@ class SendSMSService
             "params" => empty($params) ? ['create_time' => date('Y-m-d H:i:s')] : $params
         ];
         $res = Http::sendRequest($url, $data);
+        LogService::save(json_encode($res));
         if ($res['ret'] !== true || $res['info']['errorCode'] !== 0) {
             throw new SaveException(['msg' => '发送验证码失败']);
         }
