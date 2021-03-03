@@ -84,8 +84,17 @@ Index extends BaseController
 
     public function index()
     {
-        $staff = CompanyStaffT::where('face_code', "44980200")->find();
-        print_r($staff);
+        $prepareId = 1;
+        $resCode = 0;
+        $resMessage = "";
+        $returnBalance = 0;
+        $resultSet = Db::query('call prepareOrder(:in_prepareId,:out_resCode,:out_resMessage,:returnBalance)', [
+            'in_prepareId' => [$prepareId, \PDO::PARAM_INT],
+            'out_resCode' => [$resCode, \PDO::PARAM_INPUT_OUTPUT],
+            'out_resMessage' => [$resMessage, \PDO::PARAM_INPUT_OUTPUT],
+            'out_returnBalance' => [$returnBalance, \PDO::PARAM_INPUT_OUTPUT],
+        ]);
+        print_r($resultSet);
     }
 
     public function autoUpFoods()
