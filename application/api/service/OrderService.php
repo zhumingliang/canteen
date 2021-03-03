@@ -2628,7 +2628,7 @@ class OrderService extends BaseService
     }
 
     public
-    function managerOrders($canteen_id, $consumption_time, $key)
+    function managerOrders($canteen_id, $consumption_time, $key,$department_id)
     {
         //获取饭堂餐次信息
         $dinner = (new CanteenService())->getDinnerNames($canteen_id);
@@ -2636,7 +2636,7 @@ class OrderService extends BaseService
             throw new ParameterException(['msg' => '参数异常，该饭堂未设置餐次信息']);
         }
         //获取饭堂订餐信息
-        $orderInfo = OrderUsersStatisticV::statisticToOfficial($canteen_id, $consumption_time, $key);
+        $orderInfo = OrderUsersStatisticV::statisticToOfficial($canteen_id, $consumption_time, $key,$department_id);
         foreach ($dinner as $k => $v) {
             $all = 0;
             $used = 0;
@@ -2671,9 +2671,9 @@ class OrderService extends BaseService
 
 //微信端总订餐查询-点击订餐数量，获取菜品统计信息
     public
-    function managerDinnerStatistic($dinner_id, $consumption_time, $page, $size)
+    function managerDinnerStatistic($dinner_id, $consumption_time, $page, $size,$department_id)
     {
-        $statistic = DinnerStatisticV::managerDinnerStatistic($dinner_id, $consumption_time, $page, $size);
+        $statistic = DinnerStatisticV::managerDinnerStatistic($dinner_id, $consumption_time, $page, $size,$department_id);
         if ($statistic->isEmpty()) {
             return [
                 'haveFoods' => CommonEnum::STATE_IS_FAIL,
@@ -2687,9 +2687,9 @@ class OrderService extends BaseService
     }
 
     public
-    function orderUsersStatistic($canteen_id, $dinner_id, $consumption_time, $consumption_type, $key, $page, $size)
+    function orderUsersStatistic($canteen_id, $dinner_id, $consumption_time, $consumption_type, $key, $page, $size,$department_id)
     {
-        $statistic = OrderUsersStatisticV::orderUsers($canteen_id, $dinner_id, $consumption_time, $consumption_type, $key, $page, $size);
+        $statistic = OrderUsersStatisticV::orderUsers($canteen_id, $dinner_id, $consumption_time, $consumption_type, $key, $page, $size,$department_id);
         $statistic['data'] = $this->prefixUsersStatisticStatus($statistic['data']);
         return $statistic;
     }
@@ -2719,9 +2719,9 @@ class OrderService extends BaseService
     }
 
     public
-    function foodUsersStatistic($dinner_id, $food_id, $consumption_time, $page, $size)
+    function foodUsersStatistic($dinner_id, $food_id, $consumption_time, $page, $size,$department_id)
     {
-        $statistic = FoodsStatisticV::foodUsersStatistic($dinner_id, $food_id, $consumption_time, $page, $size);
+        $statistic = FoodsStatisticV::foodUsersStatistic($dinner_id, $food_id, $consumption_time, $page, $size,$department_id);
         return $statistic;
     }
 

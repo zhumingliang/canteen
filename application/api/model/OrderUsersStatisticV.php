@@ -17,7 +17,7 @@ class OrderUsersStatisticV extends Model
         return $this->hasMany('OrderDetailT', 'o_id', 'id');
     }
 
-    public static function orderUsers($canteen_id, $dinner_id, $consumption_time, $consumption_type, $key, $page, $size)
+    public static function orderUsers($canteen_id, $dinner_id, $consumption_time, $consumption_type, $key, $page, $size, $department_id)
     {
         $users = self::where(function ($query) use ($dinner_id) {
             if ($dinner_id) {
@@ -28,6 +28,11 @@ class OrderUsersStatisticV extends Model
                 $query->where('c_id', $canteen_id);
             }
         })
+            ->where(function ($query) use ($department_id) {
+                if ($department_id) {
+                    $query->where('department_id', $department_id);
+                }
+            })
             ->where('ordering_date', $consumption_time)
             ->where(function ($query) use ($consumption_type) {
                 if ($consumption_type == 'used') {
@@ -58,7 +63,7 @@ class OrderUsersStatisticV extends Model
                         ->field('id as detail_id ,o_id,count,name,price');
                 }
             ])
-            ->field('order_id as id,username,order_num,phone,sum(count) as count,strategy_type as consumption_type,type,dinner_id,booking,used')
+            ->field('order_id as id,username,order_num,phone,sum(count) as count,strategy_type as consumption_type,type,dinner_id,booking,used,department')
             ->group('order_id')
             //->fetchSql(true)->select();
             ->paginate($size, false, ['page' => $page])
@@ -66,7 +71,7 @@ class OrderUsersStatisticV extends Model
         return $users;
     }
 
-    public static function statisticToOfficial($canteen_id, $consumption_time, $key)
+    public static function statisticToOfficial($canteen_id, $consumption_time, $key, $department_id)
     {
         $statistic = self::where('c_id', $canteen_id)
             ->where('pay', PayEnum::PAY_SUCCESS)
@@ -84,9 +89,14 @@ class OrderUsersStatisticV extends Model
 
                 }
             })
+            ->where(function ($query) use ($department_id) {
+                if ($department_id) {
+                    $query->where('department_id', $department_id);
+                }
+            })
             ->field('dinner_id as d_id,used,booking,sum(count) as count')
             ->group('dinner_id,used,booking')
-           ->select()->toArray();
+            ->select()->toArray();
         return $statistic;
     }
 
