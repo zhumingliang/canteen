@@ -4,7 +4,6 @@
 namespace app\api\controller\v2;
 
 
-use app\api\service\OrderService;
 use app\api\service\v2\OrderService as OrderServiceV2;
 use app\api\service\OrderStatisticService;
 use app\lib\exception\SuccessMessageWithData;
@@ -192,7 +191,6 @@ class Order
 
     }
 
-
     /**
      * @api {POST} /api/v2/order/money 微信端-个人选菜-提交订单时查看金额信息
      * @apiGroup   Official
@@ -201,7 +199,7 @@ class Order
      * @apiExample {post}  请求样例:
      *    {
      *       "type": 1,
-     *       "orders": [{"ordering_date":"2021-03-07","order":[{"dinner_id":135,"dinner":"早餐","count":1,"foods":[{"menu_id":101,"food_id":999,"name":"商品1","price":5,"count":1}]},{"dinner_id":136,"dinner":"午餐","count":1,"foods":[{"menu_id":102,"food_id":343,"name":"cs","price":1,"count":1},{"menu_id":102,"food_id":128,"name":"清炒苦瓜","price":3,"count":1}]}]}],
+     *       "orders": [{"ordering_date":"2021-03-07","order":[{"dinner_id":135,"dinner":"早餐","count":1,"foods":[{"menu_id":101,"food_id":999,"name":"商品1","price":5,"count":1}]},{"dinner_id":136,"dinner":"午餐","count":1,"foods":[{"menu_id":102,"food_id":343,"name":"cs","price":1,"count":1},{"menu_id":102,"food_id":128,"name":"清炒苦瓜","price":3,"count":1}]}]}]
      * }
      * @apiParam (请求参数说明) {int} type 就餐类别：1|食堂；2|外卖
      * @apiParam (请求参数说明) {obj} orders  订单信息
@@ -244,6 +242,13 @@ class Order
     {
         $params = Request::param();
         $money = (new  OrderServiceV2())->getOrderMoney($params);
+        return json(new SuccessMessageWithData(['data' => $money]));
+    }
+
+    public function getOutsiderOrderMoney()
+    {
+        $params = Request::param();
+        $money =  (new  OrderServiceV2())->getOutsiderOrderMoney($params);
         return json(new SuccessMessageWithData(['data' => $money]));
     }
 
