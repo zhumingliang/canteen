@@ -4,6 +4,7 @@
 namespace app\api\controller\v2;
 
 
+use app\api\service\OrderService;
 use app\api\service\v2\OrderService as OrderServiceV2;
 use app\api\service\OrderStatisticService;
 use app\lib\exception\SuccessMessageWithData;
@@ -105,7 +106,7 @@ class Order
     /**
      * @api {GET} /api/v2/order/consumptionStatistic CMS管理端-结算管理(分账)-结算报表
      * @apiGroup  CMS管理端
-     * @apiVersion  V2
+     * @apiVersion 3.0.0
      * @apiDescription CMS管理端-结算管理-结算报表
      * @apiExample {get}  请求样例:
      * http://canteen.tonglingok.com/api/v2/order/consumptionStatistic?time_begin=2019-09-07&time_end=2019-12-07&page=1&size=20&category_id=0&product_id=0&status=0&status=1&department_id=0&username=&phone=18956225230
@@ -195,7 +196,7 @@ class Order
     /**
      * @api {POST} /api/v2/order/money 微信端-个人选菜-提交订单时查看金额信息
      * @apiGroup   Official
-     * @apiVersion V2
+     * @apiVersion 3.0.0
      * @apiDescription    微信端-个人选菜-提交订单时查看金额信息
      * @apiExample {post}  请求样例:
      *    {
@@ -218,14 +219,14 @@ class Order
     {"msg":"ok","errorCode":0,"code":200,"data":{"type":"balance","money":"99962","money_type":"overdraw"}}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
      * @apiSuccess (返回参数说明) {string} msg 信息描述
-     * @apiSuccess (返回参数说明) {int} type  返回类型信息：order：订单金额;balance:余额不足
-     * @apiSuccess (返回参数说明) {int} money_type 余额类型：overdraw：透支金额；user_balance:用户余额
-     * @apiSuccess (返回参数说明) {int} money 余额数量
+     * @apiSuccess (返回参数说明) {int} type :order：订单金额;balance:余额提示
+     * @apiSuccess (返回参数说明) {int} money_type :余额类型：overdraw：透支金额；user_balance:余额信息
+     * @apiSuccess (返回参数说明) {int} money 余额
      * @apiSuccessExample {json} 检测成功返回样例:
      * {"msg":"ok","errorCode":0,"code":200,"data":{"type":"order","prepare_id":"C306993891626218","order":[{"id":89,"prepare_order_id":"C306993891626453","type":1,"ordering_date":"2021-03-07","dinner":"早餐","money":"5.00","sub_money":"2.00","delivery_fee":"0.00","foods":[{"prepare_order_id":"C306993891626453","name":"商品1","price":"5.00","count":1}]},{"id":90,"prepare_order_id":"C306993891627657","type":1,"ordering_date":"2021-03-07","dinner":"午餐","money":"4.00","sub_money":"1.00","delivery_fee":"0.00","foods":[{"prepare_order_id":"C306993891627657","name":"cs","price":"1.00","count":1},{"prepare_order_id":"C306993891627657","name":"清炒苦瓜","price":"3.00","count":1}]}]}}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
      * @apiSuccess (返回参数说明) {string} msg 信息描述
-     * @apiSuccess (返回参数说明) {string} type 返回类型信息：order：订单金额;balance:余额不足
+     * @apiSuccess (返回参数说明) {string} type 返回类型信息：order：订单金额;balance:余额提示
      * @apiSuccess (返回参数说明) {string} prepare_id 预订单ID（提交订单上传）
      * @apiSuccess (返回参数说明) {obj} order 订单金额信息
      * @apiSuccess (返回参数说明) {int} type 就餐类别：1|食堂；2|外卖
