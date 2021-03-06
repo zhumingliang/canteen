@@ -84,17 +84,18 @@ Index extends BaseController
 
     public function index()
     {
+        echo  date('d');
+        return 1;
         $prepareId = 1;
         $resCode = 0;
         $resMessage = "";
         $returnBalance = 0;
-        $resultSet = Db::query('call prepareOrder(:in_prepareId,:out_resCode,:out_resMessage,:returnBalance)', [
-            'in_prepareId' => [$prepareId, \PDO::PARAM_INT],
-            'out_resCode' => [$resCode, \PDO::PARAM_INPUT_OUTPUT],
-            'out_resMessage' => [$resMessage, \PDO::PARAM_INPUT_OUTPUT],
-            'out_returnBalance' => [$returnBalance, \PDO::PARAM_INPUT_OUTPUT],
+        $resultSet = Db::query('call prepareOrder(:in_prepareId,@resCode,@resMessage)', [
+            'in_prepareId' => $prepareId
         ]);
-        print_r($resultSet);
+        print_r($resultSet[0][0]['resCode']);
+       /* $resultSet = Db::query('select @resCode');
+        print_r($resultSet);*/
     }
 
     public function autoUpFoods()

@@ -1,7 +1,7 @@
 {
-  "name": "云饭堂管理系统API文档",
+  "name": "云饭堂管理系统V1版本API文档",
   "title": "云饭堂管理系统",
-  "description": "云饭堂管理系统API文档",
+  "description": "云饭堂管理系统API文档V1",
   "url": "http://canteen.tonglingok.com",
-  "version": "3.0.0"
+  "version": "v1"
 }

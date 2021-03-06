@@ -200,38 +200,45 @@ class Order
      * @apiDescription    微信端-个人选菜-提交订单时查看金额信息
      * @apiExample {post}  请求样例:
      *    {
-     *       "ordering_date": "2019-09-07",
-     *       "dinner_id": 1,
-     *       "dinner": "早餐",
      *       "type": 1,
-     *       "ordering_type": "person_choice",
-     *       "count": 1,
-     *       "detail":[{"menu_id":1,"foods":[{"food_id":1,"name":"商品1","price":5,""count":1},{"food_id":2,"name":"商品1","price":5,"count":1}]}]
-     *     }
+     *       "orders": [{"ordering_date":"2021-03-07","order":[{"dinner_id":135,"dinner":"早餐","count":1,"foods":[{"menu_id":101,"food_id":999,"name":"商品1","price":5,"count":1}]},{"dinner_id":136,"dinner":"午餐","count":1,"foods":[{"menu_id":102,"food_id":343,"name":"cs","price":1,"count":1},{"menu_id":102,"food_id":128,"name":"清炒苦瓜","price":3,"count":1}]}]}],
+     * }
+     * @apiParam (请求参数说明) {int} type 就餐类别：1|食堂；2|外卖
+     * @apiParam (请求参数说明) {obj} orders  订单信息
      * @apiParam (请求参数说明) {string} ordering_date  订餐日期
-     * @apiParam (请求参数说明) {string} ordering_type  订餐类型：person_choice 个人选菜；online 在线预订餐
      * @apiParam (请求参数说明) {int} dinner_id 餐次id
      * @apiParam (请求参数说明) {int} dinner 餐次名称
-     * @apiParam (请求参数说明) {int} type 就餐类别：1|食堂；2|外卖
      * @apiParam (请求参数说明) {int} count 订餐数量
-     * @apiParam (请求参数说明) {obj} detail 订餐菜品明细
-     * @apiParam (请求参数说明) {string} detail|menu_id 菜品类别id
-     * @apiParam (请求参数说明) {obj} detail|foods 菜品明细
-     * @apiParam (请求参数说明) {string} foods|food_id 菜品id
-     * @apiParam (请求参数说明) {string} foods|price 菜品实时单价
-     * @apiParam (请求参数说明) {string} foods|count 菜品数量
-     * @apiParam (请求参数说明) {string} foods|name 菜品名称
-     * @apiSuccessExample {json} 返回样例:
-     * {"msg":"ok","errorCode":0,"code":200,"data":{"money":1,"sub_money":2,"delivery_fee":2}}
+     * @apiParam (请求参数说明) {obj} foods 订餐菜品明细
+     * @apiParam (请求参数说明) {string} menu_id 菜品类别id
+     * @apiParam (请求参数说明) {string} food_id 菜品id
+     * @apiParam (请求参数说明) {string} price 菜品实时单价
+     * @apiParam (请求参数说明) {string} count 菜品数量
+     * @apiParam (请求参数说明) {string} name 菜品名称
+     * @apiSuccessExample {json} 余额不足返回样例:
+    {"msg":"ok","errorCode":0,"code":200,"data":{"type":"balance","money":"99962","money_type":"overdraw"}}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
      * @apiSuccess (返回参数说明) {string} msg 信息描述
-     * @apiSuccess (返回参数说明) {int} money 扣费标准金额
-     * @apiSuccess (返回参数说明) {int} sub_money 扣费附加金额
-     * @apiSuccess (返回参数说明) {int} meal_money 订餐就餐扣费标准金额
-     * @apiSuccess (返回参数说明) {int} meal_sub_money 订餐就餐扣费附加金额
-     * @apiSuccess (返回参数说明) {int} no_meal_money 订餐未就餐扣费标准金额
-     * @apiSuccess (返回参数说明) {int} no_meal_sub_money 订餐未就餐附加金额
+     * @apiSuccess (返回参数说明) {int} type  返回类型信息：order：订单金额;balance:余额不足
+     * @apiSuccess (返回参数说明) {int} money_type 余额类型：overdraw：透支金额；user_balance:用户余额
+     * @apiSuccess (返回参数说明) {int} money 余额数量
+     * @apiSuccessExample {json} 检测成功返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"type":"order","prepare_id":"C306993891626218","order":[{"id":89,"prepare_order_id":"C306993891626453","type":1,"ordering_date":"2021-03-07","dinner":"早餐","money":"5.00","sub_money":"2.00","delivery_fee":"0.00","foods":[{"prepare_order_id":"C306993891626453","name":"商品1","price":"5.00","count":1}]},{"id":90,"prepare_order_id":"C306993891627657","type":1,"ordering_date":"2021-03-07","dinner":"午餐","money":"4.00","sub_money":"1.00","delivery_fee":"0.00","foods":[{"prepare_order_id":"C306993891627657","name":"cs","price":"1.00","count":1},{"prepare_order_id":"C306993891627657","name":"清炒苦瓜","price":"3.00","count":1}]}]}}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     * @apiSuccess (返回参数说明) {string} type 返回类型信息：order：订单金额;balance:余额不足
+     * @apiSuccess (返回参数说明) {string} prepare_id 预订单ID（提交订单上传）
+     * @apiSuccess (返回参数说明) {obj} order 订单金额信息
+     * @apiSuccess (返回参数说明) {int} type 就餐类别：1|食堂；2|外卖
+     * @apiSuccess (返回参数说明) {int} ordering_date   订餐日期
+     * @apiSuccess (返回参数说明) {int} dinner 餐次
+     * @apiSuccess (返回参数说明) {int} money 标准金额
+     * @apiSuccess (返回参数说明) {int} sub_money 标准金额
      * @apiSuccess (返回参数说明) {int} delivery_fee 外卖配送费
+     * @apiSuccess (返回参数说明) {obj} foods 菜品信息
+     * @apiSuccess (返回参数说明) {int} name 菜品名称
+     * @apiSuccess (返回参数说明) {int} count 菜品数量
+     * @apiSuccess (返回参数说明) {int} price 菜品价格
      */
     public function getOrderMoney()
     {

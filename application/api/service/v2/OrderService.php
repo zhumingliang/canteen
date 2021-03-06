@@ -19,11 +19,11 @@ class OrderService
     {
 
         try {
-
-            $canteenId = 1;// Token::getCurrentTokenVar('current_canteen_id');
-            $phone = "18956225230";//Token::getCurrentTokenVar('phone');
-            $companyId = 1;//Token::getCurrentTokenVar('current_company_id');
-            $staffId = 1;//Token::getCurrentTokenVar('staff_id');
+            Db::startTrans();
+            $canteenId = Token::getCurrentTokenVar('current_canteen_id');
+            $phone = Token::getCurrentTokenVar('phone');
+            $companyId = Token::getCurrentTokenVar('current_company_id');
+            $staffId = Token::getCurrentTokenVar('staff_id');
             $orderType = $params['type'];
             if (!empty($params['orders'])) {
                 $orders = json_decode($params['orders'], true);
@@ -34,7 +34,7 @@ class OrderService
             //生成预订单id
             $prepareId = QRcodeNUmber();
             $prepareOderList = [];
-            $prepareOderFoodList = [];
+            $prepareOrderFoodList = [];
             foreach ($orders as $k => $v) {
                 $orderingDate = $v['ordering_date'];
                 $dayOrders = $v['order'];
@@ -43,6 +43,19 @@ class OrderService
                         $foods = $v2['foods'];
                         if (count($foods)) {
                             $prepareOrderId = QRcodeNUmber();
+                            $money = 0;
+                            foreach ($foods as $k3 => $v3) {
+                                $money += $v3['price'] * $v3['count'];
+                                array_push($prepareOrderFoodList, [
+                                    'prepare_order_id' => $prepareOrderId,
+                                    'food_id' => $v3['food_id'],
+                                    'price' => $v3['price'],
+                                    'name' => $v3['name'],
+                                    'count' => $v3['count'],
+                                    'm_id' => $v3['menu_id'],
+                                ]);
+
+                            }
                             array_push($prepareOderList, [
                                 'prepare_id' => $prepareId,
                                 'prepare_order_id' => $prepareOrderId,
@@ -53,19 +66,9 @@ class OrderService
                                 'phone' => $phone,
                                 'ordering_type' => OrderEnum::ORDERING_CHOICE,
                                 'dinner_id' => $v2['dinner_id'],
-                                'type' => $orderType
+                                'type' => $orderType,
+                                'money' => $money
                             ]);
-                            foreach ($foods as $k3 => $v3) {
-                                array_push($prepareOderFoodList, [
-                                    'prepare_order_id' => $prepareOrderId,
-                                    'food_id' => $v3['food_id'],
-                                    'price' => $v3['price'],
-                                    'name' => $v3['name'],
-                                    'count' => $v3['count'],
-                                    'm_id' => $v3['menu_id'],
-                                ]);
-
-                            }
 
                         }
 
@@ -74,28 +77,45 @@ class OrderService
 
             }
 
-            Db::startTrans();
+
             $order = (new OrderPrepareT())->saveAll($prepareOderList);
             if (!$order) {
                 throw new SaveException(['msg' => "保存订单失败"]);
             }
-            $orderFoods = (new OrderPrepareFoodT())->saveAll($prepareOderFoodList);
+            $orderFoods = (new OrderPrepareFoodT())->saveAll($prepareOrderFoodList);
             if (!$orderFoods) {
                 throw new SaveException(['msg' => "保存订单菜品失败"]);
             }
             //调用存储过程验证订单信息
             //传入参数：预订单id；
             //返回参数：错误code；错误描述
-            $resCode = 0;
-            $resMessage = "";
-            $returnBalance = 0;
-            $resultSet = Db::query('call prepareOrder(:in_prepareId,:out_resCode,:out_resMessage,:returnBalance)', [
-                'in_prepareId' => [$prepareId, \PDO::PARAM_INT],
-                'out_resCode' => [$resCode, \PDO::PARAM_INPUT_OUTPUT],
-                'out_resMessage' => [$resMessage, \PDO::PARAM_INPUT_OUTPUT],
-                'out_returnBalance' => [$returnBalance, \PDO::PARAM_INPUT_OUTPUT],
+            Db::query('call prepareOrder(:in_prepareId,:in_companyId,:in_canteenId,:in_staffId,@resCode,@resMessage,@balanceType)', [
+                'in_prepareId' => $prepareId,
+                'in_companyId' => $companyId,
+                'in_canteenId' => $canteenId,
+                'in_staffId' => $staffId
             ]);
+            $resultSet = Db::query('select @resCode,@resMessage,@balanceType');
+            $errorCode = $resultSet[0]['@resCode'];
+            $resMessage = $resultSet[0]['@resMessage'];
+            $balanceType = $resultSet[0]['@balanceType'];
+            if ($errorCode < 0) {
+                if ($errorCode == -3) {
+                    return [
+                        'type' => 'balance',
+                        'money' => $resMessage,
+                        'money_type' => $balanceType
+                    ];
+                } else {
+                    throw new SaveException();
+                }
+            }
             Db::commit();
+            //获取订单金额信息返回给前端
+            return [
+                'prepare_id' => $prepareId,
+                'order' => OrderPrepareT::orders($prepareId)
+            ];
         } catch (Exception $e) {
             Db::rollback();
             throw $e;
