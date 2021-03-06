@@ -4,7 +4,6 @@
 namespace app\api\controller\v2;
 
 
-use app\api\service\OrderService;
 use app\api\service\v2\OrderService as OrderServiceV2;
 use app\api\service\OrderStatisticService;
 use app\lib\exception\SuccessMessageWithData;
@@ -106,7 +105,7 @@ class Order
     /**
      * @api {GET} /api/v2/order/consumptionStatistic CMS管理端-结算管理(分账)-结算报表
      * @apiGroup  CMS管理端
-     * @apiVersion 3.0.0
+     * @apiVersion  V2
      * @apiDescription CMS管理端-结算管理-结算报表
      * @apiExample {get}  请求样例:
      * http://canteen.tonglingok.com/api/v2/order/consumptionStatistic?time_begin=2019-09-07&time_end=2019-12-07&page=1&size=20&category_id=0&product_id=0&status=0&status=1&department_id=0&username=&phone=18956225230
@@ -196,7 +195,7 @@ class Order
     /**
      * @api {POST} /api/v2/order/money 微信端-个人选菜-提交订单时查看金额信息
      * @apiGroup   Official
-     * @apiVersion 3.0.0
+     * @apiVersion V2
      * @apiDescription    微信端-个人选菜-提交订单时查看金额信息
      * @apiExample {post}  请求样例:
      *    {
