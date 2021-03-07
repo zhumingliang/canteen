@@ -8,6 +8,7 @@ use app\api\model\OrderPrepareFoodT;
 use app\api\model\OrderPrepareT;
 use app\api\service\Token;
 use app\lib\enum\OrderEnum;
+use app\lib\enum\UserEnum;
 use app\lib\exception\ParameterException;
 use app\lib\exception\SaveException;
 use think\Db;
@@ -24,6 +25,7 @@ class OrderService
             $phone = Token::getCurrentTokenVar('phone');
             $companyId = Token::getCurrentTokenVar('current_company_id');
             $staffId = Token::getCurrentTokenVar('staff_id');
+            $outsider = Token::getCurrentTokenVar('outsiders');
             $orderType = $params['type'];
             if (!empty($params['orders'])) {
                 $orders = json_decode($params['orders'], true);
@@ -67,7 +69,9 @@ class OrderService
                                 'ordering_type' => OrderEnum::ORDERING_CHOICE,
                                 'dinner_id' => $v2['dinner_id'],
                                 'type' => $orderType,
-                                'money' => $money
+                                'money' => $money,
+                                'count' => 1,
+                                'outsider' => $outsider
                             ]);
 
                         }
@@ -89,27 +93,36 @@ class OrderService
             //调用存储过程验证订单信息
             //传入参数：预订单id；
             //返回参数：错误code；错误描述
-            Db::query('call prepareOrder(:in_prepareId,:in_companyId,:in_canteenId,:in_staffId,@resCode,@resMessage,@balanceType)', [
-                'in_prepareId' => $prepareId,
-                'in_companyId' => $companyId,
-                'in_canteenId' => $canteenId,
-                'in_staffId' => $staffId
-            ]);
-            $resultSet = Db::query('select @resCode,@resMessage,@balanceType');
-            $errorCode = $resultSet[0]['@resCode'];
-            $resMessage = $resultSet[0]['@resMessage'];
-            $balanceType = $resultSet[0]['@balanceType'];
-            if ($errorCode < 0) {
-                if ($errorCode == -3) {
-                    return [
-                        'type' => 'balance',
-                        'money' => $resMessage,
-                        'money_type' => $balanceType
-                    ];
-                } else {
-                    throw new SaveException();
+            if ($outsider == UserEnum::INSIDE) {
+                //内部人员
+                Db::query('call prepareOrder(:in_prepareId,:in_companyId,:in_canteenId,:in_staffId,@resCode,@resMessage,@balanceType)', [
+                    'in_prepareId' => $prepareId,
+                    'in_companyId' => $companyId,
+                    'in_canteenId' => $canteenId,
+                    'in_staffId' => $staffId
+                ]);
+                $resultSet = Db::query('select @resCode,@resMessage,@balanceType');
+                $errorCode = $resultSet[0]['@resCode'];
+                $resMessage = $resultSet[0]['@resMessage'];
+                $balanceType = $resultSet[0]['@balanceType'];
+                if ($errorCode < 0) {
+                    if ($errorCode == -3) {
+                        return [
+                            'type' => 'balance',
+                            'money' => $resMessage,
+                            'money_type' => $balanceType
+                        ];
+                    } else {
+                        throw new SaveException();
+                    }
                 }
+            } else {
+                //外部人员
+
+
             }
+
+
             Db::commit();
             //获取订单金额信息返回给前端
             return [
@@ -122,10 +135,5 @@ class OrderService
         }
     }
 
-
-    public function getOutsiderOrderMoney($params)
-    {
-
-    }
 
 }

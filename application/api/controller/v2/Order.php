@@ -245,12 +245,4 @@ class Order
         return json(new SuccessMessageWithData(['data' => $money]));
     }
 
-    public function getOutsiderOrderMoney()
-    {
-        $params = Request::param();
-        $money =  (new  OrderServiceV2())->getOutsiderOrderMoney($params);
-        return json(new SuccessMessageWithData(['data' => $money]));
-    }
-
-
 }
