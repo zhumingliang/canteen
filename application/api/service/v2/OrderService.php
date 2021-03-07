@@ -113,16 +113,23 @@ class OrderService
                             'money_type' => $balanceType
                         ];
                     } else {
-                        throw new SaveException();
+                        throw new SaveException(['msg' => $resMessage]);
                     }
                 }
             } else {
                 //外部人员
-
-
+                Db::query('call prepareOutsiderOrder(:in_prepareId,:in_companyId,:in_canteenId,@resCode,@resMessage)', [
+                    'in_prepareId' => $prepareId,
+                    'in_companyId' => $companyId,
+                    'in_canteenId' => $canteenId
+                ]);
+                $resultSet = Db::query('select @resCode,@resMessage');
+                $errorCode = $resultSet[0]['@resCode'];
+                $resMessage = $resultSet[0]['@resMessage'];
+                if ($errorCode < 0) {
+                    throw new SaveException(['msg' => $resMessage]);
+                }
             }
-
-
             Db::commit();
             //获取订单金额信息返回给前端
             return [
