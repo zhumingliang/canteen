@@ -133,6 +133,8 @@ class OrderService
             Db::commit();
             //获取订单金额信息返回给前端
             return [
+                'type' => 'order',
+                'outsider' => $outsider,
                 'prepare_id' => $prepareId,
                 'order' => OrderPrepareT::orders($prepareId)
             ];
