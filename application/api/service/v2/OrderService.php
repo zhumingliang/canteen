@@ -109,6 +109,7 @@ class OrderService
                     if ($errorCode == -3) {
                         return [
                             'type' => 'balance',
+                            'outsider' => $outsider,
                             'money' => $resMessage,
                             'money_type' => $balanceType
                         ];

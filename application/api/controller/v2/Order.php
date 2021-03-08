@@ -214,7 +214,7 @@ class Order
      * @apiParam (请求参数说明) {string} count 菜品数量
      * @apiParam (请求参数说明) {string} name 菜品名称
      * @apiSuccessExample {json} 余额不足返回样例:
-    {"msg":"ok","errorCode":0,"code":200,"data":{"type":"balance","money":"99962","money_type":"overdraw"}}
+    {"msg":"ok","errorCode":0,"code":200,"data":{"type":"balance","outsider":2,"money":"99962","money_type":"overdraw"}}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
      * @apiSuccess (返回参数说明) {string} msg 信息描述
      * @apiSuccess (返回参数说明) {int} type :order：订单金额;balance:余额提示
@@ -225,18 +225,24 @@ class Order
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
      * @apiSuccess (返回参数说明) {string} msg 信息描述
      * @apiSuccess (返回参数说明) {string} type 返回类型信息：order：订单金额;balance:余额提示
+     * @apiSuccess (返回参数说明) {string} outsider 是否外来人员：1是：2：否
      * @apiSuccess (返回参数说明) {string} prepare_id 预订单ID（提交订单上传）
      * @apiSuccess (返回参数说明) {obj} order 订单金额信息
      * @apiSuccess (返回参数说明) {int} type 就餐类别：1|食堂；2|外卖
-     * @apiSuccess (返回参数说明) {int} ordering_date   订餐日期
-     * @apiSuccess (返回参数说明) {int} dinner 餐次
+     * @apiSuccess (返回参数说明) {string} ordering_date   订餐日期
+     * @apiSuccess (返回参数说明) {string} consumption_type  扣费类别：one 一次扣费；more 多次扣费（多次扣费订单信息在子订单列表：sub中）
+     * @apiSuccess (返回参数说明) {string} dinner 餐次
      * @apiSuccess (返回参数说明) {int} money 标准金额
      * @apiSuccess (返回参数说明) {int} sub_money 标准金额
      * @apiSuccess (返回参数说明) {int} delivery_fee 外卖配送费
      * @apiSuccess (返回参数说明) {obj} foods 菜品信息
-     * @apiSuccess (返回参数说明) {int} name 菜品名称
+     * @apiSuccess (返回参数说明) {string} name 菜品名称
      * @apiSuccess (返回参数说明) {int} count 菜品数量
      * @apiSuccess (返回参数说明) {int} price 菜品价格
+     * @apiSuccess (返回参数说明) {obj} sub 子订单信息
+     * @apiSuccess (返回参数说明) {int} money 标准金额
+     * @apiSuccess (返回参数说明) {int} sub_money 标准金额
+     * @apiSuccess (返回参数说明) {int} sort_code 第几份
      */
     public function getOrderMoney()
     {
