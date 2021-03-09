@@ -177,8 +177,9 @@ class OrderService
                 'state' => $newCount ? CommonEnum::STATE_IS_OK : CommonEnum::STATE_IS_FAIL,
                 'money' => $order->money / $oldCount * $newCount,
                 'sub_money' => $order->sub_money / $oldCount * $newCount
+            ], [
+                'id' => $order->id
             ]);
-
         } else {
 
 
@@ -189,9 +190,9 @@ class OrderService
 
     public function checkOrderMoney($params)
     {
-        $canteenId = 187;//Token::getCurrentTokenVar('current_canteen_id');
-        $companyId = 100;//Token::getCurrentTokenVar('current_company_id');
-        $staffId = 7141;//Token::getCurrentTokenVar('staff_id');
+        $canteenId = Token::getCurrentTokenVar('current_canteen_id');
+        $companyId = Token::getCurrentTokenVar('current_company_id');
+        $staffId = Token::getCurrentTokenVar('staff_id');
         $orderingDate = $params['ordering_date'];
         $orderMoney = $params['order_money'];
         $dinnerId = $params['dinner_id'];
