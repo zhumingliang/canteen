@@ -84,13 +84,24 @@ Index extends BaseController
 
     public function index()
     {
-        $this->autoUpFoods();
+        echo  date('d');
+        return 1;
+        $prepareId = 1;
+        $resCode = 0;
+        $resMessage = "";
+        $returnBalance = 0;
+        $resultSet = Db::query('call prepareOrder(:in_prepareId,@resCode,@resMessage)', [
+            'in_prepareId' => $prepareId
+        ]);
+        print_r($resultSet[0][0]['resCode']);
+       /* $resultSet = Db::query('select @resCode');
+        print_r($resultSet);*/
     }
 
     public function autoUpFoods()
     {
         try {
-            $nextDay = (new FoodService())->getNextAuto(3, 4,"2021-02-23");
+            $nextDay = (new FoodService())->getNextAuto(3, 4, "2021-02-23");
             print_r($nextDay);
 
             /*  //查询出今日需要处理的自动上架

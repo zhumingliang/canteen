@@ -51,6 +51,7 @@ class SendSMSService
         ];
         $res = Http::sendRequest($url, $data);
         if ($res['ret'] !== true || $res['info']['errorCode'] !== 0) {
+            LogService::save(json_encode($res));
             throw new SaveException(['msg' => '发送验证码失败']);
         }
 

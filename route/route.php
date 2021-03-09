@@ -236,6 +236,8 @@ Route::get('api/:version/order/consumptionStatistic/export', 'api/:version.Order
 Route::post('api/:version/order/handel', 'api/:version.Takeout/handel');
 Route::post('api/:version/order/money', 'api/:version.Order/getOrderMoney');
 Route::post('api/:version/outsider/order/money', 'api/:version.Order/getOutsiderOrderMoney');
+Route::post('api/:version/order/money/check', 'api/:version.Order/checkOrderMoney');
+
 
 Route::post('api/:version/address/save', 'api/:version.Address/save');
 Route::post('api/:version/address/update', 'api/:version.Address/update');
