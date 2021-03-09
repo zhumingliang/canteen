@@ -36,4 +36,20 @@ class OrderPrepareT extends Model
 
     }
 
+    public static function order($id)
+    {
+        return self::where('id', $id)
+            ->with(['foods' => function ($query) {
+                $query->field('prepare_order_id,name,price,count');
+            },
+                'sub' => function ($query) {
+                    $query->where('state', CommonEnum::STATE_IS_OK)
+                        ->field('id,order_id,sort_code,money,sub_money,count');
+
+                }])
+            ->field('id,outsider,consumption_type,prepare_order_id,type,ordering_date,dinner,money,sub_money,delivery_fee')
+            ->find();
+
+    }
+
 }

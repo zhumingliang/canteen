@@ -7,7 +7,9 @@ namespace app\api\service\v2;
 use app\api\model\OrderPrepareFoodT;
 use app\api\model\OrderPrepareT;
 use app\api\service\Token;
+use app\lib\enum\CommonEnum;
 use app\lib\enum\OrderEnum;
+use app\lib\enum\StrategyEnum;
 use app\lib\enum\UserEnum;
 use app\lib\exception\ParameterException;
 use app\lib\exception\SaveException;
@@ -143,6 +145,85 @@ class OrderService
             Db::rollback();
             throw $e;
         }
+    }
+
+    public function updatePrepareOrderCount($id, $count)
+    {
+        $prepareOrder = OrderPrepareT::orders($id);
+        if (!$prepareOrder) {
+            throw new ParameterException(['msg' => '订单不存在']);
+
+        }
+        $outsider = $prepareOrder->outsider;
+        $consumptionType = $prepareOrder->consumption_type;
+        $fixed = $prepareOrder->fixed;
+        $oldCount = $prepareOrder->count;
+        if ($outsider == UserEnum::OUTSIDE) {
+
+        }
+
+    }
+
+    private function updateInsiderOrder()
+    {
+
+    }
+
+    private function updateOutsiderOrder($order, $consumptionType, $oldCount, $newCount)
+    {
+        if ($consumptionType == "one") {
+            OrderPrepareT::update([
+                'count' => $newCount,
+                'state' => $newCount ? CommonEnum::STATE_IS_OK : CommonEnum::STATE_IS_FAIL,
+                'money' => $order->money / $oldCount * $newCount,
+                'sub_money' => $order->sub_money / $oldCount * $newCount
+            ]);
+
+        } else {
+
+
+        }
+
+
+    }
+
+    public function checkOrderMoney($params)
+    {
+        $canteenId = 187;//Token::getCurrentTokenVar('current_canteen_id');
+        $companyId = 100;//Token::getCurrentTokenVar('current_company_id');
+        $staffId = 7141;//Token::getCurrentTokenVar('staff_id');
+        $orderingDate = $params['ordering_date'];
+        $orderMoney = $params['order_money'];
+        $dinnerId = $params['dinner_id'];
+
+        Db::query('call checkPrepareOrder(:in_companyId,:in_canteenId,:in_dinnerID,:in_staffId,:in_orderMoney,:in_orderingDate,@resCode,@resMessage,@balanceType)', [
+            'in_companyId' => $companyId,
+            'in_canteenId' => $canteenId,
+            'in_dinnerID' => $dinnerId,
+            'in_staffId' => $staffId,
+            'in_orderMoney' => $orderMoney,
+            'in_orderingDate' => $orderingDate,
+        ]);
+        $resultSet = Db::query('select @resCode,@resMessage,@balanceType');
+        $errorCode = $resultSet[0]['@resCode'];
+        $resMessage = $resultSet[0]['@resMessage'];
+        $balanceType = $resultSet[0]['@balanceType'];
+        print_r($resultSet);
+        if ($errorCode == 0) {
+            return [
+                'check' => CommonEnum::STATE_IS_OK,
+                'fixedMoney' => $resMessage,
+            ];
+        }
+        if ($errorCode == -3) {
+            return [
+                'check' => CommonEnum::STATE_IS_FAIL,
+                'fixedType' => $balanceType,
+                'fixedMoney' => $resMessage,
+            ];
+        }
+        throw new SaveException(['msg' => $resMessage]);
+
     }
 
 
