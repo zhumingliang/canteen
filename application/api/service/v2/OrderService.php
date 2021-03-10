@@ -228,14 +228,15 @@ class OrderService
 
         } else {
             if ($newCount < $oldCount) {
-
-                $updateSub = OrderPrepareSubT::where('order_id', $id)
-                    ->where('order_sort', '>', $oldCount - $newCount)
+                $updateSub = OrderPrepareSubT::where('order_id', $order->id)
+                    ->where('sort_code', '>', $oldCount - $newCount)
                     ->update(['state' => CommonEnum::STATE_IS_FAIL]);
                 if (!$updateSub) {
                     throw new UpdateException(['msg' => '修改子订单数量']);
                 }
             } else {
+
+
 
             }
 
