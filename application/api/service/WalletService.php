@@ -462,6 +462,15 @@ class WalletService
 
     }
 
+    public function getUserBalanceWithProcedure($staffId)
+    {
+        Db::query('call getUserBalance(:in_staffId,@userBalance)', [
+            'in_staffId' => $staffId,
+        ]);
+        $resultSet = Db::query('select @userBalance');
+        return $resultSet[0]['@userBalance'];
+    }
+
     public function getUserBalanceWithStaffId($staff_id)
     {
         $balance = UserBalanceV::userBalance2($staff_id);
@@ -865,9 +874,9 @@ class WalletService
 
     private function getConsumptionDate($value)
     {
-        if (count(explode('/',$value))==3||count(explode('-',$value))==3){
-            return  $value;
-        }else{
+        if (count(explode('/', $value)) == 3 || count(explode('-', $value)) == 3) {
+            return $value;
+        } else {
             return gmdate("Y-m-d", ($value - 25569) * 86400);
 
         }
