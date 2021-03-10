@@ -403,6 +403,7 @@ class OrderService
             ];
         }
     }
+
     public function checkOrderMoney($params)
     {
         $canteenId = Token::getCurrentTokenVar('current_canteen_id');
@@ -439,6 +440,13 @@ class OrderService
             ];
         }
         throw new SaveException(['msg' => $resMessage]);
+
+    }
+
+    public function submitOrder($prepareId, $addressId, $deliveryFee)
+    {
+        $outsider = Token::getCurrentTokenVar('outsiders');
+        $orders = OrderPrepareT::ordersForSubmit($prepareId);
 
     }
 

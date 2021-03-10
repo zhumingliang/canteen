@@ -6,6 +6,7 @@ namespace app\api\controller\v2;
 
 use app\api\service\v2\OrderService as OrderServiceV2;
 use app\api\service\OrderStatisticService;
+use app\lib\exception\SuccessMessage;
 use app\lib\exception\SuccessMessageWithData;
 use think\facade\Request;
 
@@ -265,7 +266,7 @@ class Order
      * @apiParam (请求参数说明) {string} id  订单ID
      * @apiParam (请求参数说明) {int} count 修改数量
      * @apiSuccessExample {json} 余额不足返回样例:
-    {"msg":"ok","errorCode":0,"code":200,"data":{"type":"success","money":14}}
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"type":"success","money":14}}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
      * @apiSuccess (返回参数说明) {string} msg 信息描述
      * @apiSuccess (返回参数说明) {int} type  修改是否成功：success：成功 此时返回money为此订单修改后总冻结金额；no_balance：余额不足
@@ -308,6 +309,15 @@ class Order
     {
         $params = Request::param();
         $data = (new OrderServiceV2())->checkOrderMoney($params);
+        return json(new SuccessMessageWithData(['data' => $data]));
+    }
+
+    public function submitOrder()
+    {
+        $addressId = Request::param('address_id');
+        $deliveryFee = Request::param('delivery_fee');
+        $prepareId = Request::param('prepare_id');
+        $data = (new OrderServiceV2())->submitOrder($prepareId, $addressId, $deliveryFee);
         return json(new SuccessMessageWithData(['data' => $data]));
     }
 

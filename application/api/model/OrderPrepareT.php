@@ -47,7 +47,7 @@ class OrderPrepareT extends Model
                         ->field('id,order_id,sort_code,money,sub_money,count');
 
                 }])
-            ->field('id,fixed,outsider,consumption_type,prepare_order_id,type,ordering_date,dinner,money,sub_money,delivery_fee')
+            ->field('id,fixed,outsider,consumption_type,prepare_order_id,type,ordering_date,dinner,money,sub_money,delivery_fee,count')
             ->find();
 
     }
@@ -59,6 +59,23 @@ class OrderPrepareT extends Model
             ->field('sum(money+sub_money) as money')
             ->find();
         return $money->money;
+    }
+
+
+    public static function ordersForSubmit($prepareId)
+    {
+        return self::where('prepare_id', $prepareId)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->with(['foods' => function ($query) {
+                $query->field('prepare_order_id,name,price,count');
+            },
+                'sub' => function ($query) {
+                    $query->where('state', CommonEnum::STATE_IS_OK);
+
+                }])
+            ->hidden(['id', 'create_time', 'update_time'])
+            ->select();
+
     }
 
 }
