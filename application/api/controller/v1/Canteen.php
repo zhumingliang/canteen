@@ -774,7 +774,7 @@ class Canteen extends BaseController
      * {"msg":"ok","errorCode":0,"code":200,"data":{"fee":1}}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
      * @apiSuccess (返回参数说明) {string} msg 信息描述
-     * @apiSuccess (返回参数说明) {int} confirm 是否开启：1：开启；2：关闭
+     * @apiSuccess (返回参数说明) {int} fee 配送费
      */
     public function deliveryFee()
     {
