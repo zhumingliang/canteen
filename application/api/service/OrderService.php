@@ -812,7 +812,7 @@ class OrderService extends BaseService
         return $returnMoney;
     }
 
-    private
+    public
     function checkConsumptionStrategyTimesMore($strategies, $orderCount, $consumptionCount)
     {
         if ($orderCount > $strategies->ordered_count) {

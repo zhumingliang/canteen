@@ -47,7 +47,7 @@ class OrderPrepareT extends Model
                         ->field('id,order_id,sort_code,money,sub_money,count');
 
                 }])
-            ->field('id,outsider,consumption_type,prepare_order_id,type,ordering_date,dinner,money,sub_money,delivery_fee')
+            ->field('id,fixed,outsider,consumption_type,prepare_order_id,type,ordering_date,dinner,money,sub_money,delivery_fee')
             ->find();
 
     }

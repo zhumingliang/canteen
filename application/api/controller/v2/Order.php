@@ -251,6 +251,28 @@ class Order
         return json(new SuccessMessageWithData(['data' => $money]));
     }
 
+
+    /**
+     * @api {POST} /api/v2/order/pre/count/change  微信端-个人选菜-修改预订单份数
+     * @apiGroup   Official
+     * @apiVersion 3.0.0
+     * @apiDescription   微信端-个人选菜-修改预订单份数
+     * @apiExample {post}  请求样例:
+     *    {
+     *       "id": 222，
+     *       "count": 2
+     * }
+     * @apiParam (请求参数说明) {string} id  订单ID
+     * @apiParam (请求参数说明) {int} count 修改数量
+     * @apiSuccessExample {json} 余额不足返回样例:
+    {"msg":"ok","errorCode":0,"code":200,"data":{"type":"success","money":14}}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     * @apiSuccess (返回参数说明) {int} type  修改是否成功：success：成功 此时返回money为此订单修改后总冻结金额；no_balance：余额不足
+     * @apiSuccess (返回参数说明) {int} money 冻结金额
+     * @apiSuccess (返回参数说明) {int} money_type  余额类型 :冻结金额类型：overdraw：透支金额；user_balance:余额信息
+     * @apiSuccess (返回参数说明) {int} money 当前余额
+     */
     public function updatePrepareOrderCount()
     {
         $id = Request::param('id');

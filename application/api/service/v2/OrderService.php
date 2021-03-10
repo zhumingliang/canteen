@@ -64,6 +64,7 @@ class OrderService
                                     'name' => $v3['name'],
                                     'count' => $v3['count'],
                                     'm_id' => $v3['menu_id'],
+                                    'prepare_id' => $prepareId,
                                 ]);
 
                             }
@@ -166,27 +167,22 @@ class OrderService
         $fixed = $prepareOrder->fixed;
         $oldCount = $prepareOrder->count;
         if ($outsider == UserEnum::OUTSIDE) {
-            $this->updateOutsiderOrder($prepareOrder, $consumptionType, $oldCount, $count);
+            return $this->updateOutsiderOrder($prepareOrder, $consumptionType, $oldCount, $count);
         }
+        return $this->updateInsiderOrder($prepareOrder, $fixed, $consumptionType, $oldCount, $count);
 
     }
 
     private function updateInsiderOrder($order, $fixed, $consumptionType, $oldCount, $newCount)
     {
 
-        //检测订单修改数量是否合法
-        if ($newCount > $oldCount) {
-            $orderedCount = OrderingV::getOrderingCountByWithDinnerID($order->ordering_date, $order->dinner_id, $order->phone);
-            $checkCount = $orderedCount - $oldCount + $newCount;
-            $strategy = (new CanteenService())->getStaffConsumptionStrategy($order->canteen_id, $order->dinner_id, $order->staff_type_id);
-            if (!$strategy) {
-                throw new ParameterException(['msg' => '当前用户消费策略不存在']);
-            }
-            if ($checkCount > $strategy->ordered_count) {
-                throw new UpdateException(['msg' => '超出最大订餐数量，不能预定']);
-            }
-        }
+
         if ($consumptionType == "one") {
+            //检测订单修改数量是否合法
+            if ($newCount > $oldCount) {
+                $orderedCount = OrderingV::getOrderingCountByWithDinnerID($order->ordering_date, $order->dinner_id, $order->phone);
+                $this->checkOrderCount($newCount, $oldCount, $orderedCount, $order->dinner_id, $order->canteen_id, $order->staff_type_id);
+            }
             //计算价格
             $newMoney = $order->money / $oldCount * $newCount;
             $newMealMoney = $order->meal_money / $oldCount * $newCount;
@@ -201,7 +197,7 @@ class OrderService
                 $check = $this->checkBalance($order->staff_id, $order->canteen_id, $checkMoney);
                 if (!$check['check']) {
                     return [
-                        'type' => "money",
+                        'type' => "no_balance",
                         'money' => $check['balance'],
                         'money_type' => $check['money_type']
                     ];
@@ -234,17 +230,82 @@ class OrderService
                 if (!$updateSub) {
                     throw new UpdateException(['msg' => '修改子订单数量']);
                 }
+
+                $checkMoney = OrderPrepareSubT::ordersMoney($order->id);
+
             } else {
+                $orderedCount = OrderingV::getOrderingCountByWithDinnerID($order->ordering_date, $order->dinner_id, $order->phone);
+                $strategy = $this->checkOrderCount($newCount, $oldCount, $orderedCount, $order->dinner_id, $order->canteen_id, $order->staff_type_id);
+                $increaseCount = $newCount - $oldCount;
+                $strategyMoney = (new \app\api\service\OrderService())->checkConsumptionStrategyTimesMore($strategy, $increaseCount, $orderedCount);
+                $addBalance = array_sum(array_column($strategyMoney, 'money')) + array_sum(array_column($strategyMoney, 'sub_money'));
+                $prepareMoney = OrderPrepareT::ordersMoney($order->prepare_id);
+                $checkMoney = $addBalance + $prepareMoney;
+                $check = $this->checkBalance($order->staff_id, $order->canteen_id, $checkMoney);
+                if (!$check['check']) {
+                    return [
+                        'type' => "no_balance",
+                        'money' => $check['balance'],
+                        'money_type' => $check['money_type']
+                    ];
+                }
 
-
+                $foodsMoney = 0;
+                if ($fixed == CommonEnum::STATE_IS_FAIL) {
+                    $foodsMoney = OrderPrepareFoodT::orderMoney($order->prepare_order_id);
+                }
+                //处理子订单
+                $subOrderDataList = [];
+                foreach ($strategyMoney as $k => $v) {
+                    $money = $fixed == CommonEnum::STATE_IS_FAIL ? $foodsMoney : $v['money'];
+                    array_push($subOrderDataList, [
+                        'order_id' => $order->id,
+                        'state' => CommonEnum::STATE_IS_OK,
+                        'money' => $money,
+                        'sub_money' => $v['sub_money'],
+                        'meal_money' => $v['meal_money'],
+                        'meal_sub_money' => $v['meal_sub_money'],
+                        'no_meal_money' => $v['no_meal_money'],
+                        'no_meal_sub_money' => $v['no_meal_sub_money'],
+                        'count' => 1,
+                        'consumption_type' => $v['consumption_type'],
+                        'sort_code' => $v['number'],
+                        'consumption_sort' => $v['number'],
+                    ]);
+                }
+                $list = (new OrderPrepareSubT())->saveAll($subOrderDataList);
+                if (!$list) {
+                    throw new SaveException(['msg' => '生成子订单失败']);
+                }
 
             }
-
-
+            OrderPrepareT::update([
+                'count' => $newCount,
+            ], [
+                'id' => $order->id
+            ]);
+            return [
+                'type' => "success",
+                'money' => $checkMoney
+            ];
         }
 
     }
 
+
+    private function checkOrderCount($newCount, $oldCount, $orderedCount, $dinnerId, $canteenId, $staffTypeId)
+    {
+        //检测订单修改数量是否合法
+        $checkCount = $orderedCount - $oldCount + $newCount;
+        $strategy = (new CanteenService())->getStaffConsumptionStrategy($canteenId, $dinnerId, $staffTypeId);
+        if (!$strategy) {
+            throw new ParameterException(['msg' => '当前用户消费策略不存在']);
+        }
+        if ($checkCount > $strategy->ordered_count) {
+            throw new UpdateException(['msg' => '超出最大订餐数量，不能预定']);
+        }
+        return $strategy;
+    }
 
     public
     function checkBalance($staffId, $canteenId, $money)
@@ -282,14 +343,20 @@ class OrderService
     private function updateOutsiderOrder($order, $consumptionType, $oldCount, $newCount)
     {
         if ($consumptionType == "one") {
+            $newMoney = $order->money / $oldCount * $newCount;
+            $newSubMoney = $order->sub_money / $oldCount * $newCount;
             OrderPrepareT::update([
                 'count' => $newCount,
                 'state' => $newCount ? CommonEnum::STATE_IS_OK : CommonEnum::STATE_IS_FAIL,
-                'money' => $order->money / $oldCount * $newCount,
-                'sub_money' => $order->sub_money / $oldCount * $newCount
+                'money' => $newMoney,
+                'sub_money' => $newSubMoney
             ], [
                 'id' => $order->id
             ]);
+            return [
+                'type' => "success",
+                'money' => $newMoney + $newSubMoney
+            ];
         } else {
             $dataList = [];
             if ($newCount > $oldCount) {
@@ -312,7 +379,6 @@ class OrderService
                     ]);
                 }
             } else {
-
                 $subOrders = OrderPrepareSubT::where('order_id', $order->id)
                     ->where('state', CommonEnum::STATE_IS_OK)
                     ->order('sort_code')
@@ -331,12 +397,12 @@ class OrderService
             if (!$save) {
                 throw new SaveException(['msg' => '修改子订单失败']);
             }
-
+            return [
+                'type' => "success",
+                'money' => OrderPrepareSubT::ordersMoney($order->id)
+            ];
         }
-
-
     }
-
     public function checkOrderMoney($params)
     {
         $canteenId = Token::getCurrentTokenVar('current_canteen_id');

@@ -22,6 +22,7 @@ use app\api\model\OfficialTemplateT;
 use app\api\model\OrderConsumptionV;
 use app\api\model\OrderingV;
 use app\api\model\OrderParentT;
+use app\api\model\OrderPrepareFoodT;
 use app\api\model\OrderPrepareT;
 use app\api\model\OrderSubT;
 use app\api\model\OrderT;
@@ -85,7 +86,7 @@ Index extends BaseController
 
     public function index()
     {
-        echo OrderPrepareT::ordersMoney('C308739482880729');
+        echo OrderPrepareFoodT::orderMoney('C308739482880904');
     }
 
     public function autoUpFoods()

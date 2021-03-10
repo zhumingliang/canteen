@@ -237,6 +237,7 @@ Route::post('api/:version/order/handel', 'api/:version.Takeout/handel');
 Route::post('api/:version/order/money', 'api/:version.Order/getOrderMoney');
 Route::post('api/:version/outsider/order/money', 'api/:version.Order/getOutsiderOrderMoney');
 Route::post('api/:version/order/money/check', 'api/:version.Order/checkOrderMoney');
+Route::post('api/:version/order/pre/count/change', 'api/:version.Order/updatePrepareOrderCount');
 
 
 Route::post('api/:version/address/save', 'api/:version.Address/save');
