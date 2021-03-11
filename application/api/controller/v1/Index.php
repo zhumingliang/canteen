@@ -86,8 +86,7 @@ Index extends BaseController
 
     public function index()
     {
-        $orders = OrderPrepareT::ordersForSubmit('C308739482880729');
-    return json($orders);
+
     }
 
     public function autoUpFoods()

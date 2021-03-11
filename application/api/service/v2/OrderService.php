@@ -281,6 +281,7 @@ class OrderService
             }
             OrderPrepareT::update([
                 'count' => $newCount,
+                'money' => $checkMoney,
             ], [
                 'id' => $order->id
             ]);
@@ -364,6 +365,7 @@ class OrderService
                     ->where('state', CommonEnum::STATE_IS_OK)
                     ->order('sort_code desc')
                     ->find();
+
                 $sortCode = $subOrder->sort_code;
                 $consumptionSort = $subOrder->consumption_sort;
                 for ($i = 1; $i <= $newCount - $oldCount; $i++) {
@@ -397,9 +399,16 @@ class OrderService
             if (!$save) {
                 throw new SaveException(['msg' => '修改子订单失败']);
             }
+            $orderMoney = OrderPrepareSubT::ordersMoney($order->id);
+            OrderPrepareT::update([
+                'count' => $newCount,
+                'money' => $orderMoney,
+            ], [
+                'id' => $order->id
+            ]);
             return [
                 'type' => "success",
-                'money' => OrderPrepareSubT::ordersMoney($order->id)
+                'money' => $orderMoney
             ];
         }
     }
