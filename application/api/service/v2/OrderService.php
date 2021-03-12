@@ -287,7 +287,8 @@ class OrderService
             ]);
             return [
                 'type' => "success",
-                'money' => $checkMoney
+                'money' => $checkMoney,
+                'orders'=>OrderPrepareSubT::orders($order->id)
             ];
         }
 
@@ -408,7 +409,8 @@ class OrderService
             ]);
             return [
                 'type' => "success",
-                'money' => $orderMoney
+                'money' => $orderMoney,
+                'orders'=>OrderPrepareSubT::orders($order->id)
             ];
         }
     }
@@ -434,7 +436,6 @@ class OrderService
         $errorCode = $resultSet[0]['@resCode'];
         $resMessage = $resultSet[0]['@resMessage'];
         $balanceType = $resultSet[0]['@balanceType'];
-        print_r($resultSet);
         if ($errorCode == 0) {
             return [
                 'check' => CommonEnum::STATE_IS_OK,

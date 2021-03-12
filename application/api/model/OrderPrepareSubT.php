@@ -19,4 +19,13 @@ class OrderPrepareSubT extends Model
         return $money->money;
     }
 
+    public static function orders($prepareId)
+    {
+        return self::where('order_id', $prepareId)
+            ->where('state', CommonEnum::STATE_IS_OK)
+           ->field('consumption_sort,money,sub_money')
+            ->select();
+
+    }
+
 }

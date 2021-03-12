@@ -312,6 +312,29 @@ class Order
         return json(new SuccessMessageWithData(['data' => $data]));
     }
 
+
+    /**
+     * @api {POST} /api/v2/order/pre/submit 微信端-个人选菜-提交订单
+     * @apiGroup   Official
+     * @apiVersion 3.0.0
+     * @apiDescription    微信端-个人选菜-检查订单金额信息
+     * @apiExample {post}  请求样例:
+     *    {
+     *       "ordering_date": 2021-03-09,
+     *       "dinner_id": 1,
+     *       "order_money": 10
+     * }
+     * @apiParam (请求参数说明) {string} ordering_date  订餐日期
+     * @apiParam (请求参数说明) {int} dinner_id 餐次id
+     * @apiParam (请求参数说明) {int} order_money 菜品金额
+     * @apiSuccessExample {json} 余额不足返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"check":1,"fixedMoney":"7"}}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     * @apiSuccess (返回参数说明) {int} check 余额是否充足；1：充足；2：不足
+     * @apiSuccess (返回参数说明) {int} fixed_type :冻结金额类型：overdraw：透支金额；user_balance:余额信息
+     * @apiSuccess (返回参数说明) {int} fixed_money 冻结金额
+     */
     public function submitOrder()
     {
         $addressId = Request::param('address_id');
