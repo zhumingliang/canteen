@@ -461,15 +461,16 @@ class OrderService
     {
         $canteenId = Token::getCurrentTokenVar('current_canteen_id');
         $staffId = Token::getCurrentTokenVar('staff_id');
+        $outsider = Token::getCurrentTokenVar('outsiders');
         try {
             Db::startTrans();
-            Db::query('call submitPrepareOrder(:in_prepareId,:in_userCanteenId,:in_userStaffId,:in_addressId,:in_deliveryFee,:in_orderRemark,@resCode,@resMessage,@balanceType)', [
+            Db::query('call submitPrepareOrder(:in_prepareId,:in_userCanteenId,:in_userStaffId,:in_addressId,:in_deliveryFee,:in_orderRemark,@resCode,@resMessage,@balanceType,@returnOrderMoney)', [
                 'in_prepareId' => $prepareId,
                 'in_userCanteenId' => $canteenId,
                 'in_userStaffId' => $staffId,
                 'in_addressId' => $addressId,
                 'in_deliveryFee' => $deliveryFee,
-                'in_orderRemark' => $remark,
+                'in_orderRemark' => $remark
             ]);
             $resultSet = Db::query('select @resCode,@resMessage,@balanceType');
             $errorCode = $resultSet[0]['@resCode'];
@@ -490,9 +491,10 @@ class OrderService
 
             Db::commit();
             return [
-                'type' => 'success'
+                'type' => 'success',
+                'prepare_id' => $prepareId,
             ];
-        } catch (ErrorException $e) {
+        } catch (Exception $e) {
             Db::rollback();
             throw $e;
         }

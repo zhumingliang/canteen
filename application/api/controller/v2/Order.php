@@ -330,12 +330,12 @@ class Order
      * @apiParam (请求参数说明) {int} delivery_fee 配送费（单次，不是累加）
      * @apiParam (请求参数说明) {int} remark 备注
      * @apiSuccessExample {json} 余额不足返回样例:
-     * {"msg":"ok","errorCode":0,"code":200,"data":{"check":1,"fixedMoney":"7"}}
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"type":"success","prepare_id":C311714394839167}}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
      * @apiSuccess (返回参数说明) {string} msg 信息描述
-     * @apiSuccess (返回参数说明) {int} check 余额是否充足；1：充足；2：不足
-     * @apiSuccess (返回参数说明) {int} fixed_type :冻结金额类型：overdraw：透支金额；user_balance:余额信息
-     * @apiSuccess (返回参数说明) {int} fixed_money 冻结金额
+     * @apiSuccess (返回参数说明) {int} type  提交是否成功：success：成功 此时返回prepare_id 外来人员支付； "balance":余额不足
+     * @apiSuccess (返回参数说明) {int} money 冻结金额
+     * @apiSuccess (返回参数说明) {int} money_type  余额类型 :冻结金额类型：overdraw：透支金额；user_balance:余额信息
      */
     public function submitOrder()
     {
