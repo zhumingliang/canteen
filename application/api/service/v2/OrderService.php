@@ -22,6 +22,7 @@ use app\lib\exception\SaveException;
 use app\lib\exception\UpdateException;
 use think\Db;
 use think\Exception;
+use think\exception\ErrorException;
 
 class OrderService
 {
@@ -117,6 +118,7 @@ class OrderService
                 $balanceType = $resultSet[0]['@balanceType'];
                 if ($errorCode < 0) {
                     if ($errorCode == -3) {
+                        Db::rollback();
                         return [
                             'type' => 'balance',
                             'outsider' => $outsider,
@@ -288,7 +290,7 @@ class OrderService
             return [
                 'type' => "success",
                 'money' => $checkMoney,
-                'orders'=>OrderPrepareSubT::orders($order->id)
+                'orders' => OrderPrepareSubT::orders($order->id)
             ];
         }
 
@@ -410,7 +412,7 @@ class OrderService
             return [
                 'type' => "success",
                 'money' => $orderMoney,
-                'orders'=>OrderPrepareSubT::orders($order->id)
+                'orders' => OrderPrepareSubT::orders($order->id)
             ];
         }
     }
@@ -432,10 +434,11 @@ class OrderService
             'in_orderMoney' => $orderMoney,
             'in_orderingDate' => $orderingDate,
         ]);
-        $resultSet = Db::query('select @resCode,@resMessage,@balanceType');
+        $resultSet = Db::query('select @resCode,@resMessage,@balanceType,@fixedBalance');
         $errorCode = $resultSet[0]['@resCode'];
         $resMessage = $resultSet[0]['@resMessage'];
         $balanceType = $resultSet[0]['@balanceType'];
+        $fixedBalance = $resultSet[0]['@fixedBalance'];
         if ($errorCode == 0) {
             return [
                 'check' => CommonEnum::STATE_IS_OK,
@@ -447,16 +450,52 @@ class OrderService
                 'check' => CommonEnum::STATE_IS_FAIL,
                 'fixedType' => $balanceType,
                 'fixedMoney' => $resMessage,
+                'fixedBalance' => $fixedBalance,
             ];
         }
         throw new SaveException(['msg' => $resMessage]);
 
     }
 
-    public function submitOrder($prepareId, $addressId, $deliveryFee)
+    public function submitOrder($prepareId, $addressId, $deliveryFee, $remark)
     {
-        $outsider = Token::getCurrentTokenVar('outsiders');
-        $orders = OrderPrepareT::ordersForSubmit($prepareId);
+        $canteenId = Token::getCurrentTokenVar('current_canteen_id');
+        $staffId = Token::getCurrentTokenVar('staff_id');
+        try {
+            Db::startTrans();
+            Db::query('call submitPrepareOrder(:in_prepareId,:in_userCanteenId,:in_userStaffId,:in_addressId,:in_deliveryFee,:in_orderRemark,@resCode,@resMessage,@balanceType)', [
+                'in_prepareId' => $prepareId,
+                'in_userCanteenId' => $canteenId,
+                'in_userStaffId' => $staffId,
+                'in_addressId' => $addressId,
+                'in_deliveryFee' => $deliveryFee,
+                'in_orderRemark' => $remark,
+            ]);
+            $resultSet = Db::query('select @resCode,@resMessage,@balanceType');
+            $errorCode = $resultSet[0]['@resCode'];
+            $resMessage = $resultSet[0]['@resMessage'];
+            $balanceType = $resultSet[0]['@balanceType'];
+            if ($errorCode < 0) {
+                Db::rollback();
+                if ($errorCode == -3) {
+                    return [
+                        'type' => 'balance',
+                        'money' => $resMessage,
+                        'money_type' => $balanceType
+                    ];
+                } else {
+                    throw new SaveException(['msg' => $resMessage]);
+                }
+            }
+
+            Db::commit();
+            return [
+                'type' => 'success'
+            ];
+        } catch (ErrorException $e) {
+            Db::rollback();
+            throw $e;
+        }
 
     }
 
