@@ -242,7 +242,12 @@ class OrderService
                 $increaseCount = $newCount - $oldCount;
                 $orderedCount = $orderedCount + $oldCount;
                 $strategyMoney = (new \app\api\service\OrderService())->checkConsumptionStrategyTimesMore($strategy, $increaseCount, $orderedCount);
-                $addBalance = array_sum(array_column($strategyMoney, 'money')) + array_sum(array_column($strategyMoney, 'sub_money'));
+                if ($fixed == CommonEnum::STATE_IS_FAIL) {
+                    $foodsMoney = OrderPrepareFoodT::orderMoney($order->prepare_order_id);
+                } else {
+                    $foodsMoney = array_sum(array_column($strategyMoney, 'money'));
+                }
+                $addBalance = $foodsMoney + array_sum(array_column($strategyMoney, 'sub_money'));
                 $prepareMoney = OrderPrepareT::ordersMoney($order->prepare_id);
                 $checkMoney = $addBalance + $prepareMoney;
                 $check = $this->checkBalance($order->staff_id, $order->canteen_id, $checkMoney);
@@ -254,10 +259,7 @@ class OrderService
                     ];
                 }
 
-                $foodsMoney = 0;
-                if ($fixed == CommonEnum::STATE_IS_FAIL) {
-                    $foodsMoney = OrderPrepareFoodT::orderMoney($order->prepare_order_id);
-                }
+
                 //处理子订单
                 $subOrderDataList = [];
                 foreach ($strategyMoney as $k => $v) {
