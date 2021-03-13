@@ -240,6 +240,7 @@ class OrderService
                 $orderedCount = OrderingV::getOrderingCountByWithDinnerID($order->ordering_date, $order->dinner_id, $order->phone);
                 $strategy = $this->checkOrderCount($newCount, $oldCount, $orderedCount, $order->dinner_id, $order->canteen_id, $order->staff_type_id);
                 $increaseCount = $newCount - $oldCount;
+                $orderedCount = $orderedCount + $oldCount;
                 $strategyMoney = (new \app\api\service\OrderService())->checkConsumptionStrategyTimesMore($strategy, $increaseCount, $orderedCount);
                 $addBalance = array_sum(array_column($strategyMoney, 'money')) + array_sum(array_column($strategyMoney, 'sub_money'));
                 $prepareMoney = OrderPrepareT::ordersMoney($order->prepare_id);
@@ -276,10 +277,10 @@ class OrderService
                         'consumption_sort' => $v['number'],
                     ]);
                 }
-                $list = (new OrderPrepareSubT())->saveAll($subOrderDataList);
-                if (!$list) {
-                    throw new SaveException(['msg' => '生成子订单失败']);
-                }
+                  $list = (new OrderPrepareSubT())->saveAll($subOrderDataList);
+                  if (!$list) {
+                      throw new SaveException(['msg' => '生成子订单失败']);
+                  }
 
             }
             OrderPrepareT::update([
