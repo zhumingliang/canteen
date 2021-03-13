@@ -14,6 +14,7 @@ use app\lib\exception\ParameterException;
 use app\lib\exception\SuccessMessage;
 use app\lib\exception\SuccessMessageWithData;
 use think\facade\Request;
+use function Composer\Autoload\includeFile;
 
 class Wallet extends BaseController
 {
@@ -386,7 +387,13 @@ class Wallet extends BaseController
                     $order->paid_at = time(); // 更新支付时间为当前时间
                     $order->status = 'paid';
                     //修改订餐订单状态
-                    (new WalletService())->paySuccess($order->order_id, $order->type, $order->times);
+                    $orderType = $order->order_type;
+                    if ($orderType == "pre") {
+                        (new WalletService())->paySuccessForPre($order->prepare_id, $order->type, $order->times);
+                    } else {
+                        (new WalletService())->paySuccess($order->order_id, $order->type, $order->times);
+
+                    }
 
                 } elseif ($message['result_code'] === 'FAIL') {
                     // 用户支付失败

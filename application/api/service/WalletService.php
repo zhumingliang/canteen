@@ -1065,4 +1065,20 @@ class WalletService
         }
 
     }
+
+    public function paySuccessForPre($prepareId, $order_type, $times)
+    {
+        if ($times == 'one') {
+            if ($order_type == "canteen") {
+                OrderT::update([
+                    'pay' => 'paid'
+                ], ['prepare_id' => $prepareId]);
+            }
+        } else if ($times == 'more') {
+            OrderParentT::update([
+                'pay' => 'paid'
+            ], ['prepare_id' => $prepareId]);
+        }
+
+    }
 }

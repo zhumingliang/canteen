@@ -139,4 +139,26 @@ class Wallet
     }
 
 
+    /**
+     * @api {GET} /api/v2/wallet/pay/getPreOrder  微信端-微信支付-获取支付信息
+     * @apiGroup  Official
+     * @apiVersion 1.0.1
+     * @apiDescription 微信端-微信支付-微信支付获取支付信息
+     * @apiExample {get}  请求样例:
+     * http://mengant.cn/api/v1/wallet/pay/getPreOrder?order_id=1
+     * @apiParam (请求参数说明) {int} order_id 订单id
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"return_code":"SUCCESS","return_msg":"OK","appid":"wx60311f2f47c86a3e","mch_id":"1555725021","sub_mch_id":"1563901631","nonce_str":"kU7RuppRQZDrFfwu","sign":"B4B16DDD14C77B5D94FFE9B8CA4A0D50","result_code":"SUCCESS","prepay_id":"wx221520364672093fca904b5d1308980100","trade_type":"JSAPI"}}
+     * @apiSuccess (返回参数说明) {String} data 前端支付所需数据
+     */
+    public function getPreOrder()
+    {
+        $order_id = Request::param('order_id');
+        $info = (new WalletService())->getPreOrder($order_id);
+        return json(new SuccessMessageWithData(['data' => $info]));
+
+    }
+
+
+
 }

@@ -9,6 +9,7 @@ use app\api\model\OrderingV;
 use app\api\model\OrderPrepareFoodT;
 use app\api\model\OrderPrepareSubT;
 use app\api\model\OrderPrepareT;
+use app\api\model\PayT;
 use app\api\service\CanteenService;
 use app\api\service\Token;
 use app\api\service\WalletService;
@@ -472,10 +473,12 @@ class OrderService
                 'in_deliveryFee' => $deliveryFee,
                 'in_orderRemark' => $remark
             ]);
-            $resultSet = Db::query('select @resCode,@resMessage,@balanceType');
+            $resultSet = Db::query('select @resCode,@resMessage,@balanceType,@returnOrderMoney,@returnConsumptionType');
             $errorCode = $resultSet[0]['@resCode'];
             $resMessage = $resultSet[0]['@resMessage'];
             $balanceType = $resultSet[0]['@balanceType'];
+            $returnOrderMoney = $resultSet[0]['@returnOrderMoney'];
+            $returnConsumptionType = $resultSet[0]['@returnConsumptionType'];
             if ($errorCode < 0) {
                 Db::rollback();
                 if ($errorCode == -3) {
@@ -490,15 +493,66 @@ class OrderService
             }
 
             Db::commit();
+            if ($outsider == UserEnum::OUTSIDE) {
+                //生成微信支付订单
+                $companyId = Token::getCurrentTokenVar('current_company_id');
+                $openid = Token::getCurrentOpenid();
+                $u_id = Token::getCurrentUid();
+                $username = Token::getCurrentTokenVar('nickName');
+                $phone = Token::getCurrentPhone();
+                $payMoney = $returnOrderMoney;
+
+                if ($payMoney <= 0) {
+                    throw new ParameterException(['msg' => '支付金额异常，为0']);
+
+                }
+                $payOrder = $this->savePayOrder($prepareId, $companyId, $openid, $u_id, $payMoney, $phone, $username, $returnConsumptionType);
+                return [
+                    'type' => 'success',
+                    'prepare_id' => $payOrder,
+                ];
+            }
             return [
                 'type' => 'success',
                 'prepare_id' => $prepareId,
             ];
+
+
         } catch (Exception $e) {
             Db::rollback();
             throw $e;
         }
 
+    }
+
+
+    public
+    function savePayOrder($prepareId, $company_id, $openid, $u_id, $money, $phone, $username, $times = 'one')
+    {
+        $data = [
+            'openid' => $openid,
+            'company_id' => $company_id,
+            'u_id' => $u_id,
+            'order_num' => makeOrderNo(),
+            'money' => $money,
+            'status' => 'paid_fail',
+            'method_id' => PayEnum::PAY_METHOD_WX,
+            'prepare_id' => $prepareId,
+            'type' => 'canteen',
+            'phone' => $phone,
+            'times' => $times,
+            'username' => $username,
+            'outsider' => UserEnum::OUTSIDE,
+            'order_type' => 'pre'
+
+        ];
+        $order = PayT::create($data);
+        if (!$order) {
+            throw new SaveException();
+        }
+        return [
+            'id' => $order->id
+        ];
     }
 
 

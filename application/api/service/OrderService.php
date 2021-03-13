@@ -324,7 +324,7 @@ class OrderService extends BaseService
             }
             //生成微信支付订单
             $payMoney = $orderMoney * $count + $delivery_fee;
-            $payOrder = $this->savePayOrder($orderId, $company_id, $openid, $u_id, $payMoney, $phone, $username, 'more');
+            $payOrder = $this->savePayOrder($orderId, $company_id, $openid, $u_id, $payMoney, $phone, $username, $consumptionType);
             Db::commit();
             return $payOrder;
         } catch (Exception $e) {
