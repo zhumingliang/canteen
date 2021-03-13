@@ -427,7 +427,7 @@ class OrderService
         $orderMoney = $params['order_money'];
         $dinnerId = $params['dinner_id'];
 
-        Db::query('call checkPrepareOrder(:in_companyId,:in_canteenId,:in_dinnerID,:in_staffId,:in_orderMoney,:in_orderingDate,@resCode,@resMessage,@balanceType)', [
+        Db::query('call checkPrepareOrder(:in_companyId,:in_canteenId,:in_dinnerID,:in_staffId,:in_orderMoney,:in_orderingDate,@resCode,@resMessage,@balanceType,@fixedBalance)', [
             'in_companyId' => $companyId,
             'in_canteenId' => $canteenId,
             'in_dinnerID' => $dinnerId,
