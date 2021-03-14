@@ -179,7 +179,9 @@ class OrderService
     private function updateInsiderOrder($order, $fixed, $consumptionType, $oldCount, $newCount)
     {
 
-
+        if ($newCount==$oldCount){
+            throw new UpdateException(['msg'=>"订单数量未修改"]);
+        }
         if ($consumptionType == "one") {
             //检测订单修改数量是否合法
             if ($newCount > $oldCount) {
@@ -228,7 +230,7 @@ class OrderService
         } else {
             if ($newCount < $oldCount) {
                 $updateSub = OrderPrepareSubT::where('order_id', $order->id)
-                    ->where('sort_code', '>', $oldCount - $newCount)
+                    ->where('sort_code', '>', $newCount)
                     ->update(['state' => CommonEnum::STATE_IS_FAIL]);
                 if (!$updateSub) {
                     throw new UpdateException(['msg' => '修改子订单数量']);
@@ -247,8 +249,8 @@ class OrderService
                 } else {
                     $foodsMoney = array_sum(array_column($strategyMoney, 'money'));
                 }
-                $addBalance = $foodsMoney + array_sum(array_column($strategyMoney, 'sub_money'));
-                $prepareMoney = OrderPrepareT::ordersMoney($order->prepare_id);
+                $addBalance = $foodsMoney * $increaseCount + array_sum(array_column($strategyMoney, 'sub_money'));
+                $prepareMoney = OrderPrepareSubT::ordersMoney($order->id);
                 $checkMoney = $addBalance + $prepareMoney;
                 $check = $this->checkBalance($order->staff_id, $order->canteen_id, $checkMoney);
                 if (!$check['check']) {
@@ -279,12 +281,13 @@ class OrderService
                         'consumption_sort' => $v['number'],
                     ]);
                 }
-                  $list = (new OrderPrepareSubT())->saveAll($subOrderDataList);
-                  if (!$list) {
-                      throw new SaveException(['msg' => '生成子订单失败']);
-                  }
-
+                $list = (new OrderPrepareSubT())->saveAll($subOrderDataList);
+                if (!$list) {
+                    throw new SaveException(['msg' => '生成子订单失败']);
+                }
             }
+
+
             OrderPrepareT::update([
                 'count' => $newCount,
                 'money' => $checkMoney,

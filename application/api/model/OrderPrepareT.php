@@ -54,6 +54,7 @@ class OrderPrepareT extends Model
 
     public static function ordersMoney($prepareId)
     {
+
         $money = self::where('prepare_id', $prepareId)
             ->where('state', CommonEnum::STATE_IS_OK)
             ->field('sum(money+sub_money) as money')
