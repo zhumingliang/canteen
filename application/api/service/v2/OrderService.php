@@ -471,7 +471,7 @@ class OrderService
         $outsider = Token::getCurrentTokenVar('outsiders');
         try {
             Db::startTrans();
-            Db::query('call submitPrepareOrder(:in_prepareId,:in_userCanteenId,:in_userStaffId,:in_addressId,:in_deliveryFee,:in_orderRemark,@resCode,@resMessage,@balanceType,@returnOrderMoney)', [
+            Db::query('call submitPrepareOrder(:in_prepareId,:in_userCanteenId,:in_userStaffId,:in_addressId,:in_deliveryFee,:in_orderRemark,@resCode,@resMessage,@balanceType,@returnOrderMoney,@returnConsumptionType)', [
                 'in_prepareId' => $prepareId,
                 'in_userCanteenId' => $canteenId,
                 'in_userStaffId' => $staffId,
