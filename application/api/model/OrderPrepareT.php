@@ -28,7 +28,7 @@ class OrderPrepareT extends Model
             },
                 'sub' => function ($query) {
                     $query->where('state', CommonEnum::STATE_IS_OK)
-                        ->field('id,order_id,sort_code,money,sub_money,count');
+                        ->field('id,order_id,consumption_sort,money,sub_money,count');
 
                 }])
             ->field('id,outsider,fixed,consumption_type,prepare_order_id,type,ordering_date,dinner,money,sub_money,delivery_fee')

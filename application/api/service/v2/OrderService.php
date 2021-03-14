@@ -179,8 +179,8 @@ class OrderService
     private function updateInsiderOrder($order, $fixed, $consumptionType, $oldCount, $newCount)
     {
 
-        if ($newCount==$oldCount){
-            throw new UpdateException(['msg'=>"订单数量未修改"]);
+        if ($newCount == $oldCount) {
+            throw new UpdateException(['msg' => "订单数量未修改"]);
         }
         if ($consumptionType == "one") {
             //检测订单修改数量是否合法
