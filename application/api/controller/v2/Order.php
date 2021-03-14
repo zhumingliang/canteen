@@ -337,13 +337,11 @@ class Order
      * @apiSuccess (返回参数说明) {int} money 冻结金额
      * @apiSuccess (返回参数说明) {int} money_type  余额类型 :冻结金额类型：overdraw：透支金额；user_balance:余额信息
      */
-    public function submitOrder()
+    public function submitOrder($address_id=0,$delivery_fee=0)
     {
-        $addressId = Request::param('address_id');
-        $deliveryFee = Request::param('delivery_fee');
         $prepareId = Request::param('prepare_id');
         $remark= Request::param('remark');
-        $data = (new OrderServiceV2())->submitOrder($prepareId, $addressId, $deliveryFee,$remark);
+        $data = (new OrderServiceV2())->submitOrder($prepareId, $address_id, $delivery_fee,$remark);
         return json(new SuccessMessageWithData(['data' => $data]));
     }
 
