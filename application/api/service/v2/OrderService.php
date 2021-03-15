@@ -500,17 +500,17 @@ class OrderService
             Db::commit();
             if ($outsider == UserEnum::OUTSIDE) {
                 //生成微信支付订单
+                $payMoney = $returnOrderMoney;
+                if ($payMoney <= 0) {
+                    throw new ParameterException(['msg' => '支付金额异常，为0']);
+
+                }
                 $companyId = Token::getCurrentTokenVar('current_company_id');
                 $openid = Token::getCurrentOpenid();
                 $u_id = Token::getCurrentUid();
                 $username = Token::getCurrentTokenVar('nickName');
                 $phone = Token::getCurrentPhone();
-                $payMoney = $returnOrderMoney;
 
-                if ($payMoney <= 0) {
-                    throw new ParameterException(['msg' => '支付金额异常，为0']);
-
-                }
                 $payOrder = $this->savePayOrder($prepareId, $companyId, $openid, $u_id, $payMoney, $phone, $username, $returnConsumptionType);
                 return [
                     'type' => 'success',

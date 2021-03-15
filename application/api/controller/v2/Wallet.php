@@ -154,7 +154,7 @@ class Wallet
     public function getPreOrder()
     {
         $order_id = Request::param('order_id');
-        $info = (new WalletService())->getPreOrder($order_id);
+        $info = (new \app\api\service\v2\WalletService())->getPreOrder($order_id);
         return json(new SuccessMessageWithData(['data' => $info]));
 
     }
