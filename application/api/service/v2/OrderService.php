@@ -23,7 +23,6 @@ use app\lib\exception\SaveException;
 use app\lib\exception\UpdateException;
 use think\Db;
 use think\Exception;
-use think\exception\ErrorException;
 
 class OrderService
 {
