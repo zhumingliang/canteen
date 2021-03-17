@@ -168,11 +168,6 @@ class OrderService
         $consumptionType = $prepareOrder->consumption_type;
         $fixed = $prepareOrder->fixed;
         $oldCount = $prepareOrder->count;
-        if ($count == $oldCount) {
-            return [
-                "type" => 'success'
-            ];
-        }
         if ($outsider == UserEnum::OUTSIDE) {
             return $this->updateOutsiderOrder($prepareOrder, $consumptionType, $oldCount, $count);
         }
@@ -185,6 +180,13 @@ class OrderService
 
 
         if ($consumptionType == "one") {
+            if ($newCount == $oldCount) {
+                return [
+                    'type' => "success",
+                    'money' => $order->money + $order->sub_money
+                ];
+            }
+
             //检测订单修改数量是否合法
             if ($newCount > $oldCount) {
                 $orderedCount = OrderingV::getOrderingCountByWithDinnerID($order->ordering_date, $order->dinner_id, $order->phone);
@@ -240,7 +242,7 @@ class OrderService
 
                 $checkMoney = OrderPrepareSubT::ordersMoney($order->id);
 
-            } else {
+            } else if ($newCount > $oldCount) {
                 $orderedCount = OrderingV::getOrderingCountByWithDinnerID($order->ordering_date, $order->dinner_id, $order->phone);
                 $strategy = $this->checkOrderCount($newCount, $oldCount, $orderedCount, $order->dinner_id, $order->canteen_id, $order->staff_type_id);
                 $increaseCount = $newCount - $oldCount;
@@ -287,6 +289,12 @@ class OrderService
                 if (!$list) {
                     throw new SaveException(['msg' => '生成子订单失败']);
                 }
+            } else {
+                return [
+                    'type' => "success",
+                    'money' => OrderPrepareSubT::ordersMoney($order->id),
+                    'orders' => OrderPrepareSubT::orders($order->id)
+                ];
             }
 
 
@@ -356,8 +364,15 @@ class OrderService
     private function updateOutsiderOrder($order, $consumptionType, $oldCount, $newCount)
     {
         if ($consumptionType == "one") {
+
             $newMoney = $order->money / $oldCount * $newCount;
             $newSubMoney = $order->sub_money / $oldCount * $newCount;
+            if ($newCount == $oldCount) {
+                return [
+                    'type' => "success",
+                    'money' => $newMoney + $newSubMoney
+                ];
+            }
             OrderPrepareT::update([
                 'count' => $newCount,
                 'state' => $newCount ? CommonEnum::STATE_IS_OK : CommonEnum::STATE_IS_FAIL,
@@ -392,7 +407,7 @@ class OrderService
                         'consumption_sort' => $consumptionSort + $i,
                     ]);
                 }
-            } else {
+            } else if ($newCount < $oldCount) {
                 $subOrders = OrderPrepareSubT::where('order_id', $order->id)
                     ->where('state', CommonEnum::STATE_IS_OK)
                     ->order('sort_code')
@@ -406,6 +421,12 @@ class OrderService
                     }
 
                 }
+            } else {
+                return [
+                    'type' => "success",
+                    'money' => OrderPrepareSubT::ordersMoney($order->id),
+                    'orders' => OrderPrepareSubT::orders($order->id)
+                ];
             }
             $save = (new OrderPrepareSubT())->saveAll($dataList);
             if (!$save) {
