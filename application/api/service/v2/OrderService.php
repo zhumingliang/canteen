@@ -178,7 +178,6 @@ class OrderService
     private function updateInsiderOrder($order, $fixed, $consumptionType, $oldCount, $newCount)
     {
 
-
         if ($consumptionType == "one") {
             if ($newCount == $oldCount) {
                 return [
@@ -317,7 +316,7 @@ class OrderService
     private function checkOrderCount($newCount, $oldCount, $orderedCount, $dinnerId, $canteenId, $staffTypeId)
     {
         //检测订单修改数量是否合法
-        $checkCount = $orderedCount - $oldCount + $newCount;
+        $checkCount = $orderedCount + $newCount;
         $strategy = (new CanteenService())->getStaffConsumptionStrategy($canteenId, $dinnerId, $staffTypeId);
         if (!$strategy) {
             throw new ParameterException(['msg' => '当前用户消费策略不存在']);
