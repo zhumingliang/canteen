@@ -467,6 +467,7 @@ class OrderService
     {
         $canteenId = Token::getCurrentTokenVar('current_canteen_id');
         $staffId = Token::getCurrentTokenVar('staff_id');
+
         $outsider = Token::getCurrentTokenVar('outsiders');
         try {
             Db::startTrans();
