@@ -206,7 +206,7 @@ class OrderService
                 if (!$check['check']) {
                     return [
                         'type' => "no_balance",
-                        'money' => $check['balance'],
+                        'money' => $check['money'],
                         'money_type' => $check['money_type']
                     ];
                 }
