@@ -174,7 +174,7 @@ class UserService
             return [
                 'usernmae' => $staff->username,
                 'url' => $qrcode->url,
-                'create_time' => $qrcode->create_time,
+                'create_time' => $qrcode->update_time,
                 'expiry_date' => $qrcode->expiry_date
             ];
         }

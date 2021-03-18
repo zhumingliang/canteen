@@ -86,6 +86,21 @@ Index extends BaseController
 
     public function index()
     {
+        $day = date('Y-m-d H:i:s', strtotime('+10 year',
+            time()));
+       // return $day;
+        $staffs = CompanyStaffT::where('company_id', 140)->where('state',CommonEnum::STATE_IS_OK)
+            ->select();
+
+
+        foreach ($staffs as $k => $v) {
+            StaffQrcodeT::update([
+                'year' => 10,
+                'minute' => 0,
+                'expiry_date' => $day
+            ], ['s_id' => $v['id']]
+            );
+        }
 
     }
 
