@@ -10,6 +10,7 @@ use app\api\model\CompanyAccountT;
 use app\api\model\CompanyStaffT;
 use app\api\model\ConsumptionStrategyT;
 use app\api\model\DinnerT;
+use app\api\model\DinnerV;
 use app\api\model\MaterialPriceV;
 use app\api\model\MaterialReportDetailT;
 use app\api\model\MaterialReportDetailV;
@@ -774,7 +775,11 @@ class OrderStatisticService
 
         $header = ['序号', '统计变量', '开始时间', '结束时间', '姓名', '部门'];
         //获取饭堂对应的餐次设置
-        $dinner = DinnerT::dinnerNames($canteen_id);
+        if (!$canteen_id) {
+            $dinner = DinnerV::companyDinners2($company_id);
+        } else {
+            $dinner = DinnerT::dinnerNames($canteen_id);
+        }
 
         if ($order_type != "canteen") {
             array_push($dinner, [
@@ -786,7 +791,6 @@ class OrderStatisticService
                 'name' => "小卖部退款"
             ]);
         }
-
         $header = $this->addDinnerAndAccountToHeader($header, $dinner);
         $reports = $this->prefixConsumptionStatistic($statistic, $dinner, $time_begin, $time_end);
         $reportName = $fileNameArr[$status];
@@ -1361,20 +1365,20 @@ class OrderStatisticService
         ];
     }
 
-    public function getDinnerOrderedCount($dinnerId,$orderingDate)
+    public function getDinnerOrderedCount($dinnerId, $orderingDate)
     {
         $strategy = ConsumptionStrategyT::where('d_id', $dinnerId)
             ->where('state', CommonEnum::STATE_IS_OK)
             ->find();
-        $staffId=Token::getCurrentTokenVar('staff_id');
+        $staffId = Token::getCurrentTokenVar('staff_id');
         if (!$strategy) {
             throw new ParameterException(['msg' => "餐次消费策略未设置"]);
         }
         $consumptionType = $strategy->consumption_type;
         if ($consumptionType == StrategyEnum::CONSUMPTION_TIMES_ONE) {
-            $count = OrderT::dinnerStatistic($dinnerId,$orderingDate,$staffId);
+            $count = OrderT::dinnerStatistic($dinnerId, $orderingDate, $staffId);
         } else if ($consumptionType == StrategyEnum::CONSUMPTION_TIMES_MORE) {
-            $count = OrderParentT::dinnerStatistic($dinnerId,$orderingDate,$staffId);
+            $count = OrderParentT::dinnerStatistic($dinnerId, $orderingDate, $staffId);
 
         } else {
             throw new ParameterException(['msg' => '消费策略异常']);

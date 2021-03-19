@@ -46,6 +46,7 @@ class DinnerT extends Model
         return $info;
     }
 
+
     public static function canteenDinnerMenus($canteen_id)
     {
         $menus = self::where('c_id', $canteen_id)
