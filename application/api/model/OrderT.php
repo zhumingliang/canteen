@@ -366,10 +366,11 @@ class OrderT extends Model
 
     }
 
-    public static function dinnerStatistic($dinnerId,$orderingDate)
+    public static function dinnerStatistic($dinnerId, $orderingDate, $staffId)
     {
-        return self::where('d_id', $dinnerId)
-            ->where('ordering_date',$orderingDate)
+        return self::where('staff_id', $staffId)
+            ->where('d_id', $dinnerId)
+            ->where('ordering_date', $orderingDate)
             ->where('state', CommonEnum::STATE_IS_OK)
             ->where('pay', PayEnum::PAY_SUCCESS)
             ->sum('count');

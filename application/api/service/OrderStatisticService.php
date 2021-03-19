@@ -1366,14 +1366,15 @@ class OrderStatisticService
         $strategy = ConsumptionStrategyT::where('d_id', $dinnerId)
             ->where('state', CommonEnum::STATE_IS_OK)
             ->find();
+        $staffId=Token::getCurrentTokenVar('staff_id');
         if (!$strategy) {
             throw new ParameterException(['msg' => "餐次消费策略未设置"]);
         }
         $consumptionType = $strategy->consumption_type;
         if ($consumptionType == StrategyEnum::CONSUMPTION_TIMES_ONE) {
-            $count = OrderT::dinnerStatistic($dinnerId,$orderingDate);
+            $count = OrderT::dinnerStatistic($dinnerId,$orderingDate,$staffId);
         } else if ($consumptionType == StrategyEnum::CONSUMPTION_TIMES_MORE) {
-            $count = OrderParentT::dinnerStatistic($dinnerId,$orderingDate);
+            $count = OrderParentT::dinnerStatistic($dinnerId,$orderingDate,$staffId);
 
         } else {
             throw new ParameterException(['msg' => '消费策略异常']);

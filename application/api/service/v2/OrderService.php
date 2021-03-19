@@ -31,6 +31,12 @@ class OrderService
 
         try {
             Db::startTrans();
+         /*   $canteenId = 300;//Token::getCurrentTokenVar('current_canteen_id');
+            $phone = "13480155799";//Token::getCurrentTokenVar('phone');
+            $companyId =135;// Token::getCurrentTokenVar('current_company_id');
+            $staffId = 7494;//Token::getCurrentTokenVar('staff_id');
+            $outsider = 2;//Token::getCurrentTokenVar('outsiders');*/
+
             $canteenId = Token::getCurrentTokenVar('current_canteen_id');
             $phone = Token::getCurrentTokenVar('phone');
             $companyId = Token::getCurrentTokenVar('current_company_id');
@@ -101,6 +107,8 @@ class OrderService
             if (!$orderFoods) {
                 throw new SaveException(['msg' => "保存订单菜品失败"]);
             }
+            Db::commit();
+            return  $prepareId;
             //调用存储过程验证订单信息
             //传入参数：预订单id；
             //返回参数：错误code；错误描述
@@ -491,7 +499,7 @@ class OrderService
         $canteenId = Token::getCurrentTokenVar('current_canteen_id');
         $staffId = Token::getCurrentTokenVar('staff_id');
 
-        $outsider = Token::getCurrentTokenVar('outsiders');
+        $outsider =Token::getCurrentTokenVar('outsiders');
         try {
             Db::startTrans();
             Db::query('call submitPrepareOrder(:in_prepareId,:in_userCanteenId,:in_userStaffId,:in_addressId,:in_deliveryFee,:in_orderRemark,@resCode,@resMessage,@balanceType,@returnOrderMoney,@returnConsumptionType)', [
