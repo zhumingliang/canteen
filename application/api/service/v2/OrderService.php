@@ -31,17 +31,18 @@ class OrderService
 
         try {
             Db::startTrans();
-         /*   $canteenId = 300;//Token::getCurrentTokenVar('current_canteen_id');
-            $phone = "13480155799";//Token::getCurrentTokenVar('phone');
-            $companyId =135;// Token::getCurrentTokenVar('current_company_id');
-            $staffId = 7494;//Token::getCurrentTokenVar('staff_id');
-            $outsider = 2;//Token::getCurrentTokenVar('outsiders');*/
+            /*   $canteenId = 300;//Token::getCurrentTokenVar('current_canteen_id');
+               $phone = "13480155799";//Token::getCurrentTokenVar('phone');
+               $companyId =135;// Token::getCurrentTokenVar('current_company_id');
+               $staffId = 7494;//Token::getCurrentTokenVar('staff_id');
+               $outsider = 2;//Token::getCurrentTokenVar('outsiders');*/
 
             $canteenId = Token::getCurrentTokenVar('current_canteen_id');
             $phone = Token::getCurrentTokenVar('phone');
             $companyId = Token::getCurrentTokenVar('current_company_id');
             $staffId = Token::getCurrentTokenVar('staff_id');
             $outsider = Token::getCurrentTokenVar('outsiders');
+            $uId = Token::getCurrentUid();
             $orderType = $params['type'];
             if (!empty($params['orders'])) {
                 $orders = json_decode($params['orders'], true);
@@ -71,6 +72,7 @@ class OrderService
                                     'name' => $v3['name'],
                                     'count' => $v3['count'],
                                     'm_id' => $v3['menu_id'],
+                                    'u_id' => $uId,
                                     'prepare_id' => $prepareId,
                                 ]);
 
@@ -497,7 +499,7 @@ class OrderService
         $canteenId = Token::getCurrentTokenVar('current_canteen_id');
         $staffId = Token::getCurrentTokenVar('staff_id');
 
-        $outsider =Token::getCurrentTokenVar('outsiders');
+        $outsider = Token::getCurrentTokenVar('outsiders');
         try {
             Db::startTrans();
             Db::query('call submitPrepareOrder(:in_prepareId,:in_userCanteenId,:in_userStaffId,:in_addressId,:in_deliveryFee,:in_orderRemark,@resCode,@resMessage,@balanceType,@returnOrderMoney,@returnConsumptionType)', [
