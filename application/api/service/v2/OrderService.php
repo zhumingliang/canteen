@@ -107,8 +107,6 @@ class OrderService
             if (!$orderFoods) {
                 throw new SaveException(['msg' => "保存订单菜品失败"]);
             }
-            Db::commit();
-            return  $prepareId;
             //调用存储过程验证订单信息
             //传入参数：预订单id；
             //返回参数：错误code；错误描述
