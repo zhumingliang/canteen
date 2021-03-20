@@ -22,7 +22,7 @@ class OrderPrepareSubT extends Model
 
     public static function ordersMoney2($prepareId)
     {
-        $money = self::where('order_id', $prepareId)
+        $money = self::where('prepare_id', $prepareId)
             ->where('state', CommonEnum::STATE_IS_OK)
             ->field('sum(money+sub_money) as money')
             ->find();
