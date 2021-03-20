@@ -324,7 +324,7 @@ class OrderService extends BaseService
             }
             //生成微信支付订单
             $payMoney = $orderMoney * $count + $delivery_fee;
-            $payOrder = $this->savePayOrder($orderId, $company_id, $openid, $u_id, $payMoney, $phone, $username, 'more');
+            $payOrder = $this->savePayOrder($orderId, $company_id, $openid, $u_id, $payMoney, $phone, $username, $consumptionType);
             Db::commit();
             return $payOrder;
         } catch (Exception $e) {
@@ -812,7 +812,7 @@ class OrderService extends BaseService
         return $returnMoney;
     }
 
-    private
+    public
     function checkConsumptionStrategyTimesMore($strategies, $orderCount, $consumptionCount)
     {
         if ($orderCount > $strategies->ordered_count) {
@@ -1916,7 +1916,7 @@ class OrderService extends BaseService
 
 //一次性扣费消费模式下-修改订单
     public
-    function changeOrderFoods($params)
+    function  changeOrderFoods($params)
     {
         try {
             Db::startTrans();
@@ -2011,10 +2011,6 @@ class OrderService extends BaseService
             if (!$order) {
                 throw new ParameterException(['msg' => '订单不存在']);
             }
-            //处理订单明细
-            /* if (!empty($detail)) {
-                 $this->prefixUpdateOrderDetail($id, $detail, 'more');
-             }*/
             //检测订单是否可操作
             $this->checkOrderCanHandel($order->dinner_id, $order->ordering_date);
             //处理菜品信息
@@ -2289,7 +2285,8 @@ class OrderService extends BaseService
         if ($fixed == CommonEnum::STATE_IS_OK) {
             $new_money = $old_money / $old_count * $count;
             $new_meal_money = $old_meal_money / $old_count * $count;
-        } else {
+        }
+        else {
             if (!empty($new_detail)) {
                 $new_money = 0;
                 foreach ($new_detail as $k => $v) {

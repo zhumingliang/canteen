@@ -23,4 +23,10 @@ class PayT extends Model
 
     }
 
+    public static function getPreOrder($order_id)
+    {
+        return self::where('prepare_id', $order_id)
+            ->find();
+    }
+
 }

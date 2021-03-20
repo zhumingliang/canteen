@@ -294,7 +294,7 @@ class CompanyService
         if ($company->out_qrcode) {
             return ['url' => config('setting.image') . $company->out_qrcode];
         }
-        $url = (new WeiXinService())->qRCde($company_id);
+        $url = (new WeiXinService())->qRCode($company_id);
         $company->out_qrcode = $url;
         $company->save();
         return ['url' => config('setting.image') . $url];

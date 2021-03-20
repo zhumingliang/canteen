@@ -922,4 +922,21 @@ class CanteenService
         ConsumptionStrategyT::update(['state' => CommonEnum::STATE_IS_FAIL], ['d_id' => $id]);
         StrategyDetailT::update(['state' => CommonEnum::STATE_IS_FAIL], ['dinner_id' => $id]);
     }
+
+    public function deliveryFee()
+    {
+        $fee = 0;
+        $outsider = Token::getCurrentTokenVar('outsiders');
+        $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
+
+        $outConfig = OutConfigT::where('canteen_id', $canteen_id)
+            ->find();
+
+        if ($outConfig) {
+            $fee = $outsider == UserEnum::INSIDE ? $outConfig->in_fee : $outConfig->out_fee;
+        }
+        return [
+            'fee' => $fee
+        ];
+    }
 }

@@ -763,6 +763,24 @@ class Canteen extends BaseController
         $res = (new CanteenService())->checkConfirm($canteen_id);
         return json(new SuccessMessageWithData(['data' => $res]));
     }
+    /**
+     * @api {GET} /api/v1/canteen/order/delivery_fee  微信端-获取饭堂用户配送费
+     * @apiGroup   Official
+     * @apiVersion 3.0.0
+     * @apiDescription   微信端-获取饭堂用户配送费
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/canteen/order/delivery_fee
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"fee":1}}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     * @apiSuccess (返回参数说明) {int} fee 配送费
+     */
+    public function deliveryFee()
+    {
+        $fee = (new CanteenService())->deliveryFee();
+        return json(new SuccessMessageWithData(['data' => $fee]));
+    }
 
 
 }

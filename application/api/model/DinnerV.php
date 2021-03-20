@@ -14,4 +14,11 @@ class DinnerV extends Model
             ->select()->toArray();
     }
 
+    public static function companyDinners2($company_id)
+    {
+        return self::where('company_id', $company_id)
+            ->field('dinner_id as id,dinner as name')
+            ->select()->toArray();
+    }
+
 }

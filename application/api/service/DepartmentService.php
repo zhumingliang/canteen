@@ -698,7 +698,7 @@ class DepartmentService
         $params['code'] = $code;
         $params['url'] = $qrcode_url;
         $expiry_date = date('Y-m-d H:i:s', time());
-        $params['create_time'] = $expiry_date;
+        $params['update_time'] = $expiry_date;
         $params['expiry_date'] = $this->prefixQrcodeExpiryDate($expiry_date, $params);
         $qrcode = StaffQrcodeT::update($params);
         if (!$qrcode) {
@@ -708,7 +708,7 @@ class DepartmentService
         return [
             'usernmae' => $staff->username,
             'url' => $qrcode->url,
-            'create_time' => $qrcode->create_time,
+            'create_time' => $qrcode->update_time,
             'expiry_date' => $qrcode->expiry_date
         ];
     }

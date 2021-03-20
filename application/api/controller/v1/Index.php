@@ -22,6 +22,8 @@ use app\api\model\OfficialTemplateT;
 use app\api\model\OrderConsumptionV;
 use app\api\model\OrderingV;
 use app\api\model\OrderParentT;
+use app\api\model\OrderPrepareFoodT;
+use app\api\model\OrderPrepareT;
 use app\api\model\OrderSubT;
 use app\api\model\OrderT;
 use app\api\model\OrderUnusedV;
@@ -84,18 +86,22 @@ Index extends BaseController
 
     public function index()
     {
-        echo  date('d');
-        return 1;
-        $prepareId = 1;
-        $resCode = 0;
-        $resMessage = "";
-        $returnBalance = 0;
-        $resultSet = Db::query('call prepareOrder(:in_prepareId,@resCode,@resMessage)', [
-            'in_prepareId' => $prepareId
-        ]);
-        print_r($resultSet[0][0]['resCode']);
-       /* $resultSet = Db::query('select @resCode');
-        print_r($resultSet);*/
+        $day = date('Y-m-d H:i:s', strtotime('+10 year',
+            time()));
+       // return $day;
+        $staffs = CompanyStaffT::where('company_id', 140)->where('state',CommonEnum::STATE_IS_OK)
+            ->select();
+
+
+        foreach ($staffs as $k => $v) {
+            StaffQrcodeT::update([
+                'year' => 10,
+                'minute' => 0,
+                'expiry_date' => $day
+            ], ['s_id' => $v['id']]
+            );
+        }
+
     }
 
     public function autoUpFoods()

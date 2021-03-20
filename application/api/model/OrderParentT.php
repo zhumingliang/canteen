@@ -220,9 +220,10 @@ class OrderParentT extends Model
             ->field('id,dinner_id,count as order_count,"more" as strategy_type,staff_id,fixed')
             ->select();
     }
-    public static function dinnerStatistic($dinnerId,$orderingDate)
+    public static function dinnerStatistic($dinnerId,$orderingDate,$staffId)
     {
-        return self::where('dinner_id', $dinnerId)
+        return self::where('staff_id', $staffId)
+            ->where('d_id', $dinnerId)
             ->where('ordering_date',$orderingDate)
             ->where('state', CommonEnum::STATE_IS_OK)
             ->where('pay', PayEnum::PAY_SUCCESS)
