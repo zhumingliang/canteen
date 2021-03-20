@@ -468,7 +468,7 @@ class WalletService
             'in_staffId' => $staffId,
         ]);
         $resultSet = Db::query('select @userBalance');
-        return $resultSet[0]['@userBalance'];
+        return round($resultSet[0]['@userBalance'], 2);
     }
 
     public function getUserBalanceWithStaffId($staff_id)
