@@ -72,7 +72,6 @@ class OrderService
                                     'name' => $v3['name'],
                                     'count' => $v3['count'],
                                     'm_id' => $v3['menu_id'],
-                                    'u_id' => $uId,
                                     'prepare_id' => $prepareId,
                                 ]);
 
@@ -90,6 +89,7 @@ class OrderService
                                 'type' => $orderType,
                                 'money' => $money,
                                 'count' => 1,
+                                'u_id' => $uId,
                                 'outsider' => $outsider
                             ]);
 
