@@ -4,21 +4,18 @@
 namespace app\api\job;
 
 
-use app\api\model\NoticeUserT;
-use app\api\model\RechargeCashT;
-use app\api\model\RechargeSupplementT;
-use app\api\service\DepartmentService;
+use app\api\controller\v2\Order;
+use app\api\model\DinnerT;
+use app\api\model\DinnerV;
+use app\api\model\DownExcelT;
 use app\api\service\ExcelService;
 use app\api\service\LogService;
-use app\api\service\Token;
-use app\api\service\WalletService;
-use app\lib\enum\CommonEnum;
-use app\lib\exception\SaveException;
-use think\Db;
+use app\lib\enum\DownEnum;
+use app\lib\enum\OrderEnum;
+use app\lib\exception\ParameterException;
 use think\Exception;
-use think\exception\ErrorException;
 use think\queue\Job;
-use zml\tp_tools\Redis;
+use app\api\service\OrderStatisticService as OrderStatisticServiceV1;
 
 class DownExcel
 {
@@ -84,13 +81,107 @@ class DownExcel
     {
         try {
 
-            $type = $data['type'];
+            $excelType = $data['excel_type'];
+            switch ($excelType) {
+                case 'consumptionStatistic';
+                    $this->exportConsumptionStatistic($data);
+                    break;
+                case '';
+                    break;
+
+            }
 
             return true;
         } catch (Exception $e) {
-            LogService::saveJob("上传excel失败：error:" . $e->getMessage(), json_encode($data));
+            LogService::saveJob("下载excel失败：error:" . $e->getMessage(), json_encode($data));
             return false;
         }
+
+    }
+
+
+    private function exportConsumptionStatistic($data)
+    {
+        $canteen_id = $data['canteen_id'];
+        $status = $data['status'];
+        $type = $data['type'];
+        $department_id = $data['department_id'];
+        $username = $data['username'];
+        $staff_type_id = $data['staff_type_id'];
+        $time_begin = $data['time_begin'];
+        $time_end = $data['time_end'];
+        $company_id = $data['company_id'];
+        $phone = $data['phone'];
+        $order_type = $data['order_type'];
+        $version = $data['version'];
+        $downId = $data['down_id'];
+        $locationName = (new  OrderStatisticServiceV1())->getLocationName($order_type, $canteen_id);
+        $fileNameArr = [
+            0 => $locationName . "消费总报表",
+            1 => $locationName . "订餐就餐消费总报表",
+            2 => $locationName . "订餐未就餐消费总报表",
+            3 => $locationName . "未订餐就餐消费总报表",
+            4 => $locationName . "系统补充总报表",
+            5 => $locationName . "系统补扣总报表",
+            6 => $locationName . "小卖部消费总报表",
+            7 => $locationName . "小卖部退款总报表"
+        ];
+
+        switch ($data['type']) {
+            case OrderEnum::STATISTIC_BY_DEPARTMENT:
+                $info = (new  OrderStatisticServiceV1())->consumptionStatisticByDepartment($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id, $phone, $order_type, $version);
+                break;
+            case OrderEnum::STATISTIC_BY_USERNAME:
+                $info = (new  OrderStatisticServiceV1())->consumptionStatisticByUsername($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id, $phone, $order_type, 1, 10000, $version);
+                break;
+            case OrderEnum::STATISTIC_BY_STAFF_TYPE:
+                $info = (new  OrderStatisticServiceV1())->consumptionStatisticByStaff($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id, $phone, $order_type, $version);
+                break;
+            case OrderEnum::STATISTIC_BY_CANTEEN:
+                $info = (new  OrderStatisticServiceV1())->consumptionStatisticByCanteen($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id, $phone, $order_type, $version);
+                break;
+            case OrderEnum::STATISTIC_BY_STATUS:
+                $info = (new  OrderStatisticServiceV1())->consumptionStatisticByStatus($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id, $phone, $order_type, $version);
+                break;
+            default:
+                throw new ParameterException();
+        }
+        if ($type == OrderEnum::STATISTIC_BY_USERNAME) {
+            $statistic = $info['statistic']['data'];
+        } else {
+            $statistic = $info['statistic'];
+        }
+
+        $header = ['序号', '统计变量', '开始时间', '结束时间', '姓名', '部门'];
+        //获取饭堂对应的餐次设置
+        if (!$canteen_id) {
+            $dinner = DinnerV::companyDinners2($company_id);
+        } else {
+            $dinner = DinnerT::dinnerNames($canteen_id);
+        }
+        if ($order_type != "canteen") {
+            array_push($dinner, [
+                'id' => 0,
+                'name' => "小卖部消费"
+            ]);
+            array_push($dinner, [
+                'id' => 0,
+                'name' => "小卖部退款"
+            ]);
+        }
+        $header = (new  OrderStatisticServiceV1())->addDinnerAndAccountToHeader($header, $dinner);
+        $reports = (new  OrderStatisticServiceV1())->prefixConsumptionStatistic($statistic, $dinner, $time_begin, $time_end);
+        $reportName = $fileNameArr[$status];
+        $file_name = $reportName . "(" . $time_begin . "-" . $time_end . ")";
+        $url = (new ExcelService())->makeExcel($header, $reports, $file_name);
+        $url = config('setting.domain') . $url;
+        DownExcelT::update([
+            'id' => $downId,
+            'status' => DownEnum::DOWN_SUCCESS,
+            'url' => $url,
+            'name' => $file_name,
+        ]);
+
 
     }
 

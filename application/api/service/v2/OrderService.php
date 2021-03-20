@@ -31,12 +31,6 @@ class OrderService
 
         try {
             Db::startTrans();
-            /*   $canteenId = 300;//Token::getCurrentTokenVar('current_canteen_id');
-               $phone = "13480155799";//Token::getCurrentTokenVar('phone');
-               $companyId =135;// Token::getCurrentTokenVar('current_company_id');
-               $staffId = 7494;//Token::getCurrentTokenVar('staff_id');
-               $outsider = 2;//Token::getCurrentTokenVar('outsiders');*/
-
             $canteenId = Token::getCurrentTokenVar('current_canteen_id');
             $phone = Token::getCurrentTokenVar('phone');
             $companyId = Token::getCurrentTokenVar('current_company_id');

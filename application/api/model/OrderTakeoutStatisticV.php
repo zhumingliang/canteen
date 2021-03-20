@@ -17,6 +17,12 @@ class OrderTakeoutStatisticV extends Model
         return $this->hasMany('OrderDetailT', 'o_id', 'order_id');
     }
 
+    public function foods2()
+    {
+        return $this->hasMany('SubFoodT', 'o_id', 'order_id');
+    }
+
+
     public function getStatusAttr($value, $data)
     {
         if ($data['state'] == CommonEnum::STATE_IS_FAIL) {
@@ -170,13 +176,7 @@ class OrderTakeoutStatisticV extends Model
                     $query->where('department_id', $department_id);
                 }
             })
-            ->with([
-                'foods' => function ($query) {
-                    $query->where('state', CommonEnum::STATE_IS_OK)
-                        ->field('o_id,name,price,count');
-                }
-            ])
-            ->field('order_id,province,city,area,address,address_username as username,address_phone as phone,used,count,money,delivery_fee,canteen_id,consumption_type,receive')
+            ->field('order_id,province,city,area,address,address_username as username,address_phone as phone,used,count,money,delivery_fee,canteen_id,consumption_type,receive,fixed')
             ->order('used DESC')
             ->paginate($size, false, ['page' => $page])->toArray();
         return $list;

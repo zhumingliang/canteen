@@ -63,7 +63,7 @@ class OrderUsersStatisticV extends Model
                         ->field('id as detail_id ,o_id,count,name,price');
                 }
             ])
-            ->field('order_id as id,username,order_num,phone,sum(count) as count,strategy_type as consumption_type,type,dinner_id,booking,used,department')
+            ->field('order_id as id,username,order_num,phone,sum(count) as count,strategy_type as consumption_type,type,dinner_id,booking,used,department,fixed')
             ->group('order_id')
             //->fetchSql(true)->select();
             ->paginate($size, false, ['page' => $page])

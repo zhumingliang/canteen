@@ -4,9 +4,10 @@
 namespace app\api\model;
 
 
-use app\api\validate\Module;
 
-class DownExcelT extends Module
+use think\Model;
+
+class DownExcelT extends Model
 {
 
 }
