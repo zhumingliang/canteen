@@ -242,6 +242,7 @@ class OrderService
                 }
 
                 $checkMoney = OrderPrepareSubT::ordersMoney($order->id);
+                $checkMoneyAll = $checkMoney;
 
             } else if ($newCount > $oldCount) {
                 $orderedCount = OrderingV::getOrderingCountByWithDinnerID($order->ordering_date, $order->dinner_id, $order->phone);
@@ -255,9 +256,11 @@ class OrderService
                     $foodsMoney = array_sum(array_column($strategyMoney, 'money'));
                 }
                 $addBalance = $foodsMoney * $increaseCount + array_sum(array_column($strategyMoney, 'sub_money'));
-                $prepareMoney = OrderPrepareSubT::ordersMoney2($order->prepare_id);
+                $prepareMoney = OrderPrepareSubT::ordersMoney($order->id);
+                $prepareMoneyAll = OrderPrepareSubT::ordersMoney2($order->prepare_id);
                 $checkMoney = $addBalance + $prepareMoney;
-                $check = $this->checkBalance($order->staff_id, $order->canteen_id, $checkMoney);
+                $checkMoneyAll = $addBalance + $prepareMoneyAll;
+                $check = $this->checkBalance($order->staff_id, $order->canteen_id, $checkMoneyAll);
                 if (!$check['check']) {
                     return [
                         'type' => "no_balance",
@@ -284,7 +287,7 @@ class OrderService
                         'consumption_type' => $v['consumption_type'],
                         'sort_code' => $v['number'],
                         'consumption_sort' => $v['number'],
-                        'prepare_id'=>$order->prepare_id
+                        'prepare_id' => $order->prepare_id
                     ]);
                 }
                 $list = (new OrderPrepareSubT())->saveAll($subOrderDataList);
