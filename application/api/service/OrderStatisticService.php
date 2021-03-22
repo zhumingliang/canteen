@@ -399,8 +399,21 @@ class OrderStatisticService
                                          $ordering_date, $dinner_id, $status, $department_id)
     {
         $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
+
         $records = OrderTakeoutStatisticV::officialStatistic($page, $size,
             $ordering_date, $dinner_id, $status, $department_id, $canteen_id);
+        $data = $records['data'];
+        if (count($data)) {
+            foreach ($data as $k => $v) {
+                if ($v['consumption_type'] == "one") {
+                    $data[$k]['foods'] = OrderDetailT::where('o_id', $v['order_id'])->select();
+                } else {
+                    $data[$k]['foods'] = SubFoodT::where('o_id', $v['order_id'])->select();
+
+                }
+            }
+        }
+        $records['data'] = $data;
         return $records;
     }
 
@@ -876,7 +889,7 @@ class OrderStatisticService
     }
 
 
-    private function getLocationName($orderType, $locationID)
+    public function getLocationName($orderType, $locationID)
     {
         if ($orderType == "canteen") {
             $location = CanteenT::canteen($locationID);
@@ -890,7 +903,7 @@ class OrderStatisticService
     }
 
 
-    private
+    public
     function addDinnerAndAccountToHeader($header, $dinner, $accounts = [])
     {
         if (count($dinner)) {
@@ -909,7 +922,7 @@ class OrderStatisticService
 
     }
 
-    private
+    public
     function prefixConsumptionStatistic($statistic, $dinner, $time_begin, $time_end)
     {
         $dataList = [];
@@ -1027,7 +1040,7 @@ class OrderStatisticService
 
     }
 
-    private
+    public
     function consumptionStatisticByDepartment($canteen_id, $status, $department_id,
                                               $username, $staff_type_id, $time_begin,
                                               $time_end, $company_id, $phone, $order_type, $version)
@@ -1113,7 +1126,7 @@ class OrderStatisticService
     }
 
 
-    private
+    public
     function consumptionStatisticByUsername($canteen_id, $status, $department_id,
                                             $username, $staff_type_id, $time_begin,
                                             $time_end, $company_id, $phone, $order_type, $page, $size, $version)
@@ -1206,7 +1219,7 @@ class OrderStatisticService
     }
 
 
-    private
+    public
     function consumptionStatisticByStatus($canteen_id, $status, $department_id,
                                           $username, $staff_type_id, $time_begin,
                                           $time_end, $company_id, $phone, $order_type, $version)
@@ -1235,7 +1248,7 @@ class OrderStatisticService
 
     }
 
-    private
+    public
     function consumptionStatisticByCanteen($canteen_id, $status, $department_id,
                                            $username, $staff_type_id, $time_begin,
                                            $time_end, $company_id, $phone, $order_type, $version)
@@ -1266,7 +1279,7 @@ class OrderStatisticService
 
     }
 
-    private
+    public
     function consumptionStatisticByStaff($canteen_id, $status, $department_id,
                                          $username, $staff_type_id, $time_begin,
                                          $time_end, $company_id, $phone, $order_type, $version)

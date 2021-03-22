@@ -29,6 +29,7 @@ use app\api\model\OrderT;
 use app\api\model\OrderUnusedV;
 use app\api\model\PayNonghangConfigT;
 use app\api\model\PayT;
+use app\api\model\PayWxT;
 use app\api\model\RechargeCashT;
 use app\api\model\RechargeSupplementT;
 use app\api\model\RechargeV;
@@ -86,21 +87,42 @@ Index extends BaseController
 
     public function index()
     {
-        $day = date('Y-m-d H:i:s', strtotime('+10 year',
-            time()));
-       // return $day;
-        $staffs = CompanyStaffT::where('company_id', 140)->where('state',CommonEnum::STATE_IS_OK)
-            ->select();
 
+       /* $a = [];
+        $pay = PayWxT::where('id', '>', 1652)->select();
+        foreach ($pay as $k => $v) {
+            if (!in_array($v['out_trade_no'], $a)) {
+                array_push($a, $v['out_trade_no']);
+                PayT::update([
+                    'pay' => PayEnum::PAY_SUCCESS
+                ], [
+                    'order_num' => [
+                        $v['out_trade_no']
+                    ]
 
-        foreach ($staffs as $k => $v) {
-            StaffQrcodeT::update([
-                'year' => 10,
-                'minute' => 0,
-                'expiry_date' => $day
-            ], ['s_id' => $v['id']]
-            );
+                ]);
+            }
+
         }
+        $b = implode(',', $a);*/
+
+
+
+        /* $day = date('Y-m-d H:i:s', strtotime('+10 year',
+             time()));
+        // return $day;
+         $staffs = CompanyStaffT::where('company_id', 140)->where('state',CommonEnum::STATE_IS_OK)
+             ->select();
+
+
+         foreach ($staffs as $k => $v) {
+             StaffQrcodeT::update([
+                 'year' => 10,
+                 'minute' => 0,
+                 'expiry_date' => $day
+             ], ['s_id' => $v['id']]
+             );
+         }*/
 
     }
 

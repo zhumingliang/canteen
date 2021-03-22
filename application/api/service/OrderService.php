@@ -1916,7 +1916,7 @@ class OrderService extends BaseService
 
 //一次性扣费消费模式下-修改订单
     public
-    function  changeOrderFoods($params)
+    function changeOrderFoods($params)
     {
         try {
             Db::startTrans();
@@ -1983,7 +1983,7 @@ class OrderService extends BaseService
                 $order->sub_money = $check_money['new_sub_money'];
 
             }
-
+            //检测余额
             $order->count = $updateCount;
             $order->update_time = date('Y-m-d H:i:s');
             $res = $order->save();
@@ -2037,6 +2037,17 @@ class OrderService extends BaseService
                     throw new ParameterException(['msg' => '数据异常：数量未变且修改后菜品金额为零']);
                 }
                 if ($orderMoneyFixed == CommonEnum::STATE_IS_FAIL) {
+                    //检测余额
+                    $balance = (new WalletService())->getUserBalanceWithProcedure($order->staff_id);
+                    $oldMoney = $this->getOrderFoodsMoney($id);
+                    if ($balance < $updateFoodsMoney - $oldMoney) {
+                        //获取账户设置，检测是否可预支消费
+                        $canteenAccount = CanteenAccountT::where('c_id', $order->canteen_id)->find();
+                        if (!$canteenAccount || $canteenAccount->type == OrderEnum::OVERDRAFT_NO
+                            || $canteenAccount->limit_money < ($updateFoodsMoney - $oldMoney - $balance)) {
+                            throw new ParameterException(['msg' => "余额不足"]);
+                        }
+                    }
                     //动态金额模式-修改子订单对应金额
                     $updateSub = OrderSubT::update(['money' => $updateFoodsMoney], ['order_id' => $id]);
                     if (!$updateSub) {
@@ -2089,7 +2100,7 @@ class OrderService extends BaseService
             }
             //更新其它订单排序
             $this->prefixOrderSortWhenUpdateOrder($strategy, $order->dinner_id, $order->phone, $order->ordering_date);
-            Db::commit();
+            //Db::commit();
         } catch
         (Exception $e) {
             Db::rollback();
@@ -2285,8 +2296,7 @@ class OrderService extends BaseService
         if ($fixed == CommonEnum::STATE_IS_OK) {
             $new_money = $old_money / $old_count * $count;
             $new_meal_money = $old_meal_money / $old_count * $count;
-        }
-        else {
+        } else {
             if (!empty($new_detail)) {
                 $new_money = 0;
                 foreach ($new_detail as $k => $v) {
@@ -2328,6 +2338,10 @@ class OrderService extends BaseService
         $new_meal_sub_money = $old_meal_sub_money / $old_count * $count;
         if ($new_money > $old_money) {
             $pay_way = $this->checkBalance($staff_id, $canteen_id, $new_money + $new_sub_money - $old_money - $old_sub_money);
+            if (!$pay_way) {
+                throw new
+                ParameterException(['msg' => "余额不足"]);
+            }
         }
         return [
             'new_money' => $new_money,
@@ -2341,7 +2355,6 @@ class OrderService extends BaseService
     private
     function getMenuCount($menuId, $detail)
     {
-        LogService::save(json_encode($detail));
         $count = 0;
         if (!count($detail)) {
             return 0;
@@ -2625,7 +2638,7 @@ class OrderService extends BaseService
     }
 
     public
-    function managerOrders($canteen_id, $consumption_time, $key,$department_id)
+    function managerOrders($canteen_id, $consumption_time, $key, $department_id)
     {
         //获取饭堂餐次信息
         $dinner = (new CanteenService())->getDinnerNames($canteen_id);
@@ -2633,7 +2646,7 @@ class OrderService extends BaseService
             throw new ParameterException(['msg' => '参数异常，该饭堂未设置餐次信息']);
         }
         //获取饭堂订餐信息
-        $orderInfo = OrderUsersStatisticV::statisticToOfficial($canteen_id, $consumption_time, $key,$department_id);
+        $orderInfo = OrderUsersStatisticV::statisticToOfficial($canteen_id, $consumption_time, $key, $department_id);
         foreach ($dinner as $k => $v) {
             $all = 0;
             $used = 0;
@@ -2668,9 +2681,9 @@ class OrderService extends BaseService
 
 //微信端总订餐查询-点击订餐数量，获取菜品统计信息
     public
-    function managerDinnerStatistic($dinner_id, $consumption_time, $page, $size,$department_id)
+    function managerDinnerStatistic($dinner_id, $consumption_time, $page, $size, $department_id)
     {
-        $statistic = DinnerStatisticV::managerDinnerStatistic($dinner_id, $consumption_time, $page, $size,$department_id);
+        $statistic = DinnerStatisticV::managerDinnerStatistic($dinner_id, $consumption_time, $page, $size, $department_id);
         if ($statistic->isEmpty()) {
             return [
                 'haveFoods' => CommonEnum::STATE_IS_FAIL,
@@ -2684,9 +2697,9 @@ class OrderService extends BaseService
     }
 
     public
-    function orderUsersStatistic($canteen_id, $dinner_id, $consumption_time, $consumption_type, $key, $page, $size,$department_id)
+    function orderUsersStatistic($canteen_id, $dinner_id, $consumption_time, $consumption_type, $key, $page, $size, $department_id)
     {
-        $statistic = OrderUsersStatisticV::orderUsers($canteen_id, $dinner_id, $consumption_time, $consumption_type, $key, $page, $size,$department_id);
+        $statistic = OrderUsersStatisticV::orderUsers($canteen_id, $dinner_id, $consumption_time, $consumption_type, $key, $page, $size, $department_id);
         $statistic['data'] = $this->prefixUsersStatisticStatus($statistic['data']);
         return $statistic;
     }
@@ -2716,9 +2729,9 @@ class OrderService extends BaseService
     }
 
     public
-    function foodUsersStatistic($dinner_id, $food_id, $consumption_time, $page, $size,$department_id)
+    function foodUsersStatistic($dinner_id, $food_id, $consumption_time, $page, $size, $department_id)
     {
-        $statistic = FoodsStatisticV::foodUsersStatistic($dinner_id, $food_id, $consumption_time, $page, $size,$department_id);
+        $statistic = FoodsStatisticV::foodUsersStatistic($dinner_id, $food_id, $consumption_time, $page, $size, $department_id);
         return $statistic;
     }
 

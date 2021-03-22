@@ -31,12 +31,6 @@ class OrderService
 
         try {
             Db::startTrans();
-            /*   $canteenId = 300;//Token::getCurrentTokenVar('current_canteen_id');
-               $phone = "13480155799";//Token::getCurrentTokenVar('phone');
-               $companyId =135;// Token::getCurrentTokenVar('current_company_id');
-               $staffId = 7494;//Token::getCurrentTokenVar('staff_id');
-               $outsider = 2;//Token::getCurrentTokenVar('outsiders');*/
-
             $canteenId = Token::getCurrentTokenVar('current_canteen_id');
             $phone = Token::getCurrentTokenVar('phone');
             $companyId = Token::getCurrentTokenVar('current_company_id');
@@ -72,7 +66,6 @@ class OrderService
                                     'name' => $v3['name'],
                                     'count' => $v3['count'],
                                     'm_id' => $v3['menu_id'],
-                                    'u_id' => $uId,
                                     'prepare_id' => $prepareId,
                                 ]);
 
@@ -90,6 +83,7 @@ class OrderService
                                 'type' => $orderType,
                                 'money' => $money,
                                 'count' => 1,
+                                'u_id' => $uId,
                                 'outsider' => $outsider
                             ]);
 
@@ -248,6 +242,7 @@ class OrderService
                 }
 
                 $checkMoney = OrderPrepareSubT::ordersMoney($order->id);
+                $checkMoneyAll = $checkMoney;
 
             } else if ($newCount > $oldCount) {
                 $orderedCount = OrderingV::getOrderingCountByWithDinnerID($order->ordering_date, $order->dinner_id, $order->phone);
@@ -262,12 +257,14 @@ class OrderService
                 }
                 $addBalance = $foodsMoney * $increaseCount + array_sum(array_column($strategyMoney, 'sub_money'));
                 $prepareMoney = OrderPrepareSubT::ordersMoney($order->id);
+                $prepareMoneyAll = OrderPrepareSubT::ordersMoney2($order->prepare_id);
                 $checkMoney = $addBalance + $prepareMoney;
-                $check = $this->checkBalance($order->staff_id, $order->canteen_id, $checkMoney);
+                $checkMoneyAll = $addBalance + $prepareMoneyAll;
+                $check = $this->checkBalance($order->staff_id, $order->canteen_id, $checkMoneyAll);
                 if (!$check['check']) {
                     return [
                         'type' => "no_balance",
-                        'money' => $check['balance'],
+                        'money' => $check['money'],
                         'money_type' => $check['money_type']
                     ];
                 }
@@ -290,6 +287,7 @@ class OrderService
                         'consumption_type' => $v['consumption_type'],
                         'sort_code' => $v['number'],
                         'consumption_sort' => $v['number'],
+                        'prepare_id' => $order->prepare_id
                     ]);
                 }
                 $list = (new OrderPrepareSubT())->saveAll($subOrderDataList);
