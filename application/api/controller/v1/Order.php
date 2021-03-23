@@ -734,7 +734,7 @@ class Order extends BaseController
         $dinner_id = Request::param('dinner_id');
         $food_id = Request::param('food_id');
         $consumption_time = Request::param('consumption_time');
-        $info = (new OrderService())->foodUsersStatistic($dinner_id, $food_id, $consumption_time, $page, $size,$department_id);
+        $info = (new OrderService())->foodUsersStatistic($dinner_id, $food_id, $consumption_time, $page, $size, $department_id);
         return json(new SuccessMessageWithData(['data' => $info]));
     }
 
@@ -1332,9 +1332,14 @@ class Order extends BaseController
         $time_begin = Request::param('time_begin');
         $time_end = Request::param('time_end');
         $company_ids = Request::param('company_ids');
-        $statistic = (new OrderStatisticService())->exportConsumptionStatistic($canteen_ids, $status, $type,
+
+        (new \app\api\service\v2\OrderStatisticService())->exportConsumptionStatistic($canteen_ids, $status, $type,
             $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_ids, $phone, $order_type);
-        return json(new SuccessMessageWithData(['data' => $statistic]));
+        return json(new SuccessMessage());
+
+        /*   $statistic = (new OrderStatisticService())->exportConsumptionStatistic($canteen_ids, $status, $type,
+                    $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_ids, $phone, $order_type);
+                return json(new SuccessMessageWithData(['data' => $statistic]));*/
 
     }
 
