@@ -108,7 +108,7 @@ class OrderStatisticService
 
     }
 
-    private function prefixOrderStatisticDetail($list)
+    public function prefixOrderStatisticDetail($list)
     {
         $dataList = [];
         foreach ($list as $k => $v) {

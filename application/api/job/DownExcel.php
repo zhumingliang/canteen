@@ -9,6 +9,7 @@ use app\api\model\CompanyAccountT;
 use app\api\model\DinnerT;
 use app\api\model\DinnerV;
 use app\api\model\DownExcelT;
+use app\api\model\OrderStatisticV;
 use app\api\service\ExcelService;
 use app\api\service\LogService;
 use app\lib\enum\DownEnum;
@@ -88,7 +89,10 @@ class DownExcel
                     $this->exportConsumptionStatistic($data);
                     break;
                 case 'consumptionStatisticWithAccount';
-                    $this->consumptionStatisticWithAccount($data);
+                    $this->exportConsumptionStatisticWithAccount($data);
+                    break;
+                case 'orderStatisticDetail';
+                    $this->exportOrderStatisticDetail($data);
                     break;
 
             }
@@ -185,7 +189,7 @@ class DownExcel
         ]);
     }
 
-    public function consumptionStatisticWithAccount($data)
+    private function exportConsumptionStatisticWithAccount($data)
     {
         $canteen_id = $data['canteen_id'];
         $status = $data['status'];
@@ -198,7 +202,6 @@ class DownExcel
         $company_id = $data['company_id'];
         $phone = $data['phone'];
         $order_type = $data['order_type'];
-        $version = $data['version'];
         $downId = $data['down_id'];
         $locationName = (new  OrderStatisticServiceV1())->getLocationName($order_type, $canteen_id);
         $fileNameArr = [
@@ -268,5 +271,35 @@ class DownExcel
             'name' => $file_name,
         ]);
     }
+
+    private function exportOrderStatisticDetail($data)
+    {
+        $canteen_id = $data['canteen_id'];
+        $dinner_id = $data['dinner_id'];
+        $type = $data['type'];
+        $department_id = $data['department_id'];
+        $name = $data['name'];
+        $time_begin = $data['time_begin'];
+        $time_end = $data['time_end'];
+        $company_ids = $data['company_id'];
+        $phone = $data['phone'];
+        $downId = $data['down_id'];
+        $list = OrderStatisticV::exportDetail($company_ids, $time_begin,
+            $time_end, $name,
+            $phone, $canteen_id, $department_id,
+            $dinner_id, $type);
+        $list = (new OrderStatisticServiceV1())->prefixOrderStatisticDetail($list);
+        $header = ['订单ID', '订餐日期', '消费地点', '部门', '姓名', '号码', '餐次', '订餐类型', '份数', '金额', '订餐状态', '明细', '合计'];
+        $file_name = "订餐明细报表(" . $time_begin . "-" . $time_end . ")";
+        $url = (new ExcelService())->makeExcel($header, $list, $file_name);
+        $url = config('setting.domain') . $url;
+        DownExcelT::update([
+            'id' => $downId,
+            'status' => DownEnum::DOWN_SUCCESS,
+            'url' => $url,
+            'name' => $file_name,
+        ]);
+    }
+
 
 }

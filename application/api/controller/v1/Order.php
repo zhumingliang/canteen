@@ -915,7 +915,7 @@ class Order extends BaseController
      * @api {GET} /api/v1/order/orderStatistic/detail/export CMS管理端-订餐管理-订餐明细-导出报表
      * @apiGroup  CMS管理端
      * @apiVersion 3.0.0
-     * @apiDescription CMS管理端-订餐管理-订餐明细-订餐明细-导出报表
+     * @apiDescription CMS管理端-订餐管理-订餐明细-导出报表
      * @apiExample {get}  请求样例:
      * http://canteen.tonglingok.com/api/v1/order/orderStatistic/detail/export?company_ids=&canteen_id=0&time_begin=2019-09-07&time_end=2019-12-07&department_id=2&dinner_id=0&name=&phone&type=3
      * @apiParam (请求参数说明) {int} page 当前页码
@@ -942,11 +942,16 @@ class Order extends BaseController
         $time_begin = Request::param('time_begin');
         $time_end = Request::param('time_end');
         $company_ids = Request::param('company_ids');
-        $list = (new OrderStatisticService())->exportOrderStatisticDetail($company_ids, $time_begin,
+        (new \app\api\service\v2\OrderStatisticService())->exportOrderStatisticDetail($company_ids, $time_begin,
             $time_end, $name,
             $phone, $canteen_id, $department_id,
             $dinner_id, $type);
-        return json(new SuccessMessageWithData(['data' => $list]));
+        return json(new SuccessMessage());
+        /*       $list = (new OrderStatisticService())->exportOrderStatisticDetail($company_ids, $time_begin,
+                   $time_end, $name,
+                   $phone, $canteen_id, $department_id,
+                   $dinner_id, $type);
+               return json(new SuccessMessageWithData(['data' => $list]));*/
 
     }
 

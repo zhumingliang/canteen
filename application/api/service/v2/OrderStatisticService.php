@@ -24,7 +24,7 @@ class OrderStatisticService
     function exportConsumptionStatistic($canteen_id, $status, $type,
                                         $department_id, $username, $staff_type_id,
                                         $time_begin, $time_end, $company_id,
-                                        $phone, $order_type,$excel_type)
+                                        $phone, $order_type, $excel_type)
     {
 
         $jobData = [
@@ -40,12 +40,41 @@ class OrderStatisticService
             'company_id' => $company_id,
             'phone' => $phone,
             'order_type' => $order_type,
-            'version' => \think\facade\Request::param('version')];
+            'version' => \think\facade\Request::param('version')
+        ];
+        $this->saveDownExcelJob($jobData);
+
+    }
+
+    public function exportOrderStatisticDetail($company_ids, $time_begin,
+                                               $time_end, $name,
+                                               $phone, $canteen_id, $department_id,
+                                               $dinner_id, $type)
+    {
+        $jobData = [
+            'excel_type' => 'orderStatisticDetail',
+            'canteen_id' => $canteen_id,
+            'company_ids' => $company_ids,
+            'name' => $name,
+            'type' => $type,
+            'department_id' => $department_id,
+            'dinner_id' => $dinner_id,
+            'time_begin' => $time_begin,
+            'time_end' => $time_end,
+            'phone' => $phone
+        ];
+        $this->saveDownExcelJob($jobData);
+
+
+    }
+
+    private function saveDownExcelJob($jobData)
+    {
         //将消息写入
         $down = DownExcelT::create([
             'admin_id' => Token::getCurrentUid(),
             'status' => DownEnum::DOWN_ING,
-            'type' => 'consumptionStatistic',
+            'type' => $jobData['excel_type'],
             'data' => json_encode($jobData)
         ]);
         if (!$down) {
@@ -59,8 +88,7 @@ class OrderStatisticService
         if ($isPushed == false) {
             $down->status = DownEnum::DOWN_FAIL;
             $down->save();
-            throw new SaveException(['msg' => '上传excel失败']);
+            throw new SaveException(['msg' => '下载 excel失败']);
         }
-
     }
 }
