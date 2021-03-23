@@ -24,11 +24,11 @@ class OrderStatisticService
     function exportConsumptionStatistic($canteen_id, $status, $type,
                                         $department_id, $username, $staff_type_id,
                                         $time_begin, $time_end, $company_id,
-                                        $phone, $order_type)
+                                        $phone, $order_type,$excel_type)
     {
 
         $jobData = [
-            'excel_type' => 'consumptionStatistic',
+            'excel_type' => $excel_type,
             'canteen_id' => $canteen_id,
             'status' => $status,
             'type' => $type,
@@ -63,32 +63,4 @@ class OrderStatisticService
         }
 
     }
-
-    public
-    function exportConsumptionStatisticWithAccount($canteen_id, $status, $type,
-                                                   $department_id, $username, $staff_type_id,
-                                                   $time_begin, $time_end, $company_id,
-                                                   $phone, $order_type)
-    {
-
-        $jobData = [
-            'excel_type' => 'consumptionStatisticWithAccount',
-            'canteen_id' => $canteen_id,
-            'status' => $status,
-            'type' => $type,
-            'department_id' => $department_id,
-            'username' => $username,
-            'staff_type_id' => $staff_type_id,
-            'time_begin' => $time_begin,
-            'time_end' => $time_end,
-            'company_id' => $company_id,
-            'phone' => $phone,
-            'order_type' => $order_type,
-            'version' => \think\facade\Request::param('version')];
-
-
-    }
-
-
-
 }

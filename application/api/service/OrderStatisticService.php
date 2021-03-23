@@ -960,7 +960,7 @@ class OrderStatisticService
         return $dataList;
     }
 
-    private
+    public
     function prefixConsumptionStatisticWithAccount($statistic, $accountRecords, $accounts, $dinner, $time_begin, $time_end)
     {
         $dataList = [];

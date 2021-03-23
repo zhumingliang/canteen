@@ -11,10 +11,7 @@ namespace app\api\controller\v1;
 
 use app\api\controller\BaseController;
 use app\api\model\MaterialReportT;
-use app\api\model\OnlineOrderingT;
 use app\api\model\PersonalChoiceT;
-use app\api\model\ShopOrderDetailV;
-use app\api\service\LogService;
 use app\api\service\OrderService;
 use app\api\service\OrderStatisticService;
 use app\lib\enum\CommonEnum;
@@ -1334,7 +1331,8 @@ class Order extends BaseController
         $company_ids = Request::param('company_ids');
 
         (new \app\api\service\v2\OrderStatisticService())->exportConsumptionStatistic($canteen_ids, $status, $type,
-            $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_ids, $phone, $order_type);
+            $department_id, $username, $staff_type_id, $time_begin,
+            $time_end, $company_ids, $phone, $order_type, 'consumptionStatistic');
         return json(new SuccessMessage());
 
         /*   $statistic = (new OrderStatisticService())->exportConsumptionStatistic($canteen_ids, $status, $type,
