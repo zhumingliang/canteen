@@ -266,7 +266,7 @@ class OrderStatisticService
         ];
     }
 
-    private function prefixExportOrderSettlementWithAccount($data)
+    public function prefixExportOrderSettlementWithAccount($data)
     {
         ($data);
         $dataList = [];
@@ -310,7 +310,7 @@ class OrderStatisticService
         return $dataList;
     }
 
-    private function prefixExportOrderSettlement($data)
+    public function prefixExportOrderSettlement($data)
     {
         ($data);
         $dataList = [];
@@ -432,7 +432,7 @@ class OrderStatisticService
         ];
     }
 
-    private
+    public
     function prefixExportTakeoutStatistic($records)
     {
         $statusText = [

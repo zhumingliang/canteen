@@ -9,6 +9,7 @@ use app\api\model\CompanyAccountT;
 use app\api\model\DinnerT;
 use app\api\model\DinnerV;
 use app\api\model\DownExcelT;
+use app\api\model\OrderStatisticV;
 use app\api\service\ExcelService;
 use app\api\service\Token;
 use app\lib\enum\DownEnum;
@@ -17,7 +18,7 @@ use app\lib\exception\ParameterException;
 use app\lib\exception\SaveException;
 use think\Queue;
 
-class OrderStatisticService
+class DownExcelService
 {
 
     public
@@ -68,6 +69,82 @@ class OrderStatisticService
 
     }
 
+    public function exportOrderSettlement(
+        $name, $phone, $canteen_id, $department_id, $dinner_id,
+        $consumption_type, $time_begin, $time_end, $company_ids, $type)
+    {
+        $jobData = [
+            'excel_type' => 'orderSettlement',
+            'canteen_id' => $canteen_id,
+            'name' => $name,
+            'type' => $type,
+            'department_id' => $department_id,
+            'dinner_id' => $dinner_id,
+            'company_ids' => $company_ids,
+            'time_begin' => $time_begin,
+            'time_end' => $time_end,
+            'phone' => $phone,
+            'consumption_type' => $consumption_type,
+            'version' => \think\facade\Request::param('version')
+        ];
+        $this->saveDownExcelJob($jobData);
+    }
+
+
+    public function exportOrderSettlementWithAccount(
+        $name, $phone, $canteen_id, $department_id, $dinner_id,
+        $consumption_type, $time_begin, $time_end, $company_ids, $type)
+    {
+        $jobData = [
+            'excel_type' => 'orderSettlementWithAccount',
+            'canteen_id' => $canteen_id,
+            'name' => $name,
+            'type' => $type,
+            'department_id' => $department_id,
+            'dinner_id' => $dinner_id,
+            'company_ids' => $company_ids,
+            'time_begin' => $time_begin,
+            'time_end' => $time_end,
+            'phone' => $phone,
+            'consumption_type' => $consumption_type,
+            'version' => \think\facade\Request::param('version')
+        ];
+        $this->saveDownExcelJob($jobData);
+    }
+
+    public function exportStatistic($time_begin, $time_end, $company_ids, $canteen_id)
+    {
+
+        $jobData = [
+            'excel_type' => 'orderStatistic',
+            'canteen_id' => $canteen_id,
+            'company_ids' => $company_ids,
+            'time_begin' => $time_begin,
+            'time_end' => $time_end,
+        ];
+        $this->saveDownExcelJob($jobData);
+    }
+
+
+    public function exportTakeoutStatistic($ordering_date, $company_ids,
+                                           $canteen_id, $dinner_id,
+                                           $status, $department_id,
+                                           $user_type)
+    {
+        $jobData = [
+            'excel_type' => 'takeoutStatistic',
+            'canteen_id' => $canteen_id,
+            'ordering_date' => $ordering_date,
+            'status' => $status,
+            'department_id' => $department_id,
+            'dinner_id' => $dinner_id,
+            'company_ids' => $company_ids,
+            'user_type' => $user_type,
+            'version' => \think\facade\Request::param('version')
+        ];
+        $this->saveDownExcelJob($jobData);
+    }
+
     private function saveDownExcelJob($jobData)
     {
         //将消息写入
@@ -91,4 +168,5 @@ class OrderStatisticService
             throw new SaveException(['msg' => '下载 excel失败']);
         }
     }
+
 }

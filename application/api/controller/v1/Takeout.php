@@ -8,6 +8,7 @@ use app\api\controller\BaseController;
 use app\api\service\OrderService;
 use app\api\service\OrderStatisticService;
 use app\api\service\TakeoutService;
+use app\api\service\v2\DownExcelService;
 use app\lib\exception\SuccessMessage;
 use app\lib\exception\SuccessMessageWithData;
 use think\facade\Request;
@@ -142,8 +143,11 @@ class Takeout extends BaseController
         $status = Request::param('status');
         $department_id = Request::param('department_id');
         $user_type = Request::param('user_type');
-        $statistic = (new OrderStatisticService())->exportTakeoutStatistic($ordering_date, $company_ids, $canteen_id, $dinner_id, $status, $department_id, $user_type);
-        return json(new SuccessMessageWithData(['data' => $statistic]));
+        (new DownExcelService())->exportTakeoutStatistic($ordering_date, $company_ids, $canteen_id, $dinner_id, $status, $department_id, $user_type);
+        return json(new SuccessMessage());
+
+        /*  $statistic = (new OrderStatisticService())->exportTakeoutStatistic($ordering_date, $company_ids, $canteen_id, $dinner_id, $status, $department_id, $user_type);
+          return json(new SuccessMessageWithData(['data' => $statistic]));*/
 
 
     }
@@ -169,7 +173,7 @@ class Takeout extends BaseController
     {
         $order_id = Request::param('id');
         $consumptionType = Request::param('consumption_type');
-        (new OrderService())->used($order_id,$consumptionType);
+        (new OrderService())->used($order_id, $consumptionType);
         return json(new SuccessMessage());
     }
 
@@ -244,7 +248,7 @@ class Takeout extends BaseController
         $type = Request::param('type');
         $canteenID = Request::param('canteen_id');
 
-        (new  TakeoutService())->handelOrder($oneId,$moreId, $type, $canteenID);
+        (new  TakeoutService())->handelOrder($oneId, $moreId, $type, $canteenID);
         return json(new SuccessMessage());
     }
 

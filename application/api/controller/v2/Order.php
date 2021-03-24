@@ -96,10 +96,14 @@ class Order
         $time_begin = Request::param('time_begin');
         $time_end = Request::param('time_end');
         $company_ids = Request::param('company_ids');
-        $records = (new OrderStatisticService())->exportOrderSettlementWithAccount(
+        (new \app\api\service\v2\DownExcelService())->exportOrderSettlementWithAccount(
             $name, $phone, $canteen_id, $department_id, $dinner_id,
             $consumption_type, $time_begin, $time_end, $company_ids, $type);
-        return json(new SuccessMessageWithData(['data' => $records]));
+        return json(new SuccessMessage());
+        /* $records = (new DownExcelService())->exportOrderSettlementWithAccount(
+             $name, $phone, $canteen_id, $department_id, $dinner_id,
+             $consumption_type, $time_begin, $time_end, $company_ids, $type);
+         return json(new SuccessMessageWithData(['data' => $records]));*/
     }
 
 
@@ -186,15 +190,16 @@ class Order
         $time_begin = Request::param('time_begin');
         $time_end = Request::param('time_end');
         $company_ids = Request::param('company_ids');
-        (new \app\api\service\v2\OrderStatisticService())->exportConsumptionStatistic($canteen_ids, $status, $type,
+        (new \app\api\service\v2\DownExcelService())->exportConsumptionStatistic($canteen_ids, $status, $type,
             $department_id, $username, $staff_type_id, $time_begin,
             $time_end, $company_ids, $phone, $order_type,
             'consumptionStatisticWithAccount');
         return json(new SuccessMessage());
-   /*     $statistic = (new OrderStatisticService())->exportConsumptionStatisticWithAccount($canteen_ids, $status, $type,
-            $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_ids, $phone, $order_type);
-        return json(new SuccessMessageWithData(['data' => $statistic]));
-    */}
+        /*     $statistic = (new DownExcelService())->exportConsumptionStatisticWithAccount($canteen_ids, $status, $type,
+                 $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_ids, $phone, $order_type);
+             return json(new SuccessMessageWithData(['data' => $statistic]));
+         */
+    }
 
     /**
      * @api {POST} /api/v2/order/money 微信端-个人选菜-提交订单时查看金额信息

@@ -9,7 +9,9 @@ use app\api\model\CompanyAccountT;
 use app\api\model\DinnerT;
 use app\api\model\DinnerV;
 use app\api\model\DownExcelT;
+use app\api\model\OrderSettlementV;
 use app\api\model\OrderStatisticV;
+use app\api\model\OrderTakeoutStatisticV;
 use app\api\service\ExcelService;
 use app\api\service\LogService;
 use app\lib\enum\DownEnum;
@@ -94,9 +96,25 @@ class DownExcel
                 case 'orderStatisticDetail';
                     $this->exportOrderStatisticDetail($data);
                     break;
-
+                case 'orderSettlement';
+                    $this->exportOrderSettlement($data);
+                    break;
+                case 'orderSettlementWithAccount';
+                    $this->exportOrderSettlementWithAccount($data);
+                    break;
+                case 'orderStatistic';
+                    $this->exportOrderStatistic($data);
+                    break;
+                case 'takeoutStatistic';
+                    $this->exportTakeoutStatistic($data);
+                    break;
+                case 'orderSettlementWithAccount';
+                    $this->exportOrderSettlementWithAccount($data);
+                    break;
+                case 'orderSettlementWithAccount';
+                    $this->exportOrderSettlementWithAccount($data);
+                    break;
             }
-
             return true;
         } catch (Exception $e) {
             LogService::saveJob("下载excel失败：error:" . $e->getMessage(), json_encode($data));
@@ -105,6 +123,33 @@ class DownExcel
 
     }
 
+
+    public function exportTakeoutStatistic($data)
+    {
+        $canteen_id = $data['canteen_id'];
+        $dinner_id = $data['dinner_id'];
+        $ordering_date = $data['ordering_date'];
+        $department_id = $data['department_id'];
+        $status = $data['status'];
+        $user_type = $data['user_type'];
+        $company_ids = $data['company_id'];
+
+        $downId = $data['down_id'];
+        $records = OrderTakeoutStatisticV::exportStatistic($ordering_date,
+            $company_ids, $canteen_id, $dinner_id, $status, $department_id,
+            $user_type);
+        $records = (new OrderStatisticServiceV1())->prefixExportTakeoutStatistic($records);
+        $header = ['订餐号', '日期', '消费地点', '姓名', '手机号', '餐次', '金额（元）', '送货地点', '状态'];
+        $file_name = $ordering_date . "-外卖管理报表";
+        $url = (new ExcelService())->makeExcel($header, $records, $file_name);
+        $url = config('setting.domain') . $url;
+        DownExcelT::update([
+            'id' => $downId,
+            'status' => DownEnum::DOWN_SUCCESS,
+            'url' => $url,
+            'name' => $file_name,
+        ]);
+    }
 
     private function exportConsumptionStatistic($data)
     {
@@ -301,5 +346,83 @@ class DownExcel
         ]);
     }
 
+    private function exportOrderSettlement($data)
+    {
+        $canteen_id = $data['canteen_id'];
+        $dinner_id = $data['dinner_id'];
+        $type = $data['type'];
+        $department_id = $data['department_id'];
+        $name = $data['name'];
+        $time_begin = $data['time_begin'];
+        $time_end = $data['time_end'];
+        $company_ids = $data['company_id'];
+        $phone = $data['phone'];
+        $consumption_type = $data['consumption_type'];
+        $downId = $data['down_id'];
+        $records = OrderSettlementV::exportOrderSettlement(
+            $name, $phone, $canteen_id, $department_id, $dinner_id,
+            $consumption_type, $time_begin, $time_end, $company_ids, $type);
+        $records = (new OrderStatisticServiceV1())->prefixExportOrderSettlement($records);
+        $header = ['序号', '消费日期', '消费时间', '部门', '姓名', '手机号', '消费地点', '消费类型', '餐次', '金额', '备注'];
+        $file_name = "消费明细报表（" . $time_begin . "-" . $time_end . "）";
+        $url = (new ExcelService())->makeExcel($header, $records, $file_name);
+        $url = config('setting.domain') . $url;
+        DownExcelT::update([
+            'id' => $downId,
+            'status' => DownEnum::DOWN_SUCCESS,
+            'url' => $url,
+            'name' => $file_name,
+        ]);
+    }
+
+    private function exportOrderSettlementWithAccount($data)
+    {
+        $canteen_id = $data['canteen_id'];
+        $dinner_id = $data['dinner_id'];
+        $type = $data['type'];
+        $department_id = $data['department_id'];
+        $name = $data['name'];
+        $time_begin = $data['time_begin'];
+        $time_end = $data['time_end'];
+        $company_ids = $data['company_id'];
+        $phone = $data['phone'];
+        $consumption_type = $data['consumption_type'];
+        $downId = $data['down_id'];
+        $records = OrderSettlementV::exportOrderSettlementWithAccount(
+            $name, $phone, $canteen_id, $department_id, $dinner_id,
+            $consumption_type, $time_begin, $time_end, $company_ids, $type);
+        $records = (new OrderStatisticServiceV1())->prefixExportOrderSettlementWithAccount($records);
+        $header = ['序号', '消费日期', '消费时间', '部门', '姓名', '手机号', '消费地点', '账户名称', '消费类型', '餐次', '金额', '备注'];
+        $file_name = "消费明细报表（" . $time_begin . "-" . $time_end . "）";
+        $url = (new ExcelService())->makeExcel($header, $records, $file_name);
+        $url = config('setting.domain') . $url;
+        DownExcelT::update([
+            'id' => $downId,
+            'status' => DownEnum::DOWN_SUCCESS,
+            'url' => $url,
+            'name' => $file_name,
+        ]);
+    }
+
+    public function exportOrderStatistic($data)
+    {
+
+        $canteen_id = $data['canteen_id'];
+        $company_ids = $data['company_id'];
+        $time_begin = $data['time_begin'];
+        $time_end = $data['time_end'];
+        $downId = $data['down_id'];
+        $list = OrderStatisticV::exportStatistic($time_begin, $time_end, $company_ids, $canteen_id);
+        $header = ['日期', '公司', '消费地点', '餐次', '订餐份数'];
+        $file_name = "订餐统计报表(" . $time_begin . "-" . $time_end . ")";
+        $url = (new ExcelService())->makeExcel($header, $list, $file_name);
+        $url = config('setting.domain') . $url;
+        DownExcelT::update([
+            'id' => $downId,
+            'status' => DownEnum::DOWN_SUCCESS,
+            'url' => $url,
+            'name' => $file_name,
+        ]);
+    }
 
 }
