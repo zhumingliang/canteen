@@ -380,3 +380,7 @@ Route::post('api/:version/nextmonthpay/payMoney', 'api/:version.NextMonthPay/pay
 Route::post('api/:version/nextmonthpay/payMoneyAll', 'api/:version.NextMonthPay/payMoneyAll');
 Route::post('api/:version/nextmonthpay/selectPaySetting', 'api/:version.NextMonthPay/selectPaySetting');
 Route::post('api/:version/nextmonthpay/nextMonthOutput', 'api/:version.NextMonthPay/nextMonthOutput');
+
+
+Route::get('api/:version/excels', 'api/:version.Excel/excels');
+Route::post('api/:version/excel/delete', 'api/:version.Excel/delete');

@@ -355,7 +355,7 @@ class DownExcelService
             'admin_id' => Token::getCurrentUid(),
             'status' => DownEnum::DOWN_ING,
             'type' => $jobData['excel_type'],
-            'data' => json_encode($jobData)
+            'prams' => json_encode($jobData)
         ]);
         if (!$down) {
             throw new SaveException(['msg' => '上传excel失败']);

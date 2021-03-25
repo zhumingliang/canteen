@@ -4,6 +4,9 @@
 namespace app\api\service;
 
 
+use app\api\model\DownExcelT;
+use app\lib\enum\CommonEnum;
+use app\lib\exception\DeleteException;
 use app\lib\exception\ParameterException;
 
 class ExcelService
@@ -209,5 +212,37 @@ class ExcelService
         $PHPWriter->save($savePath);
         return '/static/excel/download/' . $fileName;
     }
+
+    public function excels()
+    {
+        $adminId = Token::getCurrentUid();
+        $excels = DownExcelT::excels($adminId);
+        if (count($excels)) {
+            foreach ($excels as $k => $v) {
+                $timeBegin = '';
+                $timeEnd = '';
+                $prams = json_decode($v['prams']);
+                if (!empty($prams['time_begin'])) {
+                    $timeBegin = $prams['time_begin'];
+                }
+                if (!empty($prams['time_begin'])) {
+                    $timeEnd = $prams['time_end'];
+                }
+                $excels[$k]['time_begin'] = $timeBegin;
+                $excels[$k]['time_end'] = $timeEnd;
+                unset($excels[$k]['prams']);
+            }
+        }
+        return $excels;
+    }
+
+    public function deleteExcel($id)
+    {
+        $delete = DownExcelT::update(['state' => CommonEnum::STATE_IS_OK], ['id' => $id]);
+        if (!$delete) {
+            throw new DeleteException();
+        }
+    }
+
 
 }
