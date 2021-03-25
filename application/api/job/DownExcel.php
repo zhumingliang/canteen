@@ -19,6 +19,7 @@ use app\lib\enum\DownEnum;
 use app\lib\enum\OrderEnum;
 use app\lib\exception\AuthException;
 use app\lib\exception\ParameterException;
+use think\Db;
 use think\Exception;
 use think\queue\Job;
 use app\api\service\OrderStatisticService as OrderStatisticServiceV1;
@@ -116,6 +117,21 @@ class DownExcel
                 case 'nextMonth';
                     $this->exportNextMonthPayStatistic($data);
                     break;
+                case 'reception';
+                    $this->receptionsForCMSOutput($data);
+                    break;
+                case 'receptionForApply';
+                    $this->receptionsForApplyOutput($data);
+                    break;
+                case 'nextMonth';
+                    $this->exportNextMonthPayStatistic($data);
+                    break;
+                case 'nextMonth';
+                    $this->exportNextMonthPayStatistic($data);
+                    break;
+                case 'nextMonth';
+                    $this->exportNextMonthPayStatistic($data);
+                    break;
             }
             return true;
         } catch (Exception $e) {
@@ -123,6 +139,135 @@ class DownExcel
             return false;
         }
 
+    }
+
+    private function receptionsForCMSOutput($data)
+    {
+        $whereStr = '';
+        $ordering_date = $data['ordering_date'];
+        $apply_name = $data['apply_name'];
+        $reception_code = $data['reception_code'];
+        $department_id = $data['department_id'];
+        $company_id = $data['company_id'];
+        $dinner_id = $data['dinner_id'];
+        $canteen_id = $data['canteen_id'];
+        $reception_state = $data['reception_state'];
+        $downId = $data['down_id'];
+        if (!empty($company_id)) {
+            if ($company_id !== "ALL") {
+                $whereStr .= 'and t7.id =' . $company_id . ' ';
+            }
+        }
+        if (!empty($canteen_id)) {
+            if ($canteen_id !== "ALL") {
+                $whereStr .= 'and t3.id =' . $canteen_id . ' ';
+            }
+        }
+        if (strlen($ordering_date)) {
+            $whereStr .= 'and t2.ordering_date =' . "'$ordering_date'" . ' ';
+        }
+        if (!empty($dinner_id)) {
+            if ($dinner_id !== "ALL") {
+                $whereStr .= 'and t4.id =' . $dinner_id . ' ';
+            }
+        }
+        if (!empty($department_id)) {
+            if ($department_id !== "ALL") {
+                $whereStr .= 'and t6.id =' . $department_id . ' ';
+            }
+        }
+        if (strlen($apply_name)) {
+            $whereStr .= 'and t5.username like' . '"%' . $apply_name . '%"' . ' ';
+        }
+        if (strlen($reception_code)) {
+            $whereStr .= 'and t1.code_number like' . '"%' . $reception_code . '%"' . ' ';
+        }
+        if (!empty($reception_state)) {
+            if ($reception_state !== "ALL") {
+                $whereStr .= 'and t1.status =' . $reception_state . ' ';
+            }
+        }
+        if ($whereStr !== '') {
+            $sql = "select CONCAT(\"\t\", t2.code_number) as apply_code,CONCAT(\"\t\", t1.code_number) as reception_code,t3.name as canteen_name,t2.ordering_date,t4.name as dinner_name,t6.name as department_name,t5.username as apply_name,t2.money,(case when t1.`status` = 1 then '已使用' when t1.`status` = 2 then '未使用' when t1.`status` = 3 then '已取消' when t1.`status` = 4 then '已过期' end) as reception_state,(case when t1.status = 3 or t1.status = 4 then t1.update_time else COALESCE(t1.used_time,'') end) as used_time from canteen_reception_qrcode_t t1 left join canteen_reception_t t2 on t1.re_id = t2.id left join canteen_canteen_t t3 on t2.canteen_id = t3.id left join canteen_dinner_t t4 on t2.dinner_id=t4.id left join canteen_company_staff_t t5 on t2.staff_id = t5.id left join canteen_company_department_t t6 on t5.d_id = t6.id left join canteen_company_t t7 on t5.company_id = t7.id where 1=1 and t5.state=1 " . $whereStr . " order by t1.id desc ";
+        } else {
+            $sql = "select CONCAT(\"\t\", t2.code_number) as apply_code,CONCAT(\"\t\", t1.code_number) as reception_code,t3.name as canteen_name,t2.ordering_date,t4.name as dinner_name,t6.name as department_name,t5.username as apply_name,t2.money,(case when t1.`status` = 1 then '已使用' when t1.`status` = 2 then '未使用' when t1.`status` = 3 then '已取消' when t1.`status` = 4 then '已过期' end) as reception_state,(case when t1.status = 3 or t1.status = 4 then t1.update_time else COALESCE(t1.used_time,'') end) as used_time from canteen_reception_qrcode_t t1 left join canteen_reception_t t2 on t1.re_id = t2.id left join canteen_canteen_t t3 on t2.canteen_id = t3.id left join canteen_dinner_t t4 on t2.dinner_id = t4.id left join canteen_company_staff_t t5 on t2.staff_id = t5.id left join canteen_company_department_t t6 on t5.d_id = t6.id left join canteen_company_t t7 on t5.company_id = t7.id where 1=1 and t5.state =1 order by t1.id desc ";
+        }
+        $records = Db::query($sql);
+
+        $header = ['申请编号', '接待票编号', '饭堂', '餐次日期', '餐次', '部门', '使用人', '金额', '状态', '消费时间/取消时间'];
+        $file_name = "接待票统计表";
+        $url = (new ExcelService())->makeExcel($header, $records, $file_name);
+        $url = config('setting.domain') . $url;
+        DownExcelT::update([
+            'id' => $downId,
+            'status' => DownEnum::DOWN_SUCCESS,
+            'url' => $url,
+            'name' => $file_name,
+        ]);
+    }
+
+    private function receptionsForApplyOutput($data)
+    {
+        $ordering_date = $data['ordering_date'];
+        $apply_name = $data['apply_name'];
+        $apply_code = $data['apply_code'];
+        $department_id = $data['department_id'];
+        $company_id = $data['company_id'];
+        $dinner_id = $data['dinner_id'];
+        $canteen_id = $data['canteen_id'];
+        $apply_state = $data['apply_state'];
+        $downId = $data['down_id'];
+        $whereStr = '';
+
+        if (!empty($company_id)) {
+            if ($company_id !== "ALL") {
+                $whereStr .= 'and t5.id = ' . $company_id . ' ';
+            }
+        }
+        if (!empty($canteen_id)) {
+            $whereStr .= 'and t6.id = ' . $canteen_id . ' ';
+        }
+        if (strlen($ordering_date)) {
+            $whereStr .= 'and t1.ordering_date = ' . "'$ordering_date'" . ' ';
+        }
+        if (!empty($dinner_id)) {
+            if ($dinner_id !== "ALL") {
+                $whereStr .= 'and t2.id = ' . $dinner_id . ' ';
+            }
+        }
+        if (!empty($department_id)) {
+            if ($department_id !== "ALL") {
+                $whereStr .= 'and t4.id = ' . $department_id . ' ';
+            }
+        }
+        if (strlen($apply_name)) {
+            $whereStr .= 'and t3.username like' . '"%' . $apply_name . '%"' . ' ';
+        }
+        if (strlen($apply_code)) {
+            $whereStr .= 'and t1.code_number like' . '"%' . $apply_code . '%"' . ' ';
+        }
+        if (!empty($apply_state)) {
+            if ($apply_state !== "ALL") {
+                $whereStr .= 'and t1.status = ' . $apply_state . ' ';
+            }
+        }
+        if ($whereStr !== '') {
+            $sql = "select CONCAT(\"\t\", t1.code_number) as apply_code,t1.create_time as apply_time,t1.ordering_date,t2.name as dinner_name, t4.name as department_name,t3.username as apply_name,t1.count,t1.money,sum(t1.count*t1.money) as sum,t1.remark,(case when t1.status = 1 then '审核中' when t1.status = 2 then '已生效' when t1.status = 3 then '审核不通过' when t1.status = 4 then '已撤销' end) as apply_state from canteen_reception_t t1 left join canteen_dinner_t t2 ON t1.dinner_id = t2.id left join canteen_company_staff_t t3 ON t1.staff_id = t3.id left join canteen_company_department_t t4 ON t3.d_id = t4.id left join canteen_company_t t5 ON t3.company_id = t5.id left join canteen_canteen_t t6 ON t1.canteen_id = t6.id where 1 = 1 and t3.state = 1 " . $whereStr . " group by  t1.code_number,t1.create_time,t1.ordering_date,t2.name,t4.name,t3.username,t1.count,t1.money,t1.remark,t1.status order by t1.create_time desc";
+        } else {
+            $sql = "select CONCAT(\"\t\", t1.code_number) as apply_code,t1.create_time as apply_time,t1.ordering_date,t2.name as dinner_name, t4.name as department_name,t3.username as apply_name,t1.count,t1.money,sum(t1.count*t1.money) as sum,t1.remark,(case when t1.status = 1 then '审核中' when t1.status = 2 then '已生效' when t1.status = 3 then '审核不通过' when t1.status = 4 then '已撤销' end) as apply_state from canteen_reception_t t1 left join canteen_dinner_t t2 ON t1.dinner_id = t2.id left join canteen_company_staff_t t3 ON t1.staff_id = t3.id left join canteen_company_department_t t4 ON t3.d_id = t4.id left join canteen_company_t t5 ON t3.company_id = t5.id left join canteen_canteen_t t6 ON t1.canteen_id = t6.id where 1 = 1 and t3.state = 1 group by  t1.code_number,t1.create_time,t1.ordering_date,t2.name,t4.name,t3.username,t1.count,t1.money,t1.remark,t1.status order by t1.create_time desc";
+        }
+        $records = Db::query($sql);
+
+        $header = ['申请编号', '申请时间', '餐次日期', '餐次', '部门', '申请人', '数量', '金额', '合计', '申请原因', '状态'];
+        $file_name = "接待票申请表";
+        $url = (new ExcelService())->makeExcel($header, $records, $file_name);
+        $url = config('setting.domain') . $url;
+        DownExcelT::update([
+            'id' => $downId,
+            'status' => DownEnum::DOWN_SUCCESS,
+            'url' => $url,
+            'name' => $file_name,
+        ]);
     }
 
     private function exportNextMonthPayStatistic($data)

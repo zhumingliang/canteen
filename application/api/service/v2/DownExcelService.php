@@ -185,6 +185,44 @@ class DownExcelService
 
     }
 
+    public function receptionsForCMSOutput($apply_name, $canteen_id, $department_id,
+                                           $dinner_id, $ordering_date, $reception_code,
+                                           $company_id,
+                                           $reception_state)
+    {
+        $jobData = [
+            'excel_type' => 'reception',
+            'apply_name' => $apply_name,
+            'canteen_id' => $canteen_id,
+            'dinner_id' => $dinner_id,
+            'ordering_date' => $ordering_date,
+            'department_id' => $department_id,
+            'company_id' => $company_id,
+            'reception_code' => $reception_code,
+            'reception_state' => $reception_state,
+            'version' => \think\facade\Request::param('version')
+        ];
+        $this->saveDownExcelJob($jobData);
+    }
+
+    public function receptionsForApplyOutput($apply_name, $canteen_id, $department_id,
+                                             $dinner_id, $ordering_date, $apply_code, $company_id,
+                                             $apply_state)
+    {
+        $jobData = [
+            'excel_type' => 'receptionForApply',
+            'apply_name' => $apply_name,
+            'canteen_id' => $canteen_id,
+            'dinner_id' => $dinner_id,
+            'ordering_date' => $ordering_date,
+            'department_id' => $department_id,
+            'company_id' => $company_id,
+            'apply_code' => $apply_code,
+            'apply_state' => $apply_state,
+            'version' => \think\facade\Request::param('version')
+        ];
+        $this->saveDownExcelJob($jobData);
+    }
 
     private function saveDownExcelJob($jobData)
     {
