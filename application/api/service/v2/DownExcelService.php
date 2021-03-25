@@ -361,6 +361,7 @@ class DownExcelService
             throw new SaveException(['msg' => '上传excel失败']);
         }
         $jobData['down_id'] = $down->id;
+        $jobData['SCRIPT_FILENAME'] = $_SERVER['SCRIPT_FILENAME'];
         $jobHandlerClassName = 'app\api\job\DownExcel';//负责处理队列任务的类
         $jobQueueName = "downExcelQueue";//队列名称
         $isPushed = Queue::push($jobHandlerClassName, $jobData, $jobQueueName);
