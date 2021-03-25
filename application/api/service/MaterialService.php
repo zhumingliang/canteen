@@ -27,7 +27,7 @@ class MaterialService extends BaseService
     }
 
 
-    private function prefixMaterials($canteen_id, $data)
+    public function prefixMaterials($canteen_id, $data)
     {
 
         $materials = [];

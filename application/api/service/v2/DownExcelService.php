@@ -47,6 +47,41 @@ class DownExcelService
 
     }
 
+    public function exportStaffs($company_id, $department_id)
+    {
+        $jobData = [
+            'excel_type' => 'staff',
+            'company_id' => $company_id,
+            'department_id' => $department_id,
+            'version' => \think\facade\Request::param('version')
+        ];
+        $this->saveDownExcelJob($jobData);
+    }
+
+    public function exportMaterials($key, $params)
+    {
+        $jobData = [
+            'excel_type' => 'materials',
+            'key' => $key,
+            'params' => $params,
+            'version' => \think\facade\Request::param('version')
+        ];
+        $this->saveDownExcelJob($jobData);
+    }
+
+    public function exportOrderMaterials($time_begin, $time_end, $canteen_id)
+    {
+        $jobData = [
+            'excel_type' => 'orderMaterials',
+            'company_id' => Token::getCurrentTokenVar('company_id'),
+            'canteen_id' => $canteen_id,
+            'time_begin' => $time_begin,
+            'time_end' => $time_end,
+            'version' => \think\facade\Request::param('version')
+        ];
+        $this->saveDownExcelJob($jobData);
+    }
+
     public function exportOrderStatisticDetail($company_ids, $time_begin,
                                                $time_end, $name,
                                                $phone, $canteen_id, $department_id,
@@ -240,7 +275,7 @@ class DownExcelService
         $this->saveDownExcelJob($jobData);
     }
 
-    public function exportUsersBalance($department_id, $user, $phone,$excel_type)
+    public function exportUsersBalance($department_id, $user, $phone, $excel_type)
     {
         $jobData = [
             'excel_type' => $excel_type,
@@ -252,6 +287,65 @@ class DownExcelService
         ];
         $this->saveDownExcelJob($jobData);
     }
+
+    public function exportOrderStatisticToManager($department_id, $name, $phone, $status, $time_begin, $time_end, $company_id)
+    {
+        $jobData = [
+            'excel_type' => 'shopOrderStatisticToManager',
+            'status' => $status,
+            'name' => $name,
+            'phone' => $phone,
+            'department_id' => $department_id,
+            'company_id' => $company_id,
+            'time_begin' => $time_begin,
+            'time_end' => $time_end,
+            'version' => \think\facade\Request::param('version')
+        ];
+        $this->saveDownExcelJob($jobData);
+    }
+
+    public function exportShopConsumptionStatistic($category_id, $product_id,
+                                                   $status, $time_begin, $time_end, $type, $department_id, $username, $company_id)
+    {
+        $jobData = [
+            'excel_type' => 'shopConsumptionStatistic',
+            'category_id' => $category_id,
+            'status' => $status,
+            'type' => $type,
+            'department_id' => $department_id,
+            'username' => $username,
+            'time_begin' => $time_begin,
+            'time_end' => $time_end,
+            'company_id' => $company_id,
+            'product_id' => $product_id,
+            'version' => \think\facade\Request::param('version')
+        ];
+        $this->saveDownExcelJob($jobData);
+
+    }
+
+    public function exportSalesReportToManager($time_begin, $time_end, $supplier_id)
+    {
+        $jobData = [
+            'excel_type' => 'salesReportToManager',
+            'supplier_id' => $supplier_id,
+            'time_begin' => $time_begin,
+            'time_end' => $time_end,
+            'version' => \think\facade\Request::param('version')
+        ];
+        $this->saveDownExcelJob($jobData);
+    }
+
+    public function exportFoodMaterials($params)
+    {
+        $jobData = [
+            'excel_type' => 'foodMaterials',
+            'params' => $params,
+            'version' => \think\facade\Request::param('version')
+        ];
+        $this->saveDownExcelJob($jobData);
+    }
+
 
     private
     function saveDownExcelJob($jobData)
@@ -277,5 +371,6 @@ class DownExcelService
             throw new SaveException(['msg' => '下载 excel失败']);
         }
     }
+
 
 }

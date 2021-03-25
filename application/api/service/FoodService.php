@@ -165,7 +165,7 @@ class FoodService extends BaseService
         ];
     }
 
-    private function prefixFoodMaterials($foods)
+    public function prefixFoodMaterials($foods)
     {
         $dataList = [];
         if (!count($foods)) {

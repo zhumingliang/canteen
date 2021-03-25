@@ -7,22 +7,35 @@ namespace app\api\job;
 use app\api\controller\v2\Order;
 use app\api\model\CompanyAccountT;
 use app\api\model\CompanyStaffT;
+use app\api\model\CompanyStaffV;
 use app\api\model\DinnerT;
 use app\api\model\DinnerV;
 use app\api\model\DownExcelT;
+use app\api\model\FoodV;
+use app\api\model\MaterialPriceV;
+use app\api\model\OrderMaterialV;
 use app\api\model\OrderSettlementV;
 use app\api\model\OrderStatisticV;
 use app\api\model\OrderTakeoutStatisticV;
 use app\api\model\RechargeV;
+use app\api\model\ShopOrderStatisticV;
+use app\api\model\ShopOrderV;
+use app\api\model\ShopProductT;
 use app\api\model\UserBalanceV;
+use app\api\service\AuthorService;
 use app\api\service\CompanyService;
+use app\api\service\DepartmentService;
 use app\api\service\ExcelService;
+use app\api\service\FoodService;
 use app\api\service\LogService;
+use app\api\service\MaterialService;
 use app\api\service\NextMonthPayService;
+use app\api\service\ShopService;
 use app\api\service\Token;
 use app\api\service\WalletService;
 use app\lib\enum\DownEnum;
 use app\lib\enum\OrderEnum;
+use app\lib\enum\ShopEnum;
 use app\lib\exception\AuthException;
 use app\lib\exception\ParameterException;
 use think\Db;
@@ -141,20 +154,26 @@ class DownExcel
                 case 'userBalanceWithAccount';
                     $this->exportUserBalanceWithAccount($data);
                     break;
-                case 'nextMonth';
-                    $this->exportNextMonthPayStatistic($data);
+                case 'shopOrderStatisticToManager';
+                    $this->exportOrderStatisticToManager($data);
                     break;
-                case 'nextMonth';
-                    $this->exportNextMonthPayStatistic($data);
+                case 'shopConsumptionStatistic';
+                    $this->exportShopConsumptionStatistic($data);
                     break;
-                case 'nextMonth';
-                    $this->exportNextMonthPayStatistic($data);
+                case 'salesReportToManager';
+                    $this->exportSalesReportToManager($data);
                     break;
-                case 'nextMonth';
-                    $this->exportNextMonthPayStatistic($data);
+                case 'foodMaterials';
+                    $this->exportFoodMaterials($data);
                     break;
-                case 'nextMonth';
-                    $this->exportNextMonthPayStatistic($data);
+                case 'orderMaterials';
+                    $this->exportOrderMaterials($data);
+                    break;
+                case 'materials';
+                    $this->exportMaterials($data);
+                    break;
+                case 'staff';
+                    $this->exportStaffs($data);
                     break;
             }
             return true;
@@ -163,6 +182,213 @@ class DownExcel
             return false;
         }
 
+    }
+
+    public function exportStaffs($data)
+    {
+
+        $company_id = $data['company_id'];
+        $department_id = $data['department_id'];
+        $downId = $data['down_id'];//检测企业是否包含刷卡消费
+        $checkCard = (new CompanyService())->checkConsumptionContainsCard($company_id);
+        //检测企业是否包含刷脸消费
+        $checkFace = (new CompanyService())->checkConsumptionContainsFace($company_id);
+        $staffs = CompanyStaffV::exportStaffs($company_id, $department_id);
+        $staffs = (new DepartmentService())->prefixExportStaff($staffs, $checkCard, $checkFace);
+        if ($checkCard && $checkFace) {
+            $header = ['企业', '部门', '人员状态', '人员类型', '员工编号', '姓名', '手机号码', '卡号', '出生日期', '人脸识别ID', '归属饭堂'];
+        } else
+            if ($checkCard) {
+                $header = ['企业', '部门', '人员状态', '人员类型', '员工编号', '姓名', '手机号码', '卡号', '出生日期', '归属饭堂'];
+            } else
+                if ($checkFace) {
+                    $header = ['企业', '部门', '人员状态', '人员类型', '员工编号', '姓名', '手机号码', '人脸识别ID', '归属饭堂'];
+                } else {
+
+                    $header = ['企业', '部门', '人员状态', '人员类型', '员工编号', '姓名', '手机号码', '归属饭堂'];
+                }
+
+        $file_name = "企业员工导出";
+        $url = (new ExcelService())->makeExcel($header, $staffs, $file_name);
+        $url = config('setting.domain') . $url;
+        DownExcelT::update([
+            'id' => $downId,
+            'status' => DownEnum::DOWN_SUCCESS,
+            'url' => $url,
+            'name' => $file_name,
+        ]);
+    }
+
+    public function exportMaterials($data)
+    {
+        $params = $data['params'];
+        $key = $data['key'];
+        $downId = $data['down_id'];
+        $selectField = (new MaterialService())->prefixSelectFiled($params);
+        $materials = MaterialPriceV::exportMaterials($key, $selectField['field'], $selectField['value']);
+        $header = ['序号', '企业名称', '饭堂名称', '材料名称', '单位', '金额-元'];
+        $file_name = "材料价格明细";
+        $url = (new ExcelService())->makeExcel($header, $materials, $file_name);
+        $url = config('setting.domain') . $url;
+        DownExcelT::update([
+            'id' => $downId,
+            'status' => DownEnum::DOWN_SUCCESS,
+            'url' => $url,
+            'name' => $file_name,
+        ]);
+    }
+
+    public function exportOrderMaterials($data)
+    {
+        $company_id = $data['company_id'];
+        $canteen_id = $data['canteen_id'];
+        $time_begin = $data['time_begin'];
+        $time_end = $data['time_end'];
+        $downId = $data['down_id'];
+        $statistic = OrderMaterialV::exportOrderMaterials($time_begin, $time_end, $canteen_id, $company_id);
+        //获取该企业/饭堂下所有材料价格
+        $materials = MaterialPriceV::materialsForOrder($canteen_id, $company_id);
+        $statistic = (new OrderStatisticServiceV1())->prefixMaterials($statistic, $materials, true);
+        $header = ['序号', '日期', '餐次', '材料名称', '材料数量', '订货数量', '单价', '总价'];
+        $file_name = "材料明细下单表(" . $time_begin . "-" . $time_end . ")";
+        $url = (new ExcelService())->makeExcel($header, $statistic, $file_name);
+        $url = config('setting.domain') . $url;
+        DownExcelT::update([
+            'id' => $downId,
+            'status' => DownEnum::DOWN_SUCCESS,
+            'url' => $url,
+            'name' => $file_name,
+        ]);
+    }
+
+    public function exportFoodMaterials($data)
+    {
+        $params = $data['params'];
+        $downId = $data['down_id'];
+        $selectField = (new FoodService())->prefixSelectFiled($params);
+        $foods = FoodV::exportFoodMaterials($selectField['field'], $selectField['value']);
+        $foods = (new FoodService())->prefixFoodMaterials($foods);
+        $header = ['企业', '饭堂', '餐次', '菜品', '材料名称', '数量', '单位'];
+        $file_name = "菜品材料明细导出报表";
+        $url = (new ExcelService())->makeExcelMerge($header, $foods, $file_name, 4);
+        $url = config('setting.domain') . $url;
+        DownExcelT::update([
+            'id' => $downId,
+            'status' => DownEnum::DOWN_SUCCESS,
+            'url' => $url,
+            'name' => $file_name,
+        ]);
+    }
+
+    public function exportSalesReportToManager($data)
+    {
+        $supplier_id = $data['supplier_id'];
+        $time_begin = $data['time_begin'];
+        $time_end = $data['time_end'];
+        $downId = $data['down_id'];
+        $products = ShopProductT::supplierProducts(1, 10000, $time_begin,
+            $time_end, $supplier_id);
+        $products = (new ShopService())->prefixExportSalesReport($products['data']);
+        $header = ['序号', '名称', '单价（元）', '单位', '总进货量', '总销售量', '总销售额（元）'];
+        $file_name = $time_begin . "-" . $time_end . "-进销报表";
+        $url = (new ExcelService())->makeExcel($header, $products, $file_name);
+        $url = config('setting.domain') . $url;
+        DownExcelT::update([
+            'id' => $downId,
+            'status' => DownEnum::DOWN_SUCCESS,
+            'url' => $url,
+            'name' => $file_name,
+        ]);
+    }
+
+    public function exportShopConsumptionStatistic($data)
+    {
+        $category_id = $data['category_id'];
+        $status = $data['status'];
+        $type = $data['type'];
+        $department_id = $data['department_id'];
+        $username = $data['username'];
+        $product_id = $data['product_id'];
+        $time_begin = $data['time_begin'];
+        $time_end = $data['time_end'];
+        $company_id = $data['company_id'];
+        $downId = $data['down_id'];
+        $field = '';
+        $supplier_id = 0;
+        if (Token::getCurrentTokenVar('type') == 'supplier') {
+            $supplier_id = (new AuthorService())->checkAuthorSupplier();
+            $company_id = Token::getCurrentTokenVar('company_id');
+        }
+        if ($type == ShopEnum::STATISTIC_BY_CATEGORY) {
+            $statistic = ShopOrderStatisticV::consumptionStatisticGroupByCategoryID(1, 1000, $category_id, $product_id,
+                $status, $time_begin, $time_end, $supplier_id, $department_id, $username, $company_id);
+            $field = 'category_id';
+        } else if ($type == ShopEnum::STATISTIC_BY_PRODUCT) {
+            $statistic = ShopOrderStatisticV::consumptionStatisticGroupByProductID(1, 1000, $category_id, $product_id,
+                $status, $time_begin, $time_end, $supplier_id, $department_id, $username, $company_id);
+            $field = 'product_id';
+        } else if ($type == ShopEnum::STATISTIC_BY_STATUS) {
+            $statistic = ShopOrderStatisticV::consumptionStatisticGroupByStatus(1, 1000, $category_id, $product_id,
+                $status, $time_begin, $time_end, $supplier_id, $department_id, $username, $company_id);
+        } else if ($type == ShopEnum::STATISTIC_BY_DEPARTMENT) {
+            $statistic = ShopOrderStatisticV::consumptionStatisticGroupByDepartmentID(1, 1000, $category_id, $product_id,
+                $status, $time_begin, $time_end, $supplier_id, $department_id, $username, $company_id);
+            $field = 'department_id';
+        } else if ($type == ShopEnum::STATISTIC_BY_USERNAME) {
+            $statistic = ShopOrderStatisticV::consumptionStatisticGroupByUsername(1, 1000, $category_id, $product_id,
+                $status, $time_begin, $time_end, $supplier_id, $department_id, $username, $company_id);
+            $field = 'staff_id';
+        } else {
+            throw new ParameterException();
+        }
+
+        if (empty($field)) {
+            $statisticCount = 0;
+        } else {
+            $statisticCount = ShopOrderStatisticV::statisticCount($category_id, $product_id,
+                $status, $time_begin, $time_end, $supplier_id, $field, $department_id, $username, $company_id);
+        }
+
+        $money = ShopOrderStatisticV::statisticMoney($category_id, $product_id,
+            $status, $time_begin, $time_end, $supplier_id, $department_id,
+            $username, $company_id);
+
+        $statistics = (new ShopService())->prefixConsumptionStatistic($statistic['data'], $statisticCount, $money);
+        $header = ['序号', '统计变量', '下单时间', '结束时间', '姓名', '部门', '类型', '商品名称', '单位', '数量', '商品总金额（元）'];
+        $file_name = "消费订单汇总查询";
+        $url = (new ExcelService())->makeExcel($header, $statistics, $file_name);
+        $url = config('setting.domain') . $url;
+        DownExcelT::update([
+            'id' => $downId,
+            'status' => DownEnum::DOWN_SUCCESS,
+            'url' => $url,
+            'name' => $file_name,
+        ]);
+    }
+
+    public function exportOrderStatisticToManager($data)
+    {
+        $name = $data['name'];
+        $phone = $data['phone'];
+        $department_id = $data['department_id'];
+        $time_begin = $data['time_begin'];
+        $time_end = $data['time_end'];
+        $status = $data['status'];
+        $company_id = $data['company_id'];
+        $downId = $data['down_id'];
+        $statistic = ShopOrderV::exportOrderStatisticToManager($department_id, $name,
+            $phone, $status, $time_begin, $time_end, $company_id);
+        $statistic = $this->prefixOrderStatisticToExport($statistic);
+        $header = ['序号', '下单时间', '结束时间', '姓名', '手机号', '商品数量', '商品金额（元）', '地址', '状态', '类型', '名称', '单位', '数量', '金额'];
+        $file_name = "订单明细查询";
+        $url = (new ExcelService())->makeExcelMerge($header, $statistic, $file_name, 9);
+        $url = config('setting.domain') . $url;
+        DownExcelT::update([
+            'id' => $downId,
+            'status' => DownEnum::DOWN_SUCCESS,
+            'url' => $url,
+            'name' => $file_name,
+        ]);
     }
 
     public function exportUserBalance($data)
@@ -207,9 +433,10 @@ class DownExcel
         }
 
         $header = (new WalletService())->prefixHeader($accounts, $header);
-        $staffs =  (new WalletService())->prefixExportBalanceWithAccount($staffs, $accounts, $checkCard);
+        $staffs = (new WalletService())->prefixExportBalanceWithAccount($staffs, $accounts, $checkCard);
         $file_name = "饭卡余额报表";
         $url = (new ExcelService())->makeExcel($header, $staffs, $file_name);
+        $url = config('setting.domain') . $url;
         DownExcelT::update([
             'id' => $downId,
             'status' => DownEnum::DOWN_SUCCESS,
@@ -220,7 +447,6 @@ class DownExcel
 
     public function exportRechargeRecordsWithAccount($data)
     {
-        $type = $data['type'];
         $admin_id = $data['admin_id'];
         $department_id = $data['department_id'];
         $time_begin = $data['time_begin'];
@@ -228,6 +454,7 @@ class DownExcel
         $username = $data['username'];
         $company_id = $data['company_id'];
         $downId = $data['down_id'];
+        $type = $data['type'];
         $records = RechargeV::exportRechargeRecordsWithAccount($time_begin, $time_end, $type, $admin_id, $username, $company_id, $department_id);
         $header = ['创建时间', '部门', '姓名', "手机号", '账户名称', '充值金额', '充值途径', '充值人员', '备注'];
         $file_name = $time_begin . "-" . $time_end . "-充值记录明细";

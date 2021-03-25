@@ -10,6 +10,7 @@ use app\api\model\ShopOrderT;
 use app\api\model\ShopProductT;
 use app\api\model\ShopT;
 use app\api\service\ShopService;
+use app\api\service\v2\DownExcelService;
 use app\lib\enum\CommonEnum;
 use app\lib\exception\DeleteException;
 use app\lib\exception\SuccessMessage;
@@ -633,8 +634,10 @@ class Shop extends BaseController
         $time_begin = Request::param('time_begin');
         $time_end = Request::param('time_end');
         $company_id = Request::param('company_id');
-        $url = (new ShopService())->exportOrderStatisticToManager($department_id, $name, $phone, $status, $time_begin, $time_end, $company_id);
-        return json(new SuccessMessageWithData(['data' => $url]));
+        (new DownExcelService())->exportOrderStatisticToManager($department_id, $name, $phone, $status, $time_begin, $time_end, $company_id);
+        return json(new SuccessMessage());
+        /*      $url = (new ShopService())->($department_id, $name, $phone, $status, $time_begin, $time_end, $company_id);
+              return json(new SuccessMessageWithData(['data' => $url]));*/
     }
 
 
@@ -755,8 +758,10 @@ class Shop extends BaseController
         $time_begin = Request::param('time_begin');
         $time_end = Request::param('time_end');
         $supplier_id = Request::param('supplier_id');
-        $statistic = (new ShopService())->exportSalesReportToManager($time_begin, $time_end, $supplier_id);
-        return json(new SuccessMessageWithData(['data' => $statistic]));
+        (new DownExcelService())->exportSalesReportToManager($time_begin, $time_end, $supplier_id);
+        return json(new SuccessMessage());
+/*        $statistic = (new ShopService())->exportSalesReportToManager($time_begin, $time_end, $supplier_id);
+        return json(new SuccessMessageWithData(['data' => $statistic]));*/
     }
 
     /**
@@ -842,9 +847,12 @@ class Shop extends BaseController
         $time_begin = Request::param('time_begin');
         $time_end = Request::param('time_end');
         $company_id = Request::param('company_id');
-        $statistic = (new ShopService())->exportConsumptionStatistic($category_id, $product_id,
+        (new DownExcelService())->exportShopConsumptionStatistic($category_id, $product_id,
             $status, $time_begin, $time_end, $type, $department_id, $username, $company_id);
-        return json(new SuccessMessageWithData(['data' => $statistic]));
+        return json(new SuccessMessage());
+        /*$statistic = (new ShopService())->exportConsumptionStatistic($category_id, $product_id,
+            $status, $time_begin, $time_end, $type, $department_id, $username, $company_id);
+        return json(new SuccessMessageWithData(['data' => $statistic]));*/
     }
 
     /**

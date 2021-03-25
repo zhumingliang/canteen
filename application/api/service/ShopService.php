@@ -628,7 +628,7 @@ class ShopService
         ];
     }
 
-    private function prefixExportSalesReport($statistic)
+    public function prefixExportSalesReport($statistic)
     {
         $dataList = [];
         $all_money = 0;
@@ -765,7 +765,7 @@ class ShopService
 
     }
 
-    private function prefixConsumptionStatistic($statistic, $count, $money)
+    public function prefixConsumptionStatistic($statistic, $count, $money)
     {
         $dataList = [];
         if (!empty($statistic)) {

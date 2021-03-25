@@ -750,7 +750,7 @@ class DepartmentService
         ];
     }
 
-    private
+    public
     function prefixExportStaff($staffs, $checkCard, $checkFace)
     {
         if (!count($staffs)) {

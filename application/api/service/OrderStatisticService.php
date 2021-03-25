@@ -508,7 +508,7 @@ class OrderStatisticService
         ];
     }
 
-    private
+    public
     function prefixMaterials($data, $materials, $statisticMoney = false)
     {
         $money = 0;

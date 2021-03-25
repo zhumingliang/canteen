@@ -10,6 +10,7 @@ use app\api\service\ExcelService;
 use app\api\service\FoodService;
 use app\api\service\MaterialService;
 use app\api\service\OrderStatisticService;
+use app\api\service\v2\DownExcelService;
 use app\lib\enum\CommonEnum;
 use app\lib\exception\DeleteException;
 use app\lib\exception\ParameterException;
@@ -191,8 +192,10 @@ class Material extends BaseController
     public function export($key = '')
     {
         $params = Request::param();
-        $url = (new MaterialService())->exportMaterials($key, $params);
-        return json(new SuccessMessageWithData(["data" => ['url' => $url]]));
+        (new DownExcelService())->exportMaterials($key, $params);
+        return json(new SuccessMessage());
+  /*      $url = (new MaterialService())->exportMaterials($key, $params);
+        return json(new SuccessMessageWithData(["data" => ['url' => $url]]));*/
     }
 
     /**
@@ -251,8 +254,10 @@ class Material extends BaseController
     public function exportFoodMaterials()
     {
         $params = Request::param();
-        $url = (new FoodService())->exportFoodMaterials($params);
-        return json(new SuccessMessageWithData(['data' => $url]));
+        (new DownExcelService())->exportFoodMaterials($params);
+        return json(new SuccessMessage());
+        /* $url = (new FoodService())->exportFoodMaterials($params);
+         return json(new SuccessMessageWithData(['data' => $url]));*/
     }
 
     /**
@@ -302,8 +307,10 @@ class Material extends BaseController
         $time_begin = Request::param('time_begin');
         $time_end = Request::param('time_end');
         $canteen_id = Request::param('canteen_id');
-       $url = (new OrderStatisticService())
-            ->exportOrderMaterials( $time_begin, $time_end, $canteen_id);
-        return json(new SuccessMessageWithData(['data' => $url]));
+        (new DownExcelService())->exportOrderMaterials($time_begin, $time_end, $canteen_id);
+        return json(new SuccessMessage());
+        /*        $url = (new OrderStatisticService())
+                    ->exportOrderMaterials($time_begin, $time_end, $canteen_id);
+                return json(new SuccessMessageWithData(['data' => $url]));*/
     }
 }
