@@ -261,6 +261,63 @@ class ExcelService
         return '/static/excel/download/' . $fileName;
     }
 
+    public function makeExcelMerge2($columName, $list, $fileName,$SCRIPT_FILENAME, $merge, $excel2007 = false)
+    {
+        if (empty($fileName)) $fileName = time();
+        if (empty($columName) || empty($list)) {
+            throw new ParameterException(['msg' => '导出数据为空']);
+        }
+        //实例化PHPExcel类
+        $PHPExcel = new \PHPExcel();
+        //设置保存版本格式
+        if ($excel2007) {
+            $PHPWriter = new \PHPExcel_Writer_Excel2007($PHPExcel);
+            $fileName = $fileName . date('_YmdHis') . '.xlsx';
+        } else {
+            $PHPWriter = new \PHPExcel_Writer_Excel5($PHPExcel);
+            $fileName = $fileName . date('_YmdHis') . '.xls';
+        }
+
+        //获得当前sheet对象
+        $PHPSheet = $PHPExcel->getActiveSheet();
+        //定义sheet名称
+        $PHPSheet->setTitle('Sheet1');
+
+        //excel的列 这么多够用了吧？不够自个加 AA AB AC ……
+        $letter = [
+            'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
+            'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'
+        ];
+        //把列名写入第1行 A1 B1 C1 ...
+        for ($i = 0; $i < count($list[0]); $i++) {
+            //$letter[$i]1 = A1 B1 C1  $letter[$i] = 列1 列2 列3
+            if (!empty($columName[$i])) {
+                $PHPSheet->setCellValue("$letter[$i]1", "$columName[$i]");
+            }
+        }
+        //内容第2行开始
+        foreach ($list as $key => $val) {
+            //array_values 把一维数组的键转为0 1 2 3 ..
+            foreach (array_values($val) as $key2 => $val2) {
+                //$letter[$key2].($key+2) = A2 B2 C2 ……
+                if ($key2 >= count($columName)) {
+                    break;
+                }
+                $PHPSheet->setCellValue($letter[$key2] . ($key + 2), $val2);
+                if ($val['merge'] == 1 && $key2 < $merge)//这里表示合并单元格
+                {
+                    $PHPSheet->mergeCells($letter[$key2] . $val['start'] . ':' . $letter[$key2] . $val['end']);
+                    $PHPSheet->getStyle($letter[$key2] . $val['start'] . ':' . $letter[$key2] . $val['end'])
+                        ->getAlignment()->setVertical(\PHPExcel_Style_Alignment::VERTICAL_CENTER);
+
+                }
+            }
+        }
+        $savePath = dirname($SCRIPT_FILENAME) . '/static/excel/download/' . $fileName;
+        $PHPWriter->save($savePath);
+        return '/static/excel/download/' . $fileName;
+    }
+
     public function excels()
     {
         $adminId = Token::getCurrentUid();
