@@ -64,10 +64,9 @@ class DownExcel
         if ($isJobDone) {
             // 如果任务执行成功，删除任务
             $code = $data['company_id'] . ":" . $data['u_id'] . ":" . $data['type'];
-            $this->clearUploading($data['company_id'], $data['u_id'], $data['type']);
-            LogService::saveJob("<warn>导入Excel任务执行成功！编号：$code" . "</warn>\n");
+            LogService::saveJob("<warn>导出Excel任务执行成功！编号：$code" . "</warn>\n");
             $job->delete();
-        } else {
+        } /*else {
             if ($job->attempts() > 3) {
                 //通过这个方法可以检查这个任务已经重试了几次了
                 $code = $data['company_id'] . ":" . $data['u_id'] . ":" . $data['type'];
@@ -77,7 +76,7 @@ class DownExcel
             } else {
                 $job->release(3); //重发任务
             }
-        }
+        }*/
     }
 
     /**
@@ -926,7 +925,7 @@ class DownExcel
         $name = $data['name'];
         $time_begin = $data['time_begin'];
         $time_end = $data['time_end'];
-        $company_ids = $data['company_id'];
+        $company_ids = $data['company_ids'];
         $phone = $data['phone'];
         $downId = $data['down_id'];
         $list = OrderStatisticV::exportDetail($company_ids, $time_begin,
