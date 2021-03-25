@@ -928,6 +928,7 @@ class DownExcel
         $company_ids = $data['company_ids'];
         $phone = $data['phone'];
         $downId = $data['down_id'];
+        $SCRIPT_FILENAME = $data['SCRIPT_FILENAME'];
         $list = OrderStatisticV::exportDetail($company_ids, $time_begin,
             $time_end, $name,
             $phone, $canteen_id, $department_id,
@@ -935,7 +936,7 @@ class DownExcel
         $list = (new OrderStatisticServiceV1())->prefixOrderStatisticDetail($list);
         $header = ['订单ID', '订餐日期', '消费地点', '部门', '姓名', '号码', '餐次', '订餐类型', '份数', '金额', '订餐状态', '明细', '合计'];
         $file_name = "订餐明细报表(" . $time_begin . "-" . $time_end . ")";
-        $url = (new ExcelService())->makeExcel($header, $list, $file_name);
+        $url = (new ExcelService())->makeExcel2($header, $list, $file_name, $SCRIPT_FILENAME);
         $url = config('setting.domain') . $url;
         DownExcelT::update([
             'id' => $downId,
