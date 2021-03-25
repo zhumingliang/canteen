@@ -145,6 +145,47 @@ class DownExcelService
         $this->saveDownExcelJob($jobData);
     }
 
+    public function exportFace($name, $phone, $canteen_id, $department_id, $dinner_id, $time_begin, $time_end, $company_id, $state)
+    {
+        $jobData = [
+            'excel_type' => 'face',
+            'canteen_id' => $canteen_id,
+            'state' => $state,
+            'name' => $name,
+            'phone' => $phone,
+            'department_id' => $department_id,
+            'dinner_id' => $dinner_id,
+            'company_id' => $company_id,
+            'time_begin' => $time_begin,
+            'time_end' => $time_end,
+            'version' => \think\facade\Request::param('version')
+        ];
+        $this->saveDownExcelJob($jobData);
+    }
+
+
+    public function exportNextMonthPayStatistic($time_begin, $time_end,
+                                                $company_id, $department_id,
+                                                $status, $pay_method,
+                                                $username, $phone)
+    {
+        $jobData = [
+            'excel_type' => 'nextMonth',
+            'pay_method' => $pay_method,
+            'status' => $status,
+            'name' => $username,
+            'phone' => $phone,
+            'department_id' => $department_id,
+            'company_id' => $company_id,
+            'time_begin' => $time_begin,
+            'time_end' => $time_end,
+            'version' => \think\facade\Request::param('version')
+        ];
+        $this->saveDownExcelJob($jobData);
+
+    }
+
+
     private function saveDownExcelJob($jobData)
     {
         //将消息写入

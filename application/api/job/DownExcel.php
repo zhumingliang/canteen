@@ -14,8 +14,10 @@ use app\api\model\OrderStatisticV;
 use app\api\model\OrderTakeoutStatisticV;
 use app\api\service\ExcelService;
 use app\api\service\LogService;
+use app\api\service\NextMonthPayService;
 use app\lib\enum\DownEnum;
 use app\lib\enum\OrderEnum;
+use app\lib\exception\AuthException;
 use app\lib\exception\ParameterException;
 use think\Exception;
 use think\queue\Job;
@@ -108,11 +110,11 @@ class DownExcel
                 case 'takeoutStatistic';
                     $this->exportTakeoutStatistic($data);
                     break;
-                case 'orderSettlementWithAccount';
-                    $this->exportOrderSettlementWithAccount($data);
+                case 'face';
+                    $this->exportFace($data);
                     break;
-                case 'orderSettlementWithAccount';
-                    $this->exportOrderSettlementWithAccount($data);
+                case 'nextMonth';
+                    $this->exportNextMonthPayStatistic($data);
                     break;
             }
             return true;
@@ -123,6 +125,109 @@ class DownExcel
 
     }
 
+    private function exportNextMonthPayStatistic($data)
+    {
+        $pay_method = $data['pay_method'];
+        $status = $data['status'];
+        $username = $data['username'];
+        $department_id = $data['department_id'];
+        $time_begin = $data['time_begin'];
+        $time_end = $data['time_end'];
+        $company_id = $data['company_id'];
+        $phone = $data['phone'];
+        $downId = $data['down_id'];
+        $statistic = (new NextMonthPayService())->nextMonthOutput($time_begin, $time_end,
+            $company_id, $department_id, $status, $pay_method,
+            $username, $phone);
+        $header = ['序号', '时间', '部门', '姓名', '手机号码', '应缴费用', '缴费状态', '缴费时间', '缴费途径', '合计数量', '合计金额（元）', '备注'];
+        $reports = (new NextMonthPayService())->prefixConsumptionStatistic($statistic);
+        $file_name = "缴费查询报表";
+        $url = (new ExcelService())->makeExcel($header, $reports, $file_name);
+        $url = config('setting.domain') . $url;
+        DownExcelT::update([
+            'id' => $downId,
+            'status' => DownEnum::DOWN_SUCCESS,
+            'url' => $url,
+            'name' => $file_name,
+        ]);
+    }
+
+    private function exportFace($data)
+    {
+        $canteen_id = $data['canteen_id'];
+        $dinner_id = $data['dinner_id'];
+        $state = $data['state'];
+        $name = $data['name'];
+        $department_id = $data['department_id'];
+        $time_begin = $data['time_begin'];
+        $time_end = $data['time_end'];
+        $company_id = $data['company_id'];
+        $phone = $data['phone'];
+        $downId = $data['down_id'];
+        $list = db('face_t')
+            ->alias('t1')
+            ->leftJoin('canteen_company_t t2', 't1.company_id = t2.id')
+            ->leftJoin('canteen_canteen_t t3', 't1.canteen_id = t3.id')
+            ->leftJoin('canteen_company_staff_t t4', 't1.staff_id = t4.id')
+            ->leftJoin('canteen_company_department_t t5', 't4.d_id = t5.id')
+            ->whereBetweenTime('t1.passDate', $time_begin, $time_end)
+            ->where(function ($query) use ($name, $phone, $department_id, $state) {
+                if (strlen($name)) {
+                    $query->where('t4.username', 'like', '%' . $name . '%');
+                }
+                if (strlen($phone)) {
+                    $query->where('t4.phone', 'like', '%' . $phone . '%');
+                }
+                if ($department_id != 0) {
+                    $query->where('t5.id', $department_id);
+                }
+                if ($state != 0) {
+                    $query->where('t1.temperatureResult', $state);
+                }
+            })
+            ->where(function ($query) use ($company_id, $canteen_id, $dinner_id) {
+                if ($dinner_id != 0) {
+                    $query->where('t1.meal_id', $dinner_id);
+                } else {
+                    if ($canteen_id != 0) {
+                        $query->where('t1.canteen_id', $canteen_id);
+                    } else {
+                        if ($company_id != 0) {
+                            $query->where('t1.company_id', $company_id);
+                        }
+                    }
+                }
+            })
+            ->field('t1.id,t1.passTime,t3.name as canteen_name,t1.meal_name,t5.name as department_name,t4.username,t4.phone,t1.temperature,(case when t1.temperatureResult = 1 then \'正常\' when t1.temperatureResult=2 then \'异常\' end) state')
+            ->order('id asc')
+            ->select();
+        $dataList = [];
+        if (count($list)) {
+            foreach ($list as $k => $v) {
+                array_push($dataList, [
+                    'id' => $k + 1,
+                    'passTime' => $v['passTime'],
+                    'canteen_name' => $v['canteen_name'],
+                    'meal_name' => $v['meal_name'],
+                    'department_name' => $v['department_name'],
+                    'username' => $v['username'],
+                    'phone' => $v['phone'],
+                    'temperature' => $v['temperature'],
+                    'state' => $v['state']
+                ]);
+            }
+        }
+        $header = ['序号', '检测时间', '检测地点', '餐次', '部门', '姓名', '手机号码', '体温', '状态'];
+        $file_name = "体温检测报表";
+        $url = (new ExcelService())->makeExcel($header, $data, $file_name);
+        $url = config('setting.domain') . $url;
+        DownExcelT::update([
+            'id' => $downId,
+            'status' => DownEnum::DOWN_SUCCESS,
+            'url' => $url,
+            'name' => $file_name,
+        ]);
+    }
 
     public function exportTakeoutStatistic($data)
     {
@@ -133,7 +238,6 @@ class DownExcel
         $status = $data['status'];
         $user_type = $data['user_type'];
         $company_ids = $data['company_id'];
-
         $downId = $data['down_id'];
         $records = OrderTakeoutStatisticV::exportStatistic($ordering_date,
             $company_ids, $canteen_id, $dinner_id, $status, $department_id,
@@ -424,5 +528,6 @@ class DownExcel
             'name' => $file_name,
         ]);
     }
+
 
 }

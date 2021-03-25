@@ -7,8 +7,10 @@ use app\api\controller\BaseController;
 use app\api\model\OfficialTemplateT;
 use app\api\service\ExcelService;
 use app\api\service\LogService;
+use app\api\service\v2\DownExcelService;
 use app\lib\enum\CommonEnum;
 use app\lib\exception\AuthException;
+use app\lib\exception\SuccessMessage;
 use app\lib\exception\SuccessMessageWithData;
 use app\lib\weixin\Template;
 use think\Db;
@@ -177,13 +179,18 @@ class Face extends BaseController
         $time_begin = Request::param('time_begin');
         $time_end = Request::param('time_end');
         $company_id = Request::param('company_id');
-        $data = $this->exportFace($name, $phone, $canteen_id,
+        (new DownExcelService())->exportFace($name, $phone, $canteen_id,
             $department_id, $dinner_id, $time_begin, $time_end, $company_id, $state);
+        return json(new SuccessMessage());
+
+        /*$data = $this->exportFace($name, $phone, $canteen_id,
+            $department_id, $dinner_id, $time_begin, $time_end, $company_id, $state);
+
         $header = ['序号', '检测时间', '检测地点', '餐次', '部门', '姓名', '手机号码', '体温', '状态'];
         $file_name = "体温检测报表";
         $url = (new ExcelService())->makeExcel($header, $data, $file_name);
         $data = ['url' => 'http://' . $_SERVER['HTTP_HOST'] . $url];
-        return json(new SuccessMessageWithData(['data' => $data]));
+        return json(new SuccessMessageWithData(['data' => $data]));*/
     }
 
 
