@@ -9,6 +9,7 @@ use app\api\model\OrderT;
 use app\api\model\PayT;
 use app\api\model\PayWxT;
 use app\api\service\AdminService;
+use app\api\service\v2\DownExcelService;
 use app\api\service\WalletService;
 use app\lib\exception\ParameterException;
 use app\lib\exception\SuccessMessage;
@@ -181,8 +182,11 @@ class Wallet extends BaseController
     {
         $time_begin = Request::param('time_begin');
         $time_end = Request::param('time_end');
-        $records = (new WalletService())->exportRechargeRecords($time_begin, $time_end, $type, $admin_id, $username, $department_id);
-        return json(new SuccessMessageWithData(['data' => $records]));
+        (new DownExcelService())->exportRechargeRecords($time_begin, $time_end, $type,
+            $admin_id, $username, $department_id, 'rechargeRecords');
+        return json(new  SuccessMessage());
+        /*        $records = (new WalletService())->exportRechargeRecords($time_begin, $time_end, $type, $admin_id, $username, $department_id);
+                return json(new SuccessMessageWithData(['data' => $records]));*/
 
     }
 
@@ -237,8 +241,10 @@ class Wallet extends BaseController
      */
     public function exportUsersBalance($department_id = 0, $user = '', $phone = '')
     {
-        $users = (new WalletService())->exportUsersBalance($department_id, $user, $phone);
-        return json(new SuccessMessageWithData(['data' => $users]));
+        (new DownExcelService())->exportUsersBalance($department_id, $user, $phone,'userBalance');
+        return json(new SuccessMessage());
+/*        $users = (new WalletService())->exportUsersBalance($department_id, $user, $phone);
+        return json(new SuccessMessageWithData(['data' => $users]));*/
 
     }
 

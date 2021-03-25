@@ -394,7 +394,7 @@ class WalletService
         ];
     }
 
-    private function prefixHeader($accounts, $header)
+    public function prefixHeader($accounts, $header)
     {
         foreach ($accounts as $k => $v) {
             array_push($header, $v['name']);
@@ -405,7 +405,7 @@ class WalletService
     }
 
 
-    private function prefixExportBalanceWithAccount($staffs, $accounts, $checkCard)
+    public function prefixExportBalanceWithAccount($staffs, $accounts, $checkCard)
     {
         $dataList = [];
         if (count($staffs)) {

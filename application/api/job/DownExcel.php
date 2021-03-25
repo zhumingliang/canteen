@@ -6,15 +6,21 @@ namespace app\api\job;
 
 use app\api\controller\v2\Order;
 use app\api\model\CompanyAccountT;
+use app\api\model\CompanyStaffT;
 use app\api\model\DinnerT;
 use app\api\model\DinnerV;
 use app\api\model\DownExcelT;
 use app\api\model\OrderSettlementV;
 use app\api\model\OrderStatisticV;
 use app\api\model\OrderTakeoutStatisticV;
+use app\api\model\RechargeV;
+use app\api\model\UserBalanceV;
+use app\api\service\CompanyService;
 use app\api\service\ExcelService;
 use app\api\service\LogService;
 use app\api\service\NextMonthPayService;
+use app\api\service\Token;
+use app\api\service\WalletService;
 use app\lib\enum\DownEnum;
 use app\lib\enum\OrderEnum;
 use app\lib\exception\AuthException;
@@ -123,6 +129,24 @@ class DownExcel
                 case 'receptionForApply';
                     $this->receptionsForApplyOutput($data);
                     break;
+                case 'rechargeRecords';
+                    $this->exportRechargeRecords($data);
+                    break;
+                case 'rechargeRecordsWithAccount';
+                    $this->exportRechargeRecordsWithAccount($data);
+                    break;
+                case 'userBalance';
+                    $this->exportUserBalance($data);
+                    break;
+                case 'userBalanceWithAccount';
+                    $this->exportUserBalanceWithAccount($data);
+                    break;
+                case 'nextMonth';
+                    $this->exportNextMonthPayStatistic($data);
+                    break;
+                case 'nextMonth';
+                    $this->exportNextMonthPayStatistic($data);
+                    break;
                 case 'nextMonth';
                     $this->exportNextMonthPayStatistic($data);
                     break;
@@ -139,6 +163,106 @@ class DownExcel
             return false;
         }
 
+    }
+
+    public function exportUserBalance($data)
+    {
+        $department_id = $data['department_id'];
+        $user = $data['user'];
+        $phone = $data['phone'];
+        $company_id = $data['company_id'];
+        $downId = $data['down_id'];
+        $checkCard = (new CompanyService())->checkConsumptionContainsCard($company_id);
+        $staffs = UserBalanceV::exportUsersBalance($department_id, $user, $phone, $company_id, $checkCard);
+        if ($checkCard) {
+            $header = ['姓名', '员工编号', '卡号', '手机号码', '部门', '余额'];
+        } else {
+            $header = ['姓名', '员工编号', '手机号码', '部门', '余额'];
+        }
+        $file_name = "饭卡余额报表";
+        $url = (new ExcelService())->makeExcel($header, $staffs, $file_name);
+        $url = config('setting.domain') . $url;
+        DownExcelT::update([
+            'id' => $downId,
+            'status' => DownEnum::DOWN_SUCCESS,
+            'url' => $url,
+            'name' => $file_name,
+        ]);
+    }
+
+    public function exportUserBalanceWithAccount($data)
+    {
+        $department_id = $data['department_id'];
+        $user = $data['user'];
+        $phone = $data['phone'];
+        $company_id = $data['company_id'];
+        $downId = $data['down_id'];
+        $accounts = CompanyAccountT::accountsWithSorts($company_id);
+        $checkCard = (new CompanyService())->checkConsumptionContainsCard($company_id);
+        $staffs = CompanyStaffT::staffsForExportsBalance($department_id, $user, $phone, $company_id);
+        if ($checkCard) {
+            $header = ['姓名', '员工编号', '卡号', '手机号码', '部门'];
+        } else {
+            $header = ['姓名', '员工编号', '手机号码', '部门'];
+        }
+
+        $header = (new WalletService())->prefixHeader($accounts, $header);
+        $staffs =  (new WalletService())->prefixExportBalanceWithAccount($staffs, $accounts, $checkCard);
+        $file_name = "饭卡余额报表";
+        $url = (new ExcelService())->makeExcel($header, $staffs, $file_name);
+        DownExcelT::update([
+            'id' => $downId,
+            'status' => DownEnum::DOWN_SUCCESS,
+            'url' => $url,
+            'name' => $file_name,
+        ]);
+    }
+
+    public function exportRechargeRecordsWithAccount($data)
+    {
+        $type = $data['type'];
+        $admin_id = $data['admin_id'];
+        $department_id = $data['department_id'];
+        $time_begin = $data['time_begin'];
+        $time_end = $data['time_end'];
+        $username = $data['username'];
+        $company_id = $data['company_id'];
+        $downId = $data['down_id'];
+        $records = RechargeV::exportRechargeRecordsWithAccount($time_begin, $time_end, $type, $admin_id, $username, $company_id, $department_id);
+        $header = ['创建时间', '部门', '姓名', "手机号", '账户名称', '充值金额', '充值途径', '充值人员', '备注'];
+        $file_name = $time_begin . "-" . $time_end . "-充值记录明细";
+        $url = (new ExcelService())->makeExcel($header, $records, $file_name);
+        $url = config('setting.domain') . $url;
+        DownExcelT::update([
+            'id' => $downId,
+            'status' => DownEnum::DOWN_SUCCESS,
+            'url' => $url,
+            'name' => $file_name,
+        ]);
+    }
+
+    private function exportRechargeRecords($data)
+    {
+        $type = $data['type'];
+        $admin_id = $data['admin_id'];
+        $department_id = $data['department_id'];
+        $time_begin = $data['time_begin'];
+        $time_end = $data['time_end'];
+        $username = $data['username'];
+        $company_id = $data['company_id'];
+        $downId = $data['down_id'];
+        $records = RechargeV::exportRechargeRecords($time_begin, $time_end, $type,
+            $admin_id, $username, $company_id, $department_id);
+        $header = ['创建时间', '部门', '姓名', '手机号', '充值金额', '充值途径', '充值人员', '备注'];
+        $file_name = $time_begin . "-" . $time_end . "-充值记录明细";
+        $url = (new ExcelService())->makeExcel($header, $records, $file_name);
+        $url = config('setting.domain') . $url;
+        DownExcelT::update([
+            'id' => $downId,
+            'status' => DownEnum::DOWN_SUCCESS,
+            'url' => $url,
+            'name' => $file_name,
+        ]);
     }
 
     private function receptionsForCMSOutput($data)

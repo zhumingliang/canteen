@@ -224,7 +224,37 @@ class DownExcelService
         $this->saveDownExcelJob($jobData);
     }
 
-    private function saveDownExcelJob($jobData)
+    public function exportRechargeRecords($time_begin, $time_end, $type, $admin_id, $username, $department_id, $excel_type)
+    {
+        $jobData = [
+            'excel_type' => $excel_type,
+            'type' => $type,
+            'admin_id' => $admin_id,
+            'company_id' => Token::getCurrentTokenVar('company_id'),
+            'name' => $username,
+            'department_id' => $department_id,
+            'time_begin' => $time_begin,
+            'time_end' => $time_end,
+            'version' => \think\facade\Request::param('version')
+        ];
+        $this->saveDownExcelJob($jobData);
+    }
+
+    public function exportUsersBalance($department_id, $user, $phone,$excel_type)
+    {
+        $jobData = [
+            'excel_type' => $excel_type,
+            'user' => $user,
+            'phone' => $phone,
+            'company_id' => Token::getCurrentTokenVar('company_id'),
+            'department_id' => $department_id,
+            'version' => \think\facade\Request::param('version')
+        ];
+        $this->saveDownExcelJob($jobData);
+    }
+
+    private
+    function saveDownExcelJob($jobData)
     {
         //将消息写入
         $down = DownExcelT::create([
