@@ -15,7 +15,7 @@ class DownExcelT extends Model
             ->where('state', CommonEnum::STATE_IS_OK)
             ->hidden(['create_time', 'update_time'])
             ->order('create_time desc')
-            ->select();
+            ->select()->toArray();
     }
 
 }

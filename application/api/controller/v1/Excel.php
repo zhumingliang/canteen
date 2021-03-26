@@ -40,17 +40,19 @@ class Excel extends BaseController
      * @apiDescription     CMS管理端-删除下载excel记录
      * @apiExample {post}  请求样例:
      *    {
-     *       "id": 1
+     *       "id": 1,
+     *       "type": "all"
      *     }
      * @apiParam (请求参数说明) {int} id  记录id
+     * @apiParam (请求参数说明) {string} type  all 清除所有；one：清除一个
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
      * @apiSuccess (返回参数说明) {string} msg 信息描述
      */
-    public function delete($id)
+    public function delete($id, $type = 'one')
     {
-        (new ExcelService())->deleteExcel($id);
+        (new ExcelService())->deleteExcel($id,$type);
         return json(new  SuccessMessage());
 
     }

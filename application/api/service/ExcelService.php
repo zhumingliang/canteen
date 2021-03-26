@@ -261,7 +261,7 @@ class ExcelService
         return '/static/excel/download/' . $fileName;
     }
 
-    public function makeExcelMerge2($columName, $list, $fileName,$SCRIPT_FILENAME, $merge, $excel2007 = false)
+    public function makeExcelMerge2($columName, $list, $fileName, $SCRIPT_FILENAME, $merge, $excel2007 = false)
     {
         if (empty($fileName)) $fileName = time();
         if (empty($columName) || empty($list)) {
@@ -341,9 +341,15 @@ class ExcelService
         return $excels;
     }
 
-    public function deleteExcel($id)
+    public function deleteExcel($id, $type)
     {
-        $delete = DownExcelT::update(['state' => CommonEnum::STATE_IS_OK], ['id' => $id]);
+        if ($type == 'one') {
+            $delete = DownExcelT::update(['state' => CommonEnum::STATE_IS_OK], ['id' => $id]);
+
+        } else {
+            $delete = DownExcelT::update(['state' => CommonEnum::STATE_IS_OK], ['admin_id' => Token::getCurrentUid()]);
+
+        }
         if (!$delete) {
             throw new DeleteException();
         }
