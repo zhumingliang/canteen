@@ -15,6 +15,7 @@ Route::rule('api/:version/token', 'api/:version.Index/token');
 Route::rule('api/:version/test', 'api/:version.Index/test');
 
 Route::post('api/:version/token/admin', 'api/:version.Token/getAdminToken');
+Route::post('api/:version/token/admin/bind', 'api/:version.Token/bindSocket');
 //Route::rule('api/:version/token/official', 'api/:version.Token/getOfficialToken')->middleware(\Naixiaoxin\ThinkWechat\Middleware\OauthMiddleware::class);
 Route::rule('api/:version/token/official', 'api/:version.Token/getOfficialToken');
 Route::rule('api/:version/token/machine', 'api/:version.Token/getMachineToken');

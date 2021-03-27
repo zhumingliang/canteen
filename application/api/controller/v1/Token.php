@@ -25,6 +25,7 @@ use app\lib\enum\CommonEnum;
 use app\lib\exception\SuccessMessage;
 use app\lib\exception\SuccessMessageWithData;
 use app\lib\exception\TokenException;
+use GatewayClient\Gateway;
 use think\Controller;
 use think\facade\Cache;
 use think\facade\Request;
@@ -54,7 +55,7 @@ class  Token extends Controller
     {
         $params = $this->request->param();
         $client_id = Request::param('client_id');
-        $at = new AdminToken($params['account'], $params['passwd'],$client_id);
+        $at = new AdminToken($params['account'], $params['passwd'], $client_id);
         $token = $at->get();
         return json(new SuccessMessageWithData(['data' => $token]));
     }
@@ -160,6 +161,30 @@ class  Token extends Controller
         $client_id = Request::param('client_id');
         $token = (new MachineToken())->get($code, $passwd, $client_id);
         return json(new SuccessMessageWithData(['data' => $token]));
+    }
+
+    /**
+     * @api {POST} /api/v1/token/admin/bind CMS管理端-绑定webSocket
+     * @apiGroup  CMS
+     * @apiVersion 3.0.0
+     * @apiDescription  CMS管理端-绑定webSocket
+     * @apiExample {post}  请求样例:
+     *    {
+     *       "client_id": 1
+     *     }
+     * @apiParam (请求参数说明) {String} client_id   websocket服务返回的登录id
+     * @apiSuccessExample {json} 返回样例:
+     *{"msg":"ok","errorCode":0,"code":200}}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     */
+    public function bindSocket($client_id)
+    {
+        $adminId = \app\api\service\Token::getCurrentUid();
+        $group = 'canteen:admin';
+        Gateway::joinGroup($client_id, $group);
+        Gateway::bindUid($client_id, $adminId);
+        return json(new SuccessMessage());
     }
 
 }

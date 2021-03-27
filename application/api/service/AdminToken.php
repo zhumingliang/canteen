@@ -25,11 +25,10 @@ class AdminToken extends Token
     protected $clientId;
 
 
-    function __construct($account, $passwd, $client_id)
+    function __construct($account, $passwd)
     {
         $this->account = $account;
         $this->passwd = $passwd;
-        $this->clientId = $client_id;
     }
 
     /**
@@ -59,21 +58,11 @@ class AdminToken extends Token
              */
             $token = $this->saveToCache('', $cachedValue);
             //进行绑定
-            $this->bind($this->clientId, $cachedValue['u_id']);
-
             return $token;
 
         } catch (Exception $e) {
             throw $e;
         }
-
-    }
-
-    private function bind($client_id, $adminId)
-    {
-        $group = 'canteen:admin';
-        Gateway::joinGroup($client_id, $group);
-        Gateway::bindUid($client_id, $adminId);
 
     }
 
