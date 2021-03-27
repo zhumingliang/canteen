@@ -44,6 +44,7 @@ use app\api\service\ConsumptionService;
 use app\api\service\DepartmentService;
 use app\api\service\ExcelService;
 use app\api\service\FoodService;
+use app\api\service\GatewayService;
 use app\api\service\LogService;
 use app\api\service\NextMonthPayService;
 use app\api\service\NoticeService;
@@ -69,6 +70,7 @@ use app\lib\exception\SuccessMessageWithData;
 use app\lib\Num;
 use app\lib\printer\Printer;
 use app\lib\weixin\Template;
+use GatewayClient\Gateway;
 use think\Db;
 use think\db\Where;
 use think\Exception;
@@ -85,27 +87,39 @@ Index extends BaseController
     /** @var string 任务周期 */
     public $expression = '* * * * * *';
 
-    public function index()
+    public function index($client_id, $type = 1)
     {
+        if ($type == 1) {
+            $adminId = 1;
+            $group = 'canteen:admin';
+            Gateway::joinGroup($client_id, $group);
+            Gateway::bindUid($client_id, $adminId);
 
-       /* $a = [];
-        $pay = PayWxT::where('id', '>', 1652)->select();
-        foreach ($pay as $k => $v) {
-            if (!in_array($v['out_trade_no'], $a)) {
-                array_push($a, $v['out_trade_no']);
-                PayT::update([
-                    'pay' => PayEnum::PAY_SUCCESS
-                ], [
-                    'order_num' => [
-                        $v['out_trade_no']
-                    ]
-
-                ]);
-            }
-
+        } else if ($type == 2) {
+            GatewayService::sendToMachine(1, [
+                'type' => 'down_excel',
+                'file_name' => '111',
+                'url' => "http://"
+            ]);
         }
-        $b = implode(',', $a);*/
 
+        /* $a = [];
+         $pay = PayWxT::where('id', '>', 1652)->select();
+         foreach ($pay as $k => $v) {
+             if (!in_array($v['out_trade_no'], $a)) {
+                 array_push($a, $v['out_trade_no']);
+                 PayT::update([
+                     'pay' => PayEnum::PAY_SUCCESS
+                 ], [
+                     'order_num' => [
+                         $v['out_trade_no']
+                     ]
+
+                 ]);
+             }
+
+         }
+         $b = implode(',', $a);*/
 
 
         /* $day = date('Y-m-d H:i:s', strtotime('+10 year',
