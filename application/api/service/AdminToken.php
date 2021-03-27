@@ -13,6 +13,7 @@ use app\api\model\AdminT;
 
 use app\lib\enum\CommonEnum;
 use app\lib\exception\TokenException;
+use GatewayClient\Gateway;
 use think\Exception;
 use think\facade\Cache;
 use zml\tp_tools\Redis;
@@ -21,12 +22,14 @@ class AdminToken extends Token
 {
     protected $account;
     protected $passwd;
+    protected $clientId;
 
 
-    function __construct($account, $passwd)
+    function __construct($account, $passwd, $client_id)
     {
         $this->account = $account;
         $this->passwd = $passwd;
+        $this->clientId = $client_id;
     }
 
     /**
@@ -55,11 +58,22 @@ class AdminToken extends Token
              * 缓存数据
              */
             $token = $this->saveToCache('', $cachedValue);
+            //进行绑定
+            $this->bind($this->clientId, $cachedValue['u_id']);
+
             return $token;
 
         } catch (Exception $e) {
             throw $e;
         }
+
+    }
+
+    private function bind($client_id, $adminId)
+    {
+        $group = 'canteen:admin';
+        Gateway::joinGroup($client_id, $group);
+        Gateway::bindUid($client_id, $adminId);
 
     }
 

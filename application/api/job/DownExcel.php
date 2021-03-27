@@ -27,6 +27,7 @@ use app\api\service\CompanyService;
 use app\api\service\DepartmentService;
 use app\api\service\ExcelService;
 use app\api\service\FoodService;
+use app\api\service\GatewayService;
 use app\api\service\LogService;
 use app\api\service\MaterialService;
 use app\api\service\NextMonthPayService;
@@ -211,12 +212,8 @@ class DownExcel
         $file_name = "企业员工导出";
         $url = (new ExcelService())->makeExcel2($header, $staffs, $file_name, $SCRIPT_FILENAME);
         $url = config('setting.domain') . $url;
-        DownExcelT::update([
-            'id' => $downId,
-            'status' => DownEnum::DOWN_SUCCESS,
-            'url' => $url,
-            'name' => $file_name,
-        ]);
+        $this->saveExcel($downId, $url, $file_name);
+
     }
 
     public function exportMaterials($data)
@@ -229,14 +226,10 @@ class DownExcel
         $materials = MaterialPriceV::exportMaterials($key, $selectField['field'], $selectField['value']);
         $header = ['序号', '企业名称', '饭堂名称', '材料名称', '单位', '金额-元'];
         $file_name = "材料价格明细";
-        $url = (new ExcelService())->makeExcel2($header, $materials, $file_name,$SCRIPT_FILENAME);
+        $url = (new ExcelService())->makeExcel2($header, $materials, $file_name, $SCRIPT_FILENAME);
         $url = config('setting.domain') . $url;
-        DownExcelT::update([
-            'id' => $downId,
-            'status' => DownEnum::DOWN_SUCCESS,
-            'url' => $url,
-            'name' => $file_name,
-        ]);
+        $this->saveExcel($downId, $url, $file_name);
+
     }
 
     public function exportOrderMaterials($data)
@@ -253,14 +246,10 @@ class DownExcel
         $statistic = (new OrderStatisticServiceV1())->prefixMaterials($statistic, $materials, true);
         $header = ['序号', '日期', '餐次', '材料名称', '材料数量', '订货数量', '单价', '总价'];
         $file_name = "材料明细下单表(" . $time_begin . "-" . $time_end . ")";
-        $url = (new ExcelService())->makeExcel2($header, $statistic, $file_name,$SCRIPT_FILENAME);
+        $url = (new ExcelService())->makeExcel2($header, $statistic, $file_name, $SCRIPT_FILENAME);
         $url = config('setting.domain') . $url;
-        DownExcelT::update([
-            'id' => $downId,
-            'status' => DownEnum::DOWN_SUCCESS,
-            'url' => $url,
-            'name' => $file_name,
-        ]);
+        $this->saveExcel($downId, $url, $file_name);
+
     }
 
     public function exportFoodMaterials($data)
@@ -273,14 +262,10 @@ class DownExcel
         $foods = (new FoodService())->prefixFoodMaterials($foods);
         $header = ['企业', '饭堂', '餐次', '菜品', '材料名称', '数量', '单位'];
         $file_name = "菜品材料明细导出报表";
-        $url = (new ExcelService())->makeExcelMerge2($header, $foods, $file_name, $SCRIPT_FILENAME,4);
+        $url = (new ExcelService())->makeExcelMerge2($header, $foods, $file_name, $SCRIPT_FILENAME, 4);
         $url = config('setting.domain') . $url;
-        DownExcelT::update([
-            'id' => $downId,
-            'status' => DownEnum::DOWN_SUCCESS,
-            'url' => $url,
-            'name' => $file_name,
-        ]);
+        $this->saveExcel($downId, $url, $file_name);
+
     }
 
     public function exportSalesReportToManager($data)
@@ -295,14 +280,10 @@ class DownExcel
         $products = (new ShopService())->prefixExportSalesReport($products['data']);
         $header = ['序号', '名称', '单价（元）', '单位', '总进货量', '总销售量', '总销售额（元）'];
         $file_name = $time_begin . "-" . $time_end . "-进销报表";
-        $url = (new ExcelService())->makeExcel2($header, $products, $file_name,$SCRIPT_FILENAME);
+        $url = (new ExcelService())->makeExcel2($header, $products, $file_name, $SCRIPT_FILENAME);
         $url = config('setting.domain') . $url;
-        DownExcelT::update([
-            'id' => $downId,
-            'status' => DownEnum::DOWN_SUCCESS,
-            'url' => $url,
-            'name' => $file_name,
-        ]);
+        $this->saveExcel($downId, $url, $file_name);
+
     }
 
     public function exportShopConsumptionStatistic($data)
@@ -361,14 +342,10 @@ class DownExcel
         $statistics = (new ShopService())->prefixConsumptionStatistic($statistic['data'], $statisticCount, $money);
         $header = ['序号', '统计变量', '下单时间', '结束时间', '姓名', '部门', '类型', '商品名称', '单位', '数量', '商品总金额（元）'];
         $file_name = "消费订单汇总查询";
-        $url = (new ExcelService())->makeExcel2($header, $statistics, $file_name,$SCRIPT_FILENAME);
+        $url = (new ExcelService())->makeExcel2($header, $statistics, $file_name, $SCRIPT_FILENAME);
         $url = config('setting.domain') . $url;
-        DownExcelT::update([
-            'id' => $downId,
-            'status' => DownEnum::DOWN_SUCCESS,
-            'url' => $url,
-            'name' => $file_name,
-        ]);
+        $this->saveExcel($downId, $url, $file_name);
+
     }
 
     public function exportOrderStatisticToManager($data)
@@ -387,14 +364,9 @@ class DownExcel
         $statistic = $this->prefixOrderStatisticToExport($statistic);
         $header = ['序号', '下单时间', '结束时间', '姓名', '手机号', '商品数量', '商品金额（元）', '地址', '状态', '类型', '名称', '单位', '数量', '金额'];
         $file_name = "订单明细查询";
-        $url = (new ExcelService())->makeExcelMerge2($header, $statistic, $file_name,$SCRIPT_FILENAME, 9);
+        $url = (new ExcelService())->makeExcelMerge2($header, $statistic, $file_name, $SCRIPT_FILENAME, 9);
         $url = config('setting.domain') . $url;
-        DownExcelT::update([
-            'id' => $downId,
-            'status' => DownEnum::DOWN_SUCCESS,
-            'url' => $url,
-            'name' => $file_name,
-        ]);
+        $this->saveExcel($downId, $url, $file_name);
     }
 
     public function exportUserBalance($data)
@@ -413,14 +385,10 @@ class DownExcel
             $header = ['姓名', '员工编号', '手机号码', '部门', '余额'];
         }
         $file_name = "饭卡余额报表";
-        $url = (new ExcelService())->makeExcel2($header, $staffs, $file_name,$SCRIPT_FILENAME);
+        $url = (new ExcelService())->makeExcel2($header, $staffs, $file_name, $SCRIPT_FILENAME);
         $url = config('setting.domain') . $url;
-        DownExcelT::update([
-            'id' => $downId,
-            'status' => DownEnum::DOWN_SUCCESS,
-            'url' => $url,
-            'name' => $file_name,
-        ]);
+        $this->saveExcel($downId, $url, $file_name);
+
     }
 
     public function exportUserBalanceWithAccount($data)
@@ -443,14 +411,10 @@ class DownExcel
         $header = (new WalletService())->prefixHeader($accounts, $header);
         $staffs = (new WalletService())->prefixExportBalanceWithAccount($staffs, $accounts, $checkCard);
         $file_name = "饭卡余额报表";
-        $url = (new ExcelService())->makeExcel2($header, $staffs, $file_name,$SCRIPT_FILENAME);
+        $url = (new ExcelService())->makeExcel2($header, $staffs, $file_name, $SCRIPT_FILENAME);
         $url = config('setting.domain') . $url;
-        DownExcelT::update([
-            'id' => $downId,
-            'status' => DownEnum::DOWN_SUCCESS,
-            'url' => $url,
-            'name' => $file_name,
-        ]);
+        $this->saveExcel($downId, $url, $file_name);
+
     }
 
     public function exportRechargeRecordsWithAccount($data)
@@ -467,14 +431,10 @@ class DownExcel
         $records = RechargeV::exportRechargeRecordsWithAccount($time_begin, $time_end, $type, $admin_id, $username, $company_id, $department_id);
         $header = ['创建时间', '部门', '姓名', "手机号", '账户名称', '充值金额', '充值途径', '充值人员', '备注'];
         $file_name = $time_begin . "-" . $time_end . "-充值记录明细";
-        $url = (new ExcelService())->makeExcel2($header, $records, $file_name,$SCRIPT_FILENAME);
+        $url = (new ExcelService())->makeExcel2($header, $records, $file_name, $SCRIPT_FILENAME);
         $url = config('setting.domain') . $url;
-        DownExcelT::update([
-            'id' => $downId,
-            'status' => DownEnum::DOWN_SUCCESS,
-            'url' => $url,
-            'name' => $file_name,
-        ]);
+        $this->saveExcel($downId, $url, $file_name);
+
     }
 
     private function exportRechargeRecords($data)
@@ -492,14 +452,9 @@ class DownExcel
             $admin_id, $username, $company_id, $department_id);
         $header = ['创建时间', '部门', '姓名', '手机号', '充值金额', '充值途径', '充值人员', '备注'];
         $file_name = $time_begin . "-" . $time_end . "-充值记录明细";
-        $url = (new ExcelService())->makeExcel2($header, $records, $file_name,$SCRIPT_FILENAME);
+        $url = (new ExcelService())->makeExcel2($header, $records, $file_name, $SCRIPT_FILENAME);
         $url = config('setting.domain') . $url;
-        DownExcelT::update([
-            'id' => $downId,
-            'status' => DownEnum::DOWN_SUCCESS,
-            'url' => $url,
-            'name' => $file_name,
-        ]);
+        $this->saveExcel($downId, $url, $file_name);
     }
 
     private function receptionsForCMSOutput($data)
@@ -558,14 +513,10 @@ class DownExcel
 
         $header = ['申请编号', '接待票编号', '饭堂', '餐次日期', '餐次', '部门', '使用人', '金额', '状态', '消费时间/取消时间'];
         $file_name = "接待票统计表";
-        $url = (new ExcelService())->makeExcel2($header, $records, $file_name,$SCRIPT_FILENAME);
+        $url = (new ExcelService())->makeExcel2($header, $records, $file_name, $SCRIPT_FILENAME);
         $url = config('setting.domain') . $url;
-        DownExcelT::update([
-            'id' => $downId,
-            'status' => DownEnum::DOWN_SUCCESS,
-            'url' => $url,
-            'name' => $file_name,
-        ]);
+        $this->saveExcel($downId, $url, $file_name);
+
     }
 
     private function receptionsForApplyOutput($data)
@@ -623,14 +574,10 @@ class DownExcel
 
         $header = ['申请编号', '申请时间', '餐次日期', '餐次', '部门', '申请人', '数量', '金额', '合计', '申请原因', '状态'];
         $file_name = "接待票申请表";
-        $url = (new ExcelService())->makeExcel2($header, $records, $file_name,$SCRIPT_FILENAME);
+        $url = (new ExcelService())->makeExcel2($header, $records, $file_name, $SCRIPT_FILENAME);
         $url = config('setting.domain') . $url;
-        DownExcelT::update([
-            'id' => $downId,
-            'status' => DownEnum::DOWN_SUCCESS,
-            'url' => $url,
-            'name' => $file_name,
-        ]);
+        $this->saveExcel($downId, $url, $file_name);
+
     }
 
     private function exportNextMonthPayStatistic($data)
@@ -651,14 +598,10 @@ class DownExcel
         $header = ['序号', '时间', '部门', '姓名', '手机号码', '应缴费用', '缴费状态', '缴费时间', '缴费途径', '合计数量', '合计金额（元）', '备注'];
         $reports = (new NextMonthPayService())->prefixConsumptionStatistic($statistic);
         $file_name = "缴费查询报表";
-        $url = (new ExcelService())->makeExcel2($header, $reports, $file_name,$SCRIPT_FILENAME);
+        $url = (new ExcelService())->makeExcel2($header, $reports, $file_name, $SCRIPT_FILENAME);
         $url = config('setting.domain') . $url;
-        DownExcelT::update([
-            'id' => $downId,
-            'status' => DownEnum::DOWN_SUCCESS,
-            'url' => $url,
-            'name' => $file_name,
-        ]);
+        $this->saveExcel($downId, $url, $file_name);
+
     }
 
     private function exportFace($data)
@@ -729,14 +672,10 @@ class DownExcel
         }
         $header = ['序号', '检测时间', '检测地点', '餐次', '部门', '姓名', '手机号码', '体温', '状态'];
         $file_name = "体温检测报表";
-        $url = (new ExcelService())->makeExcel2($header, $data, $file_name,$SCRIPT_FILENAME);
+        $url = (new ExcelService())->makeExcel2($header, $data, $file_name, $SCRIPT_FILENAME);
         $url = config('setting.domain') . $url;
-        DownExcelT::update([
-            'id' => $downId,
-            'status' => DownEnum::DOWN_SUCCESS,
-            'url' => $url,
-            'name' => $file_name,
-        ]);
+        $this->saveExcel($downId, $url, $file_name);
+
     }
 
     public function exportTakeoutStatistic($data)
@@ -756,14 +695,10 @@ class DownExcel
         $records = (new OrderStatisticServiceV1())->prefixExportTakeoutStatistic($records);
         $header = ['订餐号', '日期', '消费地点', '姓名', '手机号', '餐次', '金额（元）', '送货地点', '状态'];
         $file_name = $ordering_date . "-外卖管理报表";
-        $url = (new ExcelService())->makeExcel2($header, $records, $file_name,$SCRIPT_FILENAME);
+        $url = (new ExcelService())->makeExcel2($header, $records, $file_name, $SCRIPT_FILENAME);
         $url = config('setting.domain') . $url;
-        DownExcelT::update([
-            'id' => $downId,
-            'status' => DownEnum::DOWN_SUCCESS,
-            'url' => $url,
-            'name' => $file_name,
-        ]);
+        $this->saveExcel($downId, $url, $file_name);
+
     }
 
     private function exportConsumptionStatistic($data)
@@ -840,14 +775,10 @@ class DownExcel
         $reports = (new  OrderStatisticServiceV1())->prefixConsumptionStatistic($statistic, $dinner, $time_begin, $time_end);
         $reportName = $fileNameArr[$status];
         $file_name = $reportName . "(" . $time_begin . "-" . $time_end . ")";
-        $url = (new ExcelService())->makeExcel2($header, $reports, $file_name,$SCRIPT_FILENAME);
+        $url = (new ExcelService())->makeExcel2($header, $reports, $file_name, $SCRIPT_FILENAME);
         $url = config('setting.domain') . $url;
-        DownExcelT::update([
-            'id' => $downId,
-            'status' => DownEnum::DOWN_SUCCESS,
-            'url' => $url,
-            'name' => $file_name,
-        ]);
+        $this->saveExcel($downId, $url, $file_name);
+
     }
 
     private function exportConsumptionStatisticWithAccount($data)
@@ -924,14 +855,9 @@ class DownExcel
         $reports = (new  OrderStatisticServiceV1())->prefixConsumptionStatisticWithAccount($statistic, $accountRecords, $accounts, $dinner, $time_begin, $time_end);
         $reportName = $fileNameArr[$status];
         $file_name = $reportName . "(" . $time_begin . "-" . $time_end . ")";
-        $url = (new ExcelService())->makeExcel2($header, $reports, $file_name,$SCRIPT_FILENAME);
+        $url = (new ExcelService())->makeExcel2($header, $reports, $file_name, $SCRIPT_FILENAME);
         $url = config('setting.domain') . $url;
-        DownExcelT::update([
-            'id' => $downId,
-            'status' => DownEnum::DOWN_SUCCESS,
-            'url' => $url,
-            'name' => $file_name,
-        ]);
+        $this->saveExcel($downId, $url, $file_name);
     }
 
     private function exportOrderStatisticDetail($data)
@@ -956,12 +882,8 @@ class DownExcel
         $file_name = "订餐明细报表(" . $time_begin . "-" . $time_end . ")";
         $url = (new ExcelService())->makeExcel2($header, $list, $file_name, $SCRIPT_FILENAME);
         $url = config('setting.domain') . $url;
-        DownExcelT::update([
-            'id' => $downId,
-            'status' => DownEnum::DOWN_SUCCESS,
-            'url' => $url,
-            'name' => $file_name,
-        ]);
+        $this->saveExcel($downId, $url, $file_name);
+
     }
 
     private function exportOrderSettlement($data)
@@ -984,14 +906,10 @@ class DownExcel
         $records = (new OrderStatisticServiceV1())->prefixExportOrderSettlement($records);
         $header = ['序号', '消费日期', '消费时间', '部门', '姓名', '手机号', '消费地点', '消费类型', '餐次', '金额', '备注'];
         $file_name = "消费明细报表（" . $time_begin . "-" . $time_end . "）";
-        $url = (new ExcelService())->makeExcel2($header, $records, $file_name,$SCRIPT_FILENAME);
+        $url = (new ExcelService())->makeExcel2($header, $records, $file_name, $SCRIPT_FILENAME);
         $url = config('setting.domain') . $url;
-        DownExcelT::update([
-            'id' => $downId,
-            'status' => DownEnum::DOWN_SUCCESS,
-            'url' => $url,
-            'name' => $file_name,
-        ]);
+        $this->saveExcel($downId, $url, $file_name);
+
     }
 
     private function exportOrderSettlementWithAccount($data)
@@ -1014,14 +932,9 @@ class DownExcel
         $records = (new OrderStatisticServiceV1())->prefixExportOrderSettlementWithAccount($records);
         $header = ['序号', '消费日期', '消费时间', '部门', '姓名', '手机号', '消费地点', '账户名称', '消费类型', '餐次', '金额', '备注'];
         $file_name = "消费明细报表（" . $time_begin . "-" . $time_end . "）";
-        $url = (new ExcelService())->makeExcel2($header, $records, $file_name,$SCRIPT_FILENAME);
+        $url = (new ExcelService())->makeExcel2($header, $records, $file_name, $SCRIPT_FILENAME);
         $url = config('setting.domain') . $url;
-        DownExcelT::update([
-            'id' => $downId,
-            'status' => DownEnum::DOWN_SUCCESS,
-            'url' => $url,
-            'name' => $file_name,
-        ]);
+        $this->saveExcel($downId, $url, $file_name);
     }
 
     public function exportOrderStatistic($data)
@@ -1036,14 +949,26 @@ class DownExcel
         $list = OrderStatisticV::exportStatistic($time_begin, $time_end, $company_ids, $canteen_id);
         $header = ['日期', '公司', '消费地点', '餐次', '订餐份数'];
         $file_name = "订餐统计报表(" . $time_begin . "-" . $time_end . ")";
-        $url = (new ExcelService())->makeExcel2($header, $list, $file_name,$SCRIPT_FILENAME);
+        $url = (new ExcelService())->makeExcel2($header, $list, $file_name, $SCRIPT_FILENAME);
         $url = config('setting.domain') . $url;
-        DownExcelT::update([
-            'id' => $downId,
-            'status' => DownEnum::DOWN_SUCCESS,
-            'url' => $url,
-            'name' => $file_name,
+        $this->saveExcel($downId, $url, $file_name);
+
+    }
+
+
+    private function saveExcel($downId, $url, $file_name)
+    {
+        $excel = DownExcelT::get($downId);
+        $excel->status = DownEnum::DOWN_SUCCESS;
+        $excel->name = $file_name;
+        $excel->url = $url;
+        $excel->save();
+
+        GatewayService::sendToMachine($excel->admin_id, [
+            'file_name' => $file_name,
+            'url' => $url
         ]);
+
     }
 
 

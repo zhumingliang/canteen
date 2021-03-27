@@ -54,7 +54,6 @@ class Excel extends BaseController
     {
         (new ExcelService())->deleteExcel($id,$type);
         return json(new  SuccessMessage());
-
     }
 
 }
