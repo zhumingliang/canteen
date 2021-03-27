@@ -965,6 +965,7 @@ class DownExcel
         $excel->save();
 
         GatewayService::sendToMachine($excel->admin_id, [
+            'type' => 'down_excel',
             'file_name' => $file_name,
             'url' => $url
         ]);
