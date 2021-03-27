@@ -964,11 +964,12 @@ class DownExcel
         $excel->url = $url;
         $excel->save();
 
-        GatewayService::sendToMachine($excel->admin_id, [
+        $sendData = [
             'type' => 'down_excel',
             'file_name' => $file_name,
             'url' => $url
-        ]);
+        ];
+        GatewayService::sendToMachine($excel->admin_id, json_encode($sendData));
 
     }
 

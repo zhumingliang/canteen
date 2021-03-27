@@ -96,11 +96,13 @@ Index extends BaseController
             Gateway::bindUid($client_id, $adminId);
 
         } else if ($type == 2) {
-            GatewayService::sendToMachine(1, [
+            $data = [
                 'type' => 'down_excel',
                 'file_name' => '111',
                 'url' => "http://"
-            ]);
+            ];
+            $data = json_encode($data);
+            GatewayService::sendToMachine(1, $data);
         }
 
         /* $a = [];
