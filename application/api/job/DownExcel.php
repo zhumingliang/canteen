@@ -53,30 +53,37 @@ class DownExcel
      */
     public function fire(Job $job, $data)
     {
-        // 有些消息在到达消费者时,可能已经不再需要执行了
-        $isJobStillNeedToBeDone = $this->checkDatabaseToSeeIfJobNeedToBeDone($data);
-        if (!$isJobStillNeedToBeDone) {
-            $job->delete();
-            return;
-        }
-        //执行excel导入
-        $isJobDone = $this->doJob($data);
-        if ($isJobDone) {
-            // 如果任务执行成功，删除任务
-            $code = $data['company_id'] . ":" . $data['u_id'] . ":" . $data['type'];
-            LogService::saveJob("<warn>导出Excel任务执行成功！编号：$code" . "</warn>\n");
-            $job->delete();
-        } else {
-            $job->delete();
-     /*       if ($job->attempts() > 3) {
-                //通过这个方法可以检查这个任务已经重试了几次了
+        try {
+
+
+            // 有些消息在到达消费者时,可能已经不再需要执行了
+            $isJobStillNeedToBeDone = $this->checkDatabaseToSeeIfJobNeedToBeDone($data);
+            if (!$isJobStillNeedToBeDone) {
+                $job->delete();
+                return;
+            }
+            //执行excel导入
+            $isJobDone = $this->doJob($data);
+            if ($isJobDone) {
+                // 如果任务执行成功，删除任务
                 $code = $data['company_id'] . ":" . $data['u_id'] . ":" . $data['type'];
-                LogService::saveJob("<warn>导入excel已经重试超过3次，现在已经删除该任务编号：$code" . "</warn>\n");
-                $this->clearUploading($data['company_id'], $data['u_id'], $data['type']);
+                LogService::saveJob("<warn>导出Excel任务执行成功！编号：$code" . "</warn>\n");
                 $job->delete();
             } else {
-                $job->release(3); //重发任务
-            }*/
+                $job->delete();
+                /*       if ($job->attempts() > 3) {
+                           //通过这个方法可以检查这个任务已经重试了几次了
+                           $code = $data['company_id'] . ":" . $data['u_id'] . ":" . $data['type'];
+                           LogService::saveJob("<warn>导入excel已经重试超过3次，现在已经删除该任务编号：$code" . "</warn>\n");
+                           $this->clearUploading($data['company_id'], $data['u_id'], $data['type']);
+                           $job->delete();
+                       } else {
+                           $job->release(3); //重发任务
+                       }*/
+            }
+        } catch (\Exception $e) {
+            LogService::saveJob("<warn>导出Excel任务执行失败：" . $e->getMessage());
+            $job->delete();
         }
     }
 
