@@ -326,7 +326,7 @@ class ExcelService
             foreach ($excels as $k => $v) {
                 $timeBegin = '';
                 $timeEnd = '';
-                $prams = json_decode($v['prams']);
+                $prams = json_decode($v['prams'],true);
                 if (!empty($prams['time_begin'])) {
                     $timeBegin = $prams['time_begin'];
                 }
