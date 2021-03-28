@@ -66,7 +66,7 @@ class DownExcel
             $isJobDone = $this->doJob($data);
             if ($isJobDone) {
                 // 如果任务执行成功，删除任务
-                LogService::saveJob("<warn>导出Excel任务执行成功！编号：$code" . "</warn>\n");
+                LogService::saveJob("<warn>导出Excel任务执行成功" . "</warn>\n");
                 $job->delete();
             } else {
                 $job->delete();
