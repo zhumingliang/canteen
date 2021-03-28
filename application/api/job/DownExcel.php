@@ -66,8 +66,9 @@ class DownExcel
             $code = $data['company_id'] . ":" . $data['u_id'] . ":" . $data['type'];
             LogService::saveJob("<warn>导出Excel任务执行成功！编号：$code" . "</warn>\n");
             $job->delete();
-        } /*else {
-            if ($job->attempts() > 3) {
+        } else {
+            $job->delete();
+     /*       if ($job->attempts() > 3) {
                 //通过这个方法可以检查这个任务已经重试了几次了
                 $code = $data['company_id'] . ":" . $data['u_id'] . ":" . $data['type'];
                 LogService::saveJob("<warn>导入excel已经重试超过3次，现在已经删除该任务编号：$code" . "</warn>\n");
@@ -75,8 +76,8 @@ class DownExcel
                 $job->delete();
             } else {
                 $job->release(3); //重发任务
-            }
-        }*/
+            }*/
+        }
     }
 
     /**
