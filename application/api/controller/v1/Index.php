@@ -87,9 +87,10 @@ Index extends BaseController
     /** @var string 任务周期 */
     public $expression = '* * * * * *';
 
-    public function index($client_id, $type = 1)
+    public function index()
     {
-        if ($type == 1) {
+        echo dirname( $_SERVER['SCRIPT_FILENAME']);
+        /*if ($type == 1) {
             $adminId = 1;
             $group = 'canteen:admin';
             Gateway::joinGroup($client_id, $group);
@@ -103,7 +104,7 @@ Index extends BaseController
             ];
             $data = json_encode($data);
             GatewayService::sendToMachine(1, $data);
-        }
+        }*/
 
         /* $a = [];
          $pay = PayWxT::where('id', '>', 1652)->select();

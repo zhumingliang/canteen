@@ -56,7 +56,6 @@ class DownExcel
         // 有些消息在到达消费者时,可能已经不再需要执行了
         $isJobStillNeedToBeDone = $this->checkDatabaseToSeeIfJobNeedToBeDone($data);
         if (!$isJobStillNeedToBeDone) {
-            $this->clearUploading($data['company_id'], $data['u_id'], $data['type']);
             $job->delete();
             return;
         }
@@ -106,7 +105,6 @@ class DownExcel
     private function doJob($data)
     {
         try {
-
             $excelType = $data['excel_type'];
             switch ($excelType) {
                 case 'consumptionStatistic';
