@@ -946,7 +946,7 @@ class DownExcel
     {
 
         $canteen_id = $data['canteen_id'];
-        $company_ids = $data['company_id'];
+        $company_ids = $data['company_ids'];
         $time_begin = $data['time_begin'];
         $time_end = $data['time_end'];
         $downId = $data['down_id'];
