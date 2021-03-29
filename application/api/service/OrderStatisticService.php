@@ -764,6 +764,7 @@ class OrderStatisticService
         switch ($type) {
             case OrderEnum::STATISTIC_BY_DEPARTMENT:
                 $info = $this->consumptionStatisticByDepartment($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id, $phone, $order_type, $version);
+              print_r($info);
                 break;
             case OrderEnum::STATISTIC_BY_USERNAME:
                 $info = $this->consumptionStatisticByUsername($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id, $phone, $order_type, 1, 10000, $version);

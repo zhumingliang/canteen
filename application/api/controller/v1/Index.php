@@ -5,6 +5,7 @@ namespace app\api\controller\v1;
 
 
 use app\api\controller\BaseController;
+use app\api\job\DownExcel;
 use app\api\job\SendTemplate;
 use app\api\job\UploadExcel;
 use app\api\model\AccountRecordsT;
@@ -89,7 +90,8 @@ Index extends BaseController
 
     public function index()
     {
-        echo dirname( $_SERVER['SCRIPT_FILENAME']);
+        $params = \think\facade\Request::param();
+        (new DownExcel())->exportConsumptionStatistic($params);
         /*if ($type == 1) {
             $adminId = 1;
             $group = 'canteen:admin';

@@ -208,7 +208,7 @@ class DownExcelService
             'excel_type' => 'nextMonth',
             'pay_method' => $pay_method,
             'status' => $status,
-            'name' => $username,
+            'username' => $username,
             'phone' => $phone,
             'department_id' => $department_id,
             'company_id' => $company_id,

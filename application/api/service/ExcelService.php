@@ -188,14 +188,18 @@ class ExcelService
         for ($i = 0; $i < count($list[0]); $i++) {
             // for ($i = 0; $i < 20; $i++) {
             // $letter[$i]1 = A1 B1 C1  $letter[$i] = 列1 列2 列3
-            $PHPSheet->setCellValue("$letter[$i]1", "$columName[$i]");
+            if (!empty($letter[$i]) && !empty($columName[$i])) {
+                $PHPSheet->setCellValue("$letter[$i]1", "$columName[$i]");
+            }
         }
         //内容第2行开始
         foreach ($list as $key => $val) {
             //array_values 把一维数组的键转为0 1 2 3 ..
             foreach (array_values($val) as $key2 => $val2) {
                 //$letter[$key2].($key+2) = A2 B2 C2 ……
-                $PHPSheet->setCellValue($letter[$key2] . ($key + 2), $val2);
+                if (!empty($letter[$key2])) {
+                    $PHPSheet->setCellValue($letter[$key2] . ($key + 2), $val2);
+                }
             }
         }
         $savePath = dirname($SCRIPT_FILENAME) . '/static/excel/download/' . $fileName;
@@ -326,7 +330,7 @@ class ExcelService
             foreach ($excels as $k => $v) {
                 $timeBegin = '';
                 $timeEnd = '';
-                $prams = json_decode($v['prams'],true);
+                $prams = json_decode($v['prams'], true);
                 if (!empty($prams['time_begin'])) {
                     $timeBegin = $prams['time_begin'];
                 }

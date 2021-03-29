@@ -691,7 +691,7 @@ class DownExcel
         $department_id = $data['department_id'];
         $status = $data['status'];
         $user_type = $data['user_type'];
-        $company_ids = $data['company_id'];
+        $company_ids = $data['company_ids'];
         $downId = $data['down_id'];
         $SCRIPT_FILENAME = $data['SCRIPT_FILENAME'];
         $records = OrderTakeoutStatisticV::exportStatistic($ordering_date,
@@ -706,7 +706,7 @@ class DownExcel
 
     }
 
-    private function exportConsumptionStatistic($data)
+    public function exportConsumptionStatistic($data)
     {
         $canteen_id = $data['canteen_id'];
         $status = $data['status'];
@@ -777,11 +777,12 @@ class DownExcel
             ]);
         }
         $header = (new  OrderStatisticServiceV1())->addDinnerAndAccountToHeader($header, $dinner);
+
         $reports = (new  OrderStatisticServiceV1())->prefixConsumptionStatistic($statistic, $dinner, $time_begin, $time_end);
-        $reportName = $fileNameArr[$status];
-        $file_name = $reportName . "(" . $time_begin . "-" . $time_end . ")";
-        $url = (new ExcelService())->makeExcel2($header, $reports, $file_name, $SCRIPT_FILENAME);
-        $url = config('setting.domain') . $url;
+            $reportName = $fileNameArr[$status];
+            $file_name = $reportName . "(" . $time_begin . "-" . $time_end . ")";
+            $url = (new ExcelService())->makeExcel2($header, $reports, $file_name, $SCRIPT_FILENAME);
+            $url = config('setting.domain') . $url;
         $this->saveExcel($downId, $url, $file_name);
 
     }
@@ -900,7 +901,7 @@ class DownExcel
         $name = $data['name'];
         $time_begin = $data['time_begin'];
         $time_end = $data['time_end'];
-        $company_ids = $data['company_id'];
+        $company_ids = $data['company_ids'];
         $phone = $data['phone'];
         $consumption_type = $data['consumption_type'];
         $downId = $data['down_id'];
@@ -926,7 +927,7 @@ class DownExcel
         $name = $data['name'];
         $time_begin = $data['time_begin'];
         $time_end = $data['time_end'];
-        $company_ids = $data['company_id'];
+        $company_ids = $data['company_ids'];
         $phone = $data['phone'];
         $consumption_type = $data['consumption_type'];
         $downId = $data['down_id'];

@@ -1340,15 +1340,14 @@ class Order extends BaseController
         $time_begin = Request::param('time_begin');
         $time_end = Request::param('time_end');
         $company_ids = Request::param('company_ids');
-
         (new \app\api\service\v2\DownExcelService())->exportConsumptionStatistic($canteen_ids, $status, $type,
             $department_id, $username, $staff_type_id, $time_begin,
             $time_end, $company_ids, $phone, $order_type, 'consumptionStatistic');
         return json(new SuccessMessage());
 
-        /*   $statistic = (new DownExcelService())->exportConsumptionStatistic($canteen_ids, $status, $type,
-                    $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_ids, $phone, $order_type);
-                return json(new SuccessMessageWithData(['data' => $statistic]));*/
+        /*    $statistic = (new Order())->exportConsumptionStatistic($canteen_ids, $status, $type,
+                     $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_ids, $phone, $order_type);
+                 return json(new SuccessMessageWithData(['data' => $statistic]));*/
 
     }
 
