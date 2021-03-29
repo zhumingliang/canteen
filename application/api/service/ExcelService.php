@@ -344,10 +344,10 @@ class ExcelService
     public function deleteExcel($id, $type)
     {
         if ($type == 'one') {
-            $delete = DownExcelT::update(['state' => CommonEnum::STATE_IS_OK], ['id' => $id]);
+            $delete = DownExcelT::update(['state' => CommonEnum::STATE_IS_FAIL], ['id' => $id]);
 
         } else {
-            $delete = DownExcelT::update(['state' => CommonEnum::STATE_IS_OK], ['admin_id' => Token::getCurrentUid()]);
+            $delete = DownExcelT::update(['state' => CommonEnum::STATE_IS_FAIL], ['admin_id' => Token::getCurrentUid()]);
 
         }
         if (!$delete) {
