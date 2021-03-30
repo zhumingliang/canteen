@@ -159,9 +159,9 @@ class ExcelService
     {
         if (empty($fileName)) $fileName = time();
 
-        if (empty($columName) || empty($list)) {
+      /*  if (empty($columName) || empty($list)) {
             throw new ParameterException(['msg' => '导出数据为空']);
-        }
+        }*/
 
         //实例化PHPExcel类
         $PHPExcel = new \PHPExcel();
@@ -184,24 +184,27 @@ class ExcelService
             'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
             'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'
         ];
-        //把列名写入第1行 A1 B1 C1 ...
-        for ($i = 0; $i < count($list[0]); $i++) {
-            // for ($i = 0; $i < 20; $i++) {
-            // $letter[$i]1 = A1 B1 C1  $letter[$i] = 列1 列2 列3
-            if (!empty($letter[$i]) && !empty($columName[$i])) {
-                $PHPSheet->setCellValue("$letter[$i]1", "$columName[$i]");
+        if (count($list)) {
+            //把列名写入第1行 A1 B1 C1 ...
+            for ($i = 0; $i < count($list[0]); $i++) {
+                // for ($i = 0; $i < 20; $i++) {
+                // $letter[$i]1 = A1 B1 C1  $letter[$i] = 列1 列2 列3
+                if (!empty($letter[$i]) && !empty($columName[$i])) {
+                    $PHPSheet->setCellValue("$letter[$i]1", "$columName[$i]");
+                }
             }
-        }
-        //内容第2行开始
-        foreach ($list as $key => $val) {
-            //array_values 把一维数组的键转为0 1 2 3 ..
-            foreach (array_values($val) as $key2 => $val2) {
-                //$letter[$key2].($key+2) = A2 B2 C2 ……
-                if (!empty($letter[$key2])) {
-                    $PHPSheet->setCellValue($letter[$key2] . ($key + 2), $val2);
+            //内容第2行开始
+            foreach ($list as $key => $val) {
+                //array_values 把一维数组的键转为0 1 2 3 ..
+                foreach (array_values($val) as $key2 => $val2) {
+                    //$letter[$key2].($key+2) = A2 B2 C2 ……
+                    if (!empty($letter[$key2])) {
+                        $PHPSheet->setCellValue($letter[$key2] . ($key + 2), $val2);
+                    }
                 }
             }
         }
+
         $savePath = dirname($SCRIPT_FILENAME) . '/static/excel/download/' . $fileName;
         $PHPWriter->save($savePath);
         return '/static/excel/download/' . $fileName;

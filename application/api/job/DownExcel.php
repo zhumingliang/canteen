@@ -609,7 +609,7 @@ class DownExcel
 
     }
 
-    private function exportFace($data)
+    public function exportFace($data)
     {
         $canteen_id = $data['canteen_id'];
         $dinner_id = $data['dinner_id'];
@@ -677,7 +677,7 @@ class DownExcel
         }
         $header = ['序号', '检测时间', '检测地点', '餐次', '部门', '姓名', '手机号码', '体温', '状态'];
         $file_name = "体温检测报表";
-        $url = (new ExcelService())->makeExcel2($header, $data, $file_name, $SCRIPT_FILENAME);
+        $url = (new ExcelService())->makeExcel2($header, $dataList, $file_name, $SCRIPT_FILENAME);
         $url = config('setting.domain') . $url;
         $this->saveExcel($downId, $url, $file_name);
 

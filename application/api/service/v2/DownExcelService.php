@@ -266,7 +266,7 @@ class DownExcelService
             'type' => $type,
             'admin_id' => $admin_id,
             'company_id' => Token::getCurrentTokenVar('company_id'),
-            'name' => $username,
+            'username' => $username,
             'department_id' => $department_id,
             'time_begin' => $time_begin,
             'time_end' => $time_end,

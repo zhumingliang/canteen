@@ -90,8 +90,20 @@ Index extends BaseController
 
     public function index()
     {
-        $params = \think\facade\Request::param();
-        (new DownExcel())->exportConsumptionStatistic($params);
+        $data = [
+            'company_ids' => "69,82,99,100,103,110,106,107",
+            'canteen_id' => 0,
+            'user_type' => 1,
+            'status' => 6,
+            'phone' => "",
+            'department_id' => "",
+            'dinner_id' => "",
+            'time_begin' => "2021-02-01",
+            'ordering_date' => "2021-03-30",
+            'down_id' => 86,
+            'SCRIPT_FILENAME' => "/www/wwwroot/test-api.51canteen.cn/canteen/public/index.php"
+        ];
+        (new DownExcel())->exportTakeoutStatistic($data);
         /*if ($type == 1) {
             $adminId = 1;
             $group = 'canteen:admin';
