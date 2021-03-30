@@ -13,7 +13,7 @@ class DownExcelT extends Model
     {
         return self::where('admin_id', $adminId)
             ->where('state', CommonEnum::STATE_IS_OK)
-            ->hidden(['create_time', 'update_time'])
+            ->hidden(['update_time'])
             ->order('create_time desc')
             ->select()->toArray();
     }
