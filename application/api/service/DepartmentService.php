@@ -330,7 +330,7 @@ class DepartmentService
                     throw  new SaveException();
                 }
             }
-             Db::commit();
+            Db::commit();
         } catch (Exception $e) {
             Db::rollback();
             throw $e;
@@ -504,7 +504,7 @@ class DepartmentService
 
         if (in_array('card', $consumptionTypeArr)) {
             $data['card_num'] = $card_num;
-            if (count(explode('-', $birthday)) == 3||count(explode('/', $birthday)) == 3) {
+            if (count(explode('-', $birthday)) == 3 || count(explode('/', $birthday)) == 3) {
                 $data['birthday'] = $birthday;
             } else {
                 $data['birthday'] = gmdate("Y-m-d", ($birthday - 25569) * 86400);
@@ -585,7 +585,7 @@ class DepartmentService
     public
     function saveQrcode($s_id)
     {
-        $code = QRcodeNUmber();
+        $code = getQrCodeWithStaffId($s_id);
         $url = sprintf(config("setting.qrcode_url"), 'canteen', $code);
         $qrcode_url = (new QrcodeService())->qr_code($url);
         $expiry_date = date('Y-m-d H:i:s', strtotime("+" . config("setting.qrcode_expire_in") . "minute", time()));
@@ -607,7 +607,7 @@ class DepartmentService
     public
     function saveQrcode2($s_id)
     {
-        $code = QRcodeNUmber();
+        $code = getQrCodeWithStaffId($s_id);
         $url = sprintf(config("setting.qrcode_url"), 'canteen', $code);
         $qrcode_url = (new QrcodeService())->qr_code($url);
         $expiry_date = date('Y-m-d H:i:s', strtotime("+" . config("setting.qrcode_expire_in") . "minute", time()));
@@ -633,8 +633,8 @@ class DepartmentService
     public
     function updateQrcode2($params)
     {
-        $code = QRcodeNUmber();
         $staff_id = $params['id'];
+        $code = getQrCodeWithStaffId($staff_id);
         unset($params['id']);
         $url = sprintf(config("setting.qrcode_url"), 'canteen', $code);
         $qrcode_url = (new QrcodeService())->qr_code($url);
@@ -666,10 +666,11 @@ class DepartmentService
     public
     function updateQrcode($params)
     {
-        $code = QRcodeNUmber();
+        $s_id = $params['id'];
+        $code = getQrCodeWithStaffId($s_id);
         $url = sprintf(config("setting.qrcode_url"), 'canteen', $code, $params['s_id']);
         $qrcode_url = (new QrcodeService())->qr_code($url);
-        $s_id = $params['id'];
+
         $params['code'] = $code;
         $params['url'] = $qrcode_url;
         $expiry_date = date('Y-m-d H:i:s', time());
@@ -691,10 +692,11 @@ class DepartmentService
     public
     function updateQrcode3($params)
     {
-        $code = QRcodeNUmber();
+        $s_id = $params['staff_id'];
+        $code = getQrCodeWithStaffId($s_id);
         $url = sprintf(config("setting.qrcode_url"), 'canteen', $code, $params['s_id']);
         $qrcode_url = (new QrcodeService())->qr_code($url);
-        $s_id = $params['staff_id'];
+
         $params['code'] = $code;
         $params['url'] = $qrcode_url;
         $expiry_date = date('Y-m-d H:i:s', time());
