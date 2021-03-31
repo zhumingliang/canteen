@@ -90,7 +90,27 @@ Index extends BaseController
 
     public function index()
     {
-        $data = [
+        $orders = OrderT::where('company_id', 122)
+            ->where('id', '>', 203133)
+            ->where('id', '<', 214781)
+            ->where('used', CommonEnum::STATE_IS_FAIL)
+            ->select();
+        $data = [];
+        foreach ($orders as $k => $v) {
+            if ($v['used'] == 1) {
+                array_push($data, [
+                    'id' => $v['id'],
+                    'consumption_type' => "no_meals_ordered",
+                    'money' => $v['no_meal_money'],
+                    'sub_money' => $v['no_meal_sub_money']
+                ]);
+            }
+
+        }
+
+        (new OrderT())->saveAll($data);
+
+        /*$data = [
             'company_ids' => "69,82,99,100,103,110,106,107",
             'canteen_id' => 0,
             'user_type' => 1,
@@ -103,7 +123,7 @@ Index extends BaseController
             'down_id' => 86,
             'SCRIPT_FILENAME' => "/www/wwwroot/test-api.51canteen.cn/canteen/public/index.php"
         ];
-        (new DownExcel())->exportTakeoutStatistic($data);
+        (new DownExcel())->exportTakeoutStatistic($data);*/
         /*if ($type == 1) {
             $adminId = 1;
             $group = 'canteen:admin';

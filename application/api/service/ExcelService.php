@@ -340,6 +340,12 @@ class ExcelService
                 if (!empty($prams['time_begin'])) {
                     $timeEnd = $prams['time_end'];
                 }
+                if (!empty($prams['ordering_date'])){
+                    $timeBegin = $prams['ordering_date'];
+                    $timeEnd = $prams['ordering_date'];
+
+                }
+
                 $excels[$k]['time_begin'] = $timeBegin;
                 $excels[$k]['time_end'] = $timeEnd;
                 unset($excels[$k]['prams']);
