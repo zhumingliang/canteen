@@ -306,10 +306,6 @@ class DownExcel
         $SCRIPT_FILENAME = $data['SCRIPT_FILENAME'];
         $field = '';
         $supplier_id = 0;
-        if (Token::getCurrentTokenVar('type') == 'supplier') {
-            $supplier_id = (new AuthorService())->checkAuthorSupplier();
-            $company_id = Token::getCurrentTokenVar('company_id');
-        }
         if ($type == ShopEnum::STATISTIC_BY_CATEGORY) {
             $statistic = ShopOrderStatisticV::consumptionStatisticGroupByCategoryID(1, 1000, $category_id, $product_id,
                 $status, $time_begin, $time_end, $supplier_id, $department_id, $username, $company_id);
