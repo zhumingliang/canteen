@@ -516,7 +516,7 @@ class ShopService
         ];
     }
 
-    private function prefixOrderStatisticToExport($list)
+    public function prefixOrderStatisticToExport($list)
     {
         $dataList = [];
         if (!count($list)) {

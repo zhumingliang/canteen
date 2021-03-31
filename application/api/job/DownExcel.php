@@ -366,7 +366,7 @@ class DownExcel
         $SCRIPT_FILENAME = $data['SCRIPT_FILENAME'];
         $statistic = ShopOrderV::exportOrderStatisticToManager($department_id, $name,
             $phone, $status, $time_begin, $time_end, $company_id);
-        $statistic = $this->prefixOrderStatisticToExport($statistic);
+        $statistic = (new ShopService())->prefixOrderStatisticToExport($statistic);
         $header = ['序号', '下单时间', '结束时间', '姓名', '手机号', '商品数量', '商品金额（元）', '地址', '状态', '类型', '名称', '单位', '数量', '金额'];
         $file_name = "订单明细查询";
         $url = (new ExcelService())->makeExcelMerge2($header, $statistic, $file_name, $SCRIPT_FILENAME, 9);
@@ -779,10 +779,10 @@ class DownExcel
         $header = (new  OrderStatisticServiceV1())->addDinnerAndAccountToHeader($header, $dinner);
 
         $reports = (new  OrderStatisticServiceV1())->prefixConsumptionStatistic($statistic, $dinner, $time_begin, $time_end);
-            $reportName = $fileNameArr[$status];
-            $file_name = $reportName . "(" . $time_begin . "-" . $time_end . ")";
-            $url = (new ExcelService())->makeExcel2($header, $reports, $file_name, $SCRIPT_FILENAME);
-            $url = config('setting.domain') . $url;
+        $reportName = $fileNameArr[$status];
+        $file_name = $reportName . "(" . $time_begin . "-" . $time_end . ")";
+        $url = (new ExcelService())->makeExcel2($header, $reports, $file_name, $SCRIPT_FILENAME);
+        $url = config('setting.domain') . $url;
         $this->saveExcel($downId, $url, $file_name);
 
     }
