@@ -387,10 +387,10 @@ class OrderStatisticService
     public
     function takeoutStatistic($page, $size,
                               $ordering_date, $company_ids,
-                              $canteen_id, $dinner_id, $status, $department_id, $user_type)
+                              $canteen_id, $dinner_id, $status, $department_id, $user_type,$username)
     {
         $records = OrderTakeoutStatisticV::statistic($page, $size,
-            $ordering_date, $company_ids, $canteen_id, $dinner_id, $status, $department_id, $user_type);
+            $ordering_date, $company_ids, $canteen_id, $dinner_id, $status, $department_id, $user_type,$username);
         return $records;
     }
 

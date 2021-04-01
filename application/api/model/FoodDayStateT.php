@@ -28,7 +28,7 @@ class FoodDayStateT extends Model
     {
         return self::where('canteen_id', $canteen_id)
             ->where('day', '>=', date('Y-m-d'))
-            ->where('state', CommonEnum::STATE_IS_OK)
+            ->where('status', CommonEnum::STATE_IS_OK)
             ->field('dinner_id,day')
             ->group('dinner_id,day')
             ->select()->toArray();

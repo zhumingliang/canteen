@@ -165,7 +165,7 @@ class DownExcelService
     public function exportTakeoutStatistic($ordering_date, $company_ids,
                                            $canteen_id, $dinner_id,
                                            $status, $department_id,
-                                           $user_type)
+                                           $user_type,$username)
     {
         $jobData = [
             'excel_type' => 'takeoutStatistic',
@@ -176,6 +176,7 @@ class DownExcelService
             'dinner_id' => $dinner_id,
             'company_ids' => $company_ids,
             'user_type' => $user_type,
+            'username' => $username,
             'version' => \think\facade\Request::param('version')
         ];
         $this->saveDownExcelJob($jobData);

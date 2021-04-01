@@ -564,7 +564,7 @@ class OrderingV extends Model
 
             })->buildSql();
         $records = Db::table($sql . 'a')
-            ->order('a.ordering_date desc')
+            ->order('ordering_date')
             ->paginate($size, false, ['page' => $page]);
         return $records;
     }
