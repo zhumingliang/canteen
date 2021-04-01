@@ -284,7 +284,7 @@ class DownExcel
             $time_end, $supplier_id);
         $products = (new ShopService())->prefixExportSalesReport($products['data']);
         $header = ['序号', '名称', '单价（元）', '单位', '总进货量', '总销售量', '总销售额（元）'];
-        $file_name = $time_begin . "-" . $time_end . "-进销报表";
+        $file_name = "进销报表-" . $time_begin . "-" . $time_end . "";
         $url = (new ExcelService())->makeExcel2($header, $products, $file_name, $SCRIPT_FILENAME);
         $url = config('setting.domain') . $url;
         $this->saveExcel($downId, $url, $file_name);
@@ -431,7 +431,7 @@ class DownExcel
         $type = $data['type'];
         $records = RechargeV::exportRechargeRecordsWithAccount($time_begin, $time_end, $type, $admin_id, $username, $company_id, $department_id);
         $header = ['创建时间', '部门', '姓名', "手机号", '账户名称', '充值金额', '充值途径', '充值人员', '备注'];
-        $file_name = $time_begin . "-" . $time_end . "-充值记录明细";
+        $file_name = "充值记录明细-" . $time_begin . "-" . $time_end;
         $url = (new ExcelService())->makeExcel2($header, $records, $file_name, $SCRIPT_FILENAME);
         $url = config('setting.domain') . $url;
         $this->saveExcel($downId, $url, $file_name);
@@ -452,7 +452,7 @@ class DownExcel
         $records = RechargeV::exportRechargeRecords($time_begin, $time_end, $type,
             $admin_id, $username, $company_id, $department_id);
         $header = ['创建时间', '部门', '姓名', '手机号', '充值金额', '充值途径', '充值人员', '备注'];
-        $file_name = $time_begin . "-" . $time_end . "-充值记录明细";
+        $file_name = "充值记录明细-".$time_begin . "-" . $time_end ;
         $url = (new ExcelService())->makeExcel2($header, $records, $file_name, $SCRIPT_FILENAME);
         $url = config('setting.domain') . $url;
         $this->saveExcel($downId, $url, $file_name);
@@ -696,7 +696,7 @@ class DownExcel
             $user_type, $username);
         $records = (new OrderStatisticServiceV1())->prefixExportTakeoutStatistic($records);
         $header = ['订餐号', '日期', '消费地点', '姓名', '手机号', '餐次', '金额（元）', '送货地点', '状态'];
-        $file_name = $ordering_date . "-外卖管理报表";
+        $file_name = "外卖管理报表-" . $ordering_date;
         $url = (new ExcelService())->makeExcel2($header, $records, $file_name, $SCRIPT_FILENAME);
         $url = config('setting.domain') . $url;
         $this->saveExcel($downId, $url, $file_name);

@@ -64,7 +64,7 @@ class OrderTakeoutStatisticV extends Model
                     $query->where('state', OrderEnum::REFUND);
                 }
             })
-            ->where(function ($query) use ($company_ids, $canteen_id, $dinner_id,) {
+            ->where(function ($query) use ($company_ids, $canteen_id, $dinner_id) {
                 if (!empty($dinner_id)) {
                     $query->where('dinner_id', $dinner_id);
                 } else {

@@ -317,6 +317,7 @@ Route::post('api/:version/wallet/supplement', 'api/:version.Wallet/rechargeSuppl
 Route::post('api/:version/wallet/supplement/upload', 'api/:version.Wallet/rechargeSupplementUpload');
 Route::post('api/:version/wallet/pay', 'api/:version.Wallet/saveOrder');
 Route::get('api/:version/wallet/pay/getPreOrder', 'api/:version.Wallet/getPreOrder');
+Route::get('api/:version/wallet/pay/nonghang/link', 'api/:version.Wallet/payLink');
 Route::rule('api/:version/wallet/WXNotifyUrl', 'api/:version.Wallet/WXNotifyUrl');
 
 
