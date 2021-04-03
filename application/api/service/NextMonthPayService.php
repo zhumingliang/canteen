@@ -223,7 +223,7 @@ class NextMonthPayService
         ];
     }
 
-    private function prefixConsumptionStatistic($statistic){
+    public function prefixConsumptionStatistic($statistic){
         $dataList=[];
 
         if(!empty($statistic)){

@@ -8,6 +8,7 @@ use app\api\model\NextmonthPaySettingT;
 use app\api\model\NextmonthPayT;
 use app\api\model\PayT;
 use app\api\service\NextMonthPayService;
+use app\api\service\v2\DownExcelService;
 use app\lib\exception\AuthException;
 use app\lib\exception\SaveException;
 use app\lib\exception\SuccessMessage;
@@ -302,8 +303,10 @@ class NextMonthPay extends BaseController
         if (empty($time_end)) {
             throw new AuthException(['msg' => '请选择欠费时间的结束时间']);
         }
-        $statistic = (new NextMonthPayService())->exportNextMonthPayStatistic($time_begin, $time_end, $company_id, $department_id, $status, $pay_method, $username, $phone);
-        return json(new SuccessMessageWithData(['data' => $statistic]));
+        (new DownExcelService())->exportNextMonthPayStatistic($time_begin, $time_end, $company_id, $department_id, $status, $pay_method, $username, $phone);
+        return json(new SuccessMessage());
+       /* $statistic = (new NextMonthPayService())->exportNextMonthPayStatistic($time_begin, $time_end, $company_id, $department_id, $status, $pay_method, $username, $phone);
+        return json(new SuccessMessageWithData(['data' => $statistic]));*/
     }
 
     /**

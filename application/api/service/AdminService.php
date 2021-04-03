@@ -228,8 +228,8 @@ class AdminService
 
     public function roleTypes($page, $size, $key)
     {
-        $types = StaffTypeT::roleTypes($page, $size, $key);
-        return $types;
+/*        $types = StaffTypeT::roleTypes($page, $size, $key);
+        return $types;*/
 
         $grade = Token::getCurrentTokenVar('grade');
         if ($grade == AdminEnum::SYSTEM_SUPER) {

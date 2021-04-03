@@ -13,6 +13,7 @@ use app\api\model\AdminT;
 
 use app\lib\enum\CommonEnum;
 use app\lib\exception\TokenException;
+use GatewayClient\Gateway;
 use think\Exception;
 use think\facade\Cache;
 use zml\tp_tools\Redis;
@@ -21,6 +22,7 @@ class AdminToken extends Token
 {
     protected $account;
     protected $passwd;
+    protected $clientId;
 
 
     function __construct($account, $passwd)
@@ -55,6 +57,7 @@ class AdminToken extends Token
              * 缓存数据
              */
             $token = $this->saveToCache('', $cachedValue);
+            //进行绑定
             return $token;
 
         } catch (Exception $e) {

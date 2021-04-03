@@ -12,6 +12,7 @@ use app\api\model\CompanyT;
 use app\api\model\DinnerV;
 use app\api\model\OrderParentT;
 use app\api\model\OrderT;
+use app\api\model\PayNonghangConfigT;
 use app\api\model\PayT;
 use app\api\model\RechargeCashT;
 use app\api\model\RechargeSupplementT;
@@ -394,7 +395,7 @@ class WalletService
         ];
     }
 
-    private function prefixHeader($accounts, $header)
+    public function prefixHeader($accounts, $header)
     {
         foreach ($accounts as $k => $v) {
             array_push($header, $v['name']);
@@ -405,7 +406,7 @@ class WalletService
     }
 
 
-    private function prefixExportBalanceWithAccount($staffs, $accounts, $checkCard)
+    public function prefixExportBalanceWithAccount($staffs, $accounts, $checkCard)
     {
         $dataList = [];
         if (count($staffs)) {
@@ -1080,5 +1081,18 @@ class WalletService
             ], ['prepare_id' => $prepareId]);
         }
 
+    }
+
+    public function payLink()
+    {
+        $companyId = Token::getCurrentTokenVar('current_company_id');
+        //获取农行支付配置信息
+        $config = PayNonghangConfigT::config($companyId);
+        if (!$config || empty([$config->code])) {
+            throw new ParameterException(['msg' => "农行支付配置异常"]);
+        }
+        return [
+            'url' => "https://enjoy.abchina.com/jf-openweb/wechat/shareEpayItem?code=" . $config->code
+        ];
     }
 }

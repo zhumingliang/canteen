@@ -11,10 +11,7 @@ namespace app\api\controller\v1;
 
 use app\api\controller\BaseController;
 use app\api\model\MaterialReportT;
-use app\api\model\OnlineOrderingT;
 use app\api\model\PersonalChoiceT;
-use app\api\model\ShopOrderDetailV;
-use app\api\service\LogService;
 use app\api\service\OrderService;
 use app\api\service\OrderStatisticService;
 use app\lib\enum\CommonEnum;
@@ -734,7 +731,7 @@ class Order extends BaseController
         $dinner_id = Request::param('dinner_id');
         $food_id = Request::param('food_id');
         $consumption_time = Request::param('consumption_time');
-        $info = (new OrderService())->foodUsersStatistic($dinner_id, $food_id, $consumption_time, $page, $size,$department_id);
+        $info = (new OrderService())->foodUsersStatistic($dinner_id, $food_id, $consumption_time, $page, $size, $department_id);
         return json(new SuccessMessageWithData(['data' => $info]));
     }
 
@@ -823,8 +820,10 @@ class Order extends BaseController
         $time_begin = Request::param('time_begin');
         $time_end = Request::param('time_end');
         $company_ids = Request::param('company_ids');
-        $list = (new OrderStatisticService())->exportStatistic($time_begin, $time_end, $company_ids, $canteen_id);
-        return json(new SuccessMessageWithData(['data' => $list]));
+        (new \app\api\service\v2\DownExcelService())->exportStatistic($time_begin, $time_end, $company_ids, $canteen_id);
+        return json(new SuccessMessage());
+        /* $list = (new DownExcelService())->exportStatistic($time_begin, $time_end, $company_ids, $canteen_id);
+         return json(new SuccessMessageWithData(['data' => $list]));*/
     }
 
 
@@ -918,7 +917,7 @@ class Order extends BaseController
      * @api {GET} /api/v1/order/orderStatistic/detail/export CMS管理端-订餐管理-订餐明细-导出报表
      * @apiGroup  CMS管理端
      * @apiVersion 3.0.0
-     * @apiDescription CMS管理端-订餐管理-订餐明细-订餐明细-导出报表
+     * @apiDescription CMS管理端-订餐管理-订餐明细-导出报表
      * @apiExample {get}  请求样例:
      * http://canteen.tonglingok.com/api/v1/order/orderStatistic/detail/export?company_ids=&canteen_id=0&time_begin=2019-09-07&time_end=2019-12-07&department_id=2&dinner_id=0&name=&phone&type=3
      * @apiParam (请求参数说明) {int} page 当前页码
@@ -945,11 +944,16 @@ class Order extends BaseController
         $time_begin = Request::param('time_begin');
         $time_end = Request::param('time_end');
         $company_ids = Request::param('company_ids');
-        $list = (new OrderStatisticService())->exportOrderStatisticDetail($company_ids, $time_begin,
+        (new \app\api\service\v2\DownExcelService())->exportOrderStatisticDetail($company_ids, $time_begin,
             $time_end, $name,
             $phone, $canteen_id, $department_id,
             $dinner_id, $type);
-        return json(new SuccessMessageWithData(['data' => $list]));
+        return json(new SuccessMessage());
+        /*       $list = (new DownExcelService())->exportOrderStatisticDetail($company_ids, $time_begin,
+                   $time_end, $name,
+                   $phone, $canteen_id, $department_id,
+                   $dinner_id, $type);
+               return json(new SuccessMessageWithData(['data' => $list]));*/
 
     }
 
@@ -1035,10 +1039,14 @@ class Order extends BaseController
         $time_begin = Request::param('time_begin');
         $time_end = Request::param('time_end');
         $company_ids = Request::param('company_ids');
-        $records = (new OrderStatisticService())->exportOrderSettlement(
+        (new \app\api\service\v2\DownExcelService())->exportOrderSettlement(
             $name, $phone, $canteen_id, $department_id, $dinner_id,
             $consumption_type, $time_begin, $time_end, $company_ids, $type);
-        return json(new SuccessMessageWithData(['data' => $records]));
+        return json(new SuccessMessage());
+        /* $records = (new DownExcelService())->exportOrderSettlement(
+             $name, $phone, $canteen_id, $department_id, $dinner_id,
+             $consumption_type, $time_begin, $time_end, $company_ids, $type);
+         return json(new SuccessMessageWithData(['data' => $records]));*/
     }
 
     /**
@@ -1332,9 +1340,14 @@ class Order extends BaseController
         $time_begin = Request::param('time_begin');
         $time_end = Request::param('time_end');
         $company_ids = Request::param('company_ids');
-        $statistic = (new OrderStatisticService())->exportConsumptionStatistic($canteen_ids, $status, $type,
-            $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_ids, $phone, $order_type);
-        return json(new SuccessMessageWithData(['data' => $statistic]));
+        (new \app\api\service\v2\DownExcelService())->exportConsumptionStatistic($canteen_ids, $status, $type,
+            $department_id, $username, $staff_type_id, $time_begin,
+            $time_end, $company_ids, $phone, $order_type, 'consumptionStatistic');
+        return json(new SuccessMessage());
+
+        /*    $statistic = (new Order())->exportConsumptionStatistic($canteen_ids, $status, $type,
+                     $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_ids, $phone, $order_type);
+                 return json(new SuccessMessageWithData(['data' => $statistic]));*/
 
     }
 

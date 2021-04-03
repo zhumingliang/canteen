@@ -11,6 +11,7 @@ use app\api\service\OrderStatisticService;
 use app\api\service\QrcodeService;
 use app\api\service\Token;
 use app\api\service\Token as TokenService;
+use app\api\service\v2\DownExcelService;
 use app\lib\enum\CommonEnum;
 use think\Container;
 use think\db\exception\DataNotFoundException;
@@ -351,7 +352,7 @@ class Reception extends BaseController
         $count = DB::query($count);
         $total = $count[0]['count'];
         $sum = $count[0]['sum'];
-        $data = ['total' => $total,'sum' =>$sum, 'per_page' => $size, 'current_page' => $page, 'data' => $dtResult];
+        $data = ['total' => $total, 'sum' => $sum, 'per_page' => $size, 'current_page' => $page, 'data' => $dtResult];
         return json(new SuccessMessageWithData(['data' => $data]));
     }
 
@@ -384,8 +385,7 @@ class Reception extends BaseController
                 $whereStr .= 'and t3.id = ' . $canteen_id . ' ';
             }
         }
-        if(strlen($ordering_date))
-        {
+        if (strlen($ordering_date)) {
             $whereStr .= 'and t2.ordering_date = ' . "'$ordering_date'" . ' ';
         }
         if ($whereStr !== "") {
@@ -415,11 +415,10 @@ class Reception extends BaseController
         if (!empty($user_id)) {
             $whereStr .= 'and t1.user_id = ' . $user_id . ' ';
         }
-        if(strlen($ordering_date))
-        {
+        if (strlen($ordering_date)) {
             $whereStr .= 'and t1.ordering_date = ' . "'$ordering_date'" . ' ';
         }
-        $sql = "select t1.code_number as apply_code,t1.create_time as apply_time,t1.ordering_date,t4.name as canteen_name,t2.name as dinner_name,t3.username as apply_name,t1.count,(case when t1.status = 1 then '审核中' when t1.status = 2 then '已生效' when t1.status = 3 then '审核不通过' when t1.status = 4 then '已撤销' end) as apply_state from canteen_reception_t t1 left join canteen_dinner_t t2 ON t1.dinner_id = t2.id left join canteen_company_staff_t t3 ON t1.staff_id = t3.id left join canteen_canteen_t t4 on t1.canteen_id = t4.id where 1 = 1 and t3.state = 1 " .$whereStr. "order by field(t1.`status`,2,1,4,3),t1.ordering_date desc limit ?,?";
+        $sql = "select t1.code_number as apply_code,t1.create_time as apply_time,t1.ordering_date,t4.name as canteen_name,t2.name as dinner_name,t3.username as apply_name,t1.count,(case when t1.status = 1 then '审核中' when t1.status = 2 then '已生效' when t1.status = 3 then '审核不通过' when t1.status = 4 then '已撤销' end) as apply_state from canteen_reception_t t1 left join canteen_dinner_t t2 ON t1.dinner_id = t2.id left join canteen_company_staff_t t3 ON t1.staff_id = t3.id left join canteen_canteen_t t4 on t1.canteen_id = t4.id where 1 = 1 and t3.state = 1 " . $whereStr . "order by field(t1.`status`,2,1,4,3),t1.ordering_date desc limit ?,?";
         $count = "select count(*) as count from canteen_reception_t t1 left join canteen_dinner_t t2 ON t1.dinner_id = t2.id left join canteen_company_staff_t t3 ON t1.staff_id = t3.id left join canteen_canteen_t t4 on t1.canteen_id = t4.id where 1 = 1 and t3.state = 1 " . $whereStr . " order by t1.create_time desc";
         $dtResult = Db::query($sql, [($page - 1) * $size, $size]);
         $count = DB::query($count);
@@ -467,7 +466,7 @@ class Reception extends BaseController
             ->where('c_id', $company_id)
             ->find();
         $deptmentName = $dept['name'];
-        $data = ['staff_id' => $staff_id, 'username' => $username, 'phone'=>$phone,'deptmentName' => $deptmentName];
+        $data = ['staff_id' => $staff_id, 'username' => $username, 'phone' => $phone, 'deptmentName' => $deptmentName];
         return json(new SuccessMessageWithData(['data' => $data]));
     }
 
@@ -488,7 +487,7 @@ class Reception extends BaseController
         if (empty($receptionMoney)) {
             throw  new  AuthException(['msg' => '该饭堂未配置接待票']);
         }
-        $data = ['money' => $money,'approval'=>$approval];
+        $data = ['money' => $money, 'approval' => $approval];
         return json(new SuccessMessageWithData(['data' => $data]));
     }
 
@@ -504,7 +503,12 @@ class Reception extends BaseController
         $reception_code = Request::param('reception_code');
         $company_id = Request::param('company_id');
         $reception_state = Request::param('reception_state');
-        $whereStr = '';
+        (new DownExcelService())->receptionsForCMSOutput($apply_name, $canteen_id, $department_id,
+            $dinner_id, $ordering_date, $reception_code, $company_id,
+            $reception_state);
+        return json(new SuccessMessage());
+/*        $whereStr = '';
+
         if (!empty($company_id)) {
             if ($company_id !== "ALL") {
                 $whereStr .= 'and t7.id =' . $company_id . ' ';
@@ -550,7 +554,7 @@ class Reception extends BaseController
         $file_name = "接待票统计表";
         $url = (new ExcelService())->makeExcel($header, $records, $file_name);
         $data = ['url' => 'http://' . $_SERVER['HTTP_HOST'] . $url];
-        return json(new SuccessMessageWithData(['data' => $data]));
+        return json(new SuccessMessageWithData(['data' => $data]));*/
 
     }
 
@@ -567,6 +571,11 @@ class Reception extends BaseController
         $apply_code = Request::param('apply_code');
         $company_id = Request::param('company_id');
         $apply_state = Request::param('apply_state');
+        (new DownExcelService())->receptionsForApplyOutput($apply_name, $canteen_id, $department_id,
+            $dinner_id, $ordering_date, $apply_code, $company_id,
+            $apply_state);
+        return json(new SuccessMessage());
+
         $whereStr = '';
 
         if (!empty($company_id)) {

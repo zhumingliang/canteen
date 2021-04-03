@@ -15,6 +15,7 @@ Route::rule('api/:version/token', 'api/:version.Index/token');
 Route::rule('api/:version/test', 'api/:version.Index/test');
 
 Route::post('api/:version/token/admin', 'api/:version.Token/getAdminToken');
+Route::post('api/:version/token/admin/bind', 'api/:version.Token/bindSocket');
 //Route::rule('api/:version/token/official', 'api/:version.Token/getOfficialToken')->middleware(\Naixiaoxin\ThinkWechat\Middleware\OauthMiddleware::class);
 Route::rule('api/:version/token/official', 'api/:version.Token/getOfficialToken');
 Route::rule('api/:version/token/machine', 'api/:version.Token/getMachineToken');
@@ -316,6 +317,7 @@ Route::post('api/:version/wallet/supplement', 'api/:version.Wallet/rechargeSuppl
 Route::post('api/:version/wallet/supplement/upload', 'api/:version.Wallet/rechargeSupplementUpload');
 Route::post('api/:version/wallet/pay', 'api/:version.Wallet/saveOrder');
 Route::get('api/:version/wallet/pay/getPreOrder', 'api/:version.Wallet/getPreOrder');
+Route::get('api/:version/wallet/pay/nonghang/link', 'api/:version.Wallet/payLink');
 Route::rule('api/:version/wallet/WXNotifyUrl', 'api/:version.Wallet/WXNotifyUrl');
 
 
@@ -380,3 +382,7 @@ Route::post('api/:version/nextmonthpay/payMoney', 'api/:version.NextMonthPay/pay
 Route::post('api/:version/nextmonthpay/payMoneyAll', 'api/:version.NextMonthPay/payMoneyAll');
 Route::post('api/:version/nextmonthpay/selectPaySetting', 'api/:version.NextMonthPay/selectPaySetting');
 Route::post('api/:version/nextmonthpay/nextMonthOutput', 'api/:version.NextMonthPay/nextMonthOutput');
+
+
+Route::get('api/:version/excels', 'api/:version.Excel/excels');
+Route::post('api/:version/excel/delete', 'api/:version.Excel/delete');

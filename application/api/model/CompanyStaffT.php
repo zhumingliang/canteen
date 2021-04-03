@@ -288,7 +288,7 @@ class CompanyStaffT extends Model
                     $query->field('id,name');
                 }
             ])
-            ->field('id,d_id,username,t_id as staff_type_id')
+            ->field('id,d_id,username,t_id as staff_type_id,face_id')
             ->order('id')
             ->select();
 

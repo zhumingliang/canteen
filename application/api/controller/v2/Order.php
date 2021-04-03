@@ -96,10 +96,14 @@ class Order
         $time_begin = Request::param('time_begin');
         $time_end = Request::param('time_end');
         $company_ids = Request::param('company_ids');
-        $records = (new OrderStatisticService())->exportOrderSettlementWithAccount(
+        (new \app\api\service\v2\DownExcelService())->exportOrderSettlementWithAccount(
             $name, $phone, $canteen_id, $department_id, $dinner_id,
             $consumption_type, $time_begin, $time_end, $company_ids, $type);
-        return json(new SuccessMessageWithData(['data' => $records]));
+        return json(new SuccessMessage());
+        /* $records = (new DownExcelService())->exportOrderSettlementWithAccount(
+             $name, $phone, $canteen_id, $department_id, $dinner_id,
+             $consumption_type, $time_begin, $time_end, $company_ids, $type);
+         return json(new SuccessMessageWithData(['data' => $records]));*/
     }
 
 
@@ -186,10 +190,15 @@ class Order
         $time_begin = Request::param('time_begin');
         $time_end = Request::param('time_end');
         $company_ids = Request::param('company_ids');
-        $statistic = (new OrderStatisticService())->exportConsumptionStatisticWithAccount($canteen_ids, $status, $type,
-            $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_ids, $phone, $order_type);
-        return json(new SuccessMessageWithData(['data' => $statistic]));
-
+        (new \app\api\service\v2\DownExcelService())->exportConsumptionStatistic($canteen_ids, $status, $type,
+            $department_id, $username, $staff_type_id, $time_begin,
+            $time_end, $company_ids, $phone, $order_type,
+            'consumptionStatisticWithAccount');
+        return json(new SuccessMessage());
+        /*     $statistic = (new DownExcelService())->exportConsumptionStatisticWithAccount($canteen_ids, $status, $type,
+                 $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_ids, $phone, $order_type);
+             return json(new SuccessMessageWithData(['data' => $statistic]));
+         */
     }
 
     /**
@@ -337,11 +346,11 @@ class Order
      * @apiSuccess (返回参数说明) {int} money 冻结金额
      * @apiSuccess (返回参数说明) {int} money_type  余额类型 :冻结金额类型：overdraw：透支金额；user_balance:余额信息
      */
-    public function submitOrder($address_id=0,$delivery_fee=0)
+    public function submitOrder($address_id = 0, $delivery_fee = 0)
     {
         $prepareId = Request::param('prepare_id');
-        $remark= Request::param('remark');
-        $data = (new OrderServiceV2())->submitOrder($prepareId, $address_id, $delivery_fee,$remark);
+        $remark = Request::param('remark');
+        $data = (new OrderServiceV2())->submitOrder($prepareId, $address_id, $delivery_fee, $remark);
         return json(new SuccessMessageWithData(['data' => $data]));
     }
 

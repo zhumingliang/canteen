@@ -9,6 +9,7 @@ use app\api\model\OrderT;
 use app\api\model\PayT;
 use app\api\model\PayWxT;
 use app\api\service\AdminService;
+use app\api\service\v2\DownExcelService;
 use app\api\service\WalletService;
 use app\lib\exception\ParameterException;
 use app\lib\exception\SuccessMessage;
@@ -181,8 +182,11 @@ class Wallet extends BaseController
     {
         $time_begin = Request::param('time_begin');
         $time_end = Request::param('time_end');
-        $records = (new WalletService())->exportRechargeRecords($time_begin, $time_end, $type, $admin_id, $username, $department_id);
-        return json(new SuccessMessageWithData(['data' => $records]));
+        (new DownExcelService())->exportRechargeRecords($time_begin, $time_end, $type,
+            $admin_id, $username, $department_id, 'rechargeRecords');
+        return json(new  SuccessMessage());
+        /*        $records = (new WalletService())->exportRechargeRecords($time_begin, $time_end, $type, $admin_id, $username, $department_id);
+                return json(new SuccessMessageWithData(['data' => $records]));*/
 
     }
 
@@ -237,8 +241,10 @@ class Wallet extends BaseController
      */
     public function exportUsersBalance($department_id = 0, $user = '', $phone = '')
     {
-        $users = (new WalletService())->exportUsersBalance($department_id, $user, $phone);
-        return json(new SuccessMessageWithData(['data' => $users]));
+        (new DownExcelService())->exportUsersBalance($department_id, $user, $phone, 'userBalance');
+        return json(new SuccessMessage());
+        /*        $users = (new WalletService())->exportUsersBalance($department_id, $user, $phone);
+                return json(new SuccessMessageWithData(['data' => $users]));*/
 
     }
 
@@ -410,5 +416,21 @@ class Wallet extends BaseController
         $response->send();
     }
 
+    /**
+     * @api {GET} /api/v1/wallet/pay/nonghang/link  微信端-农行支付-获取支付链接
+     * @apiGroup  Official
+     * @apiVersion 1.0.1
+     * @apiDescription  微信端-农行支付-获取支付链接
+     * @apiExample {get}  请求样例:
+     * http://mengant.cn/api/v1/wallet/pay/nonghang/link
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"url":"https:\/\/enjoy.abchina.com\/jf-openweb\/wechat\/shareEpayItem?code=JF-EPAY2019062401722"}}     * @apiSuccess (返回参数说明) {String} data 前端支付所需数据
+     * @apiSuccess (返回参数说明) {String} url  支付链接
+     */
+    public function payLink()
+    {
+        $data = (new WalletService())->payLink();
+        return json(new SuccessMessageWithData(['data' => $data]));
+    }
 
 }

@@ -8,6 +8,7 @@ use app\api\controller\BaseController;
 use app\api\model\CompanyDepartmentT;
 use app\api\model\CompanyStaffT;
 use app\api\service\DepartmentService;
+use app\api\service\v2\DownExcelService;
 use app\lib\enum\CommonEnum;
 use app\lib\exception\DeleteException;
 use app\lib\exception\ParameterException;
@@ -324,7 +325,7 @@ class Department extends BaseController
     {
         $id = Request::param('id');
         $state = Request::param('state');
-        (new DepartmentService())->handleStaff($id,$state);
+        (new DepartmentService())->handleStaff($id, $state);
         return json(new SuccessMessage());
     }
 
@@ -508,8 +509,10 @@ class Department extends BaseController
     {
         $company_id = Request::param('company_id');
         $department_id = Request::param('department_id');
-        $url = (new DepartmentService())->exportStaffs($company_id, $department_id);
-        return json(new SuccessMessageWithData(['data' => $url]));
+        (new DownExcelService())->exportStaffs($company_id, $department_id);
+        return json(new SuccessMessage());
+    /*    $url = (new DepartmentService())->exportStaffs($company_id, $department_id);
+        return json(new SuccessMessageWithData(['data' => $url]));*/
 
     }
 

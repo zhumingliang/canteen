@@ -4,8 +4,10 @@
 namespace app\api\controller\v2;
 
 
+use app\api\service\v2\DownExcelService;
 use app\api\service\WalletService;
 use app\lib\exception\ParameterException;
+use app\lib\exception\SuccessMessage;
 use app\lib\exception\SuccessMessageWithData;
 use think\facade\Request;
 
@@ -49,12 +51,16 @@ class Wallet
      * @apiSuccess (返回参数说明) {string} msg 操作结果描述
      * @apiSuccess (返回参数说明) {string} url 下载地址
      */
-    public function exportRechargeRecords($type = 'all', $admin_id = 0, $username = '',$department_id=0)
+    public function exportRechargeRecords($type = 'all', $admin_id = 0, $username = '', $department_id = 0)
     {
         $time_begin = Request::param('time_begin');
         $time_end = Request::param('time_end');
-        $records = (new WalletService())->exportRechargeRecordsWithAccount($time_begin, $time_end, $type, $admin_id, $username,$department_id);
-        return json(new SuccessMessageWithData(['data' => $records]));
+        (new DownExcelService())->exportRechargeRecords($time_begin, $time_end,
+            $type, $admin_id, $username, $department_id,
+            'rechargeRecordsWithAccount');
+        return json(new SuccessMessage());
+        /* $records = (new WalletService())->exportRechargeRecordsWithAccount($time_begin, $time_end, $type, $admin_id, $username, $department_id);
+         return json(new SuccessMessageWithData(['data' => $records]));*/
 
     }
 
@@ -113,8 +119,10 @@ class Wallet
      */
     public function exportUsersBalance($department_id = 0, $user = '', $phone = '')
     {
-        $users = (new WalletService())->exportUsersBalanceWithAccount($department_id, $user, $phone);
-        return json(new SuccessMessageWithData(['data' => $users]));
+        (new DownExcelService())->exportUsersBalance($department_id, $user, $phone, 'userBalanceWithAccount');
+        return json(new SuccessMessage());
+   /*     $users = (new WalletService())->exportUsersBalanceWithAccount($department_id, $user, $phone);
+        return json(new SuccessMessageWithData(['data' => $users]));*/
 
     }
 
@@ -158,7 +166,6 @@ class Wallet
         return json(new SuccessMessageWithData(['data' => $info]));
 
     }
-
 
 
 }

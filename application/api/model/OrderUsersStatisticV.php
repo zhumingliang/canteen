@@ -184,7 +184,7 @@ class OrderUsersStatisticV extends Model
                     $query->where('a.d_id', $dinner_id);
                 }
             })
-            ->where('a.c_id', $canteen_id)
+         //   ->where('a.c_id', $canteen_id)
             ->where('a.pay', PayEnum::PAY_SUCCESS)
             ->where('a.ordering_date', $consumption_time)
             ->where('a.state',CommonEnum::STATE_IS_OK)
@@ -254,7 +254,7 @@ class OrderUsersStatisticV extends Model
                                 $query->where('b.dinner_id', $dinner_id);
                             }
                         })
-                        ->where('b.canteen_id', $canteen_id)
+                      //  ->where('b.canteen_id', $canteen_id)
                         ->where('b.pay', PayEnum::PAY_SUCCESS)
                         ->where('b.ordering_date', $consumption_time)
                         ->where('a.state',CommonEnum::STATE_IS_OK)

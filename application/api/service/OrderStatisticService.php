@@ -108,7 +108,7 @@ class OrderStatisticService
 
     }
 
-    private function prefixOrderStatisticDetail($list)
+    public function prefixOrderStatisticDetail($list)
     {
         $dataList = [];
         foreach ($list as $k => $v) {
@@ -266,7 +266,7 @@ class OrderStatisticService
         ];
     }
 
-    private function prefixExportOrderSettlementWithAccount($data)
+    public function prefixExportOrderSettlementWithAccount($data)
     {
         ($data);
         $dataList = [];
@@ -310,7 +310,7 @@ class OrderStatisticService
         return $dataList;
     }
 
-    private function prefixExportOrderSettlement($data)
+    public function prefixExportOrderSettlement($data)
     {
         ($data);
         $dataList = [];
@@ -387,10 +387,10 @@ class OrderStatisticService
     public
     function takeoutStatistic($page, $size,
                               $ordering_date, $company_ids,
-                              $canteen_id, $dinner_id, $status, $department_id, $user_type)
+                              $canteen_id, $dinner_id, $status, $department_id, $user_type,$username)
     {
         $records = OrderTakeoutStatisticV::statistic($page, $size,
-            $ordering_date, $company_ids, $canteen_id, $dinner_id, $status, $department_id, $user_type);
+            $ordering_date, $company_ids, $canteen_id, $dinner_id, $status, $department_id, $user_type,$username);
         return $records;
     }
 
@@ -432,7 +432,7 @@ class OrderStatisticService
         ];
     }
 
-    private
+    public
     function prefixExportTakeoutStatistic($records)
     {
         $statusText = [
@@ -508,7 +508,7 @@ class OrderStatisticService
         ];
     }
 
-    private
+    public
     function prefixMaterials($data, $materials, $statisticMoney = false)
     {
         $money = 0;
@@ -764,6 +764,7 @@ class OrderStatisticService
         switch ($type) {
             case OrderEnum::STATISTIC_BY_DEPARTMENT:
                 $info = $this->consumptionStatisticByDepartment($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id, $phone, $order_type, $version);
+              print_r($info);
                 break;
             case OrderEnum::STATISTIC_BY_USERNAME:
                 $info = $this->consumptionStatisticByUsername($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id, $phone, $order_type, 1, 10000, $version);
@@ -960,7 +961,7 @@ class OrderStatisticService
         return $dataList;
     }
 
-    private
+    public
     function prefixConsumptionStatisticWithAccount($statistic, $accountRecords, $accounts, $dinner, $time_begin, $time_end)
     {
         $dataList = [];

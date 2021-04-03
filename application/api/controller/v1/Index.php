@@ -5,6 +5,7 @@ namespace app\api\controller\v1;
 
 
 use app\api\controller\BaseController;
+use app\api\job\DownExcel;
 use app\api\job\SendTemplate;
 use app\api\job\UploadExcel;
 use app\api\model\AccountRecordsT;
@@ -44,6 +45,7 @@ use app\api\service\ConsumptionService;
 use app\api\service\DepartmentService;
 use app\api\service\ExcelService;
 use app\api\service\FoodService;
+use app\api\service\GatewayService;
 use app\api\service\LogService;
 use app\api\service\NextMonthPayService;
 use app\api\service\NoticeService;
@@ -69,6 +71,7 @@ use app\lib\exception\SuccessMessageWithData;
 use app\lib\Num;
 use app\lib\printer\Printer;
 use app\lib\weixin\Template;
+use GatewayClient\Gateway;
 use think\Db;
 use think\db\Where;
 use think\Exception;
@@ -87,25 +90,73 @@ Index extends BaseController
 
     public function index()
     {
-
-       /* $a = [];
-        $pay = PayWxT::where('id', '>', 1652)->select();
-        foreach ($pay as $k => $v) {
-            if (!in_array($v['out_trade_no'], $a)) {
-                array_push($a, $v['out_trade_no']);
-                PayT::update([
-                    'pay' => PayEnum::PAY_SUCCESS
-                ], [
-                    'order_num' => [
-                        $v['out_trade_no']
-                    ]
-
+        $orders = OrderT::where('company_id', 122)
+            ->where('id', '>', 203133)
+            ->where('id', '<', 214781)
+            ->where('used', CommonEnum::STATE_IS_FAIL)
+            ->select();
+        $data = [];
+        foreach ($orders as $k => $v) {
+            if ($v['used'] == 1) {
+                array_push($data, [
+                    'id' => $v['id'],
+                    'consumption_type' => "no_meals_ordered",
+                    'money' => $v['no_meal_money'],
+                    'sub_money' => $v['no_meal_sub_money']
                 ]);
             }
 
         }
-        $b = implode(',', $a);*/
 
+        (new OrderT())->saveAll($data);
+
+        /*$data = [
+            'company_ids' => "69,82,99,100,103,110,106,107",
+            'canteen_id' => 0,
+            'user_type' => 1,
+            'status' => 6,
+            'phone' => "",
+            'department_id' => "",
+            'dinner_id' => "",
+            'time_begin' => "2021-02-01",
+            'ordering_date' => "2021-03-30",
+            'down_id' => 86,
+            'SCRIPT_FILENAME' => "/www/wwwroot/test-api.51canteen.cn/canteen/public/index.php"
+        ];
+        (new DownExcel())->exportTakeoutStatistic($data);*/
+        /*if ($type == 1) {
+            $adminId = 1;
+            $group = 'canteen:admin';
+            Gateway::joinGroup($client_id, $group);
+            Gateway::bindUid($client_id, $adminId);
+
+        } else if ($type == 2) {
+            $data = [
+                'type' => 'down_excel',
+                'file_name' => '111',
+                'url' => "http://"
+            ];
+            $data = json_encode($data);
+            GatewayService::sendToMachine(1, $data);
+        }*/
+
+        /* $a = [];
+         $pay = PayWxT::where('id', '>', 1652)->select();
+         foreach ($pay as $k => $v) {
+             if (!in_array($v['out_trade_no'], $a)) {
+                 array_push($a, $v['out_trade_no']);
+                 PayT::update([
+                     'pay' => PayEnum::PAY_SUCCESS
+                 ], [
+                     'order_num' => [
+                         $v['out_trade_no']
+                     ]
+
+                 ]);
+             }
+
+         }
+         $b = implode(',', $a);*/
 
 
         /* $day = date('Y-m-d H:i:s', strtotime('+10 year',

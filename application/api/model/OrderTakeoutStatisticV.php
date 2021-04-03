@@ -43,7 +43,7 @@ class OrderTakeoutStatisticV extends Model
 
     public static function statistic($page, $size,
                                      $ordering_date, $company_ids, $canteen_id, $dinner_id,
-                                     $status, $department_id, $user_type)
+                                     $status, $department_id, $user_type, $username)
     {
         $list = self::where('ordering_date', $ordering_date)
             ->where(function ($query) use ($status) {
@@ -87,6 +87,10 @@ class OrderTakeoutStatisticV extends Model
                 if (!empty($user_type)) {
                     $query->where('outsider', $user_type);
                 }
+            })->where(function ($query) use ($username) {
+                if (!empty($username)) {
+                    $query->where('username', $username);
+                }
             })
             ->where('pay', PayEnum::PAY_SUCCESS)
             ->hidden(['create_time', 'canteen_id', 'company_id', 'dinner_id', 'state', 'receive', 'used', 'pay'])
@@ -95,7 +99,7 @@ class OrderTakeoutStatisticV extends Model
         return $list;
     }
 
-    public static function exportStatistic($ordering_date, $company_ids, $canteen_id, $dinner_id, $status, $department_id, $user_type)
+    public static function exportStatistic($ordering_date, $company_ids, $canteen_id, $dinner_id, $status, $department_id, $user_type, $username)
     {
         $list = self::where('ordering_date', $ordering_date)
             ->where(function ($query) use ($status) {
@@ -134,6 +138,11 @@ class OrderTakeoutStatisticV extends Model
             ->where(function ($query) use ($department_id) {
                 if (!empty($department_id)) {
                     $query->where('department_id', $department_id);
+                }
+            })
+            ->where(function ($query) use ($username) {
+                if (!empty($username)) {
+                    $query->where('username', $username);
                 }
             })
             ->where(function ($query) use ($user_type) {

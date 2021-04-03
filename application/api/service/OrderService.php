@@ -2100,7 +2100,7 @@ class OrderService extends BaseService
             }
             //更新其它订单排序
             $this->prefixOrderSortWhenUpdateOrder($strategy, $order->dinner_id, $order->phone, $order->ordering_date);
-            //Db::commit();
+            Db::commit();
         } catch
         (Exception $e) {
             Db::rollback();
