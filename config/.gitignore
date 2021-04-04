@@ -1,3 +1,4 @@
 .wechat.php
 setting.php
 database.php
+queue.php
