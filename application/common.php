@@ -190,6 +190,7 @@ function getQrCodeWithStaffId($staffId)
 {
 
     $code = QRcodeNUmber();
+    return $code;
     $str = substr($code, -4);
     $s_id = $str + $staffId;
     $qrCode = '';
