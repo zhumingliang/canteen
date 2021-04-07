@@ -91,10 +91,7 @@ Index extends BaseController
 
     public function index()
     {
-        return 1;
-        $offlineData = json_decode(' {"mealedOrder": [], "noBookingOrder": [{"machineId": 1, "staffId": 11049, "dinnerId": 134, "usedTime": "2021-04-01 17:18:54", "strategyType": "one"}, {"machineId": 2, "staffId": 11048, "dinnerId": 134, "usedTime": "2021-04-02 17:19:04", "strategyType": "one"}, {"machineId": 3, "staffId": 11049, "dinnerId": 134, "usedTime": "2021-04-02 17:19:09", "strategyType": "one"}, {"machineId": 4, "staffId": 11048, "dinnerId": 134, "usedTime": "2021-04-02 17:19:19", "strategyType": "one"}, {"machineId": 5, "staffId": 11048, "dinnerId": 134, "usedTime": "2021-04-02 17:19:29", "strategyType": "one"}]}', true);
-        $this->prefixOffLine(86, 163, $offlineData);
-
+        echo 'canteen';
         return 1;
         $logs = LogT::select()->toArray();
         $data = [];
