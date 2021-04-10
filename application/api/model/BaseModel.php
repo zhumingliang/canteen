@@ -19,4 +19,10 @@ class BaseModel extends Model
         return $finalUrl;
     }
 
+    protected function prefixImgUrlSSL($value)
+    {
+        $finalUrl = config('setting.imageSSL') . $value;
+        return $finalUrl;
+    }
+
 }
