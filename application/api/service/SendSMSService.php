@@ -4,8 +4,10 @@
 namespace app\api\service;
 
 
+use app\api\model\CompanyStaffT;
 use app\api\model\SendMessageT;
 use app\lib\enum\CommonEnum;
+use app\lib\enum\UserEnum;
 use app\lib\exception\SaveException;
 use app\lib\Http;
 use think\Exception;
@@ -17,7 +19,7 @@ use function GuzzleHttp\Promise\each_limit;
 
 class SendSMSService
 {
-    public function sendCode($phone, $type)
+    public function sendCode($outsider, $phone, $type)
     {
         /*   $code = rand(10000, 99999);
            $params = ['code' => $code];
@@ -29,10 +31,18 @@ class SendSMSService
                return true;
            }*/
         // $this->msgTask($phone, $params, $type, $key);
+        //检查用户是否存在
+        if ($outsider == UserEnum::INSIDE) {
+            $exist = CompanyStaffT::where('phone', $phone)
+                ->where('state', '<', CommonEnum::STATE_IS_DELETE)->count();
+            if (!$exist) {
+                throw new SaveException(['msg' => "抱歉，您不在系统内，无法进入"]);
 
+            }
+
+        }
         $code = rand(10000, 99999);
         $params = ['code' => $code];
-        //$res = SendSms::instance()->send($phone, $params, $type);
         $this->sendSms($phone, 'canteen_' . $type, $params);
         $token = Request::header('token');
         $key = "code:" . $token;
