@@ -21,16 +21,6 @@ class SendSMSService
 {
     public function sendCode($outsider, $phone, $type)
     {
-        /*   $code = rand(10000, 99999);
-           $params = ['code' => $code];
-           $res = SendSms::instance()->send($phone, $params, $type);
-           $token = Request::header('token');
-           $key = "code:" . $token;
-           if (key_exists('Code', $res) && $res['Code'] == 'OK') {
-               Redis::instance()->set($key, $phone . '-' . $code, 120);
-               return true;
-           }*/
-        // $this->msgTask($phone, $params, $type, $key);
         //检查用户是否存在
         if ($outsider == UserEnum::INSIDE) {
             $exist = CompanyStaffT::where('phone', $phone)
