@@ -45,7 +45,7 @@ class OrderService
             }
             //解析订单信息
             //生成预订单id
-            $prepareId = QRcodeNUmber();
+            $prepareId = QRcodeNUmber() . sprintf('%4d', rand(0, 9999));
             $prepareOderList = [];
             $prepareOrderFoodList = [];
             foreach ($orders as $k => $v) {
@@ -55,7 +55,7 @@ class OrderService
                     foreach ($dayOrders as $k2 => $v2) {
                         $foods = $v2['foods'];
                         if (count($foods)) {
-                            $prepareOrderId = QRcodeNUmber();
+                            $prepareOrderId = QRcodeNUmber() . sprintf('%4d', rand(0, 9999));
                             $money = 0;
                             foreach ($foods as $k3 => $v3) {
                                 $money += $v3['price'] * $v3['count'];
