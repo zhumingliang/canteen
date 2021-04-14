@@ -23,8 +23,11 @@ class Auth extends Controller
             'getmachinetoken',
             'loginout',
             'getsuppliertoken',
-            'printer'
+            'printer',
+            'sendtemplate',
+            'wxnotifyurl',
         ];
+
         $action = $request->action();
         if (!in_array($action, $allowAction)) {
             Token::getCurrentTokenVar();
