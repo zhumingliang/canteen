@@ -4,6 +4,7 @@
 namespace app\api\service;
 
 
+use app\api\model\AccountRecordsT;
 use app\api\model\AccountRecordsV;
 use app\api\model\CanteenT;
 use app\api\model\CompanyAccountT;
@@ -229,10 +230,49 @@ class OrderStatisticService
         $records = OrderSettlementV::orderSettlementWithAccount($page, $size,
             $name, $phone, $canteen_id, $department_id, $dinner_id,
             $consumption_type, $time_begin, $time_end, $company_ids, $type);
-        $records['data'] = $this->prefixSettlementConsumptionType($records['data']);
+        $data = $this->prefixOrderSettlementAccount($company_ids, $records['data']);
+        $records['data'] = $this->prefixSettlementConsumptionType($data);
 
         return $records;
     }
+
+    private function prefixOrderSettlementAccount($companyId, $data)
+    {
+        /**
+         * 订单类型
+         * 饭堂订单：1.内部人员+外部人员 一次扣费-堂吃；2.内部人员多次扣费-堂吃；3.外部人员多次扣费堂吃
+         * 小卖部订单
+         * 补录订单
+         */
+        if (count($data)) {
+            $accounts = (new AccountService())->accountsForSearch($companyId);
+            $checkAccount = [];
+            foreach ($accounts as $k => $v) {
+                $checkAccount[$v['id']] = $v['name'];
+            }
+            foreach ($data as $k => $v) {
+                $account = [];
+                $orderType = $v['type'];
+                if ($v['type'] == "canteen") {
+                    $orderType = $v['order_type'];
+                }
+                $consumptionType = 2;
+                if ($v['consumption_type'] == OrderEnum::EAT_OUTSIDER) {
+                    $consumptionType = 1;
+                }
+                $records = AccountRecordsT::orderRecords($orderType, $v['order_id'], $consumptionType);
+                foreach ($records as $k2 => $v2) {
+                    if (key_exists($v2['account_id'], $checkAccount)) {
+                        array_push($account, $checkAccount[$v2['account_id']]);
+                    }
+                }
+                $data[$k]['account'] = implode(',', $account);
+            }
+        }
+        return $data;
+
+    }
+
 
     public function exportOrderSettlement(
         $name, $phone, $canteen_id, $department_id, $dinner_id,
@@ -1090,7 +1130,7 @@ class OrderStatisticService
                 if (!key_exists($v['statistic_id'], $fieldArr)) {
                     $fieldArr[$v['statistic_id']] = $v[$field];
                 }
-                $statistic[$k]['order_money']=$orderMoney;
+                $statistic[$k]['order_money'] = $orderMoney;
                 //$statistic[$k]['status']=$status[$v['status']];
 
             }

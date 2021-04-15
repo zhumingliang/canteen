@@ -87,7 +87,7 @@ class AccountRecordsT extends Model
             ->where('state', CommonEnum::STATE_IS_OK)
             ->field('id,account_id,order_id,money,type,type_name,create_time')
             ->order('create_time desc')
-           ->paginate($size, false, ['page' => $page]);
+            ->paginate($size, false, ['page' => $page]);
 
     }
 
@@ -131,6 +131,15 @@ class AccountRecordsT extends Model
             ->group('staff_id')
             ->select();
         return $statistic;
+    }
+
+    public static function orderRecords($type, $orderId, $outsider)
+    {
+        $records = self::where('order_id', $orderId)
+            ->where('type', $type)
+            ->where('outsider', $outsider)
+            ->select();
+        return $records;
     }
 
 

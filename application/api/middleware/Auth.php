@@ -30,7 +30,7 @@ class Auth extends Controller
 
         $action = $request->action();
         if (!in_array($action, $allowAction)) {
-            Token::getCurrentTokenVar();
+           // Token::getCurrentTokenVar();
         }
         return $next($request);
     }
