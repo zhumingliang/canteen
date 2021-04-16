@@ -431,6 +431,29 @@ class OrderStatisticService
     {
         $records = OrderTakeoutStatisticV::statistic($page, $size,
             $ordering_date, $company_ids, $canteen_id, $dinner_id, $status, $department_id, $user_type, $username);
+        $data = $records['data'];
+        foreach ($data as $k => $v) {
+
+            if ($v['state'] == CommonEnum::STATE_IS_FAIL) {
+                $data[$k]['status'] = OrderEnum::STATUS_CANCEL;
+            } elseif ($v['state'] == OrderEnum::REFUND) {
+                $data[$k]['status'] = OrderEnum::STATUS_REFUND;
+            } else {
+                if ($v['used'] == CommonEnum::STATE_IS_OK) {
+                    $data[$k]['status'] = OrderEnum::STATUS_COMPLETE;
+                } else
+
+                    if ($v['receive'] == CommonEnum::STATE_IS_OK) {
+                        $data[$k]['status'] = OrderEnum::STATUS_RECEIVE;
+                    } else {
+                        $data[$k]['status'] = OrderEnum::STATUS_PAID;
+
+                    }
+
+            }
+
+        }
+        $records['data'] = $data;
         return $records;
     }
 
@@ -1205,7 +1228,7 @@ class OrderStatisticService
             $time_end, $company_id);
 
         return [
-            'allMoney' => $statistic['order_money'],
+            'allMoney' => round($statistic['order_money'], 2),
             'allCount' => $statistic['order_count'],
             'statistic' => $users
         ];
@@ -1254,7 +1277,7 @@ class OrderStatisticService
         return [
             'consumptionRecords' => $users,
             'accountRecords' => $accountRecords,
-            'allMoney' => $statistic['order_money'],
+            'allMoney' => round($statistic['order_money'], 2),
             'allCount' => $statistic['order_count']
         ];
 
