@@ -433,7 +433,6 @@ class OrderStatisticService
             $ordering_date, $company_ids, $canteen_id, $dinner_id, $status, $department_id, $user_type, $username);
         $data = $records['data'];
         foreach ($data as $k => $v) {
-
             if ($v['state'] == CommonEnum::STATE_IS_FAIL) {
                 $data[$k]['status'] = OrderEnum::STATUS_CANCEL;
             } elseif ($v['state'] == OrderEnum::REFUND) {

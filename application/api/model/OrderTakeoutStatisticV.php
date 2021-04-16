@@ -238,7 +238,7 @@ IF
                                      $status, $department_id, $user_type, $username)
     {
         $sql = self::getBuildSql($company_ids, $canteen_id, $dinner_id, $ordering_date, $department_id, $user_type, $username, $status);
-        $list = $records = Db::table($sql . ' a')
+        $list = Db::table($sql . ' a')
             //->hidden(['create_time', 'canteen_id', 'company_id', 'dinner_id', 'state', 'receive', 'used', 'pay'])
             ->order('dinner,order_id')
             ->paginate($size, false, ['page' => $page])
