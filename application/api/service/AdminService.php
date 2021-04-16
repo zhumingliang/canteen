@@ -28,7 +28,7 @@ class AdminService
         try {
             Db::startTrans();
             //检测角色账号是否重复
-            $check = AdminT::check( $params['account']);
+            $check = AdminT::check($params['account']);
             if ($check) {
                 throw new SaveException(['msg' => '账号：' . $params['account'] . '已经存在']);
 
@@ -228,8 +228,8 @@ class AdminService
 
     public function roleTypes($page, $size, $key)
     {
-/*        $types = StaffTypeT::roleTypes($page, $size, $key);
-        return $types;*/
+        $types = StaffTypeT::roleTypes($page, $size, $key);
+        return $types;
 
         $grade = Token::getCurrentTokenVar('grade');
         if ($grade == AdminEnum::SYSTEM_SUPER) {

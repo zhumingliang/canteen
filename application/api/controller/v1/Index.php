@@ -91,75 +91,8 @@ Index extends BaseController
 
     public function index()
     {
-        return 1;
-        $offlineData = json_decode(' {"mealedOrder": [], "noBookingOrder": [{"machineId": 1, "staffId": 11049, "dinnerId": 134, "usedTime": "2021-04-01 17:18:54", "strategyType": "one"}, {"machineId": 2, "staffId": 11048, "dinnerId": 134, "usedTime": "2021-04-02 17:19:04", "strategyType": "one"}, {"machineId": 3, "staffId": 11049, "dinnerId": 134, "usedTime": "2021-04-02 17:19:09", "strategyType": "one"}, {"machineId": 4, "staffId": 11048, "dinnerId": 134, "usedTime": "2021-04-02 17:19:19", "strategyType": "one"}, {"machineId": 5, "staffId": 11048, "dinnerId": 134, "usedTime": "2021-04-02 17:19:29", "strategyType": "one"}]}', true);
-        $this->prefixOffLine(86, 163, $offlineData);
+        echo $prepareOrderId = QRcodeNUmber() ;
 
-        return 1;
-        $logs = LogT::select()->toArray();
-        $data = [];
-        foreach ($logs as $k => $v) {
-            if (substr($v['content'], 0, 3) == ' ca') {
-                $content = explode(',', $v['content']);
-                $content['create_time'] = $v['create_time'];
-                /*        $time=str_replace('\'', '', $content[6]);
-                        array_push($data, [
-                            'id' => $v['id'],
-                            'used_time' =>$time
-                        ]);*/
-
-                array_push($data, $content);
-            }
-        }
-        // return json($data);
-        $data2 = [];
-        foreach ($data as $k => $v) {
-            if ($v[2] == 121) {
-                $time = str_replace('\'', '', $v[6]);
-                $time = strtotime($time);
-                if (1611700393 == $time) {
-                    array_push($data2, $v);
-                }
-
-                /* if (key_exists($time, $data2)) {
-                     $data2[$time] += 1;
-                 } else {
-                     $data2[$time] = 1;
-                 }*/
-                /* if (in_array($time, $data2)) {
-                     array_push($data2[$time], $v);
-                 } else {
-                     $data2[$time] = $v;
-                 }*/
-                /*  echo 1;
-                  if (!key_exists($v[4], $data2)) {
-                      $data2[$v[4]] = [];
-                  } else {
-                      $dinner = [];
-                      $dinner = $data2[$v[4]];
-                      foreach ($dinner as $k4 => $v4) {
-
-                      }
-                  }*/
-
-            }
-
-        }
-        print_r($data2);
-        $data3 = [];
-        $userOrders = OrderT::where('staff_id', 8316)->where('d_id', 306)->where('state', 1)->select();
-        foreach ($data2 as $k => $v) {
-            $create_time = $v['create_time'];
-            foreach ($userOrders as $k2 => $v2) {
-                $create_time2 = $v2['create_time'];
-                if (strtotime($create_time) == strtotime($create_time2)) {
-                    array_push($data3, ['id' => $v2['id'],
-                        'state' => CommonEnum::STATE_IS_FAIL]);
-                    continue;
-                }
-            }
-
-        }
         //  (new OrderT())->saveAll($data3);
 
         /*     $orders = OrderT::where('company_id', 122)

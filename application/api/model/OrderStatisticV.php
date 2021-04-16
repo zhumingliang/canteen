@@ -103,7 +103,16 @@ class OrderStatisticV extends Model
     public static function statistic($time_begin, $time_end, $company_ids, $canteen_id, $page, $size)
     {
         // $time_end = addDay(1, $time_end);
-        $list = self::where('ordering_date', '>=', $time_begin)
+        $sql = self::getSql($time_begin, $time_end, $company_ids, $canteen_id,
+            0);
+        $list = Db::table($sql . 'a')
+            ->where('booking', CommonEnum::STATE_IS_OK)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->field('ordering_date,company,canteen,dinner,sum(count) as count')
+            ->order('ordering_date DESC')
+            ->group('ordering_date,dinner_id')
+            ->paginate($size, false, ['page' => $page]);
+        /*        $list = self::where('ordering_date', '>=', $time_begin)
             ->where('ordering_date', '<=', $time_end)
             ->where(function ($query) use ($company_ids, $canteen_id) {
                 if (empty($canteen_id)) {
@@ -121,7 +130,7 @@ class OrderStatisticV extends Model
             ->field('ordering_date,company,canteen,dinner,sum(count) as count')
             ->order('ordering_date DESC')
             ->group('ordering_date,dinner_id')
-            ->paginate($size, false, ['page' => $page]);
+            ->paginate($size, false, ['page' => $page]);*/
         return $list;
 
     }
@@ -267,7 +276,8 @@ class OrderStatisticV extends Model
 
 
         $sql = self::getSql($time_begin, $time_end, $company_ids, $canteen_id, $dinner_id);
-        $list = Db::table($sql . 'a')->where(function ($query) use ($type) {
+        $list = Db::table($sql . 'a')
+            ->where(function ($query) use ($type) {
             if ($type < 3) {
                 $query->where('type', $type);
             }

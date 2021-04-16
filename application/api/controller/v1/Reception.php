@@ -174,7 +174,8 @@ class Reception extends BaseController
             $dtResult = Db::query($sql);
             if (count($dtResult) > 0) {
                 $receptionUrl = $dtResult[0]["url"];
-                $receptionUrl = 'http://' . $_SERVER['HTTP_HOST'] . $receptionUrl;
+                $receptionUrl = config('setting.receptionImage'). $receptionUrl;
+               // $receptionUrl = 'http://' . $_SERVER['HTTP_HOST'] . $receptionUrl;
                 $data = ['url' => $receptionUrl];
                 return json(new SuccessMessageWithData(['data' => $data]));
             }

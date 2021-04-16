@@ -10,7 +10,7 @@ class FoodT extends BaseModel
 {
     public function getImgUrlAttr($value)
     {
-        return $this->prefixImgUrl($value);
+        return $this->prefixImgUrlSSL($value);
     }
 
     public function menu()

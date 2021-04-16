@@ -27,6 +27,7 @@ use app\lib\exception\SuccessMessageWithData;
 use app\lib\exception\TokenException;
 use GatewayClient\Gateway;
 use think\Controller;
+use think\Exception;
 use think\facade\Cache;
 use think\facade\Request;
 use zml\tp_tools\Redis;
@@ -180,10 +181,15 @@ class  Token extends Controller
      */
     public function bindSocket($client_id)
     {
-        $adminId = \app\api\service\Token::getCurrentUid();
-        $group = 'canteen:admin';
-        Gateway::joinGroup($client_id, $group);
-        Gateway::bindUid($client_id, $adminId);
+        try {
+            $adminId = \app\api\service\Token::getCurrentUid();
+            $group = 'canteen:admin';
+            Gateway::joinGroup($client_id, $group);
+            Gateway::bindUid($client_id, $adminId);
+        } catch (Exception $e) {
+            throw $e;
+        }
+
         return json(new SuccessMessage());
     }
 
