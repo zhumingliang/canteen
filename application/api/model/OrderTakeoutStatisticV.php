@@ -107,7 +107,7 @@ IF
                 } elseif ($status == OrderEnum::STATUS_CANCEL) {
                     $query->where('a.state', CommonEnum::STATE_IS_FAIL);
                 } elseif ($status == OrderEnum::STATUS_RECEIVE) {
-                    $query->where('a,state', CommonEnum::STATE_IS_OK)
+                    $query->where('a.state', CommonEnum::STATE_IS_OK)
                         ->where('a.pay', PayEnum::PAY_SUCCESS)
                         ->where('a.receive', CommonEnum::STATE_IS_OK)
                         ->where('a.used', CommonEnum::STATE_IS_FAIL);
@@ -162,52 +162,52 @@ IF
                     ->where('ordering_date', $ordering_date)
                     ->where('a.type', OrderEnum::EAT_OUTSIDER)
                     ->where('a.pay', PayEnum::PAY_SUCCESS)
-                    ->where(function ($query) use ($status) {
+                    ->where(function ($query2) use ($status) {
                         if ($status == OrderEnum::STATUS_PAID) {
-                            $query->where('a.state', CommonEnum::STATE_IS_OK)
+                            $query2->where('a.state', CommonEnum::STATE_IS_OK)
                                 ->where('a.pay', PayEnum::PAY_SUCCESS)
                                 ->where('a.receive', CommonEnum::STATE_IS_FAIL);
                         } elseif ($status == OrderEnum::STATUS_CANCEL) {
-                            $query->where('a.state', CommonEnum::STATE_IS_FAIL);
+                            $query2->where('a.state', CommonEnum::STATE_IS_FAIL);
                         } elseif ($status == OrderEnum::STATUS_RECEIVE) {
-                            $query->where('a,state', CommonEnum::STATE_IS_OK)
+                            $query2->where('a.state', CommonEnum::STATE_IS_OK)
                                 ->where('a.pay', PayEnum::PAY_SUCCESS)
                                 ->where('a.receive', CommonEnum::STATE_IS_OK)
                                 ->where('a.used', CommonEnum::STATE_IS_FAIL);
                         } elseif ($status == OrderEnum::STATUS_COMPLETE) {
-                            $query->where('a.used', CommonEnum::STATE_IS_OK);
+                            $query2->where('a.used', CommonEnum::STATE_IS_OK);
                         } elseif ($status == OrderEnum::STATUS_REFUND) {
-                            $query->where('a.state', OrderEnum::REFUND);
+                            $query2->where('a.state', OrderEnum::REFUND);
                         }
                     })
-                    ->where(function ($query) use ($company_ids, $canteen_id, $dinner_id) {
+                    ->where(function ($query2) use ($company_ids, $canteen_id, $dinner_id) {
                         if (!empty($dinner_id)) {
-                            $query->where('a.dinner_id', $dinner_id);
+                            $query2->where('a.dinner_id', $dinner_id);
                         } else {
                             if (!empty($canteen_id)) {
-                                $query->where('a.canteen_id', $canteen_id);
+                                $query2->where('a.canteen_id', $canteen_id);
                             } else {
                                 if (strpos($company_ids, ',') !== false) {
-                                    $query->whereIn('a.company_id', $company_ids);
+                                    $query2->whereIn('a.company_id', $company_ids);
                                 } else {
-                                    $query->where('a.company_id', $company_ids);
+                                    $query2->where('a.company_id', $company_ids);
                                 }
                             }
                         }
                     })
-                    ->where(function ($query) use ($department_id) {
+                    ->where(function ($query2) use ($department_id) {
                         if (!empty($department_id)) {
-                            $query->where('a.department_id', $department_id);
+                            $query2->where('a.department_id', $department_id);
                         }
                     })
-                    ->where(function ($query) use ($user_type) {
+                    ->where(function ($query2) use ($user_type) {
                         if (!empty($user_type)) {
-                            $query->where('a.outsider', $user_type);
+                            $query2->where('a.outsider', $user_type);
                         }
                     })
-                    ->where(function ($query) use ($username) {
+                    ->where(function ($query2) use ($username) {
                         if (!empty($username)) {
-                            $query->where('f.username', $username);
+                            $query2->where('f.username', $username);
                         }
                     });
             })
