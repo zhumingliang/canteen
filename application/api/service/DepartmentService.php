@@ -428,6 +428,7 @@ class DepartmentService
         $jobQueueName = "uploadQueue";//队列名称
         $jobData = [
             'type' => $type,
+            'u_id' => Token::getCurrentUid(),
             'company_id' => $company_id,
             'fileName' => $fileName,
         ];//当前任务的业务数据
@@ -698,6 +699,7 @@ class DepartmentService
             if (!$res) {
                 throw new SaveException();
             }
+            return true;
 
         } catch (Exception $e) {
             Db::rollback();

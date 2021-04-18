@@ -70,6 +70,8 @@ class DownExcel
                 $job->delete();
             } else {
                 $job->delete();
+                LogService::saveJob("<warn>导出Excel任务执行失败" . "</warn>\n");
+
                 /*       if ($job->attempts() > 3) {
                            //通过这个方法可以检查这个任务已经重试了几次了
                            $code = $data['company_id'] . ":" . $data['u_id'] . ":" . $data['type'];
