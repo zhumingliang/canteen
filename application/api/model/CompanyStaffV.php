@@ -11,7 +11,7 @@ class CompanyStaffV extends BaseModel
 {
     public function getUrlAttr($value, $data)
     {
-        return $this->prefixImgUrl($value, $data);
+        return $this->prefixImgUrlSSL($value, $data);
     }
 
     public function canteens()
