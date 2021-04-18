@@ -26,7 +26,7 @@ class ExcelService
         }
         $info = $excel->move($path);
         $file_name = $info->getPathname();
-        //  $file_name = dirname($_SERVER['SCRIPT_FILENAME']) . '/static/excel/upload/test.xlsx';
+        // $file_name = dirname($_SERVER['SCRIPT_FILENAME']) . '/static/excel/upload/test.xlsx';
         $result_excel = $this->importExcel($file_name);
         return $result_excel;
 
@@ -340,7 +340,7 @@ class ExcelService
                 if (!empty($prams['time_begin'])) {
                     $timeEnd = $prams['time_end'];
                 }
-                if (!empty($prams['ordering_date'])){
+                if (!empty($prams['ordering_date'])) {
                     $timeBegin = $prams['ordering_date'];
                     $timeEnd = $prams['ordering_date'];
 

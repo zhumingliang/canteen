@@ -91,8 +91,11 @@ class UploadExcel
                 return $this->uploadRechargeCashWithAccount($data);
             } else if ($type == "supplement") {
                 return $this->uploadSupplement($data);
-            }else if  ($type == "supplementWithAccount") {
+            } else if ($type == "supplementWithAccount") {
                 return $this->uploadSupplementWithAccount($data);
+            } else if ($type == "staff") {
+                return $this->uploadStaff($data);
+
             }
             return true;
         } catch (Exception $e) {
@@ -100,6 +103,17 @@ class UploadExcel
             return false;
         }
 
+    }
+
+    public function uploadStaff($data)
+    {
+        $company_id = $data['company_id'];
+        $fileName = $data['fileName'];
+        $staffs = (new DepartmentService())->uploadStaff($company_id, $fileName);
+        if (!$staffs) {
+            return false;
+        }
+        return true;
     }
 
     public function uploadSupplement($data)
