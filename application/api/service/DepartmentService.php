@@ -703,7 +703,7 @@ class DepartmentService
 
         } catch (Exception $e) {
             Db::rollback();
-            throw $e;
+            return false;
 
         }
 
