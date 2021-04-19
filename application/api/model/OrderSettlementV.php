@@ -491,7 +491,6 @@ class OrderSettlementV extends Model
                                         $consumption_type, $time_begin, $time_end, $company_ids, $type)
     {
         $subQuery = self::getBuildSqlWithAccount2($time_begin, $time_end, $company_ids, $canteen_id, $dinner_id, false);
-        return $subQuery;
         $list = Db::table($subQuery . ' a')
             ->where('staff_state', CommonEnum::STATE_IS_OK)
             ->where(function ($query) use ($name, $phone, $department_id) {
