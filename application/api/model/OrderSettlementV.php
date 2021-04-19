@@ -182,10 +182,10 @@ class OrderSettlementV extends Model
     }
 
 
-    public static function getBuildSqlWithAccount2($time_begin, $time_end, $company_ids, $canteen_id, $dinner_id, $account = true)
+    public static function getBuildSqlWithAccount2($time_begin, $time_end, $company_ids, $canteen_id, $dinner_id)
     {
         $end = addDay(1, $time_end);
-        $sql = Db::field("`a`.`id` AS `order_id`,`a`.`d_id` AS `dinner_id`,`b`.`name` AS `dinner`,`a`.`c_id` AS `canteen_id`,`c`.`name` AS `canteen`,`a`.`company_id` AS `company_id`,`a`.`ordering_date` AS `ordering_date`,`a`.`u_id` AS `u_id`,`a`.`department_id` AS `department_id`,`e`.`name` AS `department`,`f`.`username` AS `username`,`a`.`phone` AS `phone`,`a`.`booking` AS `booking`,`a`.`used` AS `used`,`a`.`used_time` AS `used_time`,'canteen' AS `type`,((`a`.`money`+`a`.`sub_money`)+`a`.`delivery_fee`) AS `money`,'' AS `remark`,`a`.`type` AS `consumption_type`,IF(a.outsider=1,1,f.state) as staff_state,a.outsider,'one' as order_type")
+        $sql = Db::field("`a`.`id` AS `order_id`,`a`.`d_id` AS `dinner_id`,`b`.`name` AS `dinner`,`a`.`c_id` AS `canteen_id`,`c`.`name` AS `canteen`,`a`.`company_id` AS `company_id`,`a`.`ordering_date` AS `ordering_date`,`a`.`u_id` AS `u_id`,`a`.`department_id` AS `department_id`,`e`.`name` AS `department`,`f`.`username` AS `username`,`a`.`phone` AS `phone`,`a`.`booking` AS `booking`,`a`.`used` AS `used`,`a`.`used_time` AS `used_time`,'canteen' AS `type`,((`a`.`money`+`a`.`sub_money`)+`a`.`delivery_fee`) AS `money`,'' AS `remark`,`a`.`type` AS `consumption_type`,	IF(a.outsider=1,1,f.state) as staff_state,a.outsider,'one' as order_type")
             ->table('canteen_order_t')->alias('a')
             ->leftJoin('canteen_dinner_t b', 'a.d_id=b.id')
             ->leftJoin('canteen_canteen_t c', 'a.c_id=c.id')
@@ -211,11 +211,9 @@ class OrderSettlementV extends Model
                 }
 
             })
-            ->where(function ($query) use ($account) {
-                if ($account) {
-                    $query->where('a.used', CommonEnum::STATE_IS_OK)
-                        ->whereOr('a.unused_handel', CommonEnum::STATE_IS_OK);
-                }
+            ->where(function ($query) {
+                $query->where('a.used', CommonEnum::STATE_IS_OK)
+                    ->whereOr('a.unused_handel', CommonEnum::STATE_IS_OK);
             })
             ->unionAll(function ($query) use ($time_begin, $time_end, $company_ids, $canteen_id, $dinner_id) {
                 $query->field("`a`.`id` AS `order_id`,`a`.`dinner_id` AS `dinner_id`,`b`.`name` AS `dinner`,`a`.`canteen_id` AS `canteen_id`,`c`.`name` AS `canteen`,`a`.`company_id` AS `company_id`,`a`.`consumption_date` AS `ordering_date`,'' AS `u_id`,`e`.`d_id` AS `department_id`,`f`.`name` AS `department`,`e`.`username` AS `username`,`e`.`phone` AS `phone`,0 AS `booking`,0 AS `used`,`a`.`create_time` AS `used_time`,IF ((`a`.`type`=1),'recharge','deduction') AS `type`,IF ((`a`.`type`=1),`a`.`money`,(0-`a`.`money`)) AS `money`,`a`.`remark` AS `remark`,1 AS `consumption_type`,2 as outsider,e.state as staff_state,'' as order_type")
@@ -244,7 +242,7 @@ class OrderSettlementV extends Model
                     });
 
 
-            })->unionAll(function ($query) use ($time_begin, $time_end, $company_ids, $canteen_id, $dinner_id, $account) {
+            })->unionAll(function ($query) use ($time_begin, $time_end, $company_ids, $canteen_id, $dinner_id) {
                 $query->field("`g`.`id` AS `order_id`,`a`.`dinner_id` AS `dinner_id`,`b`.`name` AS `dinner`,`a`.`canteen_id` AS `canteen_id`,`c`.`name` AS `canteen`,`a`.`company_id` AS `company_id`,`a`.`ordering_date` AS `ordering_date`,`a`.`u_id` AS `u_id`,`a`.`department_id` AS `department_id`,`e`.`name` AS `department`,`f`.`username` AS `username`,`a`.`phone` AS `phone`,`a`.`booking` AS `booking`,`g`.`used` AS `used`,`g`.`used_time` AS `used_time`,'canteen' AS `type`,(`g`.`money`+`g`.`sub_money`) AS `money`,'' AS `remark`,`a`.`type` AS `consumption_type`,a.outsider,if(a.outsider=1,1,f.state) as staff_state,'more' as order_type")
                     ->table('canteen_order_sub_t')->alias('g')
                     ->leftJoin('canteen_order_parent_t a', "`g`.`order_id` = `a`.`id`")
@@ -273,12 +271,10 @@ class OrderSettlementV extends Model
                     ->where('a.type', OrderEnum::EAT_CANTEEN)
                     ->where('g.state', CommonEnum::STATE_IS_OK)
                     ->where('a.pay', PayEnum::PAY_SUCCESS)
-                    ->where(function ($query) use ($account) {
-                        if ($account) {
-                            $query->where('g.used', CommonEnum::STATE_IS_OK)->whereOr('g.unused_handel', CommonEnum::STATE_IS_OK);
-                        }
+                    ->where(function ($query) {
+                        $query->where('g.used', CommonEnum::STATE_IS_OK)->whereOr('g.unused_handel', CommonEnum::STATE_IS_OK);
                     });
-            })->unionAll(function ($query) use ($time_begin, $time_end, $company_ids, $canteen_id, $dinner_id, $account) {
+            })->unionAll(function ($query) use ($time_begin, $time_end, $company_ids, $canteen_id, $dinner_id) {
                 $query->field("`a`.`id` AS `order_id`,`a`.`dinner_id` AS `dinner_id`,`b`.`name` AS `dinner`,`a`.`canteen_id` AS `canteen_id`,`c`.`name` AS `canteen`,`a`.`company_id` AS `company_id`,`a`.`ordering_date` AS `ordering_date`,`a`.`u_id` AS `u_id`,`a`.`department_id` AS `department_id`,`e`.`name` AS `department`,`f`.`username` AS `username`,`a`.`phone` AS `phone`,`a`.`booking` AS `booking`,`a`.`used` AS `used`,`a`.`used_time` AS `used_time`,'canteen' AS `type`,((`a`.`money`+`a`.`sub_money`)+`a`.`delivery_fee`) AS `money`,'' AS `remark`,`a`.`type` AS `consumption_type`,a.outsider,if(a.outsider=1,1,f.state) as staff_state,'more' as order_type")
                     ->table('canteen_order_parent_t')->alias('a')
                     ->leftJoin('canteen_dinner_t b', "`a`.`dinner_id` = `b`.`id`")
@@ -306,11 +302,8 @@ class OrderSettlementV extends Model
                         }
 
                     })
-                    ->where(function ($query) use ($account) {
-                        if ($account) {
-                            $query->where('a.all_used', CommonEnum::STATE_IS_OK);
-                        }
-
+                    ->where(function ($query) {
+                        $query->where('a.all_used', CommonEnum::STATE_IS_OK);
                     });
 
 
@@ -338,7 +331,8 @@ class OrderSettlementV extends Model
                         }
 
                     })
-                    ->where('a.state', CommonEnum::STATE_IS_OK);
+                    ->where('a.state', CommonEnum::STATE_IS_OK)
+                ;
 
             })->buildSql();
         return $sql;
@@ -354,10 +348,6 @@ class OrderSettlementV extends Model
             ->leftJoin('canteen_canteen_t c', 'a.c_id=c.id')
             ->leftJoin('canteen_company_department_t e', 'a.department_id=e.id')
             ->leftJoin('canteen_company_staff_t f', 'a.staff_id=f.id')
-            ->where('a.ordering_date', '>=', $time_begin)
-            ->where('a.ordering_date', '<=', $time_end)
-            ->where('a.state', CommonEnum::STATE_IS_OK)
-            ->where('a.pay', PayEnum::PAY_SUCCESS)
             ->where(function ($query) use ($company_ids, $canteen_id, $dinner_id) {
                 if (!empty($dinner_id)) {
                     $query->where('a.d_id', $dinner_id);
@@ -374,6 +364,10 @@ class OrderSettlementV extends Model
                 }
 
             })
+            ->where('a.ordering_date', '>=', $time_begin)
+            ->where('a.ordering_date', '<=', $time_end)
+            ->where('a.state', CommonEnum::STATE_IS_OK)
+            ->where('a.pay', PayEnum::PAY_SUCCESS)
             ->unionAll(function ($query) use ($time_begin, $time_end, $company_ids, $canteen_id, $dinner_id) {
                 $query->field("`a`.`id` AS `order_id`,`a`.`dinner_id` AS `dinner_id`,`b`.`name` AS `dinner`,`a`.`canteen_id` AS `canteen_id`,`c`.`name` AS `canteen`,`a`.`company_id` AS `company_id`,`a`.`consumption_date` AS `ordering_date`,'' AS `u_id`,`e`.`d_id` AS `department_id`,`f`.`name` AS `department`,`e`.`username` AS `username`,`e`.`phone` AS `phone`,0 AS `booking`,0 AS `used`,`a`.`create_time` AS `used_time`,IF ((`a`.`type`=1),'recharge','deduction') AS `type`,IF ((`a`.`type`=1),`a`.`money`,(0-`a`.`money`)) AS `money`,`a`.`remark` AS `remark`,1 AS `consumption_type`,2 as outsider,e.state as staff_state")
                     ->table('canteen_recharge_supplement_t')->alias('a')
@@ -381,8 +375,6 @@ class OrderSettlementV extends Model
                     ->leftJoin('canteen_canteen_t c', '`a`.`canteen_id` = `c`.`id`')
                     ->leftJoin('canteen_company_staff_t e', "`a`.`staff_id` = `e`.`id`")
                     ->leftJoin('canteen_company_department_t f', "`e`.`d_id` = `f`.`id`")
-                    ->where('a.consumption_date', '>=', $time_begin)
-                    ->where('a.consumption_date', '<=', $time_end)
                     ->where(function ($query) use ($company_ids, $canteen_id, $dinner_id) {
                         if (!empty($dinner_id)) {
                             $query->where('a.dinner_id', $dinner_id);
@@ -398,7 +390,9 @@ class OrderSettlementV extends Model
                             }
                         }
 
-                    });
+                    })
+                    ->where('a.consumption_date', '>=', $time_begin)
+                    ->where('a.consumption_date', '<=', $time_end);
 
 
             })->unionAll(function ($query) use ($time_begin, $time_end, $company_ids, $canteen_id, $dinner_id) {
@@ -409,9 +403,6 @@ class OrderSettlementV extends Model
                     ->leftJoin('canteen_canteen_t c', '`a`.`canteen_id` = `c`.`id` ')
                     ->leftJoin('canteen_company_department_t e', '`a`.`department_id` = `e`.`id`')
                     ->leftJoin('canteen_company_staff_t f', '`a`.`staff_id` = `f`.`id` ')
-                    ->where('a.ordering_date', '>=', $time_begin)
-                    ->where('a.ordering_date', '<=', $time_end)
-                    ->where('a.type', OrderEnum::EAT_CANTEEN)
                     ->where(function ($query) use ($company_ids, $canteen_id, $dinner_id) {
                         if (!empty($dinner_id)) {
                             $query->where('a.dinner_id', $dinner_id);
@@ -428,6 +419,9 @@ class OrderSettlementV extends Model
                         }
 
                     })
+                    ->where('a.ordering_date', '>=', $time_begin)
+                    ->where('a.ordering_date', '<=', $time_end)
+                    ->where('a.type', OrderEnum::EAT_CANTEEN)
                     ->where('g.state', CommonEnum::STATE_IS_OK)
                     ->where('a.pay', PayEnum::PAY_SUCCESS);
             })->unionAll(function ($query) use ($time_begin, $time_end, $company_ids, $canteen_id, $dinner_id) {
@@ -437,9 +431,6 @@ class OrderSettlementV extends Model
                     ->leftJoin('canteen_canteen_t c', '`a`.`canteen_id` = `c`.`id` ')
                     ->leftJoin('canteen_company_department_t e', '`a`.`department_id` = `e`.`id`')
                     ->leftJoin('canteen_company_staff_t f', '`a`.`staff_id` = `f`.`id`')
-                    ->where('a.ordering_date', '>=', $time_begin)
-                    ->where('a.ordering_date', '<=', $time_end)
-                    ->where('a.type', OrderEnum::EAT_OUTSIDER)
                     ->where(function ($query) use ($company_ids, $canteen_id, $dinner_id) {
                         if (!empty($dinner_id)) {
                             $query->where('a.dinner_id', $dinner_id);
@@ -456,6 +447,9 @@ class OrderSettlementV extends Model
                         }
 
                     })
+                    ->where('a.ordering_date', '>=', $time_begin)
+                    ->where('a.ordering_date', '<=', $time_end)
+                    ->where('a.type', OrderEnum::EAT_OUTSIDER)
                     ->where('a.state', CommonEnum::STATE_IS_OK)
                     ->where('a.pay', PayEnum::PAY_SUCCESS);
 
@@ -465,8 +459,6 @@ class OrderSettlementV extends Model
                     ->leftJoin('canteen_company_staff_t b', "`a`.`staff_id` = `b`.`id`")
                     ->leftJoin('canteen_company_department_t c', '`b`.`d_id` = `c`.`id`')
                     ->leftJoin('canteen_shop_t d', '`a`.`shop_id` = `d`.`id`')
-                    ->where('a.create_time', '>=', $time_begin)
-                    ->where('a.create_time', '<=', $end)
                     ->where(function ($query) use ($company_ids, $canteen_id, $dinner_id) {
                         if (!empty($canteen_id)) {
                             $query->where('a.shop_id', $canteen_id);
@@ -479,6 +471,8 @@ class OrderSettlementV extends Model
                         }
 
                     })
+                    ->where('a.create_time', '>=', $time_begin)
+                    ->where('a.create_time', '<=', $end)
                     ->where('a.state', CommonEnum::STATE_IS_OK);
 
             })->buildSql();
@@ -487,10 +481,10 @@ class OrderSettlementV extends Model
 
 
     public static function orderSettlement($page, $size,
-                                        $name, $phone, $canteen_id, $department_id, $dinner_id,
-                                        $consumption_type, $time_begin, $time_end, $company_ids, $type)
+                                           $name, $phone, $canteen_id, $department_id, $dinner_id,
+                                           $consumption_type, $time_begin, $time_end, $company_ids, $type)
     {
-        $subQuery = self::getBuildSqlWithAccount2($time_begin, $time_end, $company_ids, $canteen_id, $dinner_id, false);
+        $subQuery = self::getBuildSql($time_begin, $time_end, $company_ids, $canteen_id, $dinner_id);
         $list = Db::table($subQuery . ' a')
             ->where('staff_state', CommonEnum::STATE_IS_OK)
             ->where(function ($query) use ($name, $phone, $department_id) {
