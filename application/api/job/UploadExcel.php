@@ -40,8 +40,9 @@ class UploadExcel
         $isJobDone = $this->doJob($data);
         if ($isJobDone) {
             // 如果任务执行成功，删除任务
-            $code = $data['company_id'] . ":" . $data['u_id'] . ":" . $data['type'];
-            $this->clearUploading($data['company_id'], $data['u_id'], $data['type']);
+            // $code = $data['company_id'] . ":" . $data['u_id'] . ":" . $data['type'];
+            $code = $data['company_id'] . ":" . $data['type'];
+            // $this->clearUploading($data['company_id'], $data['u_id'], $data['type']);
             LogService::saveJob("<warn>导入Excel任务执行成功！编号：$code" . "</warn>\n");
             $job->delete();
         } else {
@@ -103,7 +104,7 @@ class UploadExcel
     {
         $company_id = $data['company_id'];
         $fileName = $data['fileName'];
-        $staffs = (new DepartmentService())->uploadStaff($company_id,$fileName);
+        $staffs = (new DepartmentService())->uploadStaff($company_id, $fileName);
         if (!$staffs) {
             return false;
         }
