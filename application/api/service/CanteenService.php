@@ -425,7 +425,6 @@ class CanteenService
 
         $adminId = Token::getCurrentUid();
         $canteens = AdminCanteenT::canteens($adminId);
-        print_r($canteens);
         $canteenIds = [];
         foreach ($canteens as $k => $v) {
             array_push($canteenIds, $v['id']);

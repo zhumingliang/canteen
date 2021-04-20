@@ -1042,6 +1042,7 @@ class DepartmentService
     function staffsForRecharge($page, $size, $department_id, $key)
     {
         $company_id = Token::getCurrentTokenVar('company_id');
+        $canteen_id = (new CanteenService())->checkCanteens(0);
         $accounts = CompanyAccountT::accountsWithSortsAndDepartmentId($company_id);
         $staffs = CompanyStaffV:: staffsForRecharge($page, $size, $department_id, $key, $company_id);
         $data = $staffs['data'];
