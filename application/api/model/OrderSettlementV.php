@@ -200,7 +200,12 @@ class OrderSettlementV extends Model
                     $query->where('a.d_id', $dinner_id);
                 } else {
                     if (!empty($canteen_id)) {
-                        $query->where('a.c_id', $canteen_id);
+                        // $query->where('a.c_id', $canteen_id);
+                        if (strpos($canteen_id, ',') !== false) {
+                            $query->whereIn('a.c_id', $canteen_id);
+                        } else {
+                            $query->where('a.c_id', $canteen_id);
+                        }
                     } else {
                         if (strpos($company_ids, ',') !== false) {
                             $query->whereIn('a.company_id', $company_ids);
@@ -224,17 +229,22 @@ class OrderSettlementV extends Model
                     ->leftJoin('canteen_company_department_t f', "`e`.`d_id` = `f`.`id`")
                     ->where('a.consumption_date', '>=', $time_begin)
                     ->where('a.consumption_date', '<=', $time_end)
-                    ->where(function ($query) use ($company_ids, $canteen_id, $dinner_id) {
+                    ->where(function ($query2) use ($company_ids, $canteen_id, $dinner_id) {
                         if (!empty($dinner_id)) {
-                            $query->where('a.dinner_id', $dinner_id);
+                            $query2->where('a.dinner_id', $dinner_id);
                         } else {
                             if (!empty($canteen_id)) {
-                                $query->where('a.canteen_id', $canteen_id);
+                                // $query->where('a.canteen_id', $canteen_id);
+                                if (strpos($canteen_id, ',') !== false) {
+                                    $query2->whereIn('a.canteen_id', $canteen_id);
+                                } else {
+                                    $query2->where('a.canteen_id', $canteen_id);
+                                }
                             } else {
                                 if (strpos($company_ids, ',') !== false) {
-                                    $query->whereIn('a.company_id', $company_ids);
+                                    $query2->whereIn('a.company_id', $company_ids);
                                 } else {
-                                    $query->where('a.company_id', $company_ids);
+                                    $query2->where('a.company_id', $company_ids);
                                 }
                             }
                         }
@@ -252,17 +262,22 @@ class OrderSettlementV extends Model
                     ->leftJoin('canteen_company_staff_t f', '`a`.`staff_id` = `f`.`id` ')
                     ->where('a.ordering_date', '>=', $time_begin)
                     ->where('a.ordering_date', '<=', $time_end)
-                    ->where(function ($query) use ($company_ids, $canteen_id, $dinner_id) {
+                    ->where(function ($query2) use ($company_ids, $canteen_id, $dinner_id) {
                         if (!empty($dinner_id)) {
-                            $query->where('a.dinner_id', $dinner_id);
+                            $query2->where('a.dinner_id', $dinner_id);
                         } else {
                             if (!empty($canteen_id)) {
-                                $query->where('a.canteen_id', $canteen_id);
+                                // $query->where('a.canteen_id', $canteen_id);
+                                if (strpos($canteen_id, ',') !== false) {
+                                    $query2->whereIn('a.canteen_id', $canteen_id);
+                                } else {
+                                    $query2->where('a.canteen_id', $canteen_id);
+                                }
                             } else {
                                 if (strpos($company_ids, ',') !== false) {
-                                    $query->whereIn('a.company_id', $company_ids);
+                                    $query2->whereIn('a.company_id', $company_ids);
                                 } else {
-                                    $query->where('a.company_id', $company_ids);
+                                    $query2->where('a.company_id', $company_ids);
                                 }
                             }
                         }
@@ -286,17 +301,22 @@ class OrderSettlementV extends Model
                     ->where('a.type', OrderEnum::EAT_OUTSIDER)
                     ->where('a.state', CommonEnum::STATE_IS_OK)
                     ->where('a.pay', PayEnum::PAY_SUCCESS)
-                    ->where(function ($query) use ($company_ids, $canteen_id, $dinner_id) {
+                    ->where(function ($query2) use ($company_ids, $canteen_id, $dinner_id) {
                         if (!empty($dinner_id)) {
-                            $query->where('a.dinner_id', $dinner_id);
+                            $query2->where('a.dinner_id', $dinner_id);
                         } else {
                             if (!empty($canteen_id)) {
-                                $query->where('a.canteen_id', $canteen_id);
+                                // $query->where('a.canteen_id', $canteen_id);
+                                if (strpos($canteen_id, ',') !== false) {
+                                    $query2->whereIn('a.canteen_id', $canteen_id);
+                                } else {
+                                    $query2->where('a.canteen_id', $canteen_id);
+                                }
                             } else {
                                 if (strpos($company_ids, ',') !== false) {
-                                    $query->whereIn('a.company_id', $company_ids);
+                                    $query2->whereIn('a.company_id', $company_ids);
                                 } else {
-                                    $query->where('a.company_id', $company_ids);
+                                    $query2->where('a.company_id', $company_ids);
                                 }
                             }
                         }
@@ -315,24 +335,23 @@ class OrderSettlementV extends Model
                     ->leftJoin('canteen_shop_t d', '`a`.`shop_id` = `d`.`id`')
                     ->where('a.create_time', '>=', $time_begin)
                     ->where('a.create_time', '<=', $end)
-                    ->where(function ($query) use ($company_ids, $canteen_id, $dinner_id) {
+                    ->where(function ($query2) use ($company_ids, $canteen_id, $dinner_id) {
                         if (!empty($dinner_id)) {
-                            $query->where('a.dinner_id', $dinner_id);
+                            $query2->where('a.dinner_id', $dinner_id);
                         } else {
                             if (!empty($canteen_id)) {
-                                $query->where('a.shop_id', $canteen_id);
+                                $query2->where('a.shop_id', $canteen_id);
                             } else {
                                 if (strpos($company_ids, ',') !== false) {
-                                    $query->whereIn('a.company_id', $company_ids);
+                                    $query2->whereIn('a.company_id', $company_ids);
                                 } else {
-                                    $query->where('a.company_id', $company_ids);
+                                    $query2->where('a.company_id', $company_ids);
                                 }
                             }
                         }
 
                     })
-                    ->where('a.state', CommonEnum::STATE_IS_OK)
-                ;
+                    ->where('a.state', CommonEnum::STATE_IS_OK);
 
             })->buildSql();
         return $sql;
@@ -353,7 +372,12 @@ class OrderSettlementV extends Model
                     $query->where('a.d_id', $dinner_id);
                 } else {
                     if (!empty($canteen_id)) {
-                        $query->where('a.c_id', $canteen_id);
+                        //$query->where('a.c_id', $canteen_id);
+                        if (strpos($canteen_id, ',') !== false) {
+                            $query->whereIn('a.c_id', $canteen_id);
+                        } else {
+                            $query->where('a.c_id', $canteen_id);
+                        }
                     } else {
                         if (strpos($company_ids, ',') !== false) {
                             $query->whereIn('a.company_id', $company_ids);
@@ -375,17 +399,22 @@ class OrderSettlementV extends Model
                     ->leftJoin('canteen_canteen_t c', '`a`.`canteen_id` = `c`.`id`')
                     ->leftJoin('canteen_company_staff_t e', "`a`.`staff_id` = `e`.`id`")
                     ->leftJoin('canteen_company_department_t f', "`e`.`d_id` = `f`.`id`")
-                    ->where(function ($query) use ($company_ids, $canteen_id, $dinner_id) {
+                    ->where(function ($query2) use ($company_ids, $canteen_id, $dinner_id) {
                         if (!empty($dinner_id)) {
-                            $query->where('a.dinner_id', $dinner_id);
+                            $query2->where('a.dinner_id', $dinner_id);
                         } else {
                             if (!empty($canteen_id)) {
-                                $query->where('a.canteen_id', $canteen_id);
+                                // $query->where('a.canteen_id', $canteen_id);
+                                if (strpos($canteen_id, ',') !== false) {
+                                    $query2->whereIn('a.canteen_id', $canteen_id);
+                                } else {
+                                    $query2->where('a.canteen_id', $canteen_id);
+                                }
                             } else {
                                 if (strpos($company_ids, ',') !== false) {
-                                    $query->whereIn('a.company_id', $company_ids);
+                                    $query2->whereIn('a.company_id', $company_ids);
                                 } else {
-                                    $query->where('a.company_id', $company_ids);
+                                    $query2->where('a.company_id', $company_ids);
                                 }
                             }
                         }
@@ -403,17 +432,22 @@ class OrderSettlementV extends Model
                     ->leftJoin('canteen_canteen_t c', '`a`.`canteen_id` = `c`.`id` ')
                     ->leftJoin('canteen_company_department_t e', '`a`.`department_id` = `e`.`id`')
                     ->leftJoin('canteen_company_staff_t f', '`a`.`staff_id` = `f`.`id` ')
-                    ->where(function ($query) use ($company_ids, $canteen_id, $dinner_id) {
+                    ->where(function ($query2) use ($company_ids, $canteen_id, $dinner_id) {
                         if (!empty($dinner_id)) {
-                            $query->where('a.dinner_id', $dinner_id);
+                            $query2->where('a.dinner_id', $dinner_id);
                         } else {
                             if (!empty($canteen_id)) {
-                                $query->where('a.canteen_id', $canteen_id);
+                                //$query->where('a.canteen_id', $canteen_id);
+                                if (strpos($canteen_id, ',') !== false) {
+                                    $query2->whereIn('a.canteen_id', $canteen_id);
+                                } else {
+                                    $query2->where('a.canteen_id', $canteen_id);
+                                }
                             } else {
                                 if (strpos($company_ids, ',') !== false) {
-                                    $query->whereIn('a.company_id', $company_ids);
+                                    $query2->whereIn('a.company_id', $company_ids);
                                 } else {
-                                    $query->where('a.company_id', $company_ids);
+                                    $query2->where('a.company_id', $company_ids);
                                 }
                             }
                         }
@@ -431,17 +465,22 @@ class OrderSettlementV extends Model
                     ->leftJoin('canteen_canteen_t c', '`a`.`canteen_id` = `c`.`id` ')
                     ->leftJoin('canteen_company_department_t e', '`a`.`department_id` = `e`.`id`')
                     ->leftJoin('canteen_company_staff_t f', '`a`.`staff_id` = `f`.`id`')
-                    ->where(function ($query) use ($company_ids, $canteen_id, $dinner_id) {
+                    ->where(function ($query2) use ($company_ids, $canteen_id, $dinner_id) {
                         if (!empty($dinner_id)) {
-                            $query->where('a.dinner_id', $dinner_id);
+                            $query2->where('a.dinner_id', $dinner_id);
                         } else {
                             if (!empty($canteen_id)) {
-                                $query->where('a.canteen_id', $canteen_id);
+                                //  $query->where('a.canteen_id', $canteen_id);
+                                if (strpos($canteen_id, ',') !== false) {
+                                    $query2->whereIn('a.canteen_id', $canteen_id);
+                                } else {
+                                    $query2->where('a.canteen_id', $canteen_id);
+                                }
                             } else {
                                 if (strpos($company_ids, ',') !== false) {
-                                    $query->whereIn('a.company_id', $company_ids);
+                                    $query2->whereIn('a.company_id', $company_ids);
                                 } else {
-                                    $query->where('a.company_id', $company_ids);
+                                    $query2->where('a.company_id', $company_ids);
                                 }
                             }
                         }

@@ -506,7 +506,9 @@ class WalletService
         foreach ($staffs as $k => $v) {
             //检测余额是否充足
             if ($params['type'] == 2) {
-                $this->checkSupplementBalance($v, $params['canteen_id'], $params['money']);
+                if ($params['money']>0){
+                    $this->checkSupplementBalance($v, $params['canteen_id'], $params['money']);
+                }
             }
 
             $data = [

@@ -111,6 +111,7 @@ class DownExcelService
         $name, $phone, $canteen_id, $department_id, $dinner_id,
         $consumption_type, $time_begin, $time_end, $company_ids, $type)
     {
+        $canteen_id = (new CanteenService())->checkCanteens($canteen_id);
         $jobData = [
             'excel_type' => 'orderSettlement',
             'canteen_id' => $canteen_id,
@@ -133,6 +134,7 @@ class DownExcelService
         $name, $phone, $canteen_id, $department_id, $dinner_id,
         $consumption_type, $time_begin, $time_end, $company_ids, $type)
     {
+        $canteen_id = (new CanteenService())->checkCanteens($canteen_id);
         $jobData = [
             'excel_type' => 'orderSettlementWithAccount',
             'canteen_id' => $canteen_id,
@@ -153,6 +155,7 @@ class DownExcelService
     public function exportStatistic($time_begin, $time_end, $company_ids, $canteen_id)
     {
 
+        $canteen_id = (new CanteenService())->checkCanteens($canteen_id);
         $jobData = [
             'excel_type' => 'orderStatistic',
             'canteen_id' => $canteen_id,

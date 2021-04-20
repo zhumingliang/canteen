@@ -156,7 +156,12 @@ class OrderStatisticV extends Model
                         $query->where('company_id', $company_ids);
                     }
                 } else {
-                    $query->where('canteen_id', $canteen_id);
+                    //  $query->where('canteen_id', $canteen_id);
+                    if (strpos($company_ids, ',') !== false) {
+                        $query->whereIn('canteen_id', $canteen_id);
+                    } else {
+                        $query->where('canteen_id', $canteen_id);
+                    }
                 }
             })
             ->where('booking', CommonEnum::STATE_IS_OK)

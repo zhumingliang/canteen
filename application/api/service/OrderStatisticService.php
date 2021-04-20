@@ -54,6 +54,7 @@ class OrderStatisticService
 
     public function exportStatistic($time_begin, $time_end, $company_ids, $canteen_id)
     {
+        $canteen_id = (new CanteenService())->checkCanteens($canteen_id);
         $list = OrderStatisticV::exportStatistic($time_begin, $time_end, $company_ids, $canteen_id);
         $header = ['日期', '公司', '消费地点', '餐次', '订餐份数'];
         $file_name = "订餐统计报表(" . $time_begin . "-" . $time_end . ")";
@@ -217,6 +218,7 @@ class OrderStatisticService
                                     $name, $phone, $canteen_id, $department_id, $dinner_id,
                                     $consumption_type, $time_begin, $time_end, $company_ids, $type)
     {
+        $canteen_id = (new CanteenService())->checkCanteens($canteen_id);
         $records = OrderSettlementV::orderSettlement($page, $size,
             $name, $phone, $canteen_id, $department_id, $dinner_id,
             $consumption_type, $time_begin, $time_end, $company_ids, $type);
@@ -228,6 +230,7 @@ class OrderStatisticService
                                                $name, $phone, $canteen_id, $department_id, $dinner_id,
                                                $consumption_type, $time_begin, $time_end, $company_ids, $type)
     {
+        $canteen_id = (new CanteenService())->checkCanteens($canteen_id);
         $records = OrderSettlementV::orderSettlementWithAccount($page, $size,
             $name, $phone, $canteen_id, $department_id, $dinner_id,
             $consumption_type, $time_begin, $time_end, $company_ids, $type);
