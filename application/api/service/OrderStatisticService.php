@@ -787,6 +787,7 @@ class OrderStatisticService
                                   $department_id, $username, $staff_type_id, $time_begin,
                                   $time_end, $company_id, $phone, $page, $size, $order_type)
     {
+        $canteen_id = (new CanteenService())->checkCanteens($canteen_id);
         $version = \think\facade\Request::param('version');
         switch ($type) {
             case OrderEnum::STATISTIC_BY_DEPARTMENT:

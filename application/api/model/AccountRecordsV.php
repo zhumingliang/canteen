@@ -77,7 +77,12 @@ class AccountRecordsV
             ->where('a.type', 'one')
             ->where(function ($query) use ($company_id, $canteen_id) {
                 if (!empty($canteen_id)) {
-                    $query->where('b.c_id', $canteen_id);
+                    //$query->where('b.c_id', $canteen_id);
+                    if (strpos($canteen_id, ',') !== false) {
+                        $query->whereIn('b.c_id', $canteen_id);
+                    } else {
+                        $query->where('b.c_id', $canteen_id);
+                    }
                 } else {
                     if (strpos($company_id, ',') !== false) {
                         $query->whereIn('b.company_id', $company_id);
@@ -123,7 +128,12 @@ class AccountRecordsV
                     ->where('a.outsider', CommonEnum::STATE_IS_FAIL)
                     ->where(function ($query2) use ($company_id, $canteen_id) {
                         if (!empty($canteen_id)) {
-                            $query2->where('d.canteen_id', $canteen_id);
+                            //$query2->where('d.canteen_id', $canteen_id);
+                            if (strpos($canteen_id, ',') !== false) {
+                                $query2->whereIn('d.canteen_id', $canteen_id);
+                            } else {
+                                $query2->where('d.canteen_id', $canteen_id);
+                            }
                         } else {
                             if (strpos($company_id, ',') !== false) {
                                 $query2->whereIn('d.company_id', $company_id);
@@ -168,7 +178,12 @@ class AccountRecordsV
                     ->where('a.outsider', CommonEnum::STATE_IS_OK)
                     ->where(function ($query2) use ($company_id, $canteen_id) {
                         if (!empty($canteen_id)) {
-                            $query2->where('d.canteen_id', $canteen_id);
+                           // $query2->where('d.canteen_id', $canteen_id);
+                            if (strpos($canteen_id, ',') !== false) {
+                                $query2->whereIn('d.canteen_id', $canteen_id);
+                            } else {
+                                $query2->where('d.canteen_id', $canteen_id);
+                            }
                         } else {
                             if (strpos($company_id, ',') !== false) {
                                 $query2->whereIn('d.company_id', $company_id);
@@ -213,7 +228,12 @@ class AccountRecordsV
                     ->where('a.type', 'supplement')
                     ->where(function ($query2) use ($company_id, $canteen_id) {
                         if (!empty($canteen_id)) {
-                            $query2->where('b.canteen_id', $canteen_id);
+                            //$query2->where('b.canteen_id', $canteen_id);
+                            if (strpos($canteen_id, ',') !== false) {
+                                $query2->whereIn('b.canteen_id', $canteen_id);
+                            } else {
+                                $query2->where('b.canteen_id', $canteen_id);
+                            }
                         } else {
                             if (strpos($company_id, ',') !== false) {
                                 $query2->whereIn('b.company_id', $company_id);
