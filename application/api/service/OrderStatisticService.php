@@ -433,6 +433,7 @@ class OrderStatisticService
                               $ordering_date, $company_ids,
                               $canteen_id, $dinner_id, $status, $department_id, $user_type, $username)
     {
+        $canteen_id = (new CanteenService())->checkCanteens($canteen_id);
         $records = OrderTakeoutStatisticV::statistic($page, $size,
             $ordering_date, $company_ids, $canteen_id, $dinner_id, $status, $department_id, $user_type, $username);
         $data = $records['data'];

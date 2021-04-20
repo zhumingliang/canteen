@@ -172,6 +172,7 @@ class DownExcelService
                                            $status, $department_id,
                                            $user_type, $username)
     {
+        $canteen_id=(new CanteenService())->checkCanteens($canteen_id);
         $jobData = [
             'excel_type' => 'takeoutStatistic',
             'canteen_id' => $canteen_id,

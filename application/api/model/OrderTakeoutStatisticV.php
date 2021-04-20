@@ -74,7 +74,12 @@ IF
                     $query->where('a.d_id', $dinner_id);
                 } else {
                     if (!empty($canteen_id)) {
-                        $query->where('a.c_id', $canteen_id);
+                       // $query->where('a.c_id', $canteen_id);
+                        if (strpos($canteen_id, ',') !== false) {
+                            $query->whereIn('a.c_id', $canteen_id);
+                        } else {
+                            $query->where('a.c_id', $canteen_id);
+                        }
                     } else {
                         if (strpos($company_ids, ',') !== false) {
                             $query->whereIn('a.company_id', $company_ids);
@@ -185,7 +190,12 @@ IF
                             $query2->where('a.dinner_id', $dinner_id);
                         } else {
                             if (!empty($canteen_id)) {
-                                $query2->where('a.canteen_id', $canteen_id);
+                               // $query2->where('a.canteen_id', $canteen_id);
+                                if (strpos($canteen_id, ',') !== false) {
+                                    $query2->whereIn('a.canteen_id', $canteen_id);
+                                } else {
+                                    $query2->where('a.canteen_id', $canteen_id);
+                                }
                             } else {
                                 if (strpos($company_ids, ',') !== false) {
                                     $query2->whereIn('a.company_id', $company_ids);
@@ -325,7 +335,12 @@ IF
                     $query->where('dinner_id', $dinner_id);
                 } else {
                     if (!empty($canteen_id)) {
-                        $query->where('canteen_id', $canteen_id);
+                       // $query->where('canteen_id', $canteen_id);
+                        if (strpos($canteen_id, ',') !== false) {
+                            $query->whereIn('canteen_id', $canteen_id);
+                        } else {
+                            $query->where('canteen_id', $canteen_id);
+                        }
                     } else {
                         if (strpos($company_ids, ',') !== false) {
                             $query->whereIn('company_id', $company_ids);
