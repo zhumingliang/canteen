@@ -34,7 +34,11 @@ class OrderStatisticV extends Model
                     $query->where('a.d_id', $dinner_id);
                 } else {
                     if (!empty($canteen_id)) {
-                        $query->where('a.c_id', $canteen_id);
+                        if (strpos($company_ids, ',') !== false) {
+                            $query->whereIn('a.c_id', $canteen_id);
+                        } else {
+                            $query->where('a.c_id', $canteen_id);
+                        }
                     } else {
                         if (strpos($company_ids, ',') !== false) {
                             $query->whereIn('a.company_id', $company_ids);
@@ -55,17 +59,22 @@ class OrderStatisticV extends Model
                     ->leftJoin('canteen_company_staff_t g', "`b`.`staff_id` = `g`.`id`")
                     ->where('b.ordering_date', ">=", $time_begin)
                     ->where('b.ordering_date', "<=", $time_end)
-                    ->where(function ($query) use ($company_ids, $canteen_id, $dinner_id) {
+                    ->where(function ($query2) use ($company_ids, $canteen_id, $dinner_id) {
                         if (!empty($dinner_id)) {
-                            $query->where('b.dinner_id', $dinner_id);
+                            $query2->where('b.dinner_id', $dinner_id);
                         } else {
                             if (!empty($canteen_id)) {
-                                $query->where('b.canteen_id', $canteen_id);
+                                // $query->where('b.canteen_id', $canteen_id);
+                                if (strpos($company_ids, ',') !== false) {
+                                    $query2->whereIn('b.canteen_id', $canteen_id);
+                                } else {
+                                    $query2->where('b.canteen_id', $canteen_id);
+                                }
                             } else {
                                 if (strpos($company_ids, ',') !== false) {
-                                    $query->whereIn('b.company_id', $company_ids);
+                                    $query2->whereIn('b.company_id', $company_ids);
                                 } else {
-                                    $query->where('b.company_id', $company_ids);
+                                    $query2->where('b.company_id', $company_ids);
                                 }
                             }
                         }
@@ -278,10 +287,10 @@ class OrderStatisticV extends Model
         $sql = self::getSql($time_begin, $time_end, $company_ids, $canteen_id, $dinner_id);
         $list = Db::table($sql . 'a')
             ->where(function ($query) use ($type) {
-            if ($type < 3) {
-                $query->where('type', $type);
-            }
-        })
+                if ($type < 3) {
+                    $query->where('type', $type);
+                }
+            })
             ->field('order_id,ordering_date,username,canteen,department,dinner,type,ordering_type,state,meal_time_end,used,phone,count,order_money,consumption_type,delivery_fee')
             ->where('booking', CommonEnum::STATE_IS_OK)
             ->where(function ($query) use ($name, $phone, $department_id) {

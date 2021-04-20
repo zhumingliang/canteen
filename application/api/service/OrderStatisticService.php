@@ -69,6 +69,7 @@ class OrderStatisticService
                                          $phone, $canteen_id, $department_id,
                                          $dinner_id, $type)
     {
+        $canteen_id = (new CanteenService())->checkCanteens($canteen_id);
         $list = OrderStatisticV::detail($company_ids, $time_begin,
             $time_end, $page, $size, $name,
             $phone, $canteen_id, $department_id,
@@ -76,6 +77,7 @@ class OrderStatisticService
         $list['data'] = $this->getTypeAttr($list['data']);
         return $list;
     }
+
 
     public function getTypeAttr($data, $value = '')
     {

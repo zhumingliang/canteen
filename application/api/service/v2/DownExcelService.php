@@ -11,6 +11,7 @@ use app\api\model\DinnerV;
 use app\api\model\DownExcelT;
 use app\api\model\OrderStatisticV;
 use app\api\service\AuthorService;
+use app\api\service\CanteenService;
 use app\api\service\ExcelService;
 use app\api\service\Token;
 use app\lib\enum\DownEnum;
@@ -88,6 +89,7 @@ class DownExcelService
                                                $phone, $canteen_id, $department_id,
                                                $dinner_id, $type)
     {
+        $canteen_id = (new CanteenService())->checkCanteens($canteen_id);
         $jobData = [
             'excel_type' => 'orderStatisticDetail',
             'canteen_id' => $canteen_id,
@@ -165,7 +167,7 @@ class DownExcelService
     public function exportTakeoutStatistic($ordering_date, $company_ids,
                                            $canteen_id, $dinner_id,
                                            $status, $department_id,
-                                           $user_type,$username)
+                                           $user_type, $username)
     {
         $jobData = [
             'excel_type' => 'takeoutStatistic',
