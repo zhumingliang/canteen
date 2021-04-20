@@ -12,6 +12,7 @@ use app\api\model\OrderPrepareT;
 use app\api\model\PayT;
 use app\api\service\CanteenService;
 use app\api\service\Token;
+use app\api\service\UserService;
 use app\api\service\WalletService;
 use app\lib\enum\CommonEnum;
 use app\lib\enum\OrderEnum;
@@ -34,6 +35,8 @@ class OrderService
             $canteenId = Token::getCurrentTokenVar('current_canteen_id');
             $phone = Token::getCurrentTokenVar('phone');
             $companyId = Token::getCurrentTokenVar('current_company_id');
+            (new UserService())->getUserCompanyInfo($phone, $companyId);
+
             $staffId = Token::getCurrentTokenVar('staff_id');
             $outsider = Token::getCurrentTokenVar('outsiders');
             $uId = Token::getCurrentUid();
