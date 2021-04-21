@@ -503,12 +503,46 @@ class Order extends BaseController
      * @apiVersion 3.0.0
      * @apiDescription 微信端-消费查询-订单列表
      * @apiExample {get}  请求样例:
-     * http://canteen.tonglingok.com/api/v1/order/consumptionRecords?$page=1&size=100&consumption_time=2019-10
+     * http://canteen.tonglingok.com/api/v1/order/consumptionRecords?page=1&size=100&consumption_time=2019-10
      * @apiParam (请求参数说明) {int} page 当前页码
      * @apiParam (请求参数说明) {int} size 每页多少条数据
      * @apiParam (请求参数说明) {string} consumption_time  消费日期
      * @apiSuccessExample {json} 返回样例:
-     * {"msg":"ok","errorCode":0,"code":200,"data":{"balance":{"hidden":2,"money":0},"consumptionMoney":20,"records":{"total":2,"per_page":20,"current_page":1,"last_page":1,"data":[{"order_id":6,"location":"企业A","order_type":"shop","used_type":"小卖部","create_time":"2019-09-28 08:14:10","ordering_date":"\/","dinner":"商品","money":-10},{"order_id":8,"location":"饭堂1","order_type":"canteen","used_type":"就餐","create_time":"2019-09-09 16:34:15","ordering_date":"2019-09-07","dinner":"中餐","money":-10}]}}}
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"total":2,"per_page":20,"current_page":1,"last_page":1,"data":[{"order_id":6,"location":"企业A","order_type":"shop","used_type":"小卖部","create_time":"2019-09-28 08:14:10","ordering_date":"/","dinner":"商品","money":-10},{"order_id":8,"location":"饭堂1","order_type":"canteen","used_type":"就餐","create_time":"2019-09-09 16:34:15","ordering_date":"2019-09-07","dinner":"中餐","money":-10}]}}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {String} msg 信息描述
+     * @apiSuccess (返回参数说明) {int} total 数据总数
+     * @apiSuccess (返回参数说明) {int} per_page 每页多少条数据
+     * @apiSuccess (返回参数说明) {int} current_page 当前页码
+     * @apiSuccess (返回参数说明) {int} last_page 最后页码
+     * @apiSuccess (返回参数说明) {int} order_id  订单id
+     * @apiSuccess (返回参数说明) {string} location  消费地点
+     * @apiSuccess (返回参数说明) {string} order_type  订单类别
+     * @apiSuccess (返回参数说明) {string} used_type  类型
+     * @apiSuccess (返回参数说明) {string} create_time 消费日期
+     * @apiSuccess (返回参数说明) {string} ordering_date 餐次日期
+     * @apiSuccess (返回参数说明) {string} consumption_type 扣费类型：one 一次性扣费；more 多次扣费
+     * @apiSuccess (返回参数说明) {int} dinner 名称
+     */
+    public function consumptionRecords($page = 1, $size = 20)
+    {
+        $consumption_time = Request::param('consumption_time');
+        $records = (new OrderService())->consumptionRecords($consumption_time, $page, $size);
+        return json(new SuccessMessageWithData(['data' => $records]));
+    }
+
+    /**
+     * @api {GET} /api/v1/order/consumptionRecords/statistic 微信端-消费查询-金额统计
+     * @apiGroup  Official
+     * @apiVersion 3.0.0
+     * @apiDescription 微信端-消费查询-金额统计
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/order/consumptionRecords/statistic?&consumption_time=2019-10
+     * @apiParam (请求参数说明) {int} page 当前页码
+     * @apiParam (请求参数说明) {int} size 每页多少条数据
+     * @apiParam (请求参数说明) {string} consumption_time  消费日期
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"balance":{"hidden":2,"money":0},"consumptionMoney":20,"rechargeMoney":20}}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
      * @apiSuccess (返回参数说明) {String} msg 信息描述
      * @apiSuccess (返回参数说明) {int} total 数据总数
@@ -519,23 +553,14 @@ class Order extends BaseController
      * @apiSuccess (返回参数说明) {int} hidden 是否隐藏：1｜是；2｜否
      * @apiSuccess (返回参数说明) {int} money 余额金额
      * @apiSuccess (返回参数说明) {int} consumptionMoney 月消费金额
-     * @apiSuccess (返回参数说明) {obj} records  记录列表
-     * @apiSuccess (返回参数说明) {int} order_id  订单id
-     * @apiSuccess (返回参数说明) {string} location  消费地点
-     * @apiSuccess (返回参数说明) {string} order_type  订单类别
-     * @apiSuccess (返回参数说明) {string} used_type  类型
-     * @apiSuccess (返回参数说明) {string} create_time 消费日期
-     * @apiSuccess (返回参数说明) {string} ordering_date 餐次日期
-     * @apiSuccess (返回参数说明) {string} consumption_type 扣费类型：one 一次性扣费；more 多次扣费
-     * @apiSuccess (返回参数说明) {int} dinner 名称
-     * @apiSuccess (返回参数说明) {int} all_money 可用金额
-     * @apiSuccess (返回参数说明) {int} effective_money 实际金额
+     * @apiSuccess (返回参数说明) {int} rechargeMoney 月充值金额
      */
-    public function consumptionRecords($page = 1, $size = 20)
+    public function officialConsumptionStatistic()
     {
         $consumption_time = Request::param('consumption_time');
-        $records = (new OrderService())->consumptionRecords($consumption_time, $page, $size);
+        $records = (new OrderService())->officialConsumptionStatistic($consumption_time);
         return json(new SuccessMessageWithData(['data' => $records]));
+
     }
 
     /**

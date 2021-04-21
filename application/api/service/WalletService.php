@@ -19,6 +19,7 @@ use app\api\model\RechargeSupplementT;
 use app\api\model\RechargeV;
 use app\api\model\UserBalanceV;
 use app\api\validate\Company;
+use app\lib\Date;
 use app\lib\enum\CommonEnum;
 use app\lib\enum\OrderEnum;
 use app\lib\enum\PayEnum;
@@ -506,7 +507,7 @@ class WalletService
         foreach ($staffs as $k => $v) {
             //检测余额是否充足
             if ($params['type'] == 2) {
-                if ($params['money']>0){
+                if ($params['money'] > 0) {
                     $this->checkSupplementBalance($v, $params['canteen_id'], $params['money']);
                 }
             }
@@ -1096,5 +1097,24 @@ class WalletService
         return [
             'url' => "https://enjoy.abchina.com/jf-openweb/wechat/shareEpayItem?code=" . $config->code
         ];
+    }
+
+    //月充值金额合计
+    public function monthRechargeMoney($staffId, $consumptionTime)
+    {
+        $date = Date::mFristAndLast2($consumptionTime);
+        $timeBegin = $date['fist'];
+        $timeEnd = $date['last'];
+        $rechargeMoney = RechargeCashT::monthRechargeMoney($timeBegin, $timeEnd, $staffId);
+        return $rechargeMoney;
+    }
+
+    public function outsiderMonthRechargeMoney($company_id, $phone, $consumptionTime)
+    {
+        $date = Date::mFristAndLast2($consumptionTime);
+        $timeBegin = $date['fist'];
+        $timeEnd = $date['last'];
+        $rechargeMoney = RechargeCashT::outsiderMonthRechargeMoney($timeBegin, $timeEnd, $company_id, $phone);
+        return $rechargeMoney;
     }
 }

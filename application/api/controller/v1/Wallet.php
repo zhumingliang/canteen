@@ -433,4 +433,18 @@ class Wallet extends BaseController
         return json(new SuccessMessageWithData(['data' => $data]));
     }
 
+
+    /*www.canteen1.com/api/v1/recharge/monthRechargeMoney?consumption_time=2020-05&phone=13630434754&company_id=95
+   *{"msg":"ok","errorCode":0,"code":200,"data":1000.1}
+   * （请求参数）{string}consumption_time消费日期
+   * (返回参数）{int}data月充值总金额
+   */
+    //月充值合计
+    public function monthRechargeMoney(){
+        $consumption_time = Request::param('consumption_time');
+        $rechargeMoney=(new WalletService())->monthRechargeMoney($consumption_time);
+        return json(new SuccessMessageWithData(['data'=>$rechargeMoney]));
+
+    }
+
 }

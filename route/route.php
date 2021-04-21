@@ -214,6 +214,7 @@ Route::post('api/:version/order/changeAddress', 'api/:version.Order/changeOrderA
 Route::post('api/:version/order/handelOrderedNoMeal', 'api/:version.Order/handelOrderedNoMeal');
 Route::get('api/:version/order/userOrderings', 'api/:version.Order/userOrderings');
 Route::get('api/:version/order/consumptionRecords', 'api/:version.Order/consumptionRecords');
+Route::get('api/:version/order/consumptionRecords/statistic', 'api/:version.Order/officialConsumptionStatistic');
 Route::get('api/:version/order/detail', 'api/:version.Order/orderDetail');
 Route::get('api/:version/order/consumptionRecords/detail', 'api/:version.Order/recordsDetail');
 Route::get('api/:version/order/managerOrders', 'api/:version.Order/managerOrders');

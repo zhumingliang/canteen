@@ -203,6 +203,18 @@ class ConsumptionRecordsV extends Model
                     ->where('a.consumption_date', ">=", $time_begin)
                     ->where('a.consumption_date', "<=", $time_end);
             })
+            ->unionAll(function ($query) use ($staffId, $time_begin, $time_end) {
+                $query->table("canteen_pay_t")
+                    ->alias('a')
+                    ->leftJoin('canteen_company_t b', 'a.company_id = b.id')
+                    ->leftJoin('canteen_company_staff_t d', 'a.staff_id = d.id')
+                    ->field("a.id as order_id,0 as  location_id,'' as location,'pay' as order_type,a.create_time,date_format(a.create_time, '%Y-%m-%d' ) AS ordering_date,'' AS dinner,a.money AS money,d.phone,1 as count,0 AS sub_money,0 AS delivery_fee,1 AS booking,1 AS used,1 AS eating_type,'one' AS consumption_type,a.company_id,0 AS sort_code, a.method_id as supplement_type,1 as unused_handel")
+                    ->where('a.staff_id', $staffId)
+                    ->where('a.create_time', ">=", $time_begin)
+                    ->where('a.create_time', "<=", $time_end)
+                    ->where('a.status', PayEnum::PAY_SUCCESS)
+                    ->where('a.refund', CommonEnum::STATE_IS_FAIL);
+            })
             ->buildSql();
 
         $records = Db::table($subQuery . ' a')
