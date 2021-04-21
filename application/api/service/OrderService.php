@@ -2496,11 +2496,11 @@ class OrderService extends BaseService
     public
     function consumptionRecords($consumption_time, $page, $size)
     {
-        $outsiders = 2;//Token::getCurrentTokenVar('outsiders');
-        $phone = "13794286343";//Token::getCurrentPhone();
-        $company_id = 121;//Token::getCurrentTokenVar('current_company_id');
+        $outsiders = Token::getCurrentTokenVar('outsiders');
+        $phone = Token::getCurrentPhone();
+        $company_id = Token::getCurrentTokenVar('current_company_id');
         if ($outsiders == UserEnum::INSIDE) {
-            $staffId = 9665;//Token::getCurrentTokenVar('staff_id');
+            $staffId = Token::getCurrentTokenVar('staff_id');
             if (!$staffId) {
                 $staff = CompanyStaffT::staffName($phone, $company_id);
                 $staffId = $staff->id;
@@ -2518,12 +2518,12 @@ class OrderService extends BaseService
 
     public function officialConsumptionStatistic($consumption_time)
     {
-        $canteen_id = 254;//Token::getCurrentTokenVar('current_canteen_id');
-        $outsiders = 2;//Token::getCurrentTokenVar('outsiders');
-        $phone = "13794286343";//Token::getCurrentPhone();
-        $company_id = 121;//Token::getCurrentTokenVar('current_company_id');
+        $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
+        $outsiders = Token::getCurrentTokenVar('outsiders');
+        $phone = Token::getCurrentPhone();
+        $company_id = Token::getCurrentTokenVar('current_company_id');
         if ($outsiders == UserEnum::INSIDE) {
-            $staffId = 9665;//Token::getCurrentTokenVar('staff_id');
+            $staffId = Token::getCurrentTokenVar('staff_id');
             if (!$staffId) {
                 $staff = CompanyStaffT::staffName($phone, $company_id);
                 $staffId = $staff->id;
@@ -2649,8 +2649,8 @@ class OrderService extends BaseService
         }
         return [
             'hidden' => $hidden,
-            'all_money' => round($all,2),
-            'effective_money' => round($effective,2)
+            'all_money' => round($all, 2),
+            'effective_money' => round($effective, 2)
         ];
 
     }
