@@ -2498,6 +2498,7 @@ class OrderService extends BaseService
     {
         $outsiders = Token::getCurrentTokenVar('outsiders');
         $phone = Token::getCurrentPhone();
+        $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
         $company_id = Token::getCurrentTokenVar('current_company_id');
         if ($outsiders == UserEnum::INSIDE) {
             $staffId = Token::getCurrentTokenVar('staff_id');
@@ -2507,9 +2508,41 @@ class OrderService extends BaseService
             }
             $records = ConsumptionRecordsV::recordsByStaffId($staffId, $consumption_time, $page, $size);
             $records['data'] = $this->prefixConsumptionRecords($records['data']);
-
+            $consumptionMoney = ConsumptionRecordsV::monthConsumptionMoneyByStaffId($staffId, $consumption_time);
+            $balance = $this->getUserBalanceByStaffId($canteen_id, $staffId);
         } else {
             $records = ConsumptionRecordsV::recordsByPhone($phone, $company_id, $consumption_time, $page, $size);
+            $records['data'] = $this->prefixConsumptionRecords($records['data']);
+            $consumptionMoney = ConsumptionRecordsV::monthConsumptionMoneyByPhone($phone, $consumption_time, $company_id);
+            $balance = 0;
+        }
+
+        return [
+            'balance' => $balance,
+            'consumptionMoney' => $consumptionMoney,
+            'records' => $records
+        ];
+    }
+
+
+    //用户查询消费记录
+    public
+    function consumptionRecordsV2($consumption_time, $page, $size)
+    {
+        $outsiders = Token::getCurrentTokenVar('outsiders');
+        $phone = Token::getCurrentPhone();
+        $company_id = Token::getCurrentTokenVar('current_company_id');
+        if ($outsiders == UserEnum::INSIDE) {
+            $staffId = Token::getCurrentTokenVar('staff_id');
+            if (!$staffId) {
+                $staff = CompanyStaffT::staffName($phone, $company_id);
+                $staffId = $staff->id;
+            }
+            $records = ConsumptionRecordsV::recordsByStaffIdWithRecharge($staffId, $consumption_time, $page, $size);
+            $records['data'] = $this->prefixConsumptionRecords($records['data']);
+
+        } else {
+            $records = ConsumptionRecordsV::recordsByPhoneWithRecharge($phone, $company_id, $consumption_time, $page, $size);
             $records['data'] = $this->prefixConsumptionRecords($records['data']);
         }
 
