@@ -418,6 +418,7 @@ class CanteenService
 
     public function checkCanteens($canteen_id)
     {
+        return $canteen_id;
         $grade = Token::getCurrentTokenVar('grade');
         if ($canteen_id || $grade != AdminEnum::COMPANY_OTHER) {
             return $canteen_id;

@@ -1221,6 +1221,7 @@ class OrderStatisticService
             $dinnerStatistic = [];
             foreach ($statistic as $k2 => $v2) {
                 if ($v['staff_id'] == $v2['staff_id']) {
+                    $statistic[$k2]['order_money'] = round($statistic[$k2]['order_money'], 2);
                     array_push($dinnerStatistic, $statistic[$k2]);
                     unset($statistic[$k2]);
                 }
