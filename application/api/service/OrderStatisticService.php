@@ -47,6 +47,7 @@ class OrderStatisticService
 
     public function statistic($time_begin, $time_end, $company_ids, $canteen_id, $page, $size)
     {
+        $canteen_id = (new CanteenService())->checkCanteens($canteen_id);
         $list = OrderStatisticV::statistic($time_begin, $time_end, $company_ids, $canteen_id, $page, $size);
         return $list;
 
