@@ -701,13 +701,12 @@ class WalletService
     }
 
 
-    private function checkSupplementData($company_id, $fileName)
+    public function checkSupplementData($company_id, $fileName)
     {
         $newCanteen = [];
-        $canteens = (new CanteenService())->companyCanteens($company_id);
+        $canteens = (new CanteenService())->companyCanteens2($company_id);
         $dinners = DinnerV::companyDinners($company_id);
         $staffs = CompanyStaffT::staffs($company_id);
-
         foreach ($canteens as $k => $v) {
             array_push($newCanteen, $v['name']);
         }
@@ -737,20 +736,26 @@ class WalletService
             if ($k < 2) {
                 continue;
             }
-            $checkData = $v[0] . '&' . $v[1];
-            if (!in_array($checkData, $newStaffs) ||
-                !in_array($v[2], $newCanteen) || !$this->checkDinnerInCanteen($v[2], $v[4], $dinners)) {
+
+            if (!$this->checkDinnerInCanteen($v[2], $v[4], $dinners)){
                 array_push($fail, '第' . $k . '行数据有问题');
                 break;
             }
+
+            $checkData = $v[0] . '&' . $v[1];
+            if (!in_array($checkData, $newStaffs) ||
+                !in_array($v[2], $newCanteen)) {
+                array_push($fail, '第' . $k . '行数据有问题');
+                break;
+            }
+
             //检测饭堂是否合法
             $checkCanteens = $staffCanteens[$checkData];
             if (!in_array($v[2], $checkCanteens)) {
                 array_push($fail, '第' . $k . '行数据有问题');
                 break;
             }
-
-            if (strtotime($v[3]) > strtotime(\date('Y-m-d')) || $v[6] < 0) {
+            if (strtotime($v[3]) > strtotime(\date('Y-m-d'))) {
                 array_push($fail, '第' . $k . '行数据有问题');
                 break;
             }
@@ -784,7 +789,7 @@ class WalletService
     public function prefixSupplementUploadData($company_id, $admin_id, $data)
     {
         $dataList = [];
-        $canteens = (new CanteenService())->companyCanteens($company_id);
+        $canteens = (new CanteenService())->companyCanteens2($company_id);
         $dinners = DinnerV::companyDinners($company_id);
         $staffs = CompanyStaffT::staffs($company_id);
         $newStaffs = [];

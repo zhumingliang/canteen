@@ -90,11 +90,14 @@ Index extends BaseController
     public $expression = '* * * * * *';
 
     public function index()
-    {/*
-        $data['company_id'] = 144;
+    {
+
+      //  (new WalletService())->checkSupplementData(144, dirname($_SERVER['SCRIPT_FILENAME']) . '/static/excel/upload/test.xlsx');
+       /* $data['company_id'] = 134;
+        $data['u_id'] = 1;
         $data['fileName'] = dirname($_SERVER['SCRIPT_FILENAME']) . '/static/excel/upload/test.xlsx';
 
-        (new UploadExcel())->uploadStaff($data);*/
+        (new UploadExcel())->uploadSupplement($data);*/
 
         //  (new OrderT())->saveAll($data3);
 

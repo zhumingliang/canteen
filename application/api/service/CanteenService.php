@@ -416,6 +416,17 @@ class CanteenService
         return $canteens;
     }
 
+
+    public function companyCanteens2($company_id)
+    {
+            $canteens = CanteenT::where('c_id', $company_id)
+                ->where('state', CommonEnum::STATE_IS_OK)
+                ->field('id,name,"canteen" as type')->select()
+                ->toArray();
+        return $canteens;
+    }
+
+
     public function checkCanteens($canteen_id)
     {
         return $canteen_id;
