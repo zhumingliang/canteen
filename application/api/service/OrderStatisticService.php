@@ -116,6 +116,7 @@ class OrderStatisticService
     public function prefixOrderStatisticDetail($list)
     {
         $dataList = [];
+        $status = [1 => '堂食', 2 => '外卖'];
         foreach ($list as $k => $v) {
             $consumptionType = $v['consumption_type'];
             $foods = $this->getOrderFoods($v['order_id'], $v['ordering_type'], $v['consumption_type']);
@@ -158,7 +159,7 @@ class OrderStatisticService
                     $data['username'] = $v['username'];
                     $data['phone'] = $v['phone'];
                     $data['dinner'] = $v['dinner'];
-                    $data['type'] = $v['type'];
+                    $data['type'] = $status[$v['type']];
                     $data['count'] = "第" . Num::numToWord($v2['consumption_sort']) . "份";
                     $data['money'] = $v2['money'] + $v2['sub_money'];
                     $data['status'] = $this->getStatus($v['ordering_date'], $v2['state'], $v['meal_time_end'], $v2['used']);
