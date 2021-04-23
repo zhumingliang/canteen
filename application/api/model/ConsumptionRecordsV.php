@@ -133,7 +133,8 @@ class ConsumptionRecordsV extends Model
 
         return $records;
     }
-  public static function recordsByPhoneWithRecharge($phone, $company_id, $consumption_time, $page, $size)
+
+    public static function recordsByPhoneWithRecharge($phone, $company_id, $consumption_time, $page, $size)
     {
         $consumption_time = strtotime($consumption_time);
         $consumption_time = Date::mFristAndLast(date('Y', $consumption_time), date('m', $consumption_time));
@@ -396,6 +397,16 @@ class ConsumptionRecordsV extends Model
                     ->where('a.create_time', "<=", $time_end)
                     ->where('a.status', PayEnum::PAY_SUCCESS)
                     ->where('a.refund', CommonEnum::STATE_IS_FAIL);
+            })->unionAll(function ($query) use ($staffId, $time_begin, $time_end) {
+                $query->table("canteen_recharge_cash_t")
+                    ->alias('a')
+                    ->leftJoin('canteen_company_t b', 'a.company_id = b.id')
+                    ->leftJoin('canteen_company_staff_t d', 'a.staff_id = d.id')
+                    ->field("a.id as order_id,0 as  location_id,'' as location,'pay' as order_type,a.create_time,date_format(a.create_time, '%Y-%m-%d' ) AS ordering_date,'' AS dinner,a.money AS money,d.phone,1 as count,0 AS sub_money,0 AS delivery_fee,1 AS booking,1 AS used,1 AS eating_type,'one' AS consumption_type,a.company_id,0 AS sort_code, 'cash' as supplement_type,1 as unused_handel")
+                    ->where('a.staff_id', $staffId)
+                    ->where('a.create_time', ">=", $time_begin)
+                    ->where('a.create_time', "<=", $time_end)
+                    ->where('a.state', CommonEnum::STATE_IS_OK);
             })
             ->buildSql();
 

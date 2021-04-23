@@ -2614,7 +2614,8 @@ class OrderService extends BaseService
                         1 => "微信充值",
                         2 => "农行充值",
                         3 => "中行H5充值",
-                        4 => "中行APP充值"
+                        4 => "中行APP充值",
+                        'cash' => "现金充值"
                     ];
 
                     $data[$k]['used_type'] = $method[$v['supplement_type']];
