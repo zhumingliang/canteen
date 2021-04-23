@@ -630,7 +630,7 @@ class DepartmentService
             $staffsData = [];
             $excelData = (new ExcelService())->importExcel($fileName);
             $types = (new AdminService())->allTypes();
-            $canteens = (new CanteenService())->companyCanteens($company_id);
+            $canteens = (new CanteenService())->companyCanteens2($company_id);
             $departments = $this->companyDepartments($company_id);
             //获取企业消费方式
             $consumptionType = (new CompanyService())->consumptionType($company_id);

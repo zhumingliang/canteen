@@ -830,7 +830,7 @@ class WalletService
     public function prefixSupplementUploadDataWithAccount($company_id, $admin_id, $data)
     {
         $dataList = [];
-        $canteens = (new CanteenService())->companyCanteens($company_id);
+        $canteens = (new CanteenService())->companyCanteens2($company_id);
         $dinners = DinnerV::companyDinners($company_id);
         $staffs = CompanyStaffT::staffs($company_id);
         $accounts = CompanyAccountT::accountsWithoutNonghang($company_id);
