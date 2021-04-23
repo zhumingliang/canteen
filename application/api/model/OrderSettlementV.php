@@ -525,7 +525,7 @@ class OrderSettlementV extends Model
     {
         $subQuery = self::getBuildSql($time_begin, $time_end, $company_ids, $canteen_id, $dinner_id);
         $list = Db::table($subQuery . ' a')
-            ->where('staff_state', CommonEnum::STATE_IS_OK)
+            //->where('staff_state', CommonEnum::STATE_IS_OK)
             ->where(function ($query) use ($name, $phone, $department_id) {
                 if (strlen($name)) {
                     $query->where('username', $name);
@@ -584,7 +584,7 @@ class OrderSettlementV extends Model
     {
         $subQuery = self::getBuildSqlWithAccount2($time_begin, $time_end, $company_ids, $canteen_id, $dinner_id);
         $list = Db::table($subQuery . ' a')
-            ->where('staff_state', CommonEnum::STATE_IS_OK)
+            //->where('staff_state', CommonEnum::STATE_IS_OK)
             ->where(function ($query) use ($name, $phone, $department_id) {
                 if (strlen($name)) {
                     $query->where('username', $name);
@@ -643,7 +643,7 @@ class OrderSettlementV extends Model
     {
         $subQuery = self::getBuildSql($time_begin, $time_end, $company_ids, $canteen_id, $dinner_id);
         $list = Db::table($subQuery . ' a')
-            ->where('staff_state', CommonEnum::STATE_IS_OK)
+           // ->where('staff_state', CommonEnum::STATE_IS_OK)
             ->where(function ($query) use ($name, $phone, $department_id) {
                 if (strlen($name)) {
                     $query->where('username', $name);
@@ -701,7 +701,7 @@ class OrderSettlementV extends Model
     {
         $subQuery = self::getBuildSqlWithAccount($time_begin, $time_end, $company_ids, $canteen_id, $dinner_id);
         $list = Db::table($subQuery . ' a')
-            ->where('staff_state', CommonEnum::STATE_IS_OK)
+          //  ->where('staff_state', CommonEnum::STATE_IS_OK)
             ->where(function ($query) use ($name, $phone, $department_id) {
                 if (strlen($name)) {
                     $query->where('username', $name);
