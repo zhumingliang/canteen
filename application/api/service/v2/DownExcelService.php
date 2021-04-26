@@ -11,7 +11,6 @@ use app\api\model\DinnerV;
 use app\api\model\DownExcelT;
 use app\api\model\OrderStatisticV;
 use app\api\service\AuthorService;
-use app\api\service\CanteenService;
 use app\api\service\ExcelService;
 use app\api\service\Token;
 use app\lib\enum\DownEnum;
@@ -29,7 +28,7 @@ class DownExcelService
                                         $time_begin, $time_end, $company_id,
                                         $phone, $order_type, $excel_type)
     {
-        $canteen_id = (new CanteenService())->checkCanteens($canteen_id);
+
         $jobData = [
             'excel_type' => $excel_type,
             'canteen_id' => $canteen_id,
@@ -89,7 +88,6 @@ class DownExcelService
                                                $phone, $canteen_id, $department_id,
                                                $dinner_id, $type)
     {
-        $canteen_id = (new CanteenService())->checkCanteens($canteen_id);
         $jobData = [
             'excel_type' => 'orderStatisticDetail',
             'canteen_id' => $canteen_id,
@@ -111,7 +109,6 @@ class DownExcelService
         $name, $phone, $canteen_id, $department_id, $dinner_id,
         $consumption_type, $time_begin, $time_end, $company_ids, $type)
     {
-        $canteen_id = (new CanteenService())->checkCanteens($canteen_id);
         $jobData = [
             'excel_type' => 'orderSettlement',
             'canteen_id' => $canteen_id,
@@ -134,7 +131,6 @@ class DownExcelService
         $name, $phone, $canteen_id, $department_id, $dinner_id,
         $consumption_type, $time_begin, $time_end, $company_ids, $type)
     {
-        $canteen_id = (new CanteenService())->checkCanteens($canteen_id);
         $jobData = [
             'excel_type' => 'orderSettlementWithAccount',
             'canteen_id' => $canteen_id,
@@ -155,7 +151,6 @@ class DownExcelService
     public function exportStatistic($time_begin, $time_end, $company_ids, $canteen_id)
     {
 
-        $canteen_id = (new CanteenService())->checkCanteens($canteen_id);
         $jobData = [
             'excel_type' => 'orderStatistic',
             'canteen_id' => $canteen_id,
@@ -172,7 +167,6 @@ class DownExcelService
                                            $status, $department_id,
                                            $user_type, $username)
     {
-        $canteen_id=(new CanteenService())->checkCanteens($canteen_id);
         $jobData = [
             'excel_type' => 'takeoutStatistic',
             'canteen_id' => $canteen_id,
@@ -354,6 +348,33 @@ class DownExcelService
         $this->saveDownExcelJob($jobData);
     }
 
+    public function exportPunishmentStaffInfo($key, $company_id, $company_name, $status)
+    {
+        $jobData = [
+            'excel_type' => 'punishmentStaffInfo',
+            'key' => $key,
+            'company_id' => $company_id,
+            'company_name' => $company_name,
+            'status' => $status,
+            'version' => \think\facade\Request::param('version')
+        ];
+        $this->saveDownExcelJob($jobData);
+    }
+
+    public function exportPunishmentEditDetails($key, $company_id, $company_name,
+                                                $canteen_id,$time_begin,$time_end){
+        $jobData = [
+            'excel_type' => 'punishmentEditDetails',
+            'key' => $key,
+            'company_id' => $company_id,
+            'company_name' => $company_name,
+            'canteen_id' => $canteen_id,
+            'time_begin' => $time_begin,
+            'time_end' => $time_end,
+            'version' => \think\facade\Request::param('version')
+        ];
+        $this->saveDownExcelJob($jobData);
+    }
 
     private
     function saveDownExcelJob($jobData)

@@ -384,6 +384,13 @@ Route::post('api/:version/nextmonthpay/payMoneyAll', 'api/:version.NextMonthPay/
 Route::post('api/:version/nextmonthpay/selectPaySetting', 'api/:version.NextMonthPay/selectPaySetting');
 Route::post('api/:version/nextmonthpay/nextMonthOutput', 'api/:version.NextMonthPay/nextMonthOutput');
 
+Route::get('api/:version/punishment/strategyDetail', 'api/:version.Punishment/strategyDetail');
+Route::post('api/:version/punishment/updateStrategy', 'api/:version.Punishment/updateStrategy');
+Route::get('api/:version/punishment/getPunishmentStaffInfo', 'api/:version.Punishment/getPunishmentStaffInfo');
+Route::get('api/:version/punishment/exportPunishmentStaffInfo', 'api/:version.Punishment/exportPunishmentStaffInfo');
+Route::post('api/:version/punishment/updatePunishmentStatus', 'api/:version.Punishment/updatePunishmentStatus');
+Route::get('api/:version/punishment/getPunishmentEditDetails', 'api/:version.Punishment/getPunishmentEditDetails');
+Route::get('api/:version/punishment/exportPunishmentEditDetails', 'api/:version.Punishment/exportPunishmentEditDetails');
 
 Route::get('api/:version/excels', 'api/:version.Excel/excels');
 Route::post('api/:version/excel/delete', 'api/:version.Excel/delete');

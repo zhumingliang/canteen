@@ -31,6 +31,7 @@ use app\api\service\GatewayService;
 use app\api\service\LogService;
 use app\api\service\MaterialService;
 use app\api\service\NextMonthPayService;
+use app\api\service\PunishmentService;
 use app\api\service\ShopService;
 use app\api\service\Token;
 use app\api\service\WalletService;
@@ -70,8 +71,6 @@ class DownExcel
                 $job->delete();
             } else {
                 $job->delete();
-                LogService::saveJob("<warn>导出Excel任务执行失败" . "</warn>\n");
-
                 /*       if ($job->attempts() > 3) {
                            //通过这个方法可以检查这个任务已经重试了几次了
                            $code = $data['company_id'] . ":" . $data['u_id'] . ":" . $data['type'];
@@ -182,6 +181,12 @@ class DownExcel
                 case 'staff';
                     $this->exportStaffs($data);
                     break;
+                case 'punishmentStaffInfo';
+                    $this->exportpunishmentStaffInfo($data);
+                    break;
+                case 'punishmentEditDetails';
+                    $this->exportpunishmentEditDetails($data);
+                    break;
             }
             return true;
         } catch (Exception $e) {
@@ -189,6 +194,39 @@ class DownExcel
             return false;
         }
 
+    }
+
+    public function exportpunishmentStaffInfo($data)
+    {
+        $key = $data['key'];
+        $company_id = $data['company_id'];
+        $company_name = $data['company_name'];
+        $status = $data['status'];
+        $downId = $data['down_id'];
+        $SCRIPT_FILENAME = $data['SCRIPT_FILENAME'];
+        $punishmentStaffInfo = (new PunishmentService())->prefixExportPunishmentStaffInfo($key, $company_id, $company_name, $status);
+        $header = ['企业名称', '饭堂', '人员类型', '姓名', '手机号码', '状态','订餐未就餐违规次数','未订餐就餐违规次数'];
+        $file_name = "惩罚管理";
+        $url = (new ExcelService())->makeExcel2($header, $punishmentStaffInfo, $file_name, $SCRIPT_FILENAME);
+        $this->saveExcel($downId, $url, $file_name);
+    }
+
+    public function exportpunishmentEditDetails($data)
+    {
+        $key = $data['key'];
+        $company_id = $data['company_id'];
+        $company_name = $data['company_name'];
+        $canteen_id = $data['canteen_id'];
+        $time_begin = $data['time_begin'];
+        $time_end = $data['time_end'];
+        $downId = $data['down_id'];
+        $SCRIPT_FILENAME = $data['SCRIPT_FILENAME'];
+        $punishmentStaffInfo = (new PunishmentService())->prefixExportPunishmentEditDetails($key, $company_id, $company_name, $canteen_id,
+            $time_begin,$time_end);
+        $header = ['日期','企业名称', '饭堂', '人员类型', '姓名', '手机号码', '编辑明细','订餐未就餐','未订餐就餐'];
+        $file_name = "惩罚编辑详情";
+        $url = (new ExcelService())->makeExcel2($header, $punishmentStaffInfo, $file_name, $SCRIPT_FILENAME);
+        $this->saveExcel($downId, $url, $file_name);
     }
 
     public function exportStaffs($data)
@@ -444,7 +482,7 @@ class DownExcel
         $records = RechargeV::exportRechargeRecords($time_begin, $time_end, $type,
             $admin_id, $username, $company_id, $department_id);
         $header = ['创建时间', '部门', '姓名', '手机号', '充值金额', '充值途径', '充值人员', '备注'];
-        $file_name = "充值记录明细-".$time_begin . "-" . $time_end ;
+        $file_name = "充值记录明细-" . $time_begin . "-" . $time_end;
         $url = (new ExcelService())->makeExcel2($header, $records, $file_name, $SCRIPT_FILENAME);
         $this->saveExcel($downId, $url, $file_name);
     }

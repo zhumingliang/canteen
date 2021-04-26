@@ -199,6 +199,7 @@ class OrderService extends BaseService
         foreach ($orderMoney as $k => $v) {
             $data = [
                 'order_id' => $orderId,
+                'staff_id' => $staff->id,
                 'ordering_date' => $ordering_date,
                 'consumption_sort' => $v['number'],
                 'count' => 1,
@@ -1045,6 +1046,7 @@ class OrderService extends BaseService
                     foreach ($orderMoney as $k3 => $v3) {
                         $data = [
                             'order_id' => $orderId,
+                            'staff_id' => $staff_id,
                             'ordering_date' => $v2['ordering_date'],
                             'consumption_sort' => $v3['number'],
                             'order_sort' => $v3['number'],
@@ -2147,6 +2149,7 @@ class OrderService extends BaseService
             $money = $orderMoneyFixed == CommonEnum::STATE_IS_FAIL ? $updateFoodsMoney : $v['money'];
             $data = [
                 'order_id' => $orderId,
+                'staff_id' => $staff_id,
                 'ordering_date' => $ordering_date,
                 'consumption_sort' => $v['number'],
                 'order_sort' => $v['number'],
