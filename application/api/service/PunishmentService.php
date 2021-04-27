@@ -5,6 +5,7 @@ namespace app\api\service;
 
 
 use app\api\model\CompanyStaffT;
+use app\api\model\ConsumptionStrategyT;
 use app\api\model\PunishmentDetailT;
 use app\api\model\PunishmentStrategyT;
 use app\api\model\PunishmentUpdateT;
@@ -17,14 +18,50 @@ class PunishmentService extends BaseService
 {
     public function strategyDetails($page, $size, $company_id, $canteen_id)
     {
-        $details = PunishmentStrategyT::strategyDetail($page, $size, $company_id, $canteen_id);
-        return $details;
+        if ($this->checkExit($company_id, $canteen_id)) {
+            $details = PunishmentStrategyT::strategyDetail($page, $size, $company_id, $canteen_id);
+            return $details;
+        } else {
+            $staffType = $this->getstaffType($canteen_id);
+            $data = array();
+            foreach ($staffType as $k => $v) {
+                $data[] = [
+                    'company_id' => $company_id,
+                    'canteen_id' => $canteen_id,
+                    'staff_type_id' => $v['t_id'],
+                ];
+            }
+            $strategies = (new PunishmentStrategyT())->saveAll($data);
+            if (!$strategies) {
+                throw  new SaveException();
+            }
+            $details = PunishmentStrategyT::strategyDetail($page, $size, $company_id, $canteen_id);
+            return $details;
+        }
+
+    }
+
+    private function checkExit($company_id, $canteen_id)
+    {
+        $strategy = PunishmentStrategyT::where('company_id', $company_id)
+            ->where('canteen_id', $canteen_id)
+            ->count('id');
+        return $strategy;
+    }
+
+    public function getstaffType($canteen_id)
+    {
+        return ConsumptionStrategyT::where('c_id', $canteen_id)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->distinct(true)
+            ->field('c_id,t_id')
+            ->select();
+
     }
 
     public function updateStrategy($params)
     {
         $detail = json_decode($params['detail'], true);
-
         $res = (new PunishmentDetailT())->saveAll($detail);
         if (!$res) {
             throw new UpdateException();
@@ -87,11 +124,11 @@ class PunishmentService extends BaseService
             $data['staff_type'] = $v['staff_type'];
             $data['username'] = $v['username'];
             $data['phone'] = $v['phone'];
-            $old_state_arr = json_decode($v['old_state'],true);
+            $old_state_arr = json_decode($v['old_state'], true);
             $data['old_state'] = $this->getStatus($old_state_arr['status']);
             $data['old_no_meal'] = $old_state_arr['no_meal'] != '' ? $old_state_arr['no_meal'] : '0';
             $data['old_no_booking'] = $old_state_arr['no_booking'] != '' ? $old_state_arr['no_booking'] : '0';
-            $new_state_arr = json_decode($v['new_state'],true);
+            $new_state_arr = json_decode($v['new_state'], true);
             $data['new_state'] = $this->getStatus($new_state_arr['status']);
             $data['new_no_meal'] = $new_state_arr['no_meal'] != '' ? $new_state_arr['no_meal'] : '0';
             $data['new_no_booking'] = $new_state_arr['no_booking'] != '' ? $new_state_arr['no_booking'] : '0';
@@ -129,17 +166,13 @@ class PunishmentService extends BaseService
     {
         if ($status == 1) {
             return "正常(未违规)";
-        }
-        elseif ($status == 2) {
+        } elseif ($status == 2) {
             return "正常";
-        }
-        elseif ($status == 3) {
+        } elseif ($status == 3) {
             return "白名单";
-        }
-        elseif ($status == 4) {
+        } elseif ($status == 4) {
             return "黑名单";
-        }
-        else{
+        } else {
             return "";
         }
     }
