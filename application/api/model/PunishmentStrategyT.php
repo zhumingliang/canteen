@@ -28,11 +28,28 @@ class PunishmentStrategyT extends Model
         })
             ->field('id,company_id,canteen_id,staff_type_id')
             ->with(['detail' => function ($query) {
-                $query->field('id,strategy_id,type,count,state');
+                $query->where('state', CommonEnum::STATE_IS_OK)
+                    ->field('id,strategy_id,type,count,state');
             }
             ])
             ->paginate($size, false, ['page' => $page]);
         return $details;
+    }
+
+    public static function strategy($canteenId, $staffTypeId)
+    {
+        return self::where('canteen_id', $canteenId)
+            ->where('staff_type_id', $staffTypeId)
+            ->with(
+                [
+                    'detail' => function ($query) {
+                        $query->where('state', CommonEnum::STATE_IS_OK)
+                            ->field('id,strategy_id,type,count');
+                    }
+                ]
+            )
+            ->find()->toArray();
+
     }
 
 }

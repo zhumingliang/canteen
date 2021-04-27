@@ -40,7 +40,6 @@ class Punishment extends BaseController
      * @apiSuccess (返回参数说明) {int}  state 状态：1 正常；2 删除
      * @apiSuccess (返回参数说明) {int}  count 最大违规数量
      */
-
     public function strategyDetail($page = 1, $size = 10)
     {
         $params = Request::param();

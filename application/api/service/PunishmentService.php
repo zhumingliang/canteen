@@ -142,11 +142,13 @@ class PunishmentService extends BaseService
     {
         $punish = json_decode($params['new_state'], true);
         $new_status = $punish['status'];
-        $res = CompanyStaffT::update(['status' => $new_status], ['id' => $params['staff_id']]);
+        $res = CompanyStaffT::update(['status' => $new_status],
+            ['id' => $params['staff_id']]);
         if (!$res) {
             throw new UpdateException();
         }
-        $record = PunishmentUpdateT::where('staff_id', $params['staff_id'])->find();
+        $record = PunishmentUpdateT::where('staff_id', $params['staff_id'])
+            ->find();
         if ($record) {
             $update = PunishmentUpdateT::update(['admin_id' => $params['admin_id'], 'old_state' => $params['old_state'],
                 'new_state' => $params['new_state']],
@@ -164,7 +166,14 @@ class PunishmentService extends BaseService
 
     private function getStatus($status)
     {
-        if ($status == 1) {
+        $values = [
+            1 => '正常(未违规)',
+            2 => '正常',
+            3 => '白名单',
+            4 => '黑名单'
+        ];
+        return empty($values[$status]) ? '' : $values[$status];
+        /*if ($status == 1) {
             return "正常(未违规)";
         } elseif ($status == 2) {
             return "正常";
@@ -174,6 +183,6 @@ class PunishmentService extends BaseService
             return "黑名单";
         } else {
             return "";
-        }
+        }*/
     }
 }

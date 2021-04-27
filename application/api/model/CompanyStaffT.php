@@ -60,6 +60,11 @@ class CompanyStaffT extends Model
         return $this->belongsTo('UserT', 'phone', 'phone');
     }
 
+    public function punishment()
+    {
+        return $this->hasOne('StaffPunishmentT', 'staff_id', 'id');
+    }
+
     public static function staff($phone, $company_id = '')
     {
         return self::where('phone', $phone)
@@ -366,22 +371,34 @@ class CompanyStaffT extends Model
 
         })->where('state', CommonEnum::STATE_IS_OK)
             ->with([
-            'user' => function ($query) {
-                $query->field('phone,openid');
+                'user' => function ($query) {
+                    $query->field('phone,openid');
 
-            },
-            'account' => function ($query) use ($accountId) {
-                $query->where('account_id', $accountId)->where('state', CommonEnum::STATE_IS_OK)
-                    ->field('staff_id,account_id,sum(money) as money')
-                    ->group('staff_id');
-            }
+                },
+                'account' => function ($query) use ($accountId) {
+                    $query->where('account_id', $accountId)->where('state', CommonEnum::STATE_IS_OK)
+                        ->field('staff_id,account_id,sum(money) as money')
+                        ->group('staff_id');
+                }
 
-        ]) ->field('id,phone,username')
+            ])->field('id,phone,username')
             ->select()->toArray();
 
         return $staffs;
 
     }
 
+
+    public static function staffWithPunishment($staffId)
+    {
+        return self::where('id', $staffId)
+            ->with([
+                'punishment' => function ($query) {
+                    $query->field('id,staff_id,no_meal,no_booking');
+                }
+            ])
+            ->field('id,t_id,status')
+            ->find()->toArray();
+    }
 
 }

@@ -7,6 +7,7 @@ namespace app\api\service;
 use app\api\model\AdminT;
 use app\api\model\CompanyStaffT;
 use app\api\model\OutsiderCompanyT;
+use app\api\model\PunishmentStrategyT;
 use app\api\model\StaffCanteenT;
 use app\api\model\StaffQrcodeT;
 use app\api\model\UserT;
@@ -267,5 +268,47 @@ class UserService
         }
         return $user->openid;
 
+    }
+
+    public function checkUserPunishment()
+    {
+        $staffId = 6052;//Token::getCurrentTokenVar('staff_id');
+        $canteenId = 164;//Token::getCurrentTokenVar('current_canteen_id');
+        $staff = CompanyStaffT::staffWithPunishment($staffId);
+        $punishment = PunishmentStrategyT::strategy($canteenId, $staff['t_id']);
+        if (!$punishment || empty($punishment['detail'])) {
+            return [
+                'punishment' => 2,
+                'staff_status' => 1,
+                'config' => [
+                    'no_meal' => 0,
+                    'no_booking' => 0
+                ]
+            ];
+        }
+
+        $punishmentNoMeal = 0;
+        $punishmentNoBooking = 0;
+        $punishmentDetail = $punishment['detail'];
+        foreach ($punishmentDetail as $k => $v) {
+            if ($v['type'] == "no_meal") {
+                $punishmentNoMeal = $v['count'];
+                continue;
+            }
+            if ($v['type'] == "no_booking") {
+                $punishmentNoBooking = $v['count'];
+                continue;
+            }
+        }
+
+        $staff = CompanyStaffT::staffWithPunishment($staffId);
+        return [
+            'punishment' => 1,
+            'staff_status' => $staff['status'] == 4 ? 2 : 1,
+            'config' => [
+                'no_meal' => $punishmentNoMeal,
+                'no_booking' => $punishmentNoBooking
+            ]
+        ];
     }
 }

@@ -195,6 +195,8 @@ Route::get('api/:version/user/canteenMenus', 'api/:version.User/userCanteenMenus
 Route::get('api/:version/user/canteens', 'api/:version.User/userCanteens');
 Route::get('api/:version/user/card', 'api/:version.User/mealCard');
 Route::get('api/:version/user/phone', 'api/:version.User/userPhone');
+Route::get('api/:version/user/punishment', 'api/:version.User/punishment');
+
 
 Route::post('api/:version/order/personChoice/save', 'api/:version.Order/personChoice');
 Route::post('api/:version/order/personChoice/outside/save', 'api/:version.Order/personChoiceOutsider');
