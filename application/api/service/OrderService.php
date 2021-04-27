@@ -38,6 +38,7 @@ use app\lib\enum\OrderEnum;
 use app\lib\enum\PayEnum;
 use app\lib\enum\StrategyEnum;
 use app\lib\enum\UserEnum;
+use app\lib\exception\AuthException;
 use app\lib\exception\ParameterException;
 use app\lib\exception\SaveException;
 use app\lib\exception\UpdateException;
@@ -49,6 +50,7 @@ use think\Model;
 
 class OrderService extends BaseService
 {
+    private $blacklist = 4;
 
     public function personChoice($params)
     {
@@ -65,6 +67,9 @@ class OrderService extends BaseService
             $company_id = Token::getCurrentTokenVar('current_company_id');
             $phone = Token::getCurrentPhone();
             $staff = (new UserService())->getUserCompanyInfo($phone, $company_id);
+            if ($staff->status == $this->blacklist) {
+                throw new AuthException(['msg' => "用户已进入黑名单，不能订餐"]);
+            }
             $this->checkEatingOutsider($params['type'], $params['address_id']);
             //获取餐次信息
             $dinner = DinnerT::dinnerInfo($dinner_id);
@@ -940,6 +945,9 @@ class OrderService extends BaseService
             $company_id = Token::getCurrentTokenVar('current_company_id');
             $phone = Token::getCurrentPhone();
             $staff = (new UserService())->getUserCompanyInfo($phone, $company_id);
+            if ($staff->status == $this->blacklist) {
+                throw new AuthException(['msg' => "用户已进入黑名单，不能订餐"]);
+            }
             $staff_type_id = $staff->t_id;
             $department_id = $staff->d_id;
             $staff_id = $staff->id;
