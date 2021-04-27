@@ -378,11 +378,13 @@ class Order
      * @apiSuccess (返回参数说明) {int} order_id  订单id
      * @apiSuccess (返回参数说明) {string} location  消费地点
      * @apiSuccess (返回参数说明) {string} order_type  订单类别
+     * @apiSuccess (返回参数说明) {string} order_type  订单类别
      * @apiSuccess (返回参数说明) {string} used_type  类型
      * @apiSuccess (返回参数说明) {string} create_time 消费日期
      * @apiSuccess (返回参数说明) {string} ordering_date 餐次日期
      * @apiSuccess (返回参数说明) {string} consumption_type 扣费类型：one 一次性扣费；more 多次扣费
-     * @apiSuccess (返回参数说明) {int} dinner 名称
+     * @apiSuccess (返回参数说明) {string} dinner 名称
+     * @apiSuccess (返回参数说明) {int} violation_count 本次订单是第几次违规
      */
     public function consumptionRecords($page = 1, $size = 20)
     {
