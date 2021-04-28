@@ -1044,7 +1044,7 @@ class DepartmentService
         $company_id = Token::getCurrentTokenVar('company_id');
         $canteen_id = (new CanteenService())->checkCanteens(0);
         $accounts = CompanyAccountT::accountsWithSortsAndDepartmentId($company_id);
-        $staffs = CompanyStaffV:: staffsForRecharge2($page, $size, $department_id, $key, $company_id, $canteen_id);
+        $staffs = CompanyStaffV::staffsForRecharge2($page, $size, $department_id, $key, $company_id, $canteen_id);
         $data = $staffs['data'];
         if (count($data)) {
             foreach ($data as $k => $v) {

@@ -145,6 +145,7 @@ class CompanyStaffV extends BaseModel
                     $query->where('b.username|b.phone|b.code', 'like', "%" . $key . "%");
                 }
             })
+            ->group('b.id')
             ->order('b.create_time desc')
             ->paginate($size, false, ['page' => $page])->toArray();
         return $list;
