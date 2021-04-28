@@ -53,7 +53,7 @@ class PunishmentStrategyT extends Model
 
     public static function strategy($canteenId, $staffTypeId)
     {
-        return self::where('canteen_id', $canteenId)
+        return self::where('company_id', $canteenId)
             ->where('staff_type_id', $staffTypeId)
             ->with(
                 [
