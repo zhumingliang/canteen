@@ -205,7 +205,7 @@ class DownExcel
         $downId = $data['down_id'];
         $SCRIPT_FILENAME = $data['SCRIPT_FILENAME'];
         $punishmentStaffInfo = (new PunishmentService())->prefixExportPunishmentStaffInfo($key, $company_id, $company_name, $status);
-        $header = ['企业名称', '饭堂', '人员类型', '姓名', '手机号码', '状态','订餐未就餐违规次数','未订餐就餐违规次数'];
+        $header = ['企业名称', '饭堂', '人员类型', '姓名', '手机号码', '状态', '订餐未就餐违规次数', '未订餐就餐违规次数'];
         $file_name = "惩罚管理";
         $url = (new ExcelService())->makeExcel2($header, $punishmentStaffInfo, $file_name, $SCRIPT_FILENAME);
         $this->saveExcel($downId, $url, $file_name);
@@ -222,8 +222,8 @@ class DownExcel
         $downId = $data['down_id'];
         $SCRIPT_FILENAME = $data['SCRIPT_FILENAME'];
         $punishmentStaffInfo = (new PunishmentService())->prefixExportPunishmentEditDetails($key, $company_id, $company_name, $canteen_id,
-            $time_begin,$time_end);
-        $header = ['日期','企业名称', '饭堂', '人员类型', '姓名', '手机号码', '编辑明细','订餐未就餐','未订餐就餐'];
+            $time_begin, $time_end);
+        $header = ['日期', '企业名称', '饭堂', '人员类型', '姓名', '手机号码', '编辑明细', '订餐未就餐', '未订餐就餐'];
         $file_name = "惩罚编辑详情";
         $url = (new ExcelService())->makeExcel2($header, $punishmentStaffInfo, $file_name, $SCRIPT_FILENAME);
         $this->saveExcel($downId, $url, $file_name);
@@ -460,8 +460,9 @@ class DownExcel
         $downId = $data['down_id'];
         $SCRIPT_FILENAME = $data['SCRIPT_FILENAME'];
         $type = $data['type'];
-        $records = RechargeV::exportRechargeRecordsWithAccount($time_begin, $time_end, $type, $admin_id, $username, $company_id, $department_id);
-        $header = ['创建时间', '部门', '姓名', "手机号", '账户名称', '充值金额', '充值途径', '充值人员', '备注'];
+        $money_type = $data['money_type'];
+        $records = RechargeV::exportRechargeRecordsWithAccount($time_begin, $time_end, $type, $admin_id, $username, $company_id, $department_id,$money_type);
+        $header = ['创建时间', '部门', '姓名', "手机号", '账户名称', '金额','状态', '充值途径', '充值人员', '备注'];
         $file_name = "充值记录明细-" . $time_begin . "-" . $time_end;
         $url = (new ExcelService())->makeExcel2($header, $records, $file_name, $SCRIPT_FILENAME);
         $this->saveExcel($downId, $url, $file_name);
@@ -471,6 +472,7 @@ class DownExcel
     private function exportRechargeRecords($data)
     {
         $type = $data['type'];
+        $money_type = $data['money_type'];
         $admin_id = $data['admin_id'];
         $department_id = $data['department_id'];
         $time_begin = $data['time_begin'];
@@ -480,8 +482,8 @@ class DownExcel
         $downId = $data['down_id'];
         $SCRIPT_FILENAME = $data['SCRIPT_FILENAME'];
         $records = RechargeV::exportRechargeRecords($time_begin, $time_end, $type,
-            $admin_id, $username, $company_id, $department_id);
-        $header = ['创建时间', '部门', '姓名', '手机号', '充值金额', '充值途径', '充值人员', '备注'];
+            $admin_id, $username, $company_id, $department_id, $money_type);
+        $header = ['创建时间', '部门', '姓名', '手机号', '金额',"状态", '充值途径', '充值人员', '备注'];
         $file_name = "充值记录明细-" . $time_begin . "-" . $time_end;
         $url = (new ExcelService())->makeExcel2($header, $records, $file_name, $SCRIPT_FILENAME);
         $this->saveExcel($downId, $url, $file_name);

@@ -130,6 +130,7 @@ class Wallet extends BaseController
      * http://canteen.tonglingok.com/api/v1/wallet/recharges?time_begin=2019-09-01&time_end=2019-11-01&admin_id=0&username&type=all&page=1&size=10&department_id
      * @apiParam (请求参数说明) {int} page 当前页码
      * @apiParam (请求参数说明) {int} size 每页多少条数据
+     * @apiParam (请求参数说明) {int} money_type 金额类型：0 全部；1：充值；2：退款
      * @apiParam (请求参数说明) {string} time_begin 查询开始时间
      * @apiParam (请求参数说明) {string} time_end 查询截止时间
      * @apiParam (请求参数说明) {String} username 被充值用户
@@ -148,13 +149,14 @@ class Wallet extends BaseController
      * @apiSuccess (返回参数说明) {int} account 账户名称
      * @apiSuccess (返回参数说明) {string} admin 充值人员
      * @apiSuccess (返回参数说明) {string} remark 备注
+     * @apiSuccess (返回参数说明) {string} money_type 金额状态：1：充值；2：退款
      */
-    public function rechargeRecords($page = 1, $size = 20, $type = 'all', $admin_id = 0, $username = '', $department_id = 0)
+    public function rechargeRecords($page = 1, $size = 20, $type = 'all', $admin_id = 0, $username = '', $department_id = 0, $money_type = 0)
     {
         $time_begin = Request::param('time_begin');
         $time_end = Request::param('time_end');
         $records = (new WalletService())->rechargeRecords($time_begin, $time_end,
-            $page, $size, $type, $admin_id, $username, $department_id);
+            $page, $size, $type, $admin_id, $username, $department_id, $money_type);
         return json(new SuccessMessageWithData(['data' => $records]));
 
     }
@@ -171,6 +173,7 @@ class Wallet extends BaseController
      * @apiParam (请求参数说明) {String} username 被充值用户
      * @apiParam (请求参数说明) {int} admin_id 充值人员id，全部传入0
      * @apiParam (请求参数说明) {int} department_id 部门id，全部传入0
+     * @apiParam (请求参数说明) {int} money_type 金额类型：0 全部；1：充值；2：退款
      * @apiParam (请求参数说明) {String} type 充值途径:目前有：cash：现金；1:微信；2:农行；all：全部
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200,"data":{"url":"http:\/\/canteen.tonglingok.com\/static\/excel\/download\/材料价格明细_20190817005931.xls"}}
@@ -178,12 +181,12 @@ class Wallet extends BaseController
      * @apiSuccess (返回参数说明) {string} msg 操作结果描述
      * @apiSuccess (返回参数说明) {string} url 下载地址
      */
-    public function exportRechargeRecords($type = 'all', $admin_id = 0, $username = '', $department_id = 0)
+    public function exportRechargeRecords($type = 'all', $admin_id = 0, $username = '', $department_id = 0, $money_type = 0)
     {
         $time_begin = Request::param('time_begin');
         $time_end = Request::param('time_end');
         (new DownExcelService())->exportRechargeRecords($time_begin, $time_end, $type,
-            $admin_id, $username, $department_id, 'rechargeRecords');
+            $admin_id, $username, $department_id,$money_type, 'rechargeRecords');
         return json(new  SuccessMessage());
         /*        $records = (new WalletService())->exportRechargeRecords($time_begin, $time_end, $type, $admin_id, $username, $department_id);
                 return json(new SuccessMessageWithData(['data' => $records]));*/
@@ -440,10 +443,11 @@ class Wallet extends BaseController
    * (返回参数）{int}data月充值总金额
    */
     //月充值合计
-    public function monthRechargeMoney(){
+    public function monthRechargeMoney()
+    {
         $consumption_time = Request::param('consumption_time');
-        $rechargeMoney=(new WalletService())->monthRechargeMoney($consumption_time);
-        return json(new SuccessMessageWithData(['data'=>$rechargeMoney]));
+        $rechargeMoney = (new WalletService())->monthRechargeMoney($consumption_time);
+        return json(new SuccessMessageWithData(['data' => $rechargeMoney]));
 
     }
 

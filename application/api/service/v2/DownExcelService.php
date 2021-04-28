@@ -261,11 +261,12 @@ class DownExcelService
         $this->saveDownExcelJob($jobData);
     }
 
-    public function exportRechargeRecords($time_begin, $time_end, $type, $admin_id, $username, $department_id, $excel_type)
+    public function exportRechargeRecords($time_begin, $time_end, $type, $admin_id, $username, $department_id,$money_type, $excel_type)
     {
         $jobData = [
             'excel_type' => $excel_type,
             'type' => $type,
+            'money_type' => $money_type,
             'admin_id' => $admin_id,
             'company_id' => Token::getCurrentTokenVar('company_id'),
             'username' => $username,

@@ -19,7 +19,7 @@ class RechargeV extends Model
     }
 
     public static function rechargeRecords($time_begin, $time_end,
-                                           $page, $size, $type, $admin_id, $username, $company_id, $department_id)
+                                           $page, $size, $type, $admin_id, $username, $company_id, $department_id, $money_type)
     {
         $time_end = addDay(1, $time_end);
         $orderings = self::where('company_id', $company_id)
@@ -32,6 +32,11 @@ class RechargeV extends Model
             })->where(function ($query) use ($type) {
                 if ($type != "all") {
                     $query->where('type', $type);
+                }
+            })
+            ->where(function ($query) use ($money_type) {
+                if ($money_type) {
+                    $query->where('money_type', $money_type);
                 }
             })
             ->where(function ($query) use ($admin_id) {
@@ -51,7 +56,7 @@ class RechargeV extends Model
         return $orderings;
     }
 
-    public static function exportRechargeRecords($time_begin, $time_end, $type, $admin_id, $username, $company_id,$department_id)
+    public static function exportRechargeRecords($time_begin, $time_end, $type, $admin_id, $username, $company_id, $department_id, $money_type)
     {
         $time_end = addDay(1, $time_end);
         $orderings = self::where('company_id', $company_id)
@@ -60,9 +65,13 @@ class RechargeV extends Model
                 if ($type != "all") {
                     $query->where('type', $type);
                 }
-            }) ->where(function ($query) use ($department_id) {
+            })->where(function ($query) use ($department_id) {
                 if ($department_id) {
                     $query->where('department_id', $department_id);
+                }
+            })->where(function ($query) use ($money_type) {
+                if ($money_type) {
+                    $query->where('money_type', $money_type);
                 }
             })
             ->where(function ($query) use ($admin_id) {
@@ -76,13 +85,13 @@ class RechargeV extends Model
                 }
             })
             ->where('state', CommonEnum::STATE_IS_OK)
-            ->field('create_time,department,username,phone,money,type,admin,remark')
+            ->field('create_time,department,username,phone,money,if(money_type=1,"充值","退款") as money_type,type,admin,remark')
             ->order('create_time desc')
             ->select()->toArray();
         return $orderings;
     }
 
-    public static function exportRechargeRecordsWithAccount($time_begin, $time_end, $type, $admin_id, $username, $company_id,$department_id)
+    public static function exportRechargeRecordsWithAccount($time_begin, $time_end, $type, $admin_id, $username, $company_id, $department_id, $money_type)
     {
         $time_end = addDay(1, $time_end);
         $orderings = self::where('company_id', $company_id)
@@ -91,9 +100,14 @@ class RechargeV extends Model
                 if ($type != "all") {
                     $query->where('type', $type);
                 }
-            }) ->where(function ($query) use ($department_id) {
+            })->where(function ($query) use ($department_id) {
                 if ($department_id) {
                     $query->where('department_id', $department_id);
+                }
+            })
+            ->where(function ($query) use ($money_type) {
+                if ($money_type) {
+                    $query->where('money_type', $money_type);
                 }
             })
             ->where(function ($query) use ($admin_id) {
@@ -107,7 +121,7 @@ class RechargeV extends Model
                 }
             })
             ->where('state', CommonEnum::STATE_IS_OK)
-            ->field('create_time,department,username,phone,account,money,type,admin,remark')
+            ->field('create_time,department,username,phone,account,money,if(money_type=1,"充值","退款") as money_type,type,admin,remark')
             ->order('create_time desc')
             ->select()->toArray();
         return $orderings;

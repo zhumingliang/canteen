@@ -247,13 +247,14 @@ class WalletService
 
     }
 
-    private function prefixDetail($company_id, $admin_id, $detail, $account_id, $money, $remark)
+    public function prefixDetail($company_id, $admin_id, $detail, $account_id, $money, $remark,$moneyType=1)
     {
         $dataList = [];
         foreach ($detail as $k => $v) {
             $data = [];
             $data['company_id'] = $company_id;
             $data['account_id'] = $account_id;
+            $data['type'] = $moneyType;
             $data['money'] = $money;
             $data['staff_id'] = $v['staff_id'];
             $data['state'] = CommonEnum::STATE_IS_OK;
@@ -265,11 +266,11 @@ class WalletService
     }
 
     public function rechargeRecords($time_begin, $time_end,
-                                    $page, $size, $type, $admin_id, $username, $department_id)
+                                    $page, $size, $type, $admin_id, $username, $department_id,$money_type)
     {
         $company_id = Token::getCurrentTokenVar('company_id');
         $records = RechargeV::rechargeRecords($time_begin, $time_end,
-            $page, $size, $type, $admin_id, $username, $company_id, $department_id);
+            $page, $size, $type, $admin_id, $username, $company_id, $department_id,$money_type);
         return $records;
 
     }
