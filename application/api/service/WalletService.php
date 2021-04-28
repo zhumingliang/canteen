@@ -34,6 +34,9 @@ use zml\tp_tools\Redis;
 
 class WalletService
 {
+    private $moneyRecharge = 1;
+    private $moneyRefund = 2;
+
     public function rechargeCash($params)
     {
         $detail = json_decode($params['detail'], true);
@@ -118,7 +121,7 @@ class WalletService
             }
 
             $money = trim($v[3]);
-            if ($money == '') {
+            if ($money == '' || $money < 0) {
                 array_push($fail, '第' . $k . '行数据有问题');
             }
         }
@@ -146,7 +149,7 @@ class WalletService
             }
 
             $money = trim($v[2]);
-            if ($money == '') {
+            if ($money == '' || $money < 0) {
                 array_push($fail, '第' . $k . '行数据有问题');
             }
         }
@@ -247,11 +250,18 @@ class WalletService
 
     }
 
-    public function prefixDetail($company_id, $admin_id, $detail, $account_id, $money, $remark,$moneyType=1)
+    public function prefixDetail($company_id, $admin_id, $detail, $account_id, $money, $remark, $moneyType = 1)
     {
         $dataList = [];
         foreach ($detail as $k => $v) {
             $data = [];
+            if ($moneyType == $this->moneyRefund) {
+                $balance = $this->getUserBalanceWithProcedure($v['staff_id']);
+                if ($balance < abs($money)) {
+                    throw new ParameterException(['msg' => "退款金额大于余额"]);
+
+                }
+            }
             $data['company_id'] = $company_id;
             $data['account_id'] = $account_id;
             $data['type'] = $moneyType;
@@ -266,11 +276,11 @@ class WalletService
     }
 
     public function rechargeRecords($time_begin, $time_end,
-                                    $page, $size, $type, $admin_id, $username, $department_id,$money_type)
+                                    $page, $size, $type, $admin_id, $username, $department_id, $money_type)
     {
         $company_id = Token::getCurrentTokenVar('company_id');
         $records = RechargeV::rechargeRecords($time_begin, $time_end,
-            $page, $size, $type, $admin_id, $username, $company_id, $department_id,$money_type);
+            $page, $size, $type, $admin_id, $username, $company_id, $department_id, $money_type);
         return $records;
 
     }
@@ -738,7 +748,7 @@ class WalletService
                 continue;
             }
 
-            if (!$this->checkDinnerInCanteen($v[2], $v[4], $dinners)){
+            if (!$this->checkDinnerInCanteen($v[2], $v[4], $dinners)) {
                 array_push($fail, '第' . $k . '行数据有问题');
                 break;
             }

@@ -18,6 +18,11 @@ class RechargeV extends Model
         return '其他';
     }
 
+    public function getMoneyAttr($value, $data)
+    {
+        return abs($value);
+    }
+
     public static function rechargeRecords($time_begin, $time_end,
                                            $page, $size, $type, $admin_id, $username, $company_id, $department_id, $money_type)
     {
