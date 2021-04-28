@@ -18,13 +18,13 @@ class Punishment extends BaseController
      * @apiGroup  CMS
      * @apiVersion 3.0.0
      * @apiDescription  惩罚机制PC端-惩罚策略-获取测法策略列表
-     * http://canteen.tonglingok.com/api/v1/punishment/strategyDetail?page=1&size=10&&company_id=87&canteen_id=1
+     * @apiExample {get}  请求样例:
      * @apiParam (请求参数说明) {int} page 当前页码
      * @apiParam (请求参数说明) {int} size 每页多少条数据
      * @apiParam (请求参数说明) {String} company_id 企业id
      * @apiParam (请求参数说明) {String} canteen_id 饭堂id
      * @apiSuccessExample {json} 返回样例:
-     * {"msg":"ok","errorCode":0,"code":200,"data":{"total":1,"per_page":10,"current_page":1,"last_page":1,"data":[{"id":1,"company_id":78,"canteen_id":1,"staff_type_id":1,"detail":[{"id":7,"strategy_id":1,"type":"no_meal 订餐未就餐","count":2,"state":1},{"id":8,"strategy_id":1,"type":"no_booking 未订餐就餐","count":2,"state":1}]}]}}
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"total":5,"per_page":10,"current_page":1,"last_page":1,"data":[{"id":246,"company_id":100,"staff_type_id":25,"canteen_id":185,"staff":{"id":25,"name":"测试"},"canteen":{"id":185,"name":"饭堂"},"detail":[]},{"id":247,"company_id":100,"staff_type_id":74,"canteen_id":185,"staff":{"id":74,"name":"susu"},"canteen":{"id":185,"name":"饭堂"},"detail":[]},{"id":248,"company_id":100,"staff_type_id":52,"canteen_id":185,"staff":{"id":52,"name":"员工"},"canteen":{"id":185,"name":"饭堂"},"detail":[]},{"id":249,"company_id":100,"staff_type_id":25,"canteen_id":186,"staff":{"id":25,"name":"测试"},"canteen":{"id":186,"name":"入门"},"detail":[]},{"id":250,"company_id":100,"staff_type_id":25,"canteen_id":187,"staff":{"id":25,"name":"测试"},"canteen":{"id":187,"name":"a"},"detail":[]}]}}
      * @apiSuccess (返回参数说明) {int} total 数据总数
      * @apiSuccess (返回参数说明) {int} per_page 每页多少条数据
      * @apiSuccess (返回参数说明) {int} current_page 当前页码
@@ -33,13 +33,14 @@ class Punishment extends BaseController
      * @apiSuccess (返回参数说明) {int} company_id 企业id
      * @apiSuccess (返回参数说明) {int} canteen_id 饭堂id
      * @apiSuccess (返回参数说明) {int} staff_type_id 人员类型id
-     * @apiSuccess (返回参数说明) {string} detail  惩罚策略明细json字符串
-     * @apiSuccess (返回参数说明) {int} id 惩罚策略明细表id
-     * @apiSuccess (返回参数说明) {int} strategy_id 测法策略id
-     * @apiSuccess (返回参数说明) {string} type 违规类型：no_meal 订餐未就餐；no_booking  未订餐就餐
-     * @apiSuccess (返回参数说明) {int}  state 状态：1 正常；2 删除
-     * @apiSuccess (返回参数说明) {int}  count 最大违规数量
+     * @apiParam (请求参数说明) {string} detail  惩罚策略明细json字符串
+     * @apiSuccess (返回参数说明) {int} detail|id 惩罚策略明细表id
+     * @apiSuccess (返回参数说明) {int} detail|strategy_id 测法策略id
+     * @apiSuccess (返回参数说明) {string} detail|type 违规类型：no_meal 订餐未就餐；no_booking  未订餐就餐
+     * @apiSuccess (返回参数说明) {int}  detail|state 状态：1 正常；2 删除
+     * @apiSuccess (返回参数说明) {int}  detail|count 最大违规数量
      */
+
     public function strategyDetail($page = 1, $size = 10)
     {
         $params = Request::param();
@@ -91,7 +92,7 @@ class Punishment extends BaseController
      * @apiParam (请求参数说明) {String} key 手机号或者姓名
      * @apiParam (请求参数说明) {int} company_id 企业id
      * @apiParam (请求参数说明) {string} company_name 企业关键字
-     * @apiParam (请求参数说明) {int} status 0传全部，状态 :1:正常;3:白名单;4:黑名单
+     * @apiParam (请求参数说明) {int} status 0传全部，状态 :1|正常;3|白名单;4|黑名单
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200,"data":{"total":1,"per_page":"10","current_page":1,"last_page":1,"data":[{"company_id":87,"company_name":"小橙子","canteen_ids":"164","canteen_name":"饭堂","t_id":25,"staff_type":"测试","staff_id":6068,"username":"安全测试","phone":"18813960130","status":1,"no_meal":null,"no_booking":null}]}}
      * @apiSuccess (返回参数说明) {int} total 数据总数
@@ -232,10 +233,10 @@ class Punishment extends BaseController
     }
 
     /**
-     * @api {POST} /api/v1/punishment/updatePunishmentStatus CMS管理端-惩罚机制-惩罚管理-编程状态
+     * @api {POST} /api/v1/punishment/updatePunishmentStatus CMS管理端-惩罚机制-惩罚管理-编辑状态
      * @apiGroup   CMS
      * @apiVersion 3.0.0
-     * @apiDescription    CMS管理端-惩罚机制-惩罚管理-编程状态
+     * @apiDescription    CMS管理端-惩罚机制-惩罚管理-编辑状态
      * @apiExample {post}  请求样例:
      * [{
      * "admin_id":7,

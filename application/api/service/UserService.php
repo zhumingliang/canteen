@@ -272,8 +272,8 @@ class UserService
 
     public function checkUserPunishment()
     {
-        $staffId = 6052;//Token::getCurrentTokenVar('staff_id');
-        $canteenId = 164;//Token::getCurrentTokenVar('current_canteen_id');
+        $staffId = Token::getCurrentTokenVar('staff_id');
+        $canteenId = Token::getCurrentTokenVar('current_canteen_id');
         $staff = CompanyStaffT::staffWithPunishment($staffId);
         $punishment = PunishmentStrategyT::strategy($canteenId, $staff['t_id']);
         if (!$punishment || empty($punishment['detail'])) {

@@ -16,31 +16,37 @@ use app\lib\exception\UpdateException;
 
 class PunishmentService extends BaseService
 {
-    public function strategyDetails($page, $size, $company_id, $canteen_id)
+    public function strategyDetails($page, $size, $company_id, $c_id)
     {
-        if ($this->checkExit($company_id, $canteen_id)) {
-            $details = PunishmentStrategyT::strategyDetail($page, $size, $company_id, $canteen_id);
+        $nowdate=date('Y-m-d h:i:s');
+        if ($this->checkExit($company_id,$c_id))
+        {
+            $details = PunishmentStrategyT::strategyDetail($page, $size, $company_id, $c_id);
             return $details;
-        } else {
+        }else
+            $canteen_ids = $this->getcanteenids($company_id);
+        foreach ($canteen_ids as $k2=>$v2){
+            $canteen_id=$v2['id'];
             $staffType = $this->getstaffType($canteen_id);
             $data = array();
             foreach ($staffType as $k => $v) {
                 $data[] = [
                     'company_id' => $company_id,
-                    'canteen_id' => $canteen_id,
+                    'canteen_id' => $v2['id'],
                     'staff_type_id' => $v['t_id'],
+                    'create_time' => $nowdate,
+                    'update_time' => $nowdate
                 ];
             }
             $strategies = (new PunishmentStrategyT())->saveAll($data);
             if (!$strategies) {
                 throw  new SaveException();
             }
-            $details = PunishmentStrategyT::strategyDetail($page, $size, $company_id, $canteen_id);
-            return $details;
         }
+        $details = PunishmentStrategyT::strategyDetail($page, $size, $company_id, $c_id);
+        return $details;
 
     }
-
     private function checkExit($company_id, $canteen_id)
     {
         $strategy = PunishmentStrategyT::where('company_id', $company_id)
@@ -48,7 +54,6 @@ class PunishmentService extends BaseService
             ->count('id');
         return $strategy;
     }
-
     public function getstaffType($canteen_id)
     {
         return ConsumptionStrategyT::where('c_id', $canteen_id)
@@ -58,11 +63,45 @@ class PunishmentService extends BaseService
             ->select();
 
     }
+    public function getcanteenids($company_id){
+        $c_id=$this->getcanteen($company_id);
+        $canteen_id=$this->getpunishment($company_id);
+        $canteen_ids=[];
+        foreach ($c_id as $k1 => $v1) {
+            if (in_array($v1['id'], $canteen_id)) {
+                $exitcanteen[] = $v1['id'];
+            } else {
+                $canteen_ids[] = [
+                    'id' => $v1['id']
+                ];
+            }
+        }
+        return $canteen_ids;
+    }
+    public function getpunishment($company_id){
+        $canteen=PunishmentStrategyT::where('company_id',$company_id)->distinct(true)
+            ->field('canteen_id')->select();
+        $canteen_ids=[];
+        foreach ($canteen as $k => $v) {
+            array_push($canteen_ids,$v['canteen_id']);
+        }
+        return $canteen_ids;
+
+    }
+    public function getcanteen($company_id)
+    {
+        return CanteenT::where('c_id', $company_id)
+            ->field('id,c_id,name')
+            ->select();
+    }
 
     public function updateStrategy($params)
     {
-        $detail = json_decode($params['detail'], true);
-        $res = (new PunishmentDetailT())->saveAll($detail);
+        $detail=json_decode($params['detail'], true);
+        if (!count($detail)) {
+            throw new ParameterException();
+        }
+        $res =(new PunishmentDetailT())->saveAll($detail);
         if (!$res) {
             throw new UpdateException();
         }
@@ -142,13 +181,11 @@ class PunishmentService extends BaseService
     {
         $punish = json_decode($params['new_state'], true);
         $new_status = $punish['status'];
-        $res = CompanyStaffT::update(['status' => $new_status],
-            ['id' => $params['staff_id']]);
+        $res = CompanyStaffT::update(['status' => $new_status], ['id' => $params['staff_id']]);
         if (!$res) {
             throw new UpdateException();
         }
-        $record = PunishmentUpdateT::where('staff_id', $params['staff_id'])
-            ->find();
+        $record = PunishmentUpdateT::where('staff_id', $params['staff_id'])->find();
         if ($record) {
             $update = PunishmentUpdateT::update(['admin_id' => $params['admin_id'], 'old_state' => $params['old_state'],
                 'new_state' => $params['new_state']],
@@ -164,6 +201,7 @@ class PunishmentService extends BaseService
         }
     }
 
+
     private function getStatus($status)
     {
         $values = [
@@ -173,16 +211,5 @@ class PunishmentService extends BaseService
             4 => '黑名单'
         ];
         return empty($values[$status]) ? '' : $values[$status];
-        /*if ($status == 1) {
-            return "正常(未违规)";
-        } elseif ($status == 2) {
-            return "正常";
-        } elseif ($status == 3) {
-            return "白名单";
-        } elseif ($status == 4) {
-            return "黑名单";
-        } else {
-            return "";
-        }*/
     }
 }
