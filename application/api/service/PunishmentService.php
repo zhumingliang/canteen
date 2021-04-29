@@ -22,37 +22,25 @@ class PunishmentService extends BaseService
     public function strategyDetails($page, $size, $company_id)
     {
         $nowdate = date('Y-m-d h:i:s');
-        if ($this->checkExit($company_id)) {
-            $details = PunishmentStrategyT::strategyDetail($page, $size, $company_id);
-            return $details;
-        } else {
-            $staffTypeids = $this->getstaffType($company_id);
-            foreach ($staffTypeids as $k2 => $v2) {
-                $staffType_id = $v2['id'];
-                $data = array();
-                $data[] = [
-                    'company_id' => $company_id,
-                    'staff_type_id' => $staffType_id,
-                    'create_time' => $nowdate,
-                    'update_time' => $nowdate
-                ];
-                $strategies = (new PunishmentStrategyT())->saveAll($data);
-                if (!$strategies) {
-                    throw  new SaveException();
-                }
+        $staffTypeids = $this->getstaffType($company_id);
+        foreach ($staffTypeids as $k2 => $v2) {
+            $staffType_id = $v2['id'];
+            $data = array();
+            $data['company_id'] =$company_id;
+            $data['staff_type_id']=$staffType_id;
+            $data['create_time']=$nowdate;
+            $data['update_time']=$nowdate;
+            $strategies =PunishmentStrategyT::create($data);
+            if (!$strategies) {
+                throw  new SaveException();
             }
-            $details = PunishmentStrategyT::strategyDetail($page, $size, $company_id);
-            return $details;
+            $stratege_ids=$strategies->id;
+            $createDetail=$this->createDetail($stratege_ids);
         }
-
+        $details = PunishmentStrategyT::strategyDetail($page, $size, $company_id);
+        return $details;
     }
 
-    private function checkExit($company_id)
-    {
-        $strategy = PunishmentStrategyT::where('company_id', $company_id)
-            ->count('id');
-        return $strategy;
-    }
 
     public function getstaffType($company_id)
     {
@@ -69,6 +57,26 @@ class PunishmentService extends BaseService
             }
         }
         return $staffsType_ids;
+    }
+    public function createDetail($staffTypeids){
+        $nowdate = date('Y-m-d h:i:s');
+        if (!empty($staffTypeids)){
+            $data = array();
+            for ($i=0;$i<2;$i++){
+                $data[] = [
+                    'strategy_id' => $staffTypeids,
+                    'type' =>'',
+                    'count'=>'',
+                    'state'=>'',
+                    'create_time' => $nowdate,
+                    'update_time' => $nowdate
+                ];
+                $strategyDetail = (new PunishmentDetailT())->saveAll($data);
+                if (!$strategyDetail) {
+                    throw  new SaveException();
+                }
+            }
+        }
     }
 
     public function staffsType($company_id)
