@@ -363,13 +363,31 @@ class DownExcelService
     }
 
     public function exportPunishmentEditDetails($key, $company_id, $company_name,
-                                                $canteen_id,$time_begin,$time_end){
+                                                $canteen_id, $time_begin, $time_end)
+    {
         $jobData = [
             'excel_type' => 'punishmentEditDetails',
             'key' => $key,
             'company_id' => $company_id,
             'company_name' => $company_name,
             'canteen_id' => $canteen_id,
+            'time_begin' => $time_begin,
+            'time_end' => $time_end,
+            'version' => \think\facade\Request::param('version')
+        ];
+        $this->saveDownExcelJob($jobData);
+    }
+
+    public function exportPunishmentRecord($company_id, $meal, $time_begin, $time_end,
+                                           $canteen_id, $department_id, $staff_id)
+    {
+        $jobData = [
+            'excel_type' => 'exportPunishmentRecord',
+            'company_id' => $company_id,
+            'meal' => $meal,
+            'canteen_id' => $canteen_id,
+            'department_id' => $department_id,
+            'staff_id' => $staff_id,
             'time_begin' => $time_begin,
             'time_end' => $time_end,
             'version' => \think\facade\Request::param('version')

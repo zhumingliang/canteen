@@ -37,7 +37,7 @@ class StaffPunishmentT extends Model
                     }
                 }
             })
-            ->field('b.id as company_id,b.name as company_name,a.canteen_ids,group_concat(c.name) as canteen_name,a.t_id,d.name as staff_type,a.id as staff_id,username,phone,status,e.no_meal,e.no_booking')
+            ->field('b.id as company_id,b.name as company_name,a.canteen_ids,group_concat(c.name) as canteen_name,a.t_id,d.name as staff_type,a.id as staff_id,username,phone,status,COALESCE(e.no_meal,0) as no_meal,COALESCE(e.no_booking,0) as no_booking')
             ->group('a.id')
             ->paginate($size, false, ['page' => $page])->toArray();
         return $list;
@@ -70,7 +70,7 @@ class StaffPunishmentT extends Model
                     }
                 }
             })
-            ->field('b.name as company_name,group_concat(c.name) as canteen_name,d.name as staff_type,username,phone,status,e.no_meal,e.no_booking')
+            ->field('b.name as company_name,group_concat(c.name) as canteen_name,d.name as staff_type,username,phone,status,COALESCE(e.no_meal,0) as no_meal,COALESCE(e.no_booking,0) as no_booking')
             ->group('a.id')
             ->select()->toArray();
         return $list;

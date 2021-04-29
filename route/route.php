@@ -393,6 +393,9 @@ Route::get('api/:version/punishment/exportPunishmentStaffInfo', 'api/:version.Pu
 Route::post('api/:version/punishment/updatePunishmentStatus', 'api/:version.Punishment/updatePunishmentStatus');
 Route::get('api/:version/punishment/getPunishmentEditDetails', 'api/:version.Punishment/getPunishmentEditDetails');
 Route::get('api/:version/punishment/exportPunishmentEditDetails', 'api/:version.Punishment/exportPunishmentEditDetails');
+Route::get('api/:version/punishment/penaltyDetails', 'api/:version.Punishment/penaltyDetails');
+Route::get('api/:version/punishment/exportPunishmentRecord', 'api/:version.Punishment/exportPunishmentRecord');
+Route::get('api/:version/punishment/getStaffMaxPunishment', 'api/:version.Punishment/getStaffMaxPunishment');
 
 Route::get('api/:version/excels', 'api/:version.Excel/excels');
 Route::post('api/:version/excel/delete', 'api/:version.Excel/delete');

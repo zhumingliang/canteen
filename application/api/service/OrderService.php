@@ -2630,6 +2630,10 @@ class OrderService extends BaseService
                     ];
 
                     $data[$k]['used_type'] = $method[$v['supplement_type']];
+                    $data[$k]['money'] = abs($v['money']);
+                } else if ($v['order_type'] == "refund") {
+                    $data[$k]['used_type'] = "现金退款";
+                    $data[$k]['money'] = abs($v['money']);
                 }
             }
         }
