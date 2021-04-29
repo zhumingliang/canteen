@@ -55,9 +55,9 @@ class PunishmentStrategyT extends Model
             ])->select()->toArray();
     }
 
-    public static function strategy($canteenId, $staffTypeId)
+    public static function strategy($companyId, $staffTypeId)
     {
-        return self::where('company_id', $canteenId)
+        return self::where('company_id', $companyId)
             ->where('staff_type_id', $staffTypeId)
             ->with(
                 [
@@ -67,7 +67,7 @@ class PunishmentStrategyT extends Model
                     }
                 ]
             )
-            ->find()->toArray();
+            ->find();
 
     }
 
