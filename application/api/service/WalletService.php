@@ -121,7 +121,7 @@ class WalletService
             }
 
             $money = trim($v[3]);
-            if ($money == '' || $money < 0) {
+            if ($money == '' || $money <= 0) {
                 array_push($fail, '第' . $k . '行数据有问题');
             }
         }
@@ -149,7 +149,7 @@ class WalletService
             }
 
             $money = trim($v[2]);
-            if ($money == '' || $money < 0) {
+            if ($money == '' || $money <= 0) {
                 array_push($fail, '第' . $k . '行数据有问题');
             }
         }
