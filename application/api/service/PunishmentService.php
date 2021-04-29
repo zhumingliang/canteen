@@ -4,104 +4,100 @@
 namespace app\api\service;
 
 
+use app\api\model\CanteenT;
 use app\api\model\CompanyStaffT;
 use app\api\model\ConsumptionStrategyT;
 use app\api\model\PunishmentDetailT;
+use app\api\model\PunishmentRecordsT;
 use app\api\model\PunishmentStrategyT;
 use app\api\model\PunishmentUpdateT;
 use app\api\model\StaffPunishmentT;
 use app\lib\enum\CommonEnum;
+use app\lib\exception\ParameterException;
 use app\lib\exception\SaveException;
 use app\lib\exception\UpdateException;
 
 class PunishmentService extends BaseService
 {
-    public function strategyDetails($page, $size, $company_id, $c_id)
+    public function strategyDetails($page, $size, $company_id)
     {
-        $nowdate=date('Y-m-d h:i:s');
-        if ($this->checkExit($company_id,$c_id))
-        {
-            $details = PunishmentStrategyT::strategyDetail($page, $size, $company_id, $c_id);
+        $nowdate = date('Y-m-d h:i:s');
+        if ($this->checkExit($company_id)) {
+            $details = PunishmentStrategyT::strategyDetail($page, $size, $company_id);
             return $details;
-        }else
-            $canteen_ids = $this->getcanteenids($company_id);
-        foreach ($canteen_ids as $k2=>$v2){
-            $canteen_id=$v2['id'];
-            $staffType = $this->getstaffType($canteen_id);
-            $data = array();
-            foreach ($staffType as $k => $v) {
+        } else {
+            $staffTypeids = $this->getstaffType($company_id);
+            foreach ($staffTypeids as $k2 => $v2) {
+                $staffType_id = $v2['id'];
+                $data = array();
                 $data[] = [
                     'company_id' => $company_id,
-                    'canteen_id' => $v2['id'],
-                    'staff_type_id' => $v['t_id'],
+                    'staff_type_id' => $staffType_id,
                     'create_time' => $nowdate,
                     'update_time' => $nowdate
                 ];
+                $strategies = (new PunishmentStrategyT())->saveAll($data);
+                if (!$strategies) {
+                    throw  new SaveException();
+                }
             }
-            $strategies = (new PunishmentStrategyT())->saveAll($data);
-            if (!$strategies) {
-                throw  new SaveException();
-            }
+            $details = PunishmentStrategyT::strategyDetail($page, $size, $company_id);
+            return $details;
         }
-        $details = PunishmentStrategyT::strategyDetail($page, $size, $company_id, $c_id);
-        return $details;
 
     }
-    private function checkExit($company_id, $canteen_id)
+
+    private function checkExit($company_id)
     {
         $strategy = PunishmentStrategyT::where('company_id', $company_id)
-            ->where('canteen_id', $canteen_id)
             ->count('id');
         return $strategy;
     }
-    public function getstaffType($canteen_id)
-    {
-        return ConsumptionStrategyT::where('c_id', $canteen_id)
-            ->where('state', CommonEnum::STATE_IS_OK)
-            ->distinct(true)
-            ->field('c_id,t_id')
-            ->select();
 
-    }
-    public function getcanteenids($company_id){
-        $c_id=$this->getcanteen($company_id);
-        $canteen_id=$this->getpunishment($company_id);
-        $canteen_ids=[];
-        foreach ($c_id as $k1 => $v1) {
-            if (in_array($v1['id'], $canteen_id)) {
-                $exitcanteen[] = $v1['id'];
+    public function getstaffType($company_id)
+    {
+        $t_id = $this->staffsType($company_id);
+        $staffsType_id = $this->getpunishment($company_id);
+        $staffsType_ids = [];
+        foreach ($t_id as $k1 => $v1) {
+            if (in_array($v1['id'], $staffsType_id)) {
+                $exitType[] = $v1['id'];
             } else {
-                $canteen_ids[] = [
+                $staffsType_ids[] = [
                     'id' => $v1['id']
                 ];
             }
         }
-        return $canteen_ids;
+        return $staffsType_ids;
     }
-    public function getpunishment($company_id){
-        $canteen=PunishmentStrategyT::where('company_id',$company_id)->distinct(true)
-            ->field('canteen_id')->select();
-        $canteen_ids=[];
-        foreach ($canteen as $k => $v) {
-            array_push($canteen_ids,$v['canteen_id']);
-        }
-        return $canteen_ids;
 
-    }
-    public function getcanteen($company_id)
+    public function staffsType($company_id)
     {
-        return CanteenT::where('c_id', $company_id)
-            ->field('id,c_id,name')
+        $types = CompanyStaffT::where('company_id', $company_id)
+            ->distinct(true)
+            ->field(' t_id as id')
             ->select();
+        return $types;
+    }
+
+    public function getpunishment($company_id)
+    {
+        $Type = PunishmentStrategyT::where('company_id', $company_id)->distinct(true)
+            ->field('staff_type_id')->select();
+        $staffType_ids = [];
+        foreach ($Type as $k => $v) {
+            array_push($staffType_ids, $v['staff_type_id']);
+        }
+        return $staffType_ids;
     }
 
     public function updateStrategy($params)
     {
-        $detail=json_decode($params['detail'], true);
+        $detail = json_decode($params['detail'], true);
         if (!count($detail)) {
             throw new ParameterException();
         }
-        $res =(new PunishmentDetailT())->saveAll($detail);
+        $res = (new PunishmentDetailT())->saveAll($detail);
         if (!$res) {
             throw new UpdateException();
         }
@@ -115,11 +111,6 @@ class PunishmentService extends BaseService
 
     public function prefixExportPunishmentStaffInfo($key, $company_id, $company_name, $status)
     {
-//        $header = ['企业名称', '饭堂', '人员类型', '姓名', '手机号码', '状态','订餐未就餐违规次数','未订餐就餐违规次数'];
-//        $file_name = "惩罚管理";
-//        $punishmentStaffInfo = StaffPunishmentT::prefixExportPunishmentStaffInfo($key, $company_id, $company_name, $status);
-//        $url = (new ExcelService())->makeExcel($header, $punishmentStaffInfo, $file_name);
-//        $data = ['url' => 'http://' . $_SERVER['HTTP_HOST'] . $url];
         $staffs = StaffPunishmentT::prefixExportPunishmentStaffInfo($key, $company_id, $company_name, $status);
         $dataList = [];
         foreach ($staffs as $k => $v) {
@@ -147,12 +138,6 @@ class PunishmentService extends BaseService
     public function prefixExportPunishmentEditDetails($key, $company_id, $company_name, $canteen_id,
                                                       $time_begin, $time_end)
     {
-//        $header = ['日期','企业名称', '饭堂', '人员类型', '姓名', '手机号码', '旧状态','订餐未就餐违规次数(旧)','未订餐就餐违规次数(旧)','新状态','订餐未就餐违规次数(新)','未订餐就餐违规次数(新)'];
-//        $file_name = "惩罚编辑详情";
-//        $punishmentEditDetails = PunishmentUpdateT::prefixExportPunishmentEditDetails($key, $company_id, $company_name, $canteen_id,
-//            $time_begin, $time_end);
-//        $url = (new ExcelService())->makeExcel($header, $punishmentEditDetails, $file_name);
-//        $data = ['url' => 'http://' . $_SERVER['HTTP_HOST'] . $url];
         $details = PunishmentUpdateT::prefixExportPunishmentEditDetails($key, $company_id, $company_name, $canteen_id,
             $time_begin, $time_end);
         $dataList = [];
@@ -179,28 +164,52 @@ class PunishmentService extends BaseService
 
     public function updatePunishmentStatus($params)
     {
-        $punish = json_decode($params['new_state'], true);
-        $new_status = $punish['status'];
-        $res = CompanyStaffT::update(['status' => $new_status], ['id' => $params['staff_id']]);
+        $newStateJson = json_decode($params['new_state'], true);
+        $oldStateJson = json_decode($params['old_state'], true);
+        if (empty($newStateJson) || empty($oldStateJson)) {
+            throw new ParameterException(['msg' => '状态参数格式错误']);
+        }
+        $newStatus = $newStateJson['status'];
+        $res = CompanyStaffT::update(['status' => $newStatus], ['id' => $params['staff_id']]);
         if (!$res) {
             throw new UpdateException();
         }
-        $record = PunishmentUpdateT::where('staff_id', $params['staff_id'])->find();
-        if ($record) {
-            $update = PunishmentUpdateT::update(['admin_id' => $params['admin_id'], 'old_state' => $params['old_state'],
-                'new_state' => $params['new_state']],
-                ['staff_id' => $params['staff_id']]);
-            if (!$update) {
-                throw new UpdateException();
-            }
-        } else {
-            $save = PunishmentUpdateT::create($params);
-            if (!$save) {
-                throw new SaveException();
-            }
+        $save = PunishmentUpdateT::create($params);
+        if (!$save) {
+            throw new SaveException();
         }
     }
 
+    public function getStaffMaxPunishment($company_id, $t_id)
+    {
+        $data = (new PunishmentStrategyT())->getStaffMaxPunishment($company_id, $t_id);
+        return $data;
+    }
+
+    public function penaltyDetails($page, $size, $time_begin, $time_end, $company_id
+        , $canteen_id, $department_id, $staff_id, $meal)
+    {
+        $where = (new PunishmentRecordsT)->checkData($meal, $canteen_id, $department_id, $staff_id);
+        $whereTime = [$time_begin, $time_end];
+        $data = (new PunishmentRecordsT)->punishStaff($company_id)->where($where)->whereTime('day', $whereTime)->paginate($size, false, ['page' => $page])->toArray();
+
+        foreach ($data['data'] as $key => $value) {
+            $data['data'][$key]['state'] = '违规1次';
+        }
+        return $data;
+    }
+
+    public function ExportPenaltyDetails($time_begin, $time_end, $company_id
+        , $canteen_id, $department_id, $staff_id, $meal)
+    {
+        $where = (new PunishmentRecordsT)->checkData($meal, $canteen_id, $department_id, $staff_id);
+        $whereTime = [$time_begin, $time_end];
+        $data = (new PunishmentRecordsT)->punishStaff($company_id)->where($where)->whereTime('day', $whereTime)->select()->toArray();
+        foreach ($data as $key => $value) {
+            $data[$key]['state'] = '违规1次';
+        }
+        return $data;
+    }
 
     private function getStatus($status)
     {
