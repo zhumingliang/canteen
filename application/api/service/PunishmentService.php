@@ -194,27 +194,27 @@ class PunishmentService extends BaseService
         return $data;
     }
 
-    public function penaltyDetails($page, $size, $time_begin, $time_end, $company_id
-        , $canteen_id, $department_id, $staff_id, $meal)
+    public function penaltyDetails($page,$size,$time_begin,$time_end,$company_id
+        ,$canteen_id,$department_id,$staff_name,$meal)
     {
-        $where = (new PunishmentRecordsT)->checkData($meal, $canteen_id, $department_id, $staff_id);
-        $whereTime = [$time_begin, $time_end];
-        $data = (new PunishmentRecordsT)->punishStaff($company_id)->where($where)->whereTime('day', $whereTime)->paginate($size, false, ['page' => $page])->toArray();
+        $where=(new PunishmentRecordsT)->checkData($meal,$canteen_id,$department_id,$staff_name);
+        $whereTime=[$time_begin,$time_end];
+        $data = (new PunishmentRecordsT)->punishStaff($company_id)->where($where)->whereTime('day',$whereTime)->paginate($size,false,['page'=>$page])->toArray();
 
-        foreach ($data['data'] as $key => $value) {
-            $data['data'][$key]['state'] = '违规1次';
+        foreach ($data['data'] as $key=>$value)
+        {
+            $data['data'][$key]['state']='违规1次';
         }
         return $data;
     }
-
-    public function ExportPenaltyDetails($time_begin, $time_end, $company_id
-        , $canteen_id, $department_id, $staff_id, $meal)
-    {
-        $where = (new PunishmentRecordsT)->checkData($meal, $canteen_id, $department_id, $staff_id);
-        $whereTime = [$time_begin, $time_end];
-        $data = (new PunishmentRecordsT)->punishStaff($company_id)->where($where)->whereTime('day', $whereTime)->select()->toArray();
-        foreach ($data as $key => $value) {
-            $data[$key]['state'] = '违规1次';
+    public function ExportPenaltyDetails($time_begin,$time_end,$company_id
+        ,$canteen_id,$department_id,$staff_name,$meal){
+        $where=(new PunishmentRecordsT)->checkData($meal,$canteen_id,$department_id,$staff_name);
+        $whereTime=[$time_begin,$time_end];
+        $data = (new PunishmentRecordsT)->punishStaff($company_id)->where($where)->whereTime('day',$whereTime)->select()->toArray();
+        foreach ($data as $key=>$value)
+        {
+            $data[$key]['state']='违规1次';
         }
         return $data;
     }

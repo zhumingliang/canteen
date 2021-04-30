@@ -288,17 +288,19 @@ class Punishment extends BaseController
     }
 
     /**
+    /**
      * @api {GET} /api/v1/punishment/exportPunishmentRecord CMS管理端-惩罚机制-惩罚明细-导出报表
      * @apiGroup  CMS
      * @apiVersion 3.0.0
      * @apiDescription  CMS管理端-惩罚机制-惩罚明细-导出报表
      * @apiExample {get}  请求样例:
      * http://canteen.tonglingok.com/api/v1/punishment/exportPunishmentEditDetails?page=1&size=10&key=测试&company_id=87&canteen_id=0&time_begin=2021-04-01&time_end=2021-04-26
-     * @apiParam (请求参数说明) {string} company_id  企业id(),不传默认为全部
+     * @apiParam (请求参数说明) {string} company_id  企业id,不传默认为全部
+     * @apiParam (请求参数说明) {string} meal 餐次id,不传默认为全部
      * @apiParam (请求参数说明) {string} time_begin 查询开始时间
      * @apiParam (请求参数说明) {string} time_end 查询结束时间
      * @apiParam (请求参数说明) {string} canteen_id  饭堂id,不传默认为全部
-     * @apiParam (请求参数说明) {string} s_id  员工id,不传默认为全部
+     * @apiParam (请求参数说明) {string} staff_name  员工姓名,不传默认为全部
      * @apiParam (请求参数说明) {string} department_id  部门id,不传默认为全部
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200,"data":{"url":"http:\/\/canteen.tonglingok.com\/static\/excel\/download\/punishment_20210428175414.xls"}}
@@ -306,19 +308,19 @@ class Punishment extends BaseController
      * @apiSuccess (返回参数说明) {string} msg 操作结果描述
      * @apiSuccess (返回参数说明) {string} url 下载地址
      */
-    public function exportPunishmentRecord($company_id = '', $canteen_id = '',
-                                           $department_id = '', $staff_id = '', $meal = '')
+    public function exportPunishmentRecord($company_id='',$canteen_id='',
+                                           $department_id='',$staff_name='',$meal='')
     {
         $time_begin = Request::param('time_begin');
         $time_end = Request::param('time_end');
-        (new \app\api\service\v2\DownExcelService())->exportPunishmentRecord($company_id, $meal, $time_begin, $time_end,
-            $canteen_id, $department_id, $staff_id);
+        (new \app\api\service\v2\DownExcelService())->exportPunishmentRecord($company_id,$meal,$time_begin,$time_end,
+            $canteen_id,$department_id,$staff_name);
 
         return json(new SuccessMessage());
     }
 
     /**
-     * @api {GET} /api/v1/punishment/penaltyDetails惩罚机制PC端-惩罚策略-惩罚明细
+     * @api {GET} /api/v1/punishment/penaltyDetails CMS管理端-惩罚机制-惩罚明细
      * @apiGroup  CMS
      * @apiVersion 3.0.0
      * @apiDescription 惩罚机制PC端-惩罚策略-惩罚明细
@@ -326,11 +328,12 @@ class Punishment extends BaseController
      * http://canteen.tonglingok.com/api/v1/punishment/penaltyDetails?s_id=468&c_id=68&canteen_id=all&mealTime_id=all&department_id=all&day=all
      * @apiParam (请求参数说明) {int} page 页码
      * @apiParam (请求参数说明) {int} size 每页多少条数据
-     * @apiParam (请求参数说明) {string} company_id  企业id(),不传默认为全部
+     * @apiParam (请求参数说明) {string} company_id  企业id,不传默认为全部
+     * @apiParam (请求参数说明) {string} meal  餐次id,不传默认为全部
      * @apiParam (请求参数说明) {string} time_begin 查询开始时间
      * @apiParam (请求参数说明) {string} time_end 查询结束时间
      * @apiParam (请求参数说明) {string} canteen_id  饭堂id,不传默认为全部
-     * @apiParam (请求参数说明) {string} s_id  员工id,不传默认为全部
+     * @apiParam (请求参数说明) {string} staff_name  员工姓名,不传默认为全部
      * @apiParam (请求参数说明) {string} department_id  部门id,不传默认为全部
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200,"data":{"data":[{"day":"2021-04-13","canteen_name":"饭堂","department_name":null,"username":"爱萝卜01","meal_name":null,"type":"1","money":"1.00","state":"违规1次"}]}
@@ -347,14 +350,14 @@ class Punishment extends BaseController
      * @apiSuccess (返回参数说明) {string} money 金额
      * @apiSuccess (返回参数说明) {int} state 违规状态
      */
-    public function penaltyDetails($page = 1, $size = 10, $company_id = '', $canteen_id = '',
-                                   $department_id = '', $staff_id = '', $meal = ''
+    public function penaltyDetails($page=1,$size=10,$company_id='',$canteen_id='',
+                                   $department_id='',$staff_name='',$meal=''
     )
     {
         $time_begin = Request::param('time_begin');
         $time_end = Request::param('time_end');
-        $data = (new PunishmentService())->penaltyDetails($page, $size, $time_begin, $time_end, $company_id, $canteen_id, $department_id, $staff_id, $meal);
-        return json(new SuccessMessageWithData(['data' => $data]));
+        $data = (new PunishmentService())->penaltyDetails($page,$size,$time_begin,$time_end,$company_id,$canteen_id,$department_id,$staff_name,$meal);
+        return json(new SuccessMessageWithData(['data'=>$data]));
     }
 
 }

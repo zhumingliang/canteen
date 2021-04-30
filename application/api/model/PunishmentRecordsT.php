@@ -6,20 +6,21 @@ use think\Model;
 
 class PunishmentRecordsT extends Model
 {
-    public function checkData($mealTimes,$canteen_id,$department_id,$staff_id)
+    public function checkData($meal,$canteen_id,$department_id,$staff_name)
     {
         $where=[];
         if ($canteen_id != '') {
             $where['canteen_id'] = $canteen_id;
         }
-        if ($mealTimes != '') {
-            $where['mealTimes'] = $mealTimes;
+        if ($meal != '') {
+            $where['dinner_id'] = $meal;
         }
         if ($department_id != '') {
             $where['department_id'] = $department_id;
         }
-        if ($staff_id != '' ) {
-            $where['staff_id'] = $staff_id;
+        if ($staff_name != '' ) {
+            $staff_id=CompanyStaffT::where('username',$staff_name)->field('id')->find();
+            $where['staff_id'] = $staff_id['id'];
         }
         return $where;
     }
