@@ -371,7 +371,7 @@ class ConsumptionRecordsV extends Model
                     ->field("a.id as order_id,a.shop_id as location_id,b.name as location,'shop' as order_type,a.create_time,date_format(a.create_time, '%Y-%m-%d' ) AS ordering_date,'小卖部' AS dinner,( 0-a.money ) AS money,a.phone,a.count,0 AS sub_money,0 AS delivery_fee,1 AS booking,1 AS used,1 AS eating_type,'one' AS consumption_type,a.company_id,0 AS sort_code,1 as supplement_type,1 as unused_handel,0 as violation_count")
                     ->where('a.staff_id', $staffId)
                     ->where('a.create_time', ">=", $time_begin)
-                    ->where('a.create_time', "<=", $time_end)
+                    ->where('a.create_time', "<=", addDay(1,$time_end))
                     ->where('a.state', CommonEnum::STATE_IS_OK);
             })
             ->unionAll(function ($query) use ($staffId, $time_begin, $time_end) {
@@ -394,7 +394,7 @@ class ConsumptionRecordsV extends Model
                     ->field("a.id as order_id,0 as  location_id,'' as location,'pay' as order_type,a.create_time,date_format(a.create_time, '%Y-%m-%d' ) AS ordering_date,'' AS dinner,a.money AS money,d.phone,1 as count,0 AS sub_money,0 AS delivery_fee,1 AS booking,1 AS used,1 AS eating_type,'one' AS consumption_type,a.company_id,0 AS sort_code, a.method_id as supplement_type,1 as unused_handel,0 as violation_count")
                     ->where('a.staff_id', $staffId)
                     ->where('a.create_time', ">=", $time_begin)
-                    ->where('a.create_time', "<=", $time_end)
+                    ->where('a.create_time', "<=", addDay(1,$time_end))
                     ->where('a.status', PayEnum::PAY_SUCCESS)
                     ->where('a.refund', CommonEnum::STATE_IS_FAIL);
             })->unionAll(function ($query) use ($staffId, $time_begin, $time_end) {
@@ -405,7 +405,7 @@ class ConsumptionRecordsV extends Model
                     ->field("a.id as order_id,0 as  location_id,'' as location,if(a.type=1,'pay','refund') as order_type,a.create_time,date_format(a.create_time, '%Y-%m-%d' ) AS ordering_date,'' AS dinner,a.money AS money,d.phone,1 as count,0 AS sub_money,0 AS delivery_fee,1 AS booking,1 AS used,1 AS eating_type,'one' AS consumption_type,a.company_id,0 AS sort_code, 'cash' as supplement_type,1 as unused_handel,0 as violation_count")
                     ->where('a.staff_id', $staffId)
                     ->where('a.create_time', ">=", $time_begin)
-                    ->where('a.create_time', "<=", $time_end)
+                    ->where('a.create_time', "<=", addDay(1,$time_end))
                     ->where('a.state', CommonEnum::STATE_IS_OK);
             })
             ->buildSql();
@@ -443,6 +443,7 @@ class ConsumptionRecordsV extends Model
         $time_begin = $consumption_time['fist'];
         $time_end = $consumption_time['last'];
 
+
         $statistic = Db::table('canteen_order_t')
             ->field('sum(money+sub_money+delivery_fee) as money')
             ->where('phone', $phone)
@@ -466,7 +467,7 @@ class ConsumptionRecordsV extends Model
                     ->where('phone', $phone)
                     ->where('company_id', $company_id)
                     ->where('create_time', ">=", $time_begin)
-                    ->where('create_time', "<=", $time_end)
+                    ->where('create_time', "<=", addDay(1,$time_end))
                     ->where('state', CommonEnum::STATE_IS_OK);
             })->unionAll(function ($query) use ($phone, $time_begin, $time_end, $company_id) {
                 $query->table("canteen_recharge_supplement_t")
@@ -507,7 +508,7 @@ class ConsumptionRecordsV extends Model
                     ->field('sum(money) as money')
                     ->where('staff_id', $staffId)
                     ->where('create_time', ">=", $time_begin)
-                    ->where('create_time', "<=", $time_end)
+                    ->where('create_time', "<=", addDay(1,$time_end))
                     ->where('state', CommonEnum::STATE_IS_OK);
             })->unionAll(function ($query) use ($staffId, $time_begin, $time_end) {
                 $query->table("canteen_recharge_supplement_t")
