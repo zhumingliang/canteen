@@ -67,14 +67,14 @@ class PunishmentService extends BaseService
                     'strategy_id' => $staffTypeids,
                     'type' =>'',
                     'count'=>'',
-                    'state'=>'',
+                    'state'=>1,
                     'create_time' => $nowdate,
                     'update_time' => $nowdate
                 ];
-                $strategyDetail = (new PunishmentDetailT())->saveAll($data);
-                if (!$strategyDetail) {
-                    throw  new SaveException();
-                }
+            }
+            $strategyDetail = (new PunishmentDetailT())->saveAll($data);
+            if (!$strategyDetail) {
+                throw  new SaveException();
             }
         }
     }
