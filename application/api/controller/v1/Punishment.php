@@ -52,7 +52,7 @@ class Punishment extends BaseController
     }
 
     /**
-     * @api {POST} /api/v1/punishment/strategyDetail CMS管理端-惩罚机制-惩罚策略-修改惩罚策略
+     * @api {POST} /api/v1/punishment/updateStrategy CMS管理端-惩罚机制-惩罚策略-修改惩罚策略
      * @apiGroup   CMS
      * @apiVersion 3.0.0
      * @apiDescription    惩罚机制PC端-惩罚策略-修改惩罚策略
