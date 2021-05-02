@@ -426,8 +426,8 @@ class DownExcelService
     {
         $jobData = [
             'excel_type' => 'rechargeTotal',
-            'begin_time' => $begin_time,
-            'end_time' => $end_time,
+            'time_begin' => $begin_time,
+            'time_end' => $end_time,
             'username' => $username,
             'department_id' => $departmentId,
             'phone' => $phone,
