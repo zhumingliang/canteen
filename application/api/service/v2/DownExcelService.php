@@ -425,7 +425,7 @@ class DownExcelService
     public function exportRechargeTotal($begin_time, $end_time, $username, $departmentId, $phone)
     {
         $jobData = [
-            'excel_type' => 'RechargeTotal',
+            'excel_type' => 'rechargeTotal',
             'begin_time' => $begin_time,
             'end_time' => $end_time,
             'username' => $username,
