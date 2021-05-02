@@ -322,6 +322,8 @@ Route::post('api/:version/wallet/pay', 'api/:version.Wallet/saveOrder');
 Route::get('api/:version/wallet/pay/getPreOrder', 'api/:version.Wallet/getPreOrder');
 Route::get('api/:version/wallet/pay/nonghang/link', 'api/:version.Wallet/payLink');
 Route::rule('api/:version/wallet/WXNotifyUrl', 'api/:version.Wallet/WXNotifyUrl');
+Route::get('api/:version/wallet/rechargeStatistic', 'api/:version.Wallet/rechargeStatistic');
+Route::get('api/:version/wallet/rechargeStatistic/export', 'api/:version.Wallet/exportRechargeStatistic');
 
 
 Route::rule('api/:version/service/printer', 'api/:version.Service/printer');
@@ -394,8 +396,6 @@ Route::post('api/:version/punishment/updatePunishmentStatus', 'api/:version.Puni
 Route::get('api/:version/punishment/getPunishmentEditDetails', 'api/:version.Punishment/getPunishmentEditDetails');
 Route::get('api/:version/punishment/exportPunishmentEditDetails', 'api/:version.Punishment/exportPunishmentEditDetails');
 Route::get('api/:version/punishment/penaltyDetails', 'api/:version.Punishment/penaltyDetails');
-Route::get('api/:version/punishment/exportPunishmentRecord', 'api/:version.Punishment/exportPunishmentRecord');
-Route::get('api/:version/punishment/getStaffMaxPunishment', 'api/:version.Punishment/getStaffMaxPunishment');
 
 Route::get('api/:version/excels', 'api/:version.Excel/excels');
 Route::post('api/:version/excel/delete', 'api/:version.Excel/delete');

@@ -4,6 +4,7 @@
 namespace app\api\model;
 
 
+use app\api\service\LogService;
 use app\lib\enum\CommonEnum;
 use app\lib\enum\OrderEnum;
 use app\lib\enum\PayEnum;

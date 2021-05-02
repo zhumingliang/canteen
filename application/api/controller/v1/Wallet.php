@@ -8,6 +8,7 @@ use app\api\controller\BaseController;
 use app\api\model\OrderT;
 use app\api\model\PayT;
 use app\api\model\PayWxT;
+use app\api\model\RechargeCashT;
 use app\api\service\AdminService;
 use app\api\service\v2\DownExcelService;
 use app\api\service\WalletService;
@@ -186,7 +187,7 @@ class Wallet extends BaseController
         $time_begin = Request::param('time_begin');
         $time_end = Request::param('time_end');
         (new DownExcelService())->exportRechargeRecords($time_begin, $time_end, $type,
-            $admin_id, $username, $department_id,$money_type, 'rechargeRecords');
+            $admin_id, $username, $department_id, $money_type, 'rechargeRecords');
         return json(new  SuccessMessage());
         /*        $records = (new WalletService())->exportRechargeRecords($time_begin, $time_end, $type, $admin_id, $username, $department_id);
                 return json(new SuccessMessageWithData(['data' => $records]));*/
@@ -450,5 +451,91 @@ class Wallet extends BaseController
         return json(new SuccessMessageWithData(['data' => $rechargeMoney]));
 
     }
+
+
+    /**
+     * @api {GET} /api/v1/wallet/rechargeStatistic CMS管理端-充值管理-充值记录统计
+     * @apiGroup  CMS管理端
+     * @apiVersion 3.0.0
+     * @apiDescription CMS管理端-充值管理-充值记录统计
+     * @apiExample {get}  请求样例:
+     * http://www.canteen1.com/api/v1/wallet/rechargeStatistic?begin_time=2020-01-01&end_time=2020-01-30&department_id=0&username=李君凤&page=1&size=10
+     * @apiParam (请求参数说明) {int} page 当前页码
+     * @apiParam (请求参数说明) {int} size 每页多少条数据
+     * @apiParam (请求参数说明) {string} begin_time  查询开始时间
+     * @apiParam (请求参数说明) {string} end_time  查询结束时间
+     * @apiParam (请求参数说明) {string} department_id  部门：传0代表全部
+     * @apiParam (请求参数说明) {string} username  员工姓名
+     * @apiParam (请求参数说明) {string} phone  员工手机号
+     * @apiParam (请求参数说明) {string} company_id  企业id
+     * @apiSuccessExample {json}返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"total":4,"per_page":"10","current_page":1,"last_page":1,"data":[{"department":"饭堂维护","username":"10","phone":"","money":"153.95","time":"2021-04-01-2021-04-30"},{"department":"饭堂维护","username":"黎灿嫦","phone":"","money":"12.03","time":"2021-04-01-2021-04-30"},{"department":"饭堂维护","username":"美东","phone":"","money":"101.00","time":"2021-04-01-2021-04-30"},{"department":"饭堂维护","username":"林志强","phone":"","money":"224.01","time":"2021-04-01-2021-04-30"}]}}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {String} msg 信息描述
+     * @apiSuccess (返回参数说明) {int} total 数据总数
+     * @apiSuccess (返回参数说明) {int} per_page 每页多少条数据
+     * @apiSuccess (返回参数说明) {int} current_page 当前页码
+     * @apiSuccess (返回参数说明) {int} last_page 最后页码
+     * @apiSuccess (返回参数说明) {string} department 部门
+     * @apiSuccess (返回参数说明) {string} username 姓名
+     * @apiSuccess (返回参数说明) {string} phone 电话号码
+     * @apiSuccess (返回参数说明) {string} money 充值金额统计
+     * @apiSuccess (返回参数说明) {string} time 时间段
+     */
+    public function rechargeStatistic($page = 1, $size = 20)
+    {
+        //开始时间
+        $begin_time = Request::param('begin_time');
+        //结束时间
+        $end_time = Request::param('end_time');
+        //部门
+        $department_id = Request::param('department_id');
+        //姓名
+        $username = Request::param('username');
+        //电话号码
+        $phone = Request::param('phone');
+        //企业id
+        $company_id = \app\api\service\Token::getCurrentTokenVar('company_id');
+        $records = RechargeCashT::rechargeTotal($page, $size, $begin_time, $end_time, $username, $department_id, $phone, $company_id);
+        return json(new SuccessMessageWithData(['data' => $records]));
+
+    }
+
+    /**
+     * @api {GET} /api/v1/rechargeStatistic/export CMS管理端-充值管理-充值记录统计-导出报表
+     * @apiGroup  CMS管理端
+     * @apiVersion 3.0.0
+     * @apiDescription CMS管理端-充值管理-充值记录统计-导出报表
+     * @apiExample {get}  请求样例:
+     * http://www.cnt.com/api/v1/rechargeStatistic/export?begin_time=2021-01-01&end_time=2021-01-30&department_id=0
+     * @apiParam (请求参数说明) {int} page 当前页码
+     * @apiParam (请求参数说明) {int} size 每页多少条数据
+     * @apiParam (请求参数说明) {string} begin_time  查询开始时间
+     * @apiParam (请求参数说明) {string} end_time  查询结束时间
+     * @apiParam (请求参数说明) {string} department  部门：传0代表全部,具体为部门id
+     * @apiParam (请求参数说明) {string} username  员工姓名
+     * @apiParam (请求参数说明) {string} phone  员工手机号
+     * @apiSuccessExample {json}返回样例:
+     * {"msg":"下载 excel失败","errorCode":40001}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {String} msg 信息描述
+     */
+    public function exportRechargeStatistic()
+    {
+        //开始时间
+        $begin_time = Request::param('begin_time');
+        //结束时间
+        $end_time = Request::param('end_time');
+        //部门
+        $department = Request::param('department');
+        //姓名
+        $username = Request::param('username');
+        //电话号码
+        $phone = Request::param('phone');
+        (new \app\api\service\v2\DownExcelService())->exportRechargeTotal($begin_time, $end_time, $username, $department, $phone);
+        return json(new SuccessMessage());
+
+    }
+
 
 }
