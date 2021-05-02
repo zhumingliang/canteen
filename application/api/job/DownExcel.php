@@ -182,6 +182,9 @@ class DownExcel
                 case 'punishmentEditDetails';
                     $this->exportpunishmentEditDetails($data);
                     break;
+                case 'exportPunishmentRecord';
+                    $this->exportPunishmentRecord($data);
+                    break;
             }
             return true;
         } catch (Exception $e) {
@@ -243,9 +246,28 @@ class DownExcel
         $SCRIPT_FILENAME = $data['SCRIPT_FILENAME'];
         $punishmentStaffInfo = (new PunishmentService())->prefixExportPunishmentEditDetails($key, $company_id, $company_name, $canteen_id,
             $time_begin, $time_end);
-        $header = ['日期', '企业名称', '饭堂', '人员类型', '姓名', '手机号码', '编辑明细', '订餐未就餐', '未订餐就餐'];
+        $header = ['日期', '企业名称', '饭堂', '人员类型', '姓名', '手机号码', '旧状态', '订餐未就餐违规次数(旧)', '未订餐就餐违规次数(旧)', '新状态', '订餐未就餐违规次数(新)', '未订餐就餐违规次数(新)'];
         $file_name = "惩罚编辑详情";
         $url = (new ExcelService())->makeExcel2($header, $punishmentStaffInfo, $file_name, $SCRIPT_FILENAME);
+        $this->saveExcel($downId, $url, $file_name);
+    }
+
+    public function exportPunishmentRecord($data)
+    {
+        $time_begin=$data['time_begin'];
+        $time_end=$data['time_end'];
+        $company_id = $data['company_id'];
+        $canteen_id = $data['canteen_id'];
+        $department_id =$data['department_id'];
+        $staff_id=$data['staff_id'];
+        $meal=$data['meal'];
+        $downId = $data['down_id'];
+        $SCRIPT_FILENAME = $data['SCRIPT_FILENAME'];
+        $punishmentRecord = (new PunishmentService())->ExportPenaltyDetails($time_begin,$time_end,$company_id
+            ,$canteen_id,$department_id,$staff_id,$meal);
+        $header = ['违规日期', '违规地点', '部门', '姓名', '餐次', '类型', '金额', '状态'];
+        $file_name = "惩罚明细";
+        $url = (new ExcelService())->makeExcel2($header, $punishmentRecord, $file_name, $SCRIPT_FILENAME);
         $this->saveExcel($downId, $url, $file_name);
     }
 
