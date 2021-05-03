@@ -447,11 +447,11 @@ class Wallet extends BaseController
     public function monthRechargeMoney()
     {
         $consumption_time = Request::param('consumption_time');
-        $rechargeMoney = (new WalletService())->monthRechargeMoney($consumption_time);
+        $staffId = \app\api\service\Token::getCurrentTokenVar('staff_id');
+        $rechargeMoney = (new WalletService())->monthRechargeMoney($staffId, $consumption_time);
         return json(new SuccessMessageWithData(['data' => $rechargeMoney]));
 
     }
-
 
     /**
      * @api {GET} /api/v1/wallet/rechargeStatistic CMS管理端-充值管理-充值记录统计

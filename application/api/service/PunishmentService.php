@@ -215,16 +215,13 @@ class PunishmentService extends BaseService
         $where=(new PunishmentRecordsT)->checkData($company_id,$meal,$canteen_id,$department_id,$staff_name);
         $whereTime=[$time_begin,$time_end];
         $data = (new PunishmentRecordsT)->punishStaff()->where($where)->whereTime('day',$whereTime)->select()->toArray();
+
         foreach ($data as $key=>$value)
         {
             $data[$key]['state']='违规1次';
-        }
-        foreach ($data['data'] as $key=>$value)
-        {
-            $data['data'][$key]['state']='违规1次';
-            $username=CompanyStaffT::where('id',$data['data'][$key]['staff_id'])->field('username')->find();
-            $data['data'][$key]['username']=$username['username'];
-            unset($data['data'][$key]['staff_id']);
+            $username=CompanyStaffT::where('id',$data[$key]['staff_id'])->field('username')->find();
+            $data[$key]['username']=$username['username'];
+            unset($data[$key]['staff_id']);
         }
         return $data;
     }

@@ -19,7 +19,7 @@ class PunishmentRecordsT extends Model
             $where['t1.department_id'] = $department_id;
         }
         if ($staff_name != '' ) {
-            $staff_id=CompanyStaffT::where(['username'=>$staff_name,'company_id'=>$company_id])->field('id')->find();
+            $staff_id=CompanyStaffT::where(['username'=>$staff_name,'company_id'=>$company_id,'state'=>1])->field('id')->find();
             $where['t1.staff_id'] = $staff_id['id'];
         }
         if ($company_id!= 0){

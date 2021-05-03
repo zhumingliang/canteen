@@ -1164,6 +1164,9 @@ class OrderService extends BaseService
                     } else {
                         array_push($checkExits, $key);
                     }
+                    if ($v2['count'] <= 0) {
+                        throw new ParameterException(['msg' => "订单份数不能为0"]);
+                    }
                     $checkOrder = $this->checkUserCanOrderForOnline($canteen_id, $dinner,
                         $v2['ordering_date'],
                         $v2['count'], $strategy, $phone);

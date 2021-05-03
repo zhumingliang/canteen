@@ -536,7 +536,7 @@ class DownExcel
         $SCRIPT_FILENAME = $data['SCRIPT_FILENAME'];
         $records = RechargeV::exportRechargeRecords($time_begin, $time_end, $type,
             $admin_id, $username, $company_id, $department_id, $money_type);
-        $header = ['创建时间', '部门', '姓名', '手机号', '金额', "状态", '充值途径', '充值人员', '备注'];
+        $header = ['创建时间', '部门', '姓名', '手机号', '金额', "类型", '途径', '充值人员', '备注'];
         $file_name = "充值记录明细-" . $time_begin . "-" . $time_end;
         $url = (new ExcelService())->makeExcel2($header, $records, $file_name, $SCRIPT_FILENAME);
         $this->saveExcel($downId, $url, $file_name);
