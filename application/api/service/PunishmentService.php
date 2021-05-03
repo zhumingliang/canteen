@@ -197,24 +197,34 @@ class PunishmentService extends BaseService
     public function penaltyDetails($page,$size,$time_begin,$time_end,$company_id
         ,$canteen_id,$department_id,$staff_name,$meal)
     {
-        $where=(new PunishmentRecordsT)->checkData($meal,$canteen_id,$department_id,$staff_name);
+        $where=(new PunishmentRecordsT)->checkData($company_id,$meal,$canteen_id,$department_id,$staff_name);
         $whereTime=[$time_begin,$time_end];
-        $data = (new PunishmentRecordsT)->punishStaff($company_id)->where($where)->whereTime('day',$whereTime)->paginate($size,false,['page'=>$page])->toArray();
+        $data = (new PunishmentRecordsT)->punishStaff()->where($where)->whereTime('day',$whereTime)->paginate($size,false,['page'=>$page])->toArray();
 
         foreach ($data['data'] as $key=>$value)
         {
             $data['data'][$key]['state']='违规1次';
+            $username=CompanyStaffT::where('id',$data['data'][$key]['staff_id'])->field('username')->find();
+            $data['data'][$key]['username']=$username['username'];
+            unset($data['data'][$key]['staff_id']);
         }
         return $data;
     }
     public function ExportPenaltyDetails($time_begin,$time_end,$company_id
         ,$canteen_id,$department_id,$staff_name,$meal){
-        $where=(new PunishmentRecordsT)->checkData($meal,$canteen_id,$department_id,$staff_name);
+        $where=(new PunishmentRecordsT)->checkData($company_id,$meal,$canteen_id,$department_id,$staff_name);
         $whereTime=[$time_begin,$time_end];
-        $data = (new PunishmentRecordsT)->punishStaff($company_id)->where($where)->whereTime('day',$whereTime)->select()->toArray();
+        $data = (new PunishmentRecordsT)->punishStaff()->where($where)->whereTime('day',$whereTime)->select()->toArray();
         foreach ($data as $key=>$value)
         {
             $data[$key]['state']='违规1次';
+        }
+        foreach ($data['data'] as $key=>$value)
+        {
+            $data['data'][$key]['state']='违规1次';
+            $username=CompanyStaffT::where('id',$data['data'][$key]['staff_id'])->field('username')->find();
+            $data['data'][$key]['username']=$username['username'];
+            unset($data['data'][$key]['staff_id']);
         }
         return $data;
     }
