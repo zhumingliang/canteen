@@ -259,12 +259,12 @@ class DownExcel
         $company_id = $data['company_id'];
         $canteen_id = $data['canteen_id'];
         $department_id =$data['department_id'];
-        $staff_id=$data['staff_id'];
+        $staff_name=$data['staff_name'];
         $meal=$data['meal'];
         $downId = $data['down_id'];
         $SCRIPT_FILENAME = $data['SCRIPT_FILENAME'];
         $punishmentRecord = (new PunishmentService())->ExportPenaltyDetails($time_begin,$time_end,$company_id
-            ,$canteen_id,$department_id,$staff_id,$meal);
+            ,$canteen_id,$department_id,$staff_name,$meal);
         $header = ['违规日期', '违规地点', '部门', '姓名', '餐次', '类型', '金额', '状态'];
         $file_name = "惩罚明细";
         $url = (new ExcelService())->makeExcel2($header, $punishmentRecord, $file_name, $SCRIPT_FILENAME);
