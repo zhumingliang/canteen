@@ -60,7 +60,7 @@ class PunishmentRecordsT extends Model
                     $query->where('a.department_id',$department_id);
                 }
                 if (!empty($staff_name)) {
-                    $query->where('e.name',$staff_name);
+                    $query->where('e.username',$staff_name);
                 }
             })
             ->field('a.day,b.name as canteen,d.name as department,e.username as staff,c.name as dinner,if(a.type="no_meal","订餐未就餐","未订餐就餐")  as type,a.money,"违规1次" as punishment  ')
