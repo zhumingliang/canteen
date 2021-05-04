@@ -184,6 +184,25 @@ class PunishmentService extends BaseService
         if (!$res) {
             throw new UpdateException();
         }
+        $staffPunishRes = StaffPunishmentT::where('staff_id', $params['staff_id'])->find();
+        if ($staffPunishRes) {
+            $res = StaffPunishmentT::update(
+                ['no_meal' => $newStateJson['no_meal'], 'no_booking' => $newStateJson['no_booking']],
+                ['staff_id' => $params['staff_id']]);
+            if (!$res) {
+                throw new UpdateException();
+            }
+        } else {
+            $data = [
+                'staff_id' => $params['staff_id'],
+                'no_meal' => $newStateJson['no_meal'],
+                'no_booking' => $newStateJson['no_booking']
+            ];
+            $save = StaffPunishmentT::create($data);
+            if (!$save) {
+                throw new SaveException();
+            }
+        }
         $save = PunishmentUpdateT::create($params);
         if (!$save) {
             throw new SaveException();
