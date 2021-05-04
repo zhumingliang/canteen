@@ -46,7 +46,7 @@ class PunishmentRecordsT extends Model
             ->leftJoin('canteen_canteen_t b', 'a.canteen_id=b.id')
             ->leftJoin('canteen_dinner_t c', 'a.dinner_id=c.id')
             ->leftJoin('canteen_company_department_t d', 'a.department_id=d.id')
-            ->leftJoin('canteen_company_staff_id e', 'a.staff_id=e.id')
+            ->leftJoin('canteen_company_staff_t e', 'a.staff_id=e.id')
             ->where(function ($query) use ($company_id, $meal, $canteen_id, $department_id, $staff_name) {
                 if (!empty($canteen_id)) {
                     $query->where('a.canteen_id', $canteen_id);
