@@ -26,16 +26,16 @@ class PunishmentService extends BaseService
         foreach ($staffTypeids as $k2 => $v2) {
             $staffType_id = $v2['id'];
             $data = array();
-            $data['company_id'] =$company_id;
-            $data['staff_type_id']=$staffType_id;
-            $data['create_time']=$nowdate;
-            $data['update_time']=$nowdate;
-            $strategies =PunishmentStrategyT::create($data);
+            $data['company_id'] = $company_id;
+            $data['staff_type_id'] = $staffType_id;
+            $data['create_time'] = $nowdate;
+            $data['update_time'] = $nowdate;
+            $strategies = PunishmentStrategyT::create($data);
             if (!$strategies) {
                 throw  new SaveException();
             }
-            $stratege_ids=$strategies->id;
-            $createDetail=$this->createDetail($stratege_ids);
+            $stratege_ids = $strategies->id;
+            $createDetail = $this->createDetail($stratege_ids);
         }
         $details = PunishmentStrategyT::strategyDetail($page, $size, $company_id);
         return $details;
@@ -58,16 +58,18 @@ class PunishmentService extends BaseService
         }
         return $staffsType_ids;
     }
-    public function createDetail($staffTypeids){
+
+    public function createDetail($staffTypeids)
+    {
         $nowdate = date('Y-m-d h:i:s');
-        if (!empty($staffTypeids)){
+        if (!empty($staffTypeids)) {
             $data = array();
-            for ($i=0;$i<2;$i++){
+            for ($i = 0; $i < 2; $i++) {
                 $data[] = [
                     'strategy_id' => $staffTypeids,
-                    'type' =>'',
-                    'count'=>'',
-                    'state'=>1,
+                    'type' => '',
+                    'count' => '',
+                    'state' => 1,
                     'create_time' => $nowdate,
                     'update_time' => $nowdate
                 ];
@@ -194,36 +196,40 @@ class PunishmentService extends BaseService
         return $data;
     }
 
-    public function penaltyDetails($page,$size,$time_begin,$time_end,$company_id
-        ,$canteen_id,$department_id,$staff_name,$meal)
+    public function penaltyDetails($page, $size, $time_begin, $time_end, $company_id
+        , $canteen_id, $department_id, $staff_name, $meal)
     {
-        $where=(new PunishmentRecordsT)->checkData($company_id,$meal,$canteen_id,$department_id,$staff_name);
-        $whereTime=[$time_begin,$time_end];
-        $data = (new PunishmentRecordsT)->punishStaff()->where($where)->whereTime('day',$whereTime)->paginate($size,false,['page'=>$page])->toArray();
+        $where = (new PunishmentRecordsT)->checkData($company_id, $meal, $canteen_id, $department_id, $staff_name);
+        $whereTime = [$time_begin, $time_end];
+        $data = (new PunishmentRecordsT)->punishStaff()->where($where)->whereTime('day', $whereTime)->paginate($size, false, ['page' => $page])->toArray();
 
-        foreach ($data['data'] as $key=>$value)
-        {
-            $data['data'][$key]['state']='违规1次';
-            $username=CompanyStaffT::where('id',$data['data'][$key]['staff_id'])->field('username')->find();
-            $data['data'][$key]['username']=$username['username'];
+        foreach ($data['data'] as $key => $value) {
+            $data['data'][$key]['state'] = '违规1次';
+            $username = CompanyStaffT::where('id', $data['data'][$key]['staff_id'])->field('username')->find();
+            $data['data'][$key]['username'] = $username['username'];
             unset($data['data'][$key]['staff_id']);
         }
         return $data;
     }
-    public function ExportPenaltyDetails($time_begin,$time_end,$company_id
-        ,$canteen_id,$department_id,$staff_name,$meal){
-        $where=(new PunishmentRecordsT)->checkData($company_id,$meal,$canteen_id,$department_id,$staff_name);
-        $whereTime=[$time_begin,$time_end];
-        $data = (new PunishmentRecordsT)->punishStaff()->where($where)->whereTime('day',$whereTime)->select()->toArray();
 
-        foreach ($data as $key=>$value)
-        {
-            $data[$key]['state']='违规1次';
-            $username=CompanyStaffT::where('id',$data[$key]['staff_id'])->field('username')->find();
-            $data[$key]['username']=$username['username'];
-            unset($data[$key]['staff_id']);
-        }
-        return $data;
+    public function ExportPenaltyDetails($time_begin, $time_end, $company_id
+        , $canteen_id, $department_id, $staff_name, $meal)
+    {
+        /*        $where=(new PunishmentRecordsT)->checkData($company_id,$meal,$canteen_id,$department_id,$staff_name);
+                $whereTime=[$time_begin,$time_end];
+                $data = (new PunishmentRecordsT)->punishStaff()
+                    ->where($where)->whereTime('day',$whereTime)
+                    ->select()->toArray();
+
+                foreach ($data as $key=>$value)
+                {
+                    $data[$key]['state']='违规1次';
+                    $username=CompanyStaffT::where('id',$data[$key]['staff_id'])->field('username')->find();
+                    $data[$key]['username']=$username['username'];
+                    unset($data[$key]['staff_id']);
+                }
+                return $data;*/
+        return PunishmentRecordsT::punishStaff2($company_id, $meal, $canteen_id, $department_id, $staff_name);
     }
 
     private function getStatus($status)
