@@ -295,13 +295,13 @@ class Punishment extends BaseController
      * @apiDescription  CMS管理端-惩罚机制-惩罚明细-导出报表
      * @apiExample {get}  请求样例:
      * http://canteen.tonglingok.com/api/v1/punishment/exportPunishmentEditDetails?page=1&size=10&key=测试&company_id=87&canteen_id=0&time_begin=2021-04-01&time_end=2021-04-26
-     * @apiParam (请求参数说明) {string} company_id  企业id,不传默认为全部
-     * @apiParam (请求参数说明) {string} meal 餐次id,不传默认为全部
+     * @apiParam (请求参数说明) {string} company_id  企业id,0默认为全部
+     * @apiParam (请求参数说明) {string} meal 餐次id,0认为全部
      * @apiParam (请求参数说明) {string} time_begin 查询开始时间
      * @apiParam (请求参数说明) {string} time_end 查询结束时间
-     * @apiParam (请求参数说明) {string} canteen_id  饭堂id,不传默认为全部
-     * @apiParam (请求参数说明) {string} staff_name  员工姓名,不传默认为全部
-     * @apiParam (请求参数说明) {string} department_id  部门id,不传默认为全部
+     * @apiParam (请求参数说明) {string} canteen_id  饭堂id,0认为全部
+     * @apiParam (请求参数说明) {string} staff_name  员工姓
+     * @apiParam (请求参数说明) {string} department_id  部门id,0默认为全部
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200,"data":{"url":"http:\/\/canteen.tonglingok.com\/static\/excel\/download\/punishment_20210428175414.xls"}}
      * @apiSuccess (返回参数说明) {int} error_code 错误代码 0 表示没有错误
@@ -325,16 +325,16 @@ class Punishment extends BaseController
      * @apiVersion 3.0.0
      * @apiDescription 惩罚机制PC端-惩罚策略-惩罚明细
      * @apiExample {get}  请求样例:
-     * http://canteen.tonglingok.com/api/v1/punishment/penaltyDetails?s_id=468&c_id=68&canteen_id=all&mealTime_id=all&department_id=all&day=all
+     * http://canteen.tonglingok.com/api/v1/punishment/penaltyDetails?s_id=468&c_id=68&canteen_id=all&mealTime_id=0&department_id=0
      * @apiParam (请求参数说明) {int} page 页码
      * @apiParam (请求参数说明) {int} size 每页多少条数据
-     * @apiParam (请求参数说明) {string} company_id  企业id,不传默认为全部
-     * @apiParam (请求参数说明) {string} meal  餐次id,不传默认为全部
+     * @apiParam (请求参数说明) {string} company_id  企业id,0默认为全部
+     * @apiParam (请求参数说明) {string} meal 餐次id,0认为全部
      * @apiParam (请求参数说明) {string} time_begin 查询开始时间
      * @apiParam (请求参数说明) {string} time_end 查询结束时间
-     * @apiParam (请求参数说明) {string} canteen_id  饭堂id,不传默认为全部
-     * @apiParam (请求参数说明) {string} staff_name  员工姓名,不传默认为全部
-     * @apiParam (请求参数说明) {string} department_id  部门id,不传默认为全部
+     * @apiParam (请求参数说明) {string} canteen_id  饭堂id,0认为全部
+     * @apiParam (请求参数说明) {string} staff_name  员工姓
+     * @apiParam (请求参数说明) {string} department_id  部门id,0默认为全部
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200,"data":{"data":[{"day":"2021-04-13","canteen_name":"饭堂","department_name":null,"username":"爱萝卜01","meal_name":null,"type":"1","money":"1.00","state":"违规1次"}]}
      * @apiSuccess (返回参数说明) {int} total 数据总数
