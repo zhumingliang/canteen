@@ -556,9 +556,11 @@ class DownExcel
         $reception_state = $data['reception_state'];
         $downId = $data['down_id'];
         $SCRIPT_FILENAME = $data['SCRIPT_FILENAME'];
-        if (!empty($company_id)) {
-            if ($company_id !== "ALL") {
-                $whereStr .= 'and t7.id =' . $company_id . ' ';
+        if (!empty($company_id)){
+            if (strpos($company_id,',') !==false){
+                $whereStr .='and FIND_IN_SET(t7.id,"'.$company_id.'")';
+            }else{
+                $whereStr .= 'and t7.id = ' . $company_id . ' ';
             }
         }
         if (!empty($canteen_id)) {
@@ -603,7 +605,6 @@ class DownExcel
         $this->saveExcel($downId, $url, $file_name);
 
     }
-
     private
     function receptionsForApplyOutput($data)
     {
