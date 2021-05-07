@@ -18,8 +18,9 @@ class PunishmentUpdateT extends Model
             ->where('a.create_time', '<=', $time_end)
             ->leftJoin('company_staff_t b', 'a.staff_id=b.id')
             ->leftJoin('company_t c', 'b.company_id=c.id')
-            ->leftJoin('canteen_canteen_t d', 'FIND_IN_SET(d.id,b.canteen_ids)')
-            ->leftJoin('staff_type_t e', 'b.t_id=e.id')
+            ->leftJoin('canteen_staff_canteen_t d', 'd.staff_id=b.id')
+            ->leftJoin('canteen_canteen_t e', 'd.canteen_id=e.id')
+            ->leftJoin('staff_type_t f', 'b.t_id=f.id')
             ->where(function ($query) use ($key) {
                 if ($key) {
                     $query->whereLike('username|phone', "%$key%");
@@ -33,10 +34,12 @@ class PunishmentUpdateT extends Model
                 }
             })->where(function ($query) use ($canteen_id) {
                 if ($canteen_id != 0) {
-                    $query->where('d.id', $canteen_id);
+                    $query->where('e.id', $canteen_id);
                 }
             })
-            ->field('date_format(a.create_time ,\'%Y-%m-%d\' ) as date,c.id as company_id,c.name as company_name,b.canteen_ids,group_concat(d.name) as canteen_name,b.t_id,e.name as staff_type,b.id as staff_id,username,phone,a.old_state,a.new_state')
+            ->where('d.state',CommonEnum::STATE_IS_OK)
+            ->field('date_format(a.create_time ,\'%Y-%m-%d\' ) as date,c.id as company_id,c.name as company_name,group_concat(e.id) as canteen_ids,group_concat(e.name) as canteen_name,b.t_id,f.name as staff_type,b.id as staff_id,username,phone,a.old_state,a.new_state')
+            ->order('a.create_time DESC')
             ->group('a.id')
             ->paginate($size, false, ['page' => $page])->toArray();
         return $list;
@@ -69,7 +72,9 @@ class PunishmentUpdateT extends Model
                     $query->where('d.id', $canteen_id);
                 }
             })
+            ->where('d.state',CommonEnum::STATE_IS_OK)
             ->field('date_format(a.create_time ,\'%Y-%m-%d\' ) as date,c.id as company_id,c.name as company_name,b.canteen_ids,group_concat(d.name) as canteen_name,b.t_id,e.name as staff_type,b.id as staff_id,username,phone,a.old_state,a.new_state')
+            ->order('a.create_time DESC')
             ->group('a.id')
             ->select()->toArray();
         return $list;
