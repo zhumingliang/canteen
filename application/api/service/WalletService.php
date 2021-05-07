@@ -831,7 +831,8 @@ class WalletService
                 'dinner_id' => $this->getDinnerID($dinners, $newCanteen[$v[2]], $v[4]),
                 'dinner' => $v[4],
                 'type' => $v[5] == "补扣" ? 2 : 1,
-                'money' => $v[5] == "补扣" ? 0 - $v[6] : $v[6]
+                'money' => $v[5] == "补扣" ? 0 - $v[6] : $v[6],
+                'remark' => empty($v[7]) ? '' : $v[7]
             ]);
         }
 
@@ -885,7 +886,8 @@ class WalletService
                 'dinner_id' => $this->getDinnerID($dinners, $newCanteen[$v[2]], $v[4]),
                 'dinner' => $v[4],
                 'type' => $v[5] == "补扣" ? 2 : 1,
-                'money' => $v[5] == "补扣" ? 0 - $v[7] : $v[7]
+                'money' => $v[5] == "补扣" ? 0 - $v[7] : $v[7],
+                'remark' => empty($v[8]) ? '' : $v[8]
             ]);
         }
 
