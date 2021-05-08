@@ -254,17 +254,17 @@ class DownExcel
 
     public function exportPunishmentRecord($data)
     {
-        $time_begin=$data['time_begin'];
-        $time_end=$data['time_end'];
+        $time_begin = $data['time_begin'];
+        $time_end = $data['time_end'];
         $company_id = $data['company_id'];
         $canteen_id = $data['canteen_id'];
-        $department_id =$data['department_id'];
-        $staff_name=$data['staff_name'];
-        $meal=$data['meal'];
+        $department_id = $data['department_id'];
+        $staff_name = $data['staff_name'];
+        $meal = $data['meal'];
         $downId = $data['down_id'];
         $SCRIPT_FILENAME = $data['SCRIPT_FILENAME'];
-        $punishmentRecord = (new PunishmentService())->ExportPenaltyDetails($time_begin,$time_end,$company_id
-            ,$canteen_id,$department_id,$staff_name,$meal);
+        $punishmentRecord = (new PunishmentService())->ExportPenaltyDetails($time_begin, $time_end, $company_id
+            , $canteen_id, $department_id, $staff_name, $meal);
         $header = ['违规日期', '违规地点', '部门', '姓名', '餐次', '类型', '金额', '状态'];
         $file_name = "惩罚明细";
         $url = (new ExcelService())->makeExcel2($header, $punishmentRecord, $file_name, $SCRIPT_FILENAME);
@@ -556,10 +556,10 @@ class DownExcel
         $reception_state = $data['reception_state'];
         $downId = $data['down_id'];
         $SCRIPT_FILENAME = $data['SCRIPT_FILENAME'];
-        if (!empty($company_id)){
-            if (strpos($company_id,',') !==false){
-                $whereStr .='and FIND_IN_SET(t7.id,"'.$company_id.'")';
-            }else{
+        if (!empty($company_id)) {
+            if (strpos($company_id, ',') !== false) {
+                $whereStr .= 'and FIND_IN_SET(t7.id,"' . $company_id . '")';
+            } else {
                 $whereStr .= 'and t7.id = ' . $company_id . ' ';
             }
         }
@@ -605,6 +605,7 @@ class DownExcel
         $this->saveExcel($downId, $url, $file_name);
 
     }
+
     private
     function receptionsForApplyOutput($data)
     {
@@ -833,6 +834,9 @@ class DownExcel
             case OrderEnum::STATISTIC_BY_STATUS:
                 $info = (new  OrderStatisticServiceV1())->consumptionStatisticByStatus($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id, $phone, $order_type, $version);
                 break;
+            case OrderEnum::STATISTIC_BY_DAY:
+                $info = (new  OrderStatisticServiceV1())->consumptionStatisticByDay($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id, $phone, $order_type, $version);
+                break;
             default:
                 throw new ParameterException();
         }
@@ -912,6 +916,9 @@ class DownExcel
                 break;
             case OrderEnum::STATISTIC_BY_STATUS:
                 $info = (new  OrderStatisticServiceV1())->consumptionStatisticByStatus($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id, $phone, $order_type, $version);
+                break;
+            case OrderEnum::STATISTIC_BY_DAY:
+                $info = (new  OrderStatisticServiceV1())->consumptionStatisticByDay($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id, $phone, $order_type, $version);
                 break;
             default:
                 throw new ParameterException();

@@ -1273,7 +1273,7 @@ class Order extends BaseController
      * @apiParam (请求参数说明) {int} canteen_ids  消费地点，饭堂id/小卖部id：全部传入0
      * @apiParam (请求参数说明) {int} company_ids  企业id：全部，将所有ID用逗号分隔
      * @apiParam (请求参数说明) {int} status  消费类型：全部传入0；1：订餐就餐；2：订餐未就餐；3：未订餐就餐；4：补充操作；5：补扣操作；6：小卖部消费；7：小卖部退款
-     * @apiParam (请求参数说明) {int} type  汇总类型：1：按部门进行汇总；2：按姓名进行汇总；3：按人员类型进行汇总；4：按消费地点进行汇总；5：按消费类型进行汇总
+     * @apiParam (请求参数说明) {int} type  汇总类型：1：按部门进行汇总；2：按姓名进行汇总；3：按人员类型进行汇总；4：按消费地点进行汇总；5：按消费类型进行汇总;6 按照日期进行汇总
      * @apiParam (请求参数说明) {string} time_begin  查询开始时间
      * @apiParam (请求参数说明) {string} time_end  查询结束时间
      * @apiParam (请求参数说明) {string} phone  手机号
@@ -1325,7 +1325,7 @@ class Order extends BaseController
      * @apiParam (请求参数说明) {int} canteen_ids  消费地点，饭堂id/小卖部id：全部传入0
      * @apiParam (请求参数说明) {int} company_ids  企业id：全部，将所有ID用逗号分隔
      * @apiParam (请求参数说明) {int} status  消费类型：全部传入0；1：订餐就餐；2：订餐未就餐；3：未订餐就餐；4：补充操作；5：补扣操作;
-     * @apiParam (请求参数说明) {int} type  汇总类型：1：按部门进行汇总；2：按姓名进行汇总；3：按人员类型进行汇总；4：按消费地点进行汇总；5：按消费类型进行汇总
+     * @apiParam (请求参数说明) {int} type  汇总类型：1：按部门进行汇总；2：按姓名进行汇总；3：按人员类型进行汇总；4：按消费地点进行汇总；5：按消费类型进行汇总;6 按照日期进行汇总
      * @apiParam (请求参数说明) {string} time_begin  查询开始时间
      * @apiParam (请求参数说明) {string} time_end  查询结束时间
      * @apiParam (请求参数说明) {string} phone  手机号

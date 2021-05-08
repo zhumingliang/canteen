@@ -807,10 +807,39 @@ class OrderStatisticService
                 return $this->consumptionStatisticByCanteen($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id, $phone, $order_type, $version);
             case OrderEnum::STATISTIC_BY_STATUS:
                 return $this->consumptionStatisticByStatus($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id, $phone, $order_type, $version);
+            case OrderEnum::STATISTIC_BY_DAY:
+                return $this->consumptionStatisticByDay($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id, $phone, $order_type, $version);
+
             default:
                 throw new ParameterException();
         }
     }
+
+    public function consumptionStatisticByDay($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id, $phone, $order_type, $version)
+    {
+        if ($version == "v1") {
+            $statistic = OrderConsumptionV::consumptionStatisticByDay($canteen_id, $status, $department_id,
+                $username, $staff_type_id, $time_begin,
+                $time_end, $company_id, $phone, $order_type);
+            $statistic = $this->prefixStatistic($statistic, 'consumption_date', $time_begin, $time_end, $status);
+            return $statistic;
+        } else if ($version == "v2") {
+            $statistic = OrderConsumptionAccountV::consumptionStatisticByDay($canteen_id, $status, $department_id,
+                $username, $staff_type_id, $time_begin,
+                $time_end, $company_id, $phone, $order_type);
+            $statistic = $this->prefixStatistic($statistic, 'status', $time_begin, $time_end, $status);
+
+            $accountRecords = AccountRecordsV::consumptionStatisticByDay($canteen_id, $status, $department_id,
+                $username, $staff_type_id, $time_begin,
+                $time_end, $company_id, $phone, $order_type);
+            return [
+                'consumptionRecords' => $statistic,
+                'accountRecords' => $accountRecords
+            ];
+        }
+
+    }
+
 
     public
     function exportConsumptionStatistic($canteen_id, $status, $type,
