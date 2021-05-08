@@ -564,6 +564,27 @@ class WalletService
 
     }
 
+    private function checkSupplementBalanceForUpload($staffId, $canteenId, $money)
+    {
+        $balance = (new WalletService())->getUserBalanceWithStaffId($staffId);
+        if ($money > $balance) {
+            //获取账户设置，检测是否可预支消费
+            $canteenAccount = CanteenAccountT::where('c_id', $canteenId)->find();
+            if (!$canteenAccount) {
+                return false;
+            }
+
+            if ($canteenAccount->type == OrderEnum::OVERDRAFT_NO) {
+                return false;
+            }
+            if ($canteenAccount->limit_money < ($money - $balance)) {
+                return false;
+            }
+        }
+        return true;
+
+    }
+
     public function rechargeSupplementWithAccount($params)
     {
         $admin_id = Token::getCurrentUid();
@@ -715,11 +736,13 @@ class WalletService
     public function checkSupplementData($company_id, $fileName)
     {
         $newCanteen = [];
+        $canteenIds = [];
         $canteens = (new CanteenService())->companyCanteens2($company_id);
         $dinners = DinnerV::companyDinners($company_id);
         $staffs = CompanyStaffT::staffs($company_id);
         foreach ($canteens as $k => $v) {
             array_push($newCanteen, $v['name']);
+            $canteenIds[$v['name']] = $v['id'];
         }
         if (!count($newCanteen) || !count($dinners)) {
             throw  new  SaveException(['msg' => '企业饭堂或者餐次设置异常']);
@@ -774,8 +797,10 @@ class WalletService
             //检测余额是否充足
             if ($v[5] == "补扣") {
                 $staffId = $staffIds[$checkData];
-                $balance = (new WalletService())->getUserBalanceWithStaffId($staffId);
-                if ($balance < $v[6]) {
+                $canteenId = $canteenIds[$v[2]];
+                //$balance = (new WalletService())->getUserBalanceWithStaffId($staffId);
+                $check = (new WalletService())->checkSupplementBalanceForUpload($staffId, $canteenId, $v[6]);
+                if (!$check) {
                     array_push($fail, '第' . $k . '行数据有问题:余额不足');
                     break;
                 }
