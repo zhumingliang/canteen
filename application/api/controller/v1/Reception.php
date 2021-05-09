@@ -13,6 +13,7 @@ use app\api\service\Token;
 use app\api\service\Token as TokenService;
 use app\api\service\v2\DownExcelService;
 use app\lib\enum\CommonEnum;
+use app\lib\exception\UpdateException;
 use think\Container;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\ModelNotFoundException;
@@ -174,7 +175,7 @@ class Reception extends BaseController
             $dtResult = Db::query($sql);
             if (count($dtResult) > 0) {
                 $receptionUrl = $dtResult[0]["url"];
-                $receptionUrl = config('setting.receptionImage'). $receptionUrl;
+                $receptionUrl = config('setting.receptionImage') . $receptionUrl;
                 // $receptionUrl = 'http://' . $_SERVER['HTTP_HOST'] . $receptionUrl;
                 $data = ['url' => $receptionUrl];
                 return json(new SuccessMessageWithData(['data' => $data]));
@@ -238,10 +239,10 @@ class Reception extends BaseController
         $apply_state = Request::param('apply_state');
         $whereStr = '';
 
-        if (!empty($company_id)){
-            if (strpos($company_id,',') !==false){
-                $whereStr .='and FIND_IN_SET(t5.id,"'.$company_id.'")';
-            }else{
+        if (!empty($company_id)) {
+            if (strpos($company_id, ',') !== false) {
+                $whereStr .= 'and FIND_IN_SET(t5.id,"' . $company_id . '")';
+            } else {
                 $whereStr .= 'and t5.id = ' . $company_id . ' ';
             }
         }
@@ -341,10 +342,10 @@ class Reception extends BaseController
                 $whereStr .= 'and t1.status = ' . $reception_state . ' ';
             }
         }
-        if (!empty($company_id)){
-            if (strpos($company_id,',') !==false){
-                $whereStr .='and FIND_IN_SET(t7.id,"'.$company_id.'")';
-            }else{
+        if (!empty($company_id)) {
+            if (strpos($company_id, ',') !== false) {
+                $whereStr .= 'and FIND_IN_SET(t7.id,"' . $company_id . '")';
+            } else {
                 $whereStr .= 'and t7.id = ' . $company_id . ' ';
             }
         }
@@ -585,10 +586,10 @@ class Reception extends BaseController
 
         $whereStr = '';
 
-        if (!empty($company_id)){
-            if (strpos($company_id,',') !==false){
-                $whereStr .='and FIND_IN_SET(t5.id,"'.$company_id.'")';
-            }else{
+        if (!empty($company_id)) {
+            if (strpos($company_id, ',') !== false) {
+                $whereStr .= 'and FIND_IN_SET(t5.id,"' . $company_id . '")';
+            } else {
                 $whereStr .= 'and t5.id = ' . $company_id . ' ';
             }
         }

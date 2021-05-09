@@ -38,7 +38,7 @@ class PunishmentUpdateT extends Model
                 }
             })
             ->where('d.state',CommonEnum::STATE_IS_OK)
-            ->field('date_format(a.create_time ,\'%Y-%m-%d\' ) as date,c.id as company_id,c.name as company_name,group_concat(e.id) as canteen_ids,group_concat(e.name) as canteen_name,b.t_id,f.name as staff_type,b.id as staff_id,username,phone,a.old_state,a.new_state')
+            ->field('a.create_time as date,c.id as company_id,c.name as company_name,group_concat(e.id) as canteen_ids,group_concat(e.name) as canteen_name,b.t_id,f.name as staff_type,b.id as staff_id,username,phone,a.old_state,a.new_state')
             ->order('a.create_time DESC')
             ->group('a.id')
             ->paginate($size, false, ['page' => $page])->toArray();
@@ -73,7 +73,7 @@ class PunishmentUpdateT extends Model
                 }
             })
             ->where('d.state',CommonEnum::STATE_IS_OK)
-            ->field('date_format(a.create_time ,\'%Y-%m-%d\' ) as date,c.id as company_id,c.name as company_name,b.canteen_ids,group_concat(d.name) as canteen_name,b.t_id,e.name as staff_type,b.id as staff_id,username,phone,a.old_state,a.new_state')
+            ->field('a.create_time as date,c.id as company_id,c.name as company_name,b.canteen_ids,group_concat(d.name) as canteen_name,b.t_id,e.name as staff_type,b.id as staff_id,username,phone,a.old_state,a.new_state')
             ->order('a.create_time DESC')
             ->group('a.id')
             ->select()->toArray();
