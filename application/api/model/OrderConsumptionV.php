@@ -679,7 +679,7 @@ IF
                     $query->where('status', $status);
                 }
             })
-            ->field('sum(order_count) as order_count,format(sum(order_money),2) as order_money')
+            ->field('sum(order_count) as allCount,format(sum(order_money),2) as allMoney')
             ->find();
 
         return $statistic;
