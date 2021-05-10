@@ -70,7 +70,7 @@ IF
             ->leftJoin('canteen_staff_type_t g', '`f`.`t_id` = `g`.`id`')
             ->where(function ($query) use ($company_id, $canteen_id) {
                 if (!empty($canteen_id)) {
-                   // $query->where('a.c_id', $canteen_id);
+                    // $query->where('a.c_id', $canteen_id);
                     if (strpos($canteen_id, ',') !== false) {
                         $query->whereIn('a.c_id', $canteen_id);
                     } else {
@@ -147,7 +147,7 @@ IF
                     ->leftJoin('canteen_canteen_t g', '`a`.`canteen_id` = `g`.`id` ')
                     ->where(function ($query2) use ($company_id, $canteen_id) {
                         if (!empty($canteen_id)) {
-                           // $query2->where('a.canteen_id', $canteen_id);
+                            // $query2->where('a.canteen_id', $canteen_id);
                             if (strpos($canteen_id, ',') !== false) {
                                 $query2->whereIn('a.canteen_id', $canteen_id);
                             } else {
@@ -227,7 +227,7 @@ IF
                     ->leftJoin('canteen_staff_type_t g', '`f`.`t_id` = `g`.`id`')
                     ->where(function ($query2) use ($company_id, $canteen_id) {
                         if (!empty($canteen_id)) {
-                           // $query2->where('a.canteen_id', $canteen_id);
+                            // $query2->where('a.canteen_id', $canteen_id);
                             if (strpos($canteen_id, ',') !== false) {
                                 $query2->whereIn('a.canteen_id', $canteen_id);
                             } else {
@@ -574,9 +574,9 @@ IF
         return $statistic;
     }
 
-       public static function consumptionStatisticByDay($canteen_id, $status, $department_id,
-                                                        $username, $staff_type_id, $time_begin,
-                                                        $time_end, $company_id, $phone, $order_type)
+    public static function consumptionStatisticByDay($canteen_id, $status, $department_id,
+                                                     $username, $staff_type_id, $time_begin,
+                                                     $time_end, $company_id, $phone, $order_type)
     {
         $sql = self::getBuildSql($company_id, $canteen_id, $time_begin, $time_end, $department_id,
             $username, $staff_type_id, $phone);
@@ -637,6 +637,28 @@ IF
             ->group('status,dinner')
             ->select()
             ->toArray();*/
+        return $statistic;
+    }
+
+    public static function consumptionStatisticInfo($canteen_id, $status, $department_id,
+                                                    $username, $staff_type_id, $time_begin,
+                                                    $time_end, $company_id, $phone, $order_type)
+    {
+        $sql = self::getBuildSql($company_id, $canteen_id, $time_begin, $time_end, $department_id,
+            $username, $staff_type_id, $phone);
+        $statistic = Db::table($sql . 'a')
+            ->where(function ($query) use ($order_type) {
+                if ($order_type !== 'all') {
+                    $query->where('a.location', $order_type);
+                }
+            })
+            ->where(function ($query) use ($status) {
+                if (!empty($status)) {
+                    $query->where('a.status', $status);
+                }
+            })
+            ->field('sum(order_count) as order_count,format(sum(order_money),2) as order_money')
+            ->find();
         return $statistic;
     }
 

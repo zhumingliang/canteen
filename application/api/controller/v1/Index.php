@@ -52,6 +52,7 @@ use app\api\service\LogService;
 use app\api\service\NextMonthPayService;
 use app\api\service\NoticeService;
 use app\api\service\OrderService;
+use app\api\service\OrderStatisticService;
 use app\api\service\QrcodeService;
 use app\api\service\SendSMSService;
 use app\api\service\ShopService;
@@ -92,14 +93,12 @@ Index extends BaseController
 
     public function index()
     {
-
-          $data = Request::param();
-          $data['down_id'] = 1;
-          $data['company_id'] = 134;
-          $data['version'] = 'v1';
-          $data['SCRIPT_FILENAME']='';
-          (new DownExcel())->exportRechargeTotal($data);
-
+        $page = 5;
+        $size = 3;
+        $time_begin = "2021-05-01";
+        $time_end = "2021-05-10";
+        $a = (new OrderStatisticService())->getPageInfo( $page, $size, $time_begin, $time_end);
+        print_r($a);
         //  (new WalletService())->checkSupplementData(144, dirname($_SERVER['SCRIPT_FILENAME']) . '/static/excel/upload/test.xlsx');
         /* $data['company_id'] = 134;
          $data['u_id'] = 1;

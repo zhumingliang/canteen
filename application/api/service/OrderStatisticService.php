@@ -29,6 +29,7 @@ use app\api\model\OrderTakeoutStatisticV;
 use app\api\model\ShopT;
 use app\api\model\StaffCanteenV;
 use app\api\model\SubFoodT;
+use app\lib\Date;
 use app\lib\enum\CommonEnum;
 use app\lib\enum\OrderEnum;
 use app\lib\enum\StrategyEnum;
@@ -40,6 +41,7 @@ use think\Exception;
 use think\Model;
 use think\Request;
 use function Composer\Autoload\includeFile;
+use function GuzzleHttp\Psr7\str;
 
 class OrderStatisticService
 {
@@ -808,38 +810,88 @@ class OrderStatisticService
             case OrderEnum::STATISTIC_BY_STATUS:
                 return $this->consumptionStatisticByStatus($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id, $phone, $order_type, $version);
             case OrderEnum::STATISTIC_BY_DAY:
-                return $this->consumptionStatisticByDay($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id, $phone, $order_type, $version);
+                return $this->consumptionStatisticByDay($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id, $phone, $order_type, $page, $size, $version);
 
             default:
                 throw new ParameterException();
         }
     }
 
-    public function consumptionStatisticByDay($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id, $phone, $order_type, $version)
+    public function consumptionStatisticByDay($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id, $phone, $order_type, $page, $size, $version)
     {
+
+        $totalBegin = $time_begin;
+        $totalEnd = $time_end;
+        $dayInfo = $this->getPageInfo($page, $size, $time_begin, $time_end);
+        if (empty($dayInfo['start'])) {
+            $dayInfo['data'] = [];
+            return $dayInfo;
+        }
+        $time_begin = $dayInfo['start'];
+        $time_end = $dayInfo['end'];
+
         if ($version == "v1") {
-            $statistic = OrderConsumptionV::consumptionStatisticByDay($canteen_id, $status, $department_id,
+            //获取分页数据记录
+            $statistic = OrderConsumptionV::consumptionStatisticByDayPage($canteen_id, $status, $department_id,
                 $username, $staff_type_id, $time_begin,
                 $time_end, $company_id, $phone, $order_type);
-            $statistic = $this->prefixStatistic($statistic, 'consumption_date', $time_begin, $time_end, $status);
-            return $statistic;
+            //获取数据统计
+            $statistic = $this->prefixStatisticDay($statistic, $time_begin, $time_end);
+            $dayInfo['data'] = $statistic;
+            //获取数据汇总
+            $allStatistic = OrderConsumptionV::consumptionStatisticInfo($canteen_id, $status, $department_id,
+                $username, $staff_type_id, $totalBegin,
+                $totalEnd, $company_id, $phone, $order_type);
+            $dayInfo['statistic'] = $allStatistic;
+            return $dayInfo;
         } else if ($version == "v2") {
             $statistic = OrderConsumptionAccountV::consumptionStatisticByDay($canteen_id, $status, $department_id,
                 $username, $staff_type_id, $time_begin,
                 $time_end, $company_id, $phone, $order_type);
-            $statistic = $this->prefixStatistic($statistic, 'status', $time_begin, $time_end, $status);
-
+            $allStatistic = OrderConsumptionAccountV::consumptionStatisticInfo($canteen_id, $status, $department_id,
+                $username, $staff_type_id, $totalBegin,
+                $totalEnd, $company_id, $phone, $order_type);
             $accountRecords = AccountRecordsV::consumptionStatisticByDay($canteen_id, $status, $department_id,
                 $username, $staff_type_id, $time_begin,
                 $time_end, $company_id, $phone, $order_type);
-            return [
-                'consumptionRecords' => $statistic,
-                'accountRecords' => $accountRecords
-            ];
+            $statistic = $this->prefixStatisticDay($statistic, $time_begin, $time_end, $accountRecords);
+            $dayInfo['data'] = $statistic;
+            $dayInfo['statistic'] = $allStatistic;
+            return $dayInfo;
+
         }
 
     }
 
+    public function getPageInfo($page, $size, $time_begin, $time_end)
+    {
+
+        $total = Date::diffBetweenTwoDays($time_begin, $time_end) + 1;
+        $last_page = ceil($total / $size);
+        $starNumber = $size * ($page - 1);
+        $start = addDay($starNumber, $time_begin);
+        if (strtotime($start) > strtotime($time_end)) {
+            $start = "";
+            $end = "";
+        } else {
+            $end = addDay($size - 1, $start);
+            if (strtotime($end) > strtotime($time_end)) {
+                $end = $time_end;
+            }
+        }
+
+
+        return [
+            'total' => $total,
+            'per_page' => $size,
+            'current_page' => $page >= $last_page ? $last_page : $page,
+            'last_page' => $last_page,
+            'start' => $start,
+            'end' => $end
+        ];
+
+
+    }
 
     public
     function exportConsumptionStatistic($canteen_id, $status, $type,
@@ -1213,7 +1265,7 @@ class OrderStatisticService
                     'statistic' => $v,
                     'time_begin' => $time_begin,
                     'time_end' => $time_end,
-                    $field => $v,
+                    $field => $field == "status" ? $status[$v] : $v,
                     'dinnerStatistic' => $dinnerStatistic
                 ]);
 
@@ -1224,6 +1276,92 @@ class OrderStatisticService
             'allMoney' => round($allMoney, 2),
             'allCount' => $allCount
         ];
+    }
+
+    private
+    function prefixStatisticDay($statistic, $time_begin, $time_end, $accountRecords = [])
+    {
+
+        $data = [];
+        $dayCount = Date::diffBetweenTwoDays($time_begin, $time_end);
+        for ($i = 0; $i <= $dayCount; $i++) {
+            $day = $i ? addDay($i, $time_begin) : $time_begin;
+            $dinnerStatistic = [];
+            foreach ($statistic as $k2 => $v2) {
+                if (strtotime($day) == strtotime($v2["consumption_date"])) {
+                    array_push($dinnerStatistic, [
+                        'statistic_id' => $day,
+                        'dinner_id' => $v2['dinner_id'],
+                        'dinner' => $v2['dinner'],
+                        'order_count' => $v2['order_count'],
+                        'order_money' => round($v2['order_money'], 2)
+                    ]);
+                }
+            }
+            $accountStatistic = [];
+            if (count($accountRecords)) {
+                foreach ($accountRecords as $k3 => $v3) {
+                    if (strtotime($v3['statistic_id']) == strtotime($day)) {
+                        array_push($accountStatistic, $v3);
+                    }
+                }
+
+            }
+            array_push($data, [
+                'statistic_id' => $day,
+                'statistic' => $day,
+                'time_begin' => "/",
+                'time_end' => "/",
+                "consumption_date" => $day,
+                'dinnerStatistic' => $dinnerStatistic,
+                'accountStatistic' => $accountStatistic
+            ]);
+        }
+        return $data;
+
+        if (count($statistic)) {
+            foreach ($statistic as $k => $v) {
+                $orderMoney = round($v['order_money'], 2);
+                $orderCount = $v['order_count'];
+                $allMoney += $orderMoney;
+                $allCount += $orderCount;
+                if (in_array($v[$field], $fieldArr)) {
+                    continue;
+                }
+                if (!key_exists($v['statistic_id'], $fieldArr)) {
+                    $fieldArr[$v['statistic_id']] = $v[$field];
+                }
+                $statistic[$k]['order_money'] = $orderMoney;
+                //$statistic[$k]['status']=$status[$v['status']];
+
+            }
+
+            foreach ($fieldArr as $k => $v) {
+                $dinnerStatistic = [];
+                foreach ($statistic as $k2 => $v2) {
+                    if ($v == $v2[$field]) {
+                        array_push($dinnerStatistic, [
+                            'statistic_id' => $k,
+                            'dinner_id' => $v2['dinner_id'],
+                            'dinner' => $v2['dinner'],
+                            'order_count' => $v2['order_count'],
+                            //'order_money' => $status ? abs($v2['order_money']) : $v2['order_money']]);
+                            'order_money' => round($v2['order_money'], 2)
+                        ]);
+                    }
+                }
+                array_push($data, [
+                    'statistic_id' => $k,
+                    'statistic' => $v,
+                    'time_begin' => $time_begin,
+                    'time_end' => $time_end,
+                    $field => $v,
+                    'dinnerStatistic' => $dinnerStatistic
+                ]);
+
+            }
+        }
+        return $data;
     }
 
 

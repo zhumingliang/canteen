@@ -223,7 +223,7 @@ IF
                     ->leftJoin('canteen_staff_type_t g', '`f`.`t_id` = `g`.`id`')
                     ->where(function ($query2) use ($company_id, $canteen_id) {
                         if (!empty($canteen_id)) {
-                           // $query2->where('a.canteen_id', $canteen_id);
+                            // $query2->where('a.canteen_id', $canteen_id);
                             if (strpos($canteen_id, ',') !== false) {
                                 $query2->whereIn('a.canteen_id', $canteen_id);
                             } else {
@@ -566,9 +566,10 @@ IF
             ->toArray();*/
         return $statistic;
     }
-   public static function consumptionStatisticByDay($canteen_id, $status, $department_id,
-                                                        $username, $staff_type_id, $time_begin,
-                                                        $time_end, $company_id, $phone, $order_type)
+
+    public static function consumptionStatisticByDay($canteen_id, $status, $department_id,
+                                                     $username, $staff_type_id, $time_begin,
+                                                     $time_end, $company_id, $phone, $order_type)
     {
         $sql = self::getBuildSql($company_id, $canteen_id, $time_begin, $time_end, $department_id,
             $username, $staff_type_id, $phone);
@@ -586,6 +587,33 @@ IF
             })
             ->field('consumption_date as statistic_id,status,consumption_date,department,dinner_id,dinner,sum(order_count) as order_count,sum(order_money) as order_money')
             ->group('consumption_date,dinner')
+            ->select()
+            ->toArray();
+        return $statistic;
+    }
+
+    public static function consumptionStatisticByDayPage($canteen_id, $status, $department_id,
+                                                         $username, $staff_type_id, $time_begin,
+                                                         $time_end, $company_id, $phone, $order_type)
+    {
+        $sql = self::getBuildSql($company_id, $canteen_id, $time_begin, $time_end, $department_id,
+            $username, $staff_type_id, $phone);
+
+        $statistic = Db::table($sql . 'a')
+            ->where(function ($query) use ($order_type) {
+                if ($order_type !== 'all') {
+                    $query->where('location', $order_type);
+                }
+            })
+            ->where(function ($query) use ($status) {
+                if (!empty($status)) {
+                    $query->where('status', $status);
+                }
+            })
+            ->field('consumption_date as statistic_id,status,consumption_date,department,dinner_id,dinner,sum(order_count) as order_count,sum(order_money) as order_money')
+            ->group('consumption_date,dinner')
+            ->order('consumption_date')
+            // ->paginate($size, false, ['page' => $page])
             ->select()
             ->toArray();/*  $statistic = self::where(function ($query) use ($company_id, $canteen_id) {
             if (!empty($canteen_id)) {
@@ -632,6 +660,32 @@ IF
             ->toArray();*/
         return $statistic;
     }
+
+    public static function consumptionStatisticInfo($canteen_id, $status, $department_id,
+                                                         $username, $staff_type_id, $time_begin,
+                                                         $time_end, $company_id, $phone, $order_type)
+    {
+        $sql = self::getBuildSql($company_id, $canteen_id, $time_begin, $time_end, $department_id,
+            $username, $staff_type_id, $phone);
+
+        $statistic = Db::table($sql . 'a')
+            ->where(function ($query) use ($order_type) {
+                if ($order_type !== 'all') {
+                    $query->where('location', $order_type);
+                }
+            })
+            ->where(function ($query) use ($status) {
+                if (!empty($status)) {
+                    $query->where('status', $status);
+                }
+            })
+            ->field('sum(order_count) as order_count,format(sum(order_money),2) as order_money')
+            ->find();
+
+        return $statistic;
+    }
+
+
 
     public static function consumptionStatisticByCanteen($canteen_id, $status, $department_id,
                                                          $username, $staff_type_id, $time_begin,
@@ -707,7 +761,6 @@ IF
                                                        $username, $staff_type_id, $time_begin,
                                                        $time_end, $company_id, $phone, $order_type)
     {
-        //$time_end = addDay(1, $time_end);
         $sql = self::getBuildSql($company_id, $canteen_id, $time_begin, $time_end, $department_id,
             $username, $staff_type_id, $phone);
         $statistic = Db::table($sql . 'a')
@@ -725,49 +778,6 @@ IF
             ->group('staff_type_id,dinner')
             ->select()
             ->toArray();
-        /*    $statistic = self::where(function ($query) use ($company_id, $canteen_id) {
-            if (!empty($canteen_id)) {
-                $query->where('canteen_id', $canteen_id);
-            } else {
-                if (strpos($company_id, ',') !== false) {
-                    $query->whereIn('company_id', $company_id);
-                } else {
-                    $query->where('company_id', $company_id);
-                }
-            }
-        })
-            ->where(function ($query) use ($order_type) {
-                if ($order_type !== 'all') {
-                    $query->where('location', $order_type);
-                }
-            })
-            ->where('consumption_date', '>=', $time_begin)
-            ->where('consumption_date', '<=', $time_end)
-            ->where(function ($query) use (
-                $status, $department_id,
-                $username, $staff_type_id, $phone
-            ) {
-                if (!empty($status)) {
-                    $query->where('status', $status);
-                }
-                if (!empty($department_id)) {
-                    $query->where('department_id', $department_id);
-                }
-                if (!empty($phone)) {
-                    $query->where('phone', $phone);
-                }
-                if (!empty($username)) {
-                    $query->where('username', 'like', '%' . $username . '%');
-                }
-                if (!empty($staff_type_id)) {
-                    $query->where('staff_type_id', $staff_type_id);
-                }
-
-            })
-            ->field('staff_type_id as statistic_id,staff_type,dinner_id,dinner,sum(order_count) as order_count,sum(order_money) as order_money')
-            ->group('staff_type_id,dinner')
-            ->select()
-            ->toArray();*/
         return $statistic;
     }
 
