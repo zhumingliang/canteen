@@ -867,6 +867,35 @@ class OrderStatisticService
 
     }
 
+
+    public function exportConsumptionStatisticByDay($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id, $phone, $order_type, $version)
+    {
+
+        if ($version == "v1") {
+            //获取分页数据记录
+            $statistic = OrderConsumptionV::consumptionStatisticByDayPage($canteen_id, $status, $department_id,
+                $username, $staff_type_id, $time_begin,
+                $time_end, $company_id, $phone, $order_type);
+            $statistic = $this->prefixStatistic($statistic, 'consumption_date', $time_begin, $time_end, $status);
+            return $statistic;
+        } else if ($version == "v2") {
+            $statistic = OrderConsumptionAccountV::consumptionStatisticByDay($canteen_id, $status, $department_id,
+                $username, $staff_type_id, $time_begin,
+                $time_end, $company_id, $phone, $order_type);
+            $statistic = $this->prefixStatistic($statistic, 'status', $time_begin, $time_end, $status);
+
+            $accountRecords = AccountRecordsV::consumptionStatisticByDay($canteen_id, $status, $department_id,
+                $username, $staff_type_id, $time_begin,
+                $time_end, $company_id, $phone, $order_type);
+            return [
+                'consumptionRecords' => $statistic,
+                'accountRecords' => $accountRecords
+            ];
+
+        }
+
+    }
+
     public function getPageInfo($page, $size, $time_begin, $time_end)
     {
 
