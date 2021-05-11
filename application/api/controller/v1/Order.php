@@ -533,7 +533,7 @@ class Order extends BaseController
      */    public function consumptionRecords($page = 1, $size = 20)
     {
         $consumption_time = Request::param('consumption_time');
-        $records = (new OrderService())->consumptionRecords($consumption_time, $page, $size);
+        $records = (new OrderService())->consumptioconnRecords($consumption_time, $page, $size);
         return json(new SuccessMessageWithData(['data' => $records]));
     }
 

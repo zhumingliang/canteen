@@ -172,7 +172,7 @@ class ConsumptionRecordsV extends Model
                     ->field("a.id as order_id,d.canteen_id as location_id,c.name as location,'canteen' as order_type,a.create_time,
                     a.ordering_date,b.name as dinner,(0-a.money-a.sub_money) as money, 
                     d.phone,a.count,a.sub_money,d.delivery_fee,d.booking,a.used,
-                    d.type as eating_type,'more' as consumption_type,d.company_id, a.sort_code")
+                    d.type as eating_type,'more' as consumption_type,d.company_id, a.sort_code,1 as supplement_type,d.unused_handel")
                     ->leftJoin('canteen_order_parent_t d', 'a.order_id = d.id')
                     ->leftJoin('canteen_dinner_t b', 'd.dinner_id = b.id')
                     ->leftJoin('canteen_canteen_t c', 'd.canteen_id = c.id')
