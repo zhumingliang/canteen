@@ -139,11 +139,12 @@ class Wallet extends BaseController
      * @apiParam (请求参数说明) {int} department_id 部门id，全部传入0
      * @apiParam (请求参数说明) {String} type 充值途径:目前有：cash：现金；1:微信；2:农行；all：全部
      * @apiSuccessExample {json} 返回样例:
-     * {"msg":"ok","errorCode":0,"code":200,"data":{"total":2,"per_page":20,"current_page":1,"last_page":1,"data":[{"create_time":"2019-10-31 18:32:47","username":null,"money":"200.00","type":"cash","admin":"系统超级管理员","remark":""},{"create_time":"2019-10-31 18:32:48","username":null,"money":"200.00","type":"cash","admin":"系统超级管理员","remark":""}]}}
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"total":1039,"per_page":"1","current_page":1,"last_page":1039,"data":[{"id":164055,"create_time":"2021-05-10 11:54:28","username":"陈思祺","money":28,"type":"现金","admin":"财务部","remark":"","phone":"13421519824","account":"个人账户","department_id":230,"department":"外一科","money_type":1}],"statistic":219964}}
      * @apiSuccess (返回参数说明) {int} total 数据总数
      * @apiSuccess (返回参数说明) {int} per_page 每页多少条数据
      * @apiSuccess (返回参数说明) {int} current_page 当前页码
      * @apiSuccess (返回参数说明) {int} last_page 最后页码
+     * @apiSuccess (返回参数说明) {int} statistic  金额统计
      * @apiSuccess (返回参数说明) {String} create_time 创建时间
      * @apiSuccess (返回参数说明) {String} username  姓名
      * @apiSuccess (返回参数说明) {int} money 充值金额
