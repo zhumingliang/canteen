@@ -16,7 +16,6 @@ class OrderStatisticV extends Model
         $status = [1 => '堂食', 2 => '外卖'];
         return $status[$value];
     }
-
     public static function getSql($time_begin, $time_end, $company_ids, $canteen_id, $dinner_id)
     {
         $sql = Db::table('canteen_order_t')
@@ -34,11 +33,7 @@ class OrderStatisticV extends Model
                     $query->where('a.d_id', $dinner_id);
                 } else {
                     if (!empty($canteen_id)) {
-                        if (strpos($company_ids, ',') !== false) {
-                            $query->whereIn('a.c_id', $canteen_id);
-                        } else {
-                            $query->where('a.c_id', $canteen_id);
-                        }
+                        $query->where('a.c_id', $canteen_id);
                     } else {
                         if (strpos($company_ids, ',') !== false) {
                             $query->whereIn('a.company_id', $company_ids);
@@ -59,27 +54,50 @@ class OrderStatisticV extends Model
                     ->leftJoin('canteen_company_staff_t g', "`b`.`staff_id` = `g`.`id`")
                     ->where('b.ordering_date', ">=", $time_begin)
                     ->where('b.ordering_date', "<=", $time_end)
-                    ->where(function ($query2) use ($company_ids, $canteen_id, $dinner_id) {
+                    ->where(function ($query) use ($company_ids, $canteen_id, $dinner_id) {
                         if (!empty($dinner_id)) {
-                            $query2->where('b.dinner_id', $dinner_id);
+                            $query->where('b.dinner_id', $dinner_id);
                         } else {
                             if (!empty($canteen_id)) {
-                                // $query->where('b.canteen_id', $canteen_id);
-                                if (strpos($company_ids, ',') !== false) {
-                                    $query2->whereIn('b.canteen_id', $canteen_id);
-                                } else {
-                                    $query2->where('b.canteen_id', $canteen_id);
-                                }
+                                $query->where('b.canteen_id', $canteen_id);
                             } else {
                                 if (strpos($company_ids, ',') !== false) {
-                                    $query2->whereIn('b.company_id', $company_ids);
+                                    $query->whereIn('b.company_id', $company_ids);
                                 } else {
-                                    $query2->where('b.company_id', $company_ids);
+                                    $query->where('b.company_id', $company_ids);
                                 }
                             }
                         }
                     })
                     ->where('b.pay', PayEnum::PAY_SUCCESS);
+            })->unionAll(function ($query) use ($time_begin, $time_end, $company_ids, $canteen_id, $dinner_id) {
+                $query->table('canteen_company_staff_t')
+                    ->field("`c`.`id` AS `order_id`,`c`.`count` AS `count`,`c`.`dinner_id` AS `dinner_id`,concat(`e`.`name`,'(接待票)') AS `dinner`,`c`.`canteen_id` AS `canteen_id`,`d`.`name` AS `canteen`,`a`.`company_id` AS `company_id`,`b`.`name` AS `company`,`c`.`ordering_date` AS `ordering_date`,`c`.`user_id` AS `u_id`,`a`.`d_id` AS `department_id`,`g`.`name` AS `department`,`a`.`username` AS `username`,`a`.`phone` AS `phone`,'1' AS `type`,'online' AS `ordering_type`,`f`.`status` AS `state`,`e`.`meal_time_begin` AS `meal_time_begin`,`e`.`meal_time_end` AS `meal_time_end`,'one' AS `consumption_type`,`c`.`money` AS `order_money`,`f`.`status` AS `used`,'1' AS `fixed`,'0' AS `delivery_fee`,'1' AS `booking`")
+                    ->alias('a')
+                    ->leftJoin('canteen_company_t b',"`a`.`company_id`=`b`.id")
+                    ->leftJoin('canteen_reception_t c', "`a`.`id` = `c`.`staff_id`")
+                    ->leftJoin('canteen_canteen_t d', " `c`.`canteen_id` = `d`.`id`")
+                    ->leftJoin('canteen_dinner_t e', "`c`.`dinner_id` = `e`.`id`")
+                    ->leftJoin("canteen_reception_qrcode_t f", "`c`.`id` = `f`.`re_id`")
+                    ->leftJoin("canteen_company_department_t g", "`a`.`d_id` = `g`.`id`")
+                    ->where('c.ordering_date', ">=", $time_begin)
+                    ->where('c.ordering_date', "<=", $time_end)
+                    ->where('c.status', 2)
+                    ->where(function ($query) use ($company_ids, $canteen_id, $dinner_id) {
+                        if (!empty($dinner_id)) {
+                            $query->where('c.dinner_id', $dinner_id);
+                        } else {
+                            if (!empty($canteen_id)) {
+                                $query->where('c.canteen_id', $canteen_id);
+                            } else {
+                                if (strpos($company_ids, ',') !== false) {
+                                    $query->whereIn('b.id', $company_ids);
+                                } else {
+                                    $query->where('b.id', $company_ids);
+                                }
+                            }
+                        }
+                    });
             })->buildSql();
         return $sql;
 

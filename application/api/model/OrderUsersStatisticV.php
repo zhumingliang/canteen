@@ -127,6 +127,63 @@ class OrderUsersStatisticV extends Model
                                 $query2->where('b.department_id', $department_id);
                             }
                         });
+                })
+            ->unionAll(
+                function ($query) use ($canteen_id, $consumption_time, $department_id) {
+                    $query->table("canteen_company_staff_t")
+                        ->alias('a')
+                        ->field("	`c`.`id` AS `id`,
+	`c`.`id` AS `parent_id`,
+	`f`.`code` AS `order_num`,
+	`c`.`canteen_id` AS `c_id`,
+	`c`.`id` AS `order_id`,
+	`c`.`dinner_id` AS `dinner_id`,
+	`c`.`user_id` AS `u_id`,
+	`c`.`ordering_date` AS `ordering_date`,
+	`f`.`status` AS `used`,
+	'1' AS `booking`,
+	`a`.`phone` AS `phone`,
+	`a`.`username` AS `username`,
+	`c`.`count` AS `count`,
+	`c`.`money` AS `money`,
+	'0' AS `sub_money`,
+	'0' AS `delivery_fee`,
+	'1' AS `sort_code`,
+	'1' AS `outsider`,
+	'paid' AS `pay`,
+	'ordering_meals' AS `consumption_type`,
+	'more' AS `strategy_type`,
+	`e`.`meal_time_end` AS `meal_time_end`,
+	'1' AS `order_sort`,
+	'0' AS `meal_money`,
+	'0' AS `meal_sub_money`,
+	`c`.`money` AS `parent_money`,
+	'1' AS `type`,
+	'online' AS `ordering_type`,
+	'4' AS `pay_way`,
+	`c`.`staff_id` AS `staff_id`,
+	`c`.`dinner_id` AS `d_id`,
+	`f`.`status` AS `state`,
+	'1' AS `wx_confirm`,
+	'1' AS `take`,
+	`c`.`code_number` AS `parent_order_num`,
+	`a`.`d_id` AS `department_id`,
+	`g`.`name` AS `department`,
+	'1' AS `fixed`")
+                        ->leftJoin('canteen_company_t b',"`a`.`company_id`=`b`.id")
+                        ->leftJoin('canteen_reception_t c', "`a`.`id` = `c`.`staff_id`")
+                        ->leftJoin('canteen_canteen_t d', " `c`.`canteen_id` = `d`.`id`")
+                        ->leftJoin('canteen_dinner_t e', "`c`.`dinner_id` = `e`.`id`")
+                        ->leftJoin("canteen_reception_qrcode_t f", "`c`.`id` = `f`.`re_id`")
+                        ->leftJoin("canteen_company_department_t g", "`a`.`d_id` = `g`.`id`")
+                        ->where('c.canteen_id', $canteen_id)
+                        ->where('c.ordering_date', $consumption_time)
+                        ->where('f.status',CommonEnum::STATE_IS_OK)
+                        ->where(function ($query2) use ($department_id) {
+                            if ($department_id) {
+                                $query2->where('a.d_id', $department_id);
+                            }
+                        });
                 }
             )
             ->buildSql();
