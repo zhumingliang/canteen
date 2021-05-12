@@ -835,7 +835,7 @@ class DownExcel
                 $info = (new  OrderStatisticServiceV1())->consumptionStatisticByStatus($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id, $phone, $order_type, $version);
                 break;
             case OrderEnum::STATISTIC_BY_DAY:
-                $info = (new  OrderStatisticServiceV1())->consumptionStatisticByDay($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id, $phone, $order_type, $version);
+                $info = (new  OrderStatisticServiceV1())->exportConsumptionStatisticByDay($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id, $phone, $order_type, $version);
                 break;
             default:
                 throw new ParameterException();
