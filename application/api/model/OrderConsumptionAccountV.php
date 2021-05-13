@@ -107,7 +107,8 @@ IF
             ->where('a.state', CommonEnum::STATE_IS_OK)
             ->where('a.pay', PayEnum::PAY_SUCCESS)
             ->where(function ($query) {
-                $query->whereOr('a.used', CommonEnum::STATE_IS_OK)->whereOr('a.unused_handel', CommonEnum::STATE_IS_OK);
+                $query->whereOr('a.used', CommonEnum::STATE_IS_OK)
+                    ->whereOr('a.unused_handel', CommonEnum::STATE_IS_OK);
             })
             ->unionAll(function ($query) use (
                 $company_id, $canteen_id, $time_begin, $time_end, $department_id,

@@ -93,12 +93,11 @@ Index extends BaseController
 
     public function index()
     {
-        $page = 5;
-        $size = 3;
-        $time_begin = "2021-05-01";
-        $time_end = "2021-05-10";
-        $a = (new OrderStatisticService())->getPageInfo( $page, $size, $time_begin, $time_end);
-        print_r($a);
+       /* $data = Request::param();
+        $data['SCRIPT_FILENAME'] = '';
+        $data['down_id'] = '';
+        $data['version'] = 'v2';
+        (new DownExcel())->exportConsumptionStatisticWithAccount($data);*/
         //  (new WalletService())->checkSupplementData(144, dirname($_SERVER['SCRIPT_FILENAME']) . '/static/excel/upload/test.xlsx');
         /* $data['company_id'] = 134;
          $data['u_id'] = 1;

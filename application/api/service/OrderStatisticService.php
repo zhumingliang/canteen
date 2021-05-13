@@ -882,7 +882,7 @@ class OrderStatisticService
             $statistic = OrderConsumptionAccountV::consumptionStatisticByDay($canteen_id, $status, $department_id,
                 $username, $staff_type_id, $time_begin,
                 $time_end, $company_id, $phone, $order_type);
-            $statistic = $this->prefixStatistic($statistic, 'status', $time_begin, $time_end, $status);
+            $statistic = $this->prefixStatistic($statistic, 'consumption_date', $time_begin, $time_end, $status);
 
             $accountRecords = AccountRecordsV::consumptionStatisticByDay($canteen_id, $status, $department_id,
                 $username, $staff_type_id, $time_begin,
@@ -1193,6 +1193,7 @@ class OrderStatisticService
                 array_push($dataList, $data);
             }
         }
+        print_r($dataList);
         array_push($dataList, $endData);
         return $dataList;
     }

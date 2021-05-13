@@ -2968,6 +2968,10 @@ class OrderService extends BaseService
             Db::startTrans();
             if ($consumptionType == "one") {
                 $order = OrderT::get($order_id);
+                if ($order->used == CommonEnum::STATE_IS_OK) {
+
+                    return true;
+                }
                 $staffId = $order->staff_id;
                 if ($staffId == 0) {
                     //外来人员就餐
@@ -3003,6 +3007,9 @@ class OrderService extends BaseService
                     ->where('state', CommonEnum::STATE_IS_OK)
                     ->select();
                 $parentOrder = OrderParentT::get($order_id);
+                if ($parentOrder->used == CommonEnum::STATE_IS_OK) {
+                    return true;
+                }
                 $dinnerId = $parentOrder->dinner_id;
                 $usedTime = date('Y-m-d H:i:s');
                 foreach ($subOrder as $k => $v) {

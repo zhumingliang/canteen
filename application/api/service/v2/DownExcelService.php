@@ -28,7 +28,6 @@ class DownExcelService
                                         $time_begin, $time_end, $company_id,
                                         $phone, $order_type, $excel_type)
     {
-
         $jobData = [
             'excel_type' => $excel_type,
             'canteen_id' => $canteen_id,

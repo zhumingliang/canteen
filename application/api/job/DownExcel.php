@@ -949,10 +949,10 @@ class DownExcel
 
         $header = (new  OrderStatisticServiceV1())->addDinnerAndAccountToHeader($header, $dinner, $accounts);
         $reports = (new  OrderStatisticServiceV1())->prefixConsumptionStatisticWithAccount($statistic, $accountRecords, $accounts, $dinner, $time_begin, $time_end);
-        $reportName = $fileNameArr[$status];
+          $reportName = $fileNameArr[$status];
         $file_name = $reportName . "(" . $time_begin . "-" . $time_end . ")";
-        $url = (new ExcelService())->makeExcel2($header, $reports, $file_name, $SCRIPT_FILENAME);
-        $this->saveExcel($downId, $url, $file_name);
+               $url = (new ExcelService())->makeExcel2($header, $reports, $file_name, $SCRIPT_FILENAME);
+               $this->saveExcel($downId, $url, $file_name);
     }
 
     private
