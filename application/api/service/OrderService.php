@@ -2969,7 +2969,6 @@ class OrderService extends BaseService
             if ($consumptionType == "one") {
                 $order = OrderT::get($order_id);
                 if ($order->used == CommonEnum::STATE_IS_OK) {
-
                     return true;
                 }
                 $staffId = $order->staff_id;

@@ -513,7 +513,28 @@ class DownExcel
         $SCRIPT_FILENAME = $data['SCRIPT_FILENAME'];
         $type = $data['type'];
         $money_type = $data['money_type'];
+        $moneyTypeArr = [
+            0 => "合计金额",
+            1 => "总充值金额",
+            2 => "总退款金额"
+        ];
+        $allMoney = 0;
         $records = RechargeV::exportRechargeRecordsWithAccount($time_begin, $time_end, $type, $admin_id, $username, $company_id, $department_id, $money_type);
+        if (count($records)) {
+            $allMoney = array_sum(array_column($records, 'money'));
+        }
+        array_push($records, [
+            'create_time' => $moneyTypeArr[$money_type],
+            'department' => '',
+            'username' => '',
+            'phone' => '',
+            'account' => '',
+            'money' => $allMoney,
+            'money_type' => '',
+            'type' => '',
+            'admin' => '',
+            'remark' => ''
+        ]);
         $header = ['创建时间', '部门', '姓名', "手机号", '账户名称', '金额', '状态', '充值途径', '充值人员', '备注'];
         $file_name = "充值记录明细-" . $time_begin . "-" . $time_end;
         $url = (new ExcelService())->makeExcel2($header, $records, $file_name, $SCRIPT_FILENAME);
@@ -534,8 +555,28 @@ class DownExcel
         $company_id = $data['company_id'];
         $downId = $data['down_id'];
         $SCRIPT_FILENAME = $data['SCRIPT_FILENAME'];
+        $moneyTypeArr = [
+            0 => "合计金额",
+            1 => "总充值金额",
+            2 => "总退款金额"
+        ];
+        $allMoney = 0;
         $records = RechargeV::exportRechargeRecords($time_begin, $time_end, $type,
             $admin_id, $username, $company_id, $department_id, $money_type);
+        if (count($records)) {
+            $allMoney = array_sum(array_column($records, 'money'));
+        }
+        array_push($records, [
+            'create_time' => $moneyTypeArr[$money_type],
+            'department' => '',
+            'username' => '',
+            'phone' => '',
+            'money' => $allMoney,
+            'money_type' => '',
+            'type' => '',
+            'admin' => '',
+            'remark' => ''
+        ]);
         $header = ['创建时间', '部门', '姓名', '手机号', '金额', "类型", '途径', '充值人员', '备注'];
         $file_name = "充值记录明细-" . $time_begin . "-" . $time_end;
         $url = (new ExcelService())->makeExcel2($header, $records, $file_name, $SCRIPT_FILENAME);
@@ -949,10 +990,10 @@ class DownExcel
 
         $header = (new  OrderStatisticServiceV1())->addDinnerAndAccountToHeader($header, $dinner, $accounts);
         $reports = (new  OrderStatisticServiceV1())->prefixConsumptionStatisticWithAccount($statistic, $accountRecords, $accounts, $dinner, $time_begin, $time_end);
-          $reportName = $fileNameArr[$status];
+        $reportName = $fileNameArr[$status];
         $file_name = $reportName . "(" . $time_begin . "-" . $time_end . ")";
-               $url = (new ExcelService())->makeExcel2($header, $reports, $file_name, $SCRIPT_FILENAME);
-               $this->saveExcel($downId, $url, $file_name);
+        $url = (new ExcelService())->makeExcel2($header, $reports, $file_name, $SCRIPT_FILENAME);
+        $this->saveExcel($downId, $url, $file_name);
     }
 
     private
