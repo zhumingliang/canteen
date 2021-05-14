@@ -291,8 +291,10 @@ class WalletService
 
         $money = RechargeV::rechargeStatistic($time_begin, $time_end,
             $type, $admin_id, $username, $company_id, $department_id, $money_type);
-
-        $records['statistic'] = $money_type ? $money : abs($money);
+        if ($money_type > 0) {
+            $money = abs($money);
+        }
+        $records['statistic'] = $money;
         return $records;
 
     }
