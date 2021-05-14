@@ -350,7 +350,7 @@ class OrderStatisticService
                     'account' => $v['account'],
                     'consumption_type' => $data[$k]['consumption_type'],
                     'dinner' => $v['dinner'],
-                    'money' => sprintf("%.2f", abs($v['money'])),
+                    'money' => $v['type'] == 'recharge' ? 0 - sprintf("%.2f", abs($v['money'])) : sprintf("%.2f", abs($v['money'])),
                     'remark' => $v['remark']
                 ]);
             }
@@ -393,7 +393,7 @@ class OrderStatisticService
                     'canteen' => $v['canteen'],
                     'consumption_type' => $data[$k]['consumption_type'],
                     'dinner' => $v['dinner'],
-                    'money' => sprintf("%.2f", abs($v['money'])),
+                    'money' => $v['type'] == 'recharge' ? 0 - sprintf("%.2f", abs($v['money'])) : sprintf("%.2f", abs($v['money'])),
                     'remark' => $v['remark']
                 ]);
             }
