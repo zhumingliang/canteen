@@ -835,9 +835,9 @@ class OrderStatisticService
             $statistic = OrderConsumptionV::consumptionStatisticByDayPage($canteen_id, $status, $department_id,
                 $username, $staff_type_id, $time_begin,
                 $time_end, $company_id, $phone, $order_type);
-            if (count($statistic)) {
+           // if (count($statistic)) {
                 $statistic = $this->prefixStatisticDay($statistic, $time_begin, $time_end);
-            }
+          //  }
             //获取数据统计
             $dayInfo['data'] = $statistic;
             //获取数据汇总
@@ -856,9 +856,9 @@ class OrderStatisticService
             $accountRecords = AccountRecordsV::consumptionStatisticByDay($canteen_id, $status, $department_id,
                 $username, $staff_type_id, $time_begin,
                 $time_end, $company_id, $phone, $order_type);
-            if (count($statistic)) {
+           // if (count($statistic)) {
                 $statistic = $this->prefixStatisticDay($statistic, $time_begin, $time_end, $accountRecords);
-            }
+          //  }
             $dayInfo['data'] = $statistic;
             $dayInfo['statistic'] = $allStatistic;
             return $dayInfo;
