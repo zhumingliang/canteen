@@ -18,7 +18,7 @@ class RechargeV extends Model
         return '其他';
     }
 
-    /*public function getMoneyAttr($value, $data)
+/*    public function getMoneyAttr($value, $data)
     {
         return abs($value);
     }*/

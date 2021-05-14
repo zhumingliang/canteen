@@ -522,6 +522,9 @@ class DownExcel
         $records = RechargeV::exportRechargeRecordsWithAccount($time_begin, $time_end, $type, $admin_id, $username, $company_id, $department_id, $money_type);
         if (count($records)) {
             $allMoney = array_sum(array_column($records, 'money'));
+            if ($money_type) {
+                $allMoney = abs($allMoney);
+            }
         }
         array_push($records, [
             'create_time' => $moneyTypeArr[$money_type],
@@ -565,6 +568,9 @@ class DownExcel
             $admin_id, $username, $company_id, $department_id, $money_type);
         if (count($records)) {
             $allMoney = array_sum(array_column($records, 'money'));
+            if ($money_type) {
+                $allMoney = abs($allMoney);
+            }
         }
         array_push($records, [
             'create_time' => $moneyTypeArr[$money_type],

@@ -5,948 +5,450 @@ namespace app\api\model;
 
 
 use app\lib\enum\CommonEnum;
-use app\lib\enum\OrderEnum;
 use app\lib\enum\PayEnum;
 use think\Db;
 use think\Model;
 
-class OrderConsumptionV extends Model
+class OrderUsersStatisticV extends Model
 {
 
-    public function getStatusAttr($value)
+
+    public function foods()
     {
-        $status = ['1' => '订餐就餐', 2 => '订餐未就餐', 3 => '未订餐就餐', 4 => '系统补充', 5 => '系统补扣', 6 => "小卖部消费", 7 => "小卖部退款"];
-        return $status[$value];
+        return $this->hasMany('OrderDetailT', 'o_id', 'id');
     }
 
-    public function getOrderMoneyAttr($value)
+    public static function getBuildSql($canteen_id, $consumption_time, $department_id)
     {
-        return round($value, 2);
-
-    }
-
-    public static function getBuildSql($company_id, $canteen_id, $time_begin, $time_end, $department_id,
-                                       $username, $staff_type_id, $phone)
-    {
-        $sql = Db::field("`a`.`id` AS `order_id`,
-	`a`.`type` AS `type`,
+        $subQuery = Db::table('canteen_order_t')
+            ->alias('a')
+            ->field("	`a`.`id` AS `id`,
+	`a`.`id` AS `parent_id`,
+	`a`.`order_num` AS `order_num`,
+	`a`.`c_id` AS `c_id`,
+	`a`.`id` AS `order_id`,
 	`a`.`d_id` AS `dinner_id`,
-	`b`.`name` AS `dinner`,
-	`a`.`c_id` AS `canteen_id`,
-	`c`.`name` AS `canteen`,
-	`a`.`company_id` AS `company_id`,
-	`d`.`name` AS `company`,
-	`a`.`ordering_date` AS `consumption_date`,
-	`a`.`department_id` AS `department_id`,
-	`e`.`name` AS `department`,
-	`f`.`username` AS `username`,
-	`f`.`phone` AS `phone`,
-IF
-	(
-		( `a`.`booking` = 2 ),
-		3,
-	IF
-		(
-			( `a`.`used` = 2 ),
-			2,
-			1 
-		) 
-	) AS `status`,
-	(
-		( `a`.`money` + `a`.`sub_money` ) + `a`.`delivery_fee` 
-	) AS `order_money`,
-	`f`.`t_id` AS `staff_type_id`,
-	`g`.`name` AS `staff_type`,
-	`a`.`count` AS `order_count`,
+	`a`.`u_id` AS `u_id`,
+	`a`.`ordering_date` AS `ordering_date`,
+	`a`.`used` AS `used`,
+	`a`.`booking` AS `booking`,
+	`a`.`phone` AS `phone`,
+	`b`.`username` AS `username`,
+	`a`.`count` AS `count`,
+	`a`.`money` AS `money`,
+	`a`.`sub_money` AS `sub_money`,
+	`a`.`delivery_fee` AS `delivery_fee`,
+	`a`.`sort_code` AS `sort_code`,
+	`a`.`outsider` AS `outsider`,
+	`a`.`pay` AS `pay`,
+	`a`.`consumption_type` AS `consumption_type`,
+	'one' AS `strategy_type`,
+	`c`.`meal_time_end` AS `meal_time_end`,
+	1 AS `order_sort`,
+	`a`.`meal_money` AS `meal_money`,
+	`a`.`meal_sub_money` AS `meal_sub_money`,
+	( `a`.`money` + `a`.`sub_money` ) AS `parent_money`,
+	`a`.`type` AS `type`,
+	`a`.`ordering_type` AS `ordering_type`,
+	`a`.`pay_way` AS `pay_way`,
 	`a`.`staff_id` AS `staff_id`,
-	'canteen' AS `location` ")
-            ->table('canteen_order_t')->alias('a')
-            ->leftJoin('canteen_dinner_t b', '`a`.`d_id` = `b`.`id`')
-            ->leftJoin('canteen_canteen_t c', '`a`.`c_id` = `c`.`id` ')
-            ->leftJoin('canteen_company_t d', '`a`.`company_id` = `d`.`id`')
-            ->leftJoin('canteen_company_department_t e', '`a`.`department_id` = `e`.`id`')
-            ->leftJoin('canteen_company_staff_t f', '`a`.`staff_id` = `f`.`id` ')
-            ->leftJoin('canteen_staff_type_t g', '`f`.`t_id` = `g`.`id`')
-            ->where(function ($query) use ($company_id, $canteen_id) {
-                if (!empty($canteen_id)) {
-                    //$query->where('a.c_id', $canteen_id);
-                    if (strpos($canteen_id, ',') !== false) {
-                        $query->whereIn('a.c_id', $canteen_id);
-                    } else {
-                        $query->where('a.c_id', $canteen_id);
-                    }
-                } else {
-                    if (strpos($company_id, ',') !== false) {
-                        $query->whereIn('a.company_id', $company_id);
-                    } else {
-                        $query->where('a.company_id', $company_id);
-                    }
-                }
-            })
-            ->where('a.ordering_date', '>=', $time_begin)
-            ->where('a.ordering_date', '<=', $time_end)
-            ->where(function ($query) use (
-                $department_id,
-                $username, $staff_type_id, $phone
-            ) {
-                if (!empty($department_id)) {
+	`a`.`d_id` AS `d_id`,
+	`a`.`state` AS `state`,
+	`a`.`wx_confirm` AS `wx_confirm`,
+	`a`.`take` AS `take`,
+	`a`.`order_num` AS `parent_order_num`,
+	`a`.`department_id` AS `department_id`,
+	`d`.`name` AS `department`,
+	`a`.`fixed` AS `fixed` ")
+            ->leftJoin('canteen_company_staff_t b', "a.staff_id = b.id")
+            ->leftJoin('canteen_dinner_t c', "a.d_id = c.id")
+            ->leftJoin('canteen_company_department_t d', "a.department_id = d.id")
+            ->where('a.c_id', $canteen_id)
+            ->where('a.pay', PayEnum::PAY_SUCCESS)
+            ->where('a.ordering_date', $consumption_time)
+            ->where('a.state',CommonEnum::STATE_IS_OK)
+            ->where(function ($query) use ($department_id) {
+                if ($department_id) {
                     $query->where('a.department_id', $department_id);
                 }
-                if (!empty($phone)) {
-                    $query->where('f.phone', $phone);
-                }
-                if (!empty($username)) {
-                    $query->where('f.username', 'like', '%' . $username . '%');
-                }
-                if (!empty($staff_type_id)) {
-                    $query->where('a.staff_type_id', $staff_type_id);
-                }
-
             })
-            ->where('a.state', CommonEnum::STATE_IS_OK)
-            ->where('a.pay', PayEnum::PAY_SUCCESS)
-            ->unionAll(function ($query) use (
-                $company_id, $canteen_id, $time_begin, $time_end, $department_id,
-                $username, $staff_type_id, $phone
-            ) {
-                $query->field("`a`.`id` AS `order_id`,
-	1 AS `type`,
-	`a`.`dinner_id` AS `dinner_id`,
-	`f`.`name` AS `dinner`,
-	`a`.`canteen_id` AS `canteen_id`,
-	`g`.`name` AS `canteen`,
-	`a`.`company_id` AS `company_id`,
-	`b`.`name` AS `company`,
-	`a`.`consumption_date` AS `consumption_date`,
-	`c`.`d_id` AS `department_id`,
-	`d`.`name` AS `department`,
+            ->unionAll(
+                function ($query) use ($canteen_id, $consumption_time, $department_id) {
+                    $query->table("canteen_order_sub_t")
+                        ->alias('a')
+                        ->field("	`a`.`id` AS `id`,
+	`a`.`order_id` AS `parent_id`,
+	`a`.`order_num` AS `order_num`,
+	`b`.`canteen_id` AS `c_id`,
+	`a`.`order_id` AS `order_id`,
+	`b`.`dinner_id` AS `dinner_id`,
+	`b`.`u_id` AS `u_id`,
+	`b`.`ordering_date` AS `ordering_date`,
+	`a`.`used` AS `used`,
+	`b`.`booking` AS `booking`,
+	`b`.`phone` AS `phone`,
 	`c`.`username` AS `username`,
-	`c`.`phone` AS `phone`,
-IF
-	(
-		( `a`.`type` = 1 ),
-		4,
-		5 
-	) AS `status`,
-	( 0 - `a`.`money` ) AS `order_money`,
-	`c`.`t_id` AS `staff_type_id`,
-	`e`.`name` AS `staff_type`,
-	1 AS `order_count`,
-	`a`.`staff_id` AS `staff_id`,
-	'canteen' AS `location` ")
-                    ->table('canteen_recharge_supplement_t')->alias('a')
-                    ->leftJoin('canteen_company_t b', "`a`.`company_id` = `b`.`id`")
-                    ->leftJoin('canteen_company_staff_t c', "`a`.`staff_id` = `c`.`id`")
-                    ->leftJoin('canteen_company_department_t d', "`c`.`d_id` = `d`.`id`")
-                    ->leftJoin('canteen_staff_type_t e', " `c`.`t_id` = `e`.`id`")
-                    ->leftJoin('canteen_dinner_t f', '`a`.`dinner_id` = `f`.`id`')
-                    ->leftJoin('canteen_canteen_t g', '`a`.`canteen_id` = `g`.`id` ')
-                    ->where(function ($query2) use ($company_id, $canteen_id) {
-                        if (!empty($canteen_id)) {
-                            if (strpos($canteen_id, ',') !== false) {
-                                $query2->whereIn('a.canteen_id', $canteen_id);
-                            } else {
-                                $query2->where('a.canteen_id', $canteen_id);
-                            }
-                        } else {
-                            if (strpos($company_id, ',') !== false) {
-                                $query2->whereIn('a.company_id', $company_id);
-                            } else {
-                                $query2->where('a.company_id', $company_id);
-                            }
-                        }
-                    })
-                    ->where('a.consumption_date', '>=', $time_begin)
-                    ->where('a.consumption_date', '<=', $time_end)
-                    ->where(function ($query2) use (
-                        $department_id,
-                        $username, $staff_type_id, $phone
-                    ) {
-                        if (!empty($department_id)) {
-                            $query2->where('c.d_id', $department_id);
-                        }
-                        if (!empty($phone)) {
-                            $query2->where('c.phone', $phone);
-                        }
-                        if (!empty($username)) {
-                            $query2->where('c.username', 'like', '%' . $username . '%');
-                        }
-                        if (!empty($staff_type_id)) {
-                            $query2->where('c.t_id', $staff_type_id);
-                        }
-
-                    });
-            })->unionAll(function ($query) use (
-                $company_id, $canteen_id, $time_begin, $time_end, $department_id,
-                $username, $staff_type_id, $phone
-            ) {
-                $query->field("`h`.`id` AS `order_id`,
-	`a`.`type` AS `type`,
-	`a`.`dinner_id` AS `dinner_id`,
-	`b`.`name` AS `dinner`,
-	`a`.`canteen_id` AS `canteen_id`,
-	`c`.`name` AS `canteen`,
-	`a`.`company_id` AS `company_id`,
-	`d`.`name` AS `company`,
-	`a`.`ordering_date` AS `consumption_date`,
-	`a`.`department_id` AS `department_id`,
+	`a`.`count` AS `count`,
+	`a`.`money` AS `money`,
+	`a`.`sub_money` AS `sub_money`,
+	`b`.`delivery_fee` AS `delivery_fee`,
+	`a`.`sort_code` AS `sort_code`,
+	`b`.`outsider` AS `outsider`,
+	`b`.`pay` AS `pay`,
+	`a`.`consumption_type` AS `consumption_type`,
+	'more' AS `strategy_type`,
+	`d`.`meal_time_end` AS `meal_time_end`,
+	`a`.`order_sort` AS `order_sort`,
+	`a`.`meal_money` AS `meal_money`,
+	`a`.`meal_sub_money` AS `meal_sub_money`,
+	( `b`.`money` + `b`.`sub_money` ) AS `parent_money`,
+	`b`.`type` AS `type`,
+	`b`.`ordering_type` AS `ordering_type`,
+	`a`.`pay_way` AS `pay_way`,
+	`b`.`staff_id` AS `staff_id`,
+	`b`.`dinner_id` AS `d_id`,
+	`a`.`state` AS `state`,
+	`a`.`wx_confirm` AS `wx_confirm`,
+	`a`.`take` AS `take`,
+	`b`.`order_num` AS `parent_order_num`,
+	`b`.`department_id` AS `department_id`,
 	`e`.`name` AS `department`,
-	`f`.`username` AS `username`,
-	`f`.`phone` AS `phone`,
-IF
-	(
-		( `a`.`booking` = 2 ),
-		3,
-	IF
-		(
-			( `h`.`used` = 2 ),
-			2,
-			1 
-		) 
-	) AS `status`,
-	(
-		( `h`.`money` + `h`.`sub_money` ) + ( `a`.`delivery_fee` / `a`.`count` ) 
-	) AS `order_money`,
-	`f`.`t_id` AS `staff_type_id`,
-	`g`.`name` AS `staff_type`,
-	`h`.`count` AS `order_count`,
-	`a`.`staff_id` AS `staff_id`,
-	'canteen' AS `location` ")
-                    ->table('canteen_order_sub_t')->alias('h')
-                    ->leftJoin('canteen_order_parent_t a', "`h`.`order_id` = `a`.`id`")
-                    ->leftJoin('canteen_dinner_t b', '`a`.`dinner_id` = `b`.`id`')
-                    ->leftJoin('canteen_canteen_t c', '`a`.`canteen_id` = `c`.`id` ')
-                    ->leftJoin('canteen_company_t d', '`a`.`company_id` = `d`.`id`')
-                    ->leftJoin('canteen_company_department_t e', '`a`.`department_id` = `e`.`id`')
-                    ->leftJoin('canteen_company_staff_t f', '`a`.`staff_id` = `f`.`id` ')
-                    ->leftJoin('canteen_staff_type_t g', '`f`.`t_id` = `g`.`id`')
-                    ->where(function ($query2) use ($company_id, $canteen_id) {
-                        if (!empty($canteen_id)) {
-                            // $query2->where('a.canteen_id', $canteen_id);
-                            if (strpos($canteen_id, ',') !== false) {
-                                $query2->whereIn('a.canteen_id', $canteen_id);
-                            } else {
-                                $query2->where('a.canteen_id', $canteen_id);
+	`b`.`fixed` AS `fixed`")
+                        ->leftJoin('canteen_order_parent_t b', "a.order_id = b.id")
+                        ->leftJoin('canteen_company_staff_t c', "b.staff_id = c.id")
+                        ->leftJoin('canteen_dinner_t d', "b.dinner_id = d.id")
+                        ->leftJoin('canteen_company_department_t e', "b.department_id = e.id")
+                        ->where('b.canteen_id', $canteen_id)
+                        ->where('b.pay', PayEnum::PAY_SUCCESS)
+                        ->where('b.ordering_date', $consumption_time)
+                        ->where('a.state',CommonEnum::STATE_IS_OK)
+                        ->where(function ($query2) use ($department_id) {
+                            if ($department_id) {
+                                $query2->where('b.department_id', $department_id);
                             }
-                        } else {
-                            if (strpos($company_id, ',') !== false) {
-                                $query2->whereIn('a.company_id', $company_id);
-                            } else {
-                                $query2->where('a.company_id', $company_id);
-                            }
-                        }
-                    })
-                    ->where('a.ordering_date', '>=', $time_begin)
-                    ->where('a.ordering_date', '<=', $time_end)
-                    ->where(function ($query2) use (
-                        $department_id,
-                        $username, $staff_type_id, $phone
-                    ) {
-                        if (!empty($department_id)) {
-                            $query2->where('f.d_id', $department_id);
-                        }
-                        if (!empty($phone)) {
-                            $query2->where('f.phone', $phone);
-                        }
-                        if (!empty($username)) {
-                            $query2->where('f.username', 'like', '%' . $username . '%');
-                        }
-                        if (!empty($staff_type_id)) {
-                            $query2->where('f.t_id', $staff_type_id);
-                        }
-                    })
-                    ->where('h.state', CommonEnum::STATE_IS_OK)
-                    ->where('a.pay', PayEnum::PAY_SUCCESS);
-
-            })->unionAll(function ($query) use (
-                $company_id, $canteen_id, $time_begin, $time_end, $department_id,
-                $username, $staff_type_id, $phone
-            ) {
-                $query->field("	`a`.`id` AS `order_id`,
-	1 AS `type`,
-	0 AS `dinner_id`,
-IF
-	(
-		( `a`.`money` > 0 ),
-		'小卖部消费',
-		'小卖部退款' 
-	) AS `dinner`,
-	`a`.`shop_id` AS `canteen_id`,
-	`d`.`name` AS `canteen`,
-	`a`.`company_id` AS `company_id`,
-	`e`.`name` AS `company`,
-	date_format( `a`.`create_time`, '%Y%-%m%-%d' ) AS `consumption_date`,
-	`b`.`d_id` AS `department_id`,
-	`c`.`name` AS `department`,
-	`b`.`username` AS `username`,
+                        });
+                })
+            ->unionAll(
+                function ($query) use ($canteen_id, $consumption_time, $department_id) {
+                    $query->table("canteen_company_staff_t")
+                        ->alias('a')
+                        ->field("	`c`.`id` AS `id`,
+	`c`.`id` AS `parent_id`,
+	`f`.`code` AS `order_num`,
+	`c`.`canteen_id` AS `c_id`,
+	`c`.`id` AS `order_id`,
+	`c`.`dinner_id` AS `dinner_id`,
+	`c`.`user_id` AS `u_id`,
+	`c`.`ordering_date` AS `ordering_date`,
+	`f`.`status` AS `used`,
+	'1' AS `booking`,
 	`a`.`phone` AS `phone`,
-IF
-	(
-		( `a`.`money` > 0 ),
-		6,
-		7 
-	) AS `status`,
-	`a`.`money` AS `order_money`,
-	`b`.`t_id` AS `staff_type_id`,
-	`f`.`name` AS `staff_type`,
-	1 AS `order_count`,
-	`a`.`staff_id` AS `staff_id`,
-	'shop' AS `location` ")
-                    ->table('canteen_shop_order_t')->alias('a')
-                    ->leftJoin('canteen_company_staff_t b', "`a`.`staff_id` = `b`.`id`")
-                    ->leftJoin('canteen_company_department_t c', '`b`.`d_id` = `c`.`id`')
-                    ->leftJoin('canteen_shop_t d', '`a`.`shop_id` = `d`.`id`')
-                    ->leftJoin('canteen_company_t e', ' `a`.`company_id` = `e`.`id`')
-                    ->leftJoin('canteen_staff_type_t f', '`b`.`t_id` = `f`.`id`')
-                    ->where(function ($query2) use ($company_id, $canteen_id) {
-                        if (!empty($canteen_id)) {
-                            $query2->where('a.shop_id', $canteen_id);
-                        } else {
-                            if (strpos($company_id, ',') !== false) {
-                                $query2->whereIn('a.company_id', $company_id);
-                            } else {
-                                $query2->where('a.company_id', $company_id);
+	`a`.`username` AS `username`,
+	`c`.`count` AS `count`,
+	`c`.`money` AS `money`,
+	'0' AS `sub_money`,
+	'0' AS `delivery_fee`,
+	'1' AS `sort_code`,
+	'1' AS `outsider`,
+	'paid' AS `pay`,
+	'ordering_meals' AS `consumption_type`,
+	'more' AS `strategy_type`,
+	`e`.`meal_time_end` AS `meal_time_end`,
+	'1' AS `order_sort`,
+	'0' AS `meal_money`,
+	'0' AS `meal_sub_money`,
+	`c`.`money` AS `parent_money`,
+	'1' AS `type`,
+	'online' AS `ordering_type`,
+	'4' AS `pay_way`,
+	`c`.`staff_id` AS `staff_id`,
+	`c`.`dinner_id` AS `d_id`,
+	'1' AS `state`,
+	'1' AS `wx_confirm`,
+	'1' AS `take`,
+	`c`.`code_number` AS `parent_order_num`,
+	`a`.`d_id` AS `department_id`,
+	`g`.`name` AS `department`,
+	'1' AS `fixed`")
+                        ->leftJoin('canteen_company_t b',"`a`.`company_id`=`b`.id")
+                        ->leftJoin('canteen_reception_t c', "`a`.`id` = `c`.`staff_id`")
+                        ->leftJoin('canteen_canteen_t d', " `c`.`canteen_id` = `d`.`id`")
+                        ->leftJoin('canteen_dinner_t e', "`c`.`dinner_id` = `e`.`id`")
+                        ->leftJoin("canteen_reception_qrcode_t f", "`c`.`id` = `f`.`re_id`")
+                        ->leftJoin("canteen_company_department_t g", "`a`.`d_id` = `g`.`id`")
+                        ->where('c.canteen_id', $canteen_id)
+                        ->where('c.ordering_date', $consumption_time)
+                        ->where('f.status',CommonEnum::STATE_IS_OK)
+                        ->where(function ($query2) use ($department_id) {
+                            if ($department_id) {
+                                $query2->where('a.d_id', $department_id);
                             }
-                        }
-                    })
-                    ->where('a.create_time', '>=', $time_begin)
-                    ->where('a.create_time', '<=', addDay(1, $time_end))
-                    ->where(function ($query2) use (
-                        $department_id,
-                        $username, $staff_type_id, $phone
-                    ) {
-                        if (!empty($department_id)) {
-                            $query2->where('b.d_id', $department_id);
-                        }
-                        if (!empty($phone)) {
-                            $query2->where('b.phone', $phone);
-                        }
-                        if (!empty($username)) {
-                            $query2->where('b.username', 'like', '%' . $username . '%');
-                        }
-                        if (!empty($staff_type_id)) {
-                            $query2->where('b.t_id', $staff_type_id);
-                        }
-                    })
-                    ->where('a.state', CommonEnum::STATE_IS_OK);
-
-            })->buildSql();
-        return $sql;
+                        });
+                }
+            )
+            ->buildSql();
+        return $subQuery;
     }
 
-    public static function consumptionStatisticByDepartment($canteen_id, $status, $department_id,
-                                                            $username, $staff_type_id, $time_begin,
-                                                            $time_end, $company_id, $phone, $order_type)
+
+    public static function getBuildSql2($canteen_id, $dinner_id, $consumption_time, $consumption_type, $department_id)
     {
-        /* $statistic = self::where(function ($query) use ($company_id, $canteen_id) {
-             if (!empty($canteen_id)) {
-                 $query->where('canteen_id', $canteen_id);
-             } else {
-                 if (strpos($company_id, ',') !== false) {
-                     $query->whereIn('company_id', $company_id);
-                 } else {
-                     $query->where('company_id', $company_id);
+        $subQuery = Db::table('canteen_order_t')
+            ->alias('a')
+            ->field("	`a`.`id` AS `id`,
+	`a`.`id` AS `parent_id`,
+	`a`.`order_num` AS `order_num`,
+	`a`.`c_id` AS `c_id`,
+	`a`.`id` AS `order_id`,
+	`a`.`d_id` AS `dinner_id`,
+	`a`.`u_id` AS `u_id`,
+	`a`.`ordering_date` AS `ordering_date`,
+	`a`.`used` AS `used`,
+	`a`.`booking` AS `booking`,
+	`a`.`phone` AS `phone`,
+	`b`.`username` AS `username`,
+	`a`.`count` AS `count`,
+	`a`.`money` AS `money`,
+	`a`.`sub_money` AS `sub_money`,
+	`a`.`delivery_fee` AS `delivery_fee`,
+	`a`.`sort_code` AS `sort_code`,
+	`a`.`outsider` AS `outsider`,
+	`a`.`pay` AS `pay`,
+	`a`.`consumption_type` AS `consumption_type`,
+	'one' AS `strategy_type`,
+	`c`.`meal_time_end` AS `meal_time_end`,
+	1 AS `order_sort`,
+	`a`.`meal_money` AS `meal_money`,
+	`a`.`meal_sub_money` AS `meal_sub_money`,
+	( `a`.`money` + `a`.`sub_money` ) AS `parent_money`,
+	`a`.`type` AS `type`,
+	`a`.`ordering_type` AS `ordering_type`,
+	`a`.`pay_way` AS `pay_way`,
+	`a`.`staff_id` AS `staff_id`,
+	`a`.`d_id` AS `d_id`,
+	`a`.`state` AS `state`,
+	`a`.`wx_confirm` AS `wx_confirm`,
+	`a`.`take` AS `take`,
+	`a`.`order_num` AS `parent_order_num`,
+	`a`.`department_id` AS `department_id`,
+	`d`.`name` AS `department`,
+	`a`.`fixed` AS `fixed` ")
+            ->leftJoin('canteen_company_staff_t b', "a.staff_id = b.id")
+            ->leftJoin('canteen_dinner_t c', "a.d_id = c.id")
+            ->leftJoin('canteen_company_department_t d', "a.department_id = d.id")
+            ->where(function ($query) use ($dinner_id) {
+                if ($dinner_id) {
+                    $query->where('a.d_id', $dinner_id);
+                }
+            })
+            //   ->where('a.c_id', $canteen_id)
+            ->where('a.pay', PayEnum::PAY_SUCCESS)
+            ->where('a.ordering_date', $consumption_time)
+            ->where('a.state',CommonEnum::STATE_IS_OK)
+            ->where(function ($query) use ($consumption_type) {
+                if ($consumption_type == 'used') {
+                    $query->where('a.booking', CommonEnum::STATE_IS_OK)
+                        ->where('a.used', CommonEnum::STATE_IS_OK);
+                } else if ($consumption_type == 'noOrdering') {
+                    $query->where('a.booking', CommonEnum::STATE_IS_FAIL);
+                } else if ($consumption_type == 'orderingNoMeal') {
+                    $query->where('a.used', CommonEnum::STATE_IS_FAIL);
+                }
+            })
+            ->where(function ($query) use ($department_id) {
+                if ($department_id) {
+                    $query->where('a.department_id', $department_id);
+                }
+            })
+            ->unionAll(
+                function ($query) use ($canteen_id, $consumption_time, $department_id,$dinner_id,$consumption_type) {
+                    $query->table("canteen_order_sub_t")
+                        ->alias('a')
+                        ->field("	`a`.`id` AS `id`,
+	`a`.`order_id` AS `parent_id`,
+	`a`.`order_num` AS `order_num`,
+	`b`.`canteen_id` AS `c_id`,
+	`a`.`order_id` AS `order_id`,
+	`b`.`dinner_id` AS `dinner_id`,
+	`b`.`u_id` AS `u_id`,
+	`b`.`ordering_date` AS `ordering_date`,
+	`a`.`used` AS `used`,
+	`b`.`booking` AS `booking`,
+	`b`.`phone` AS `phone`,
+	`c`.`username` AS `username`,
+	`a`.`count` AS `count`,
+	`a`.`money` AS `money`,
+	`a`.`sub_money` AS `sub_money`,
+	`b`.`delivery_fee` AS `delivery_fee`,
+	`a`.`sort_code` AS `sort_code`,
+	`b`.`outsider` AS `outsider`,
+	`b`.`pay` AS `pay`,
+	`a`.`consumption_type` AS `consumption_type`,
+	'more' AS `strategy_type`,
+	`d`.`meal_time_end` AS `meal_time_end`,
+	`a`.`order_sort` AS `order_sort`,
+	`a`.`meal_money` AS `meal_money`,
+	`a`.`meal_sub_money` AS `meal_sub_money`,
+	( `b`.`money` + `b`.`sub_money` ) AS `parent_money`,
+	`b`.`type` AS `type`,
+	`b`.`ordering_type` AS `ordering_type`,
+	`a`.`pay_way` AS `pay_way`,
+	`b`.`staff_id` AS `staff_id`,
+	`b`.`dinner_id` AS `d_id`,
+	`a`.`state` AS `state`,
+	`a`.`wx_confirm` AS `wx_confirm`,
+	`a`.`take` AS `take`,
+	`b`.`order_num` AS `parent_order_num`,
+	`b`.`department_id` AS `department_id`,
+	`e`.`name` AS `department`,
+	`b`.`fixed` AS `fixed`")
+                        ->leftJoin('canteen_order_parent_t b', "a.order_id = b.id")
+                        ->leftJoin('canteen_company_staff_t c', "b.staff_id = c.id")
+                        ->leftJoin('canteen_dinner_t d', "b.dinner_id = d.id")
+                        ->leftJoin('canteen_company_department_t e', "b.department_id = e.id")
+                        ->where(function ($query) use ($dinner_id) {
+                            if ($dinner_id) {
+                                $query->where('b.dinner_id', $dinner_id);
+                            }
+                        })
+                        //  ->where('b.canteen_id', $canteen_id)
+                        ->where('b.pay', PayEnum::PAY_SUCCESS)
+                        ->where('b.ordering_date', $consumption_time)
+                        ->where('a.state',CommonEnum::STATE_IS_OK)
+                        ->where(function ($query2) use ($consumption_type) {
+                            if ($consumption_type == 'used') {
+                                $query2->where('b.booking', CommonEnum::STATE_IS_OK)
+                                    ->where('a.used', CommonEnum::STATE_IS_OK);
+                            } else if ($consumption_type == 'noOrdering') {
+                                $query2->where('b.booking', CommonEnum::STATE_IS_FAIL);
+                            } else if ($consumption_type == 'orderingNoMeal') {
+                                $query2->where('a.used', CommonEnum::STATE_IS_FAIL);
+                            }
+                        })
+                        ->where(function ($query2) use ($department_id) {
+                            if ($department_id) {
+                                $query2->where('b.department_id', $department_id);
+                            }
+                        });
+                }
+            )
+            ->buildSql();
+        return $subQuery;
+    }
+
+    public static function orderUsers($canteen_id, $dinner_id, $consumption_time, $consumption_type, $key, $page, $size, $department_id)
+    {
+
+        $sql = self::getBuildSql2($canteen_id, $dinner_id, $consumption_time, $consumption_type, $department_id);
+        $statistic = Db::table($sql . ' a')
+            ->where(function ($query) use ($key) {
+                if ($key) {
+                    $keyRes = (int)$key;
+                    if ($keyRes == 0) {
+                        $query->where('username|sort_code', 'like', $key);
+                    } else {
+                        $query->whereOr('parent_id', 'like', $keyRes)
+                            ->whereOr('phone', 'like', '%' . $keyRes . '%');
+                    }
+                }
+            })
+            ->field('order_id as id,username,order_num,phone,sum(count) as count,strategy_type as consumption_type,type,dinner_id,booking,used,department,fixed')
+            ->group('order_id')
+            ->paginate($size, false, ['page' => $page])
+            ->toArray();
+        return $statistic;
+
+        /*     $users = self::where(function ($query) use ($dinner_id) {
+                 if ($dinner_id) {
+                     $query->where('dinner_id', $dinner_id);
                  }
-             }
-         })
-             ->where(function ($query) use ($order_type) {
-                 if ($order_type !== 'all') {
-                     $query->where('location', $order_type);
+             })->where(function ($query) use ($canteen_id) {
+                 if ($canteen_id) {
+                     $query->where('c_id', $canteen_id);
                  }
              })
-             ->where('consumption_date', '>=', $time_begin)
-             ->where('consumption_date', '<=', $time_end)
-             ->where(function ($query) use (
-                 $status, $department_id,
-                 $username, $staff_type_id, $phone
-             ) {
-                 if (!empty($status)) {
-                     $query->where('status', $status);
-                 }
-                 if (!empty($department_id)) {
-                     $query->where('department_id', $department_id);
-                 }
-                 if (!empty($phone)) {
-                     $query->where('phone', $phone);
-                 }
-                 if (!empty($username)) {
-                     $query->where('username', 'like', '%' . $username . '%');
-                 }
-                 if (!empty($staff_type_id)) {
-                     $query->where('staff_type_id', $staff_type_id);
-                 }
+                 ->where(function ($query) use ($department_id) {
+                     if ($department_id) {
+                         $query->where('department_id', $department_id);
+                     }
+                 })
+                 ->where('ordering_date', $consumption_time)
+                 ->where(function ($query) use ($consumption_type) {
+                     if ($consumption_type == 'used') {
+                         $query->where('booking', CommonEnum::STATE_IS_OK)
+                             ->where('used', CommonEnum::STATE_IS_OK);
+                     } else if ($consumption_type == 'noOrdering') {
+                         $query->where('booking', CommonEnum::STATE_IS_FAIL);
+                     } else if ($consumption_type == 'orderingNoMeal') {
+                         $query->where('used', CommonEnum::STATE_IS_FAIL);
+                     }
+                 })
+                 ->where(function ($query) use ($key) {
+                     if ($key) {
+                         $keyRes = (int)$key;
+                         if ($keyRes == 0) {
+                             $query->where('username|sort_code', 'like', $key);
+                         } else {
+                             $query->whereOr('parent_id', 'like', $keyRes)
+                                 ->whereOr('phone', 'like', '%' . $keyRes . '%');
 
-             })
-             ->field('department_id as statistic_id,department,dinner_id,dinner,sum(order_count) as order_count,sum(order_money) as order_money')
-             ->group('department_id,dinner')
-             ->select()
-             ->toArray();
-         return $statistic;*/
+                         }
 
-
-
-        $sql = self::getBuildSql($company_id, $canteen_id, $time_begin, $time_end, $department_id,
-            $username, $staff_type_id, $phone);
-        $statistic = Db::table($sql . 'a')
-            ->where(function ($query) use ($order_type) {
-                if ($order_type !== 'all') {
-                    $query->where('location', $order_type);
-                }
-            })
-            ->where(function ($query) use ($status) {
-                if (!empty($status)) {
-                    $query->where('status', $status);
-                }
-            })
-            ->field('department_id as statistic_id,department,dinner_id,dinner,sum(order_count) as order_count,sum(order_money) as order_money')
-            ->group('department_id,dinner')
-            ->select()
-            ->toArray();
-        return $statistic;
+                     }
+                 })
+                 ->field('order_id as id,username,order_num,phone,sum(count) as count,strategy_type as consumption_type,type,dinner_id,booking,used,department,fixed')
+                 ->group('order_id')
+                 ->paginate($size, false, ['page' => $page])
+                 ->toArray();
+             return $users;*/
     }
 
-    public static function consumptionStatisticByUsername($canteen_id, $status, $department_id,
-                                                          $username, $staff_type_id, $time_begin,
-                                                          $time_end, $company_id)
+    public static function statisticToOfficial($canteen_id, $consumption_time, $key, $department_id)
     {
-        $sql = self::getBuildSql($company_id, $canteen_id, $time_begin, $time_end, $department_id,
-            $username, $staff_type_id, '');
-        $statistic = Db::table($sql . 'a')
-            ->where(function ($query) use ($status) {
-                if (!empty($status)) {
-                    $query->where('status', $status);
+        $sql = self::getBuildSql($canteen_id, $consumption_time, $department_id);
+        $statistic = Db::table($sql . ' a')
+            ->where(function ($query) use ($key) {
+                if ($key) {
+                    $keyRes = (int)$key;
+                    if ($keyRes == 0) {
+                        $query->where('username|sort_code', 'like', $key);
+                    } else {
+                        $query->whereOr('parent_id', 'like', $keyRes)
+                            ->whereOr('phone', 'like', '%' . $keyRes . '%');
+
+                    }
                 }
             })
-            ->field('sum(order_count) as order_count,sum(order_money) as order_money')
-            ->find();
-        return $statistic;
-
-        /* $statistic = self::where(function ($query) use ($company_id, $canteen_id) {
-            if (!empty($canteen_id)) {
-                $query->where('canteen_id', $canteen_id);
-            } else {
-                if (strpos($company_id, ',') !== false) {
-                    $query->whereIn('company_id', $company_id);
-                } else {
-                    $query->where('company_id', $company_id);
-                }
-            }
-        })
-            ->where('consumption_date', '>=', $time_begin)
-            ->where('consumption_date', '<=', $time_end)
-            ->where(function ($query) use (
-                $status, $department_id,
-                $username, $staff_type_id
-            ) {
-                if (!empty($status)) {
-                    $query->where('status', $status);
-                }
-                if (!empty($department_id)) {
-                    $query->where('department_id', $department_id);
-                }
-                if (!empty($username)) {
-                    $query->where('username', 'like', '%' . $username . '%');
-                }
-                if (!empty($staff_type_id)) {
-                    $query->where('staff_type_id', $staff_type_id);
-                }
-
-            })
-            ->field('sum(order_count) as order_count,sum(order_money) as order_money')
-            ->find();
-        return $statistic;*/
-    }
-
-
-    public static function consumptionStatisticByUser($canteen_id, $status, $department_id,
-                                                      $username, $staff_type_id, $time_begin,
-                                                      $time_end, $company_id)
-    {
-        //$time_end = addDay(1, $time_end);
-        $statistic = self::where(function ($query) use ($company_id, $canteen_id) {
-            if (!empty($canteen_id)) {
-                $query->where('canteen_id', $canteen_id);
-            } else {
-                if (strpos($company_id, ',') !== false) {
-                    $query->whereIn('company_id', $company_id);
-                } else {
-                    $query->where('company_id', $company_id);
-                }
-            }
-        })
-            ->where('consumption_date', '>=', $time_begin)
-            ->where('consumption_date', '<=', $time_end)
-            ->where(function ($query) use (
-                $status, $department_id,
-                $username, $staff_type_id
-            ) {
-                if (!empty($status)) {
-                    $query->where('status', $status);
-                }
-                if (!empty($department_id)) {
-                    $query->where('department_id', $department_id);
-                }
-                if (!empty($username)) {
-                    $query->where('username', 'like', '%' . $username . '%');
-                }
-                if (!empty($staff_type_id)) {
-                    $query->where('staff_type_id', $staff_type_id);
-                }
-
-            })
-            ->field('sum(order_count) as order_count,sum(order_money) as order_money')
-            ->find();
-        return $statistic;
-    }
-
-
-    public static function consumptionStatisticByStatus($canteen_id, $status, $department_id,
-                                                        $username, $staff_type_id, $time_begin,
-                                                        $time_end, $company_id, $phone, $order_type)
-    {
-        $sql = self::getBuildSql($company_id, $canteen_id, $time_begin, $time_end, $department_id,
-            $username, $staff_type_id, $phone);
-
-        $statistic = Db::table($sql . 'a')
-            ->where(function ($query) use ($order_type) {
-                if ($order_type !== 'all') {
-                    $query->where('location', $order_type);
-                }
-            })
-            ->where(function ($query) use ($status) {
-                if (!empty($status)) {
-                    $query->where('status', $status);
-                }
-            })
-            ->field('status as statistic_id,status,department,dinner_id,dinner,sum(order_count) as order_count,sum(order_money) as order_money')
-            ->group('status,dinner')
-            ->select()
-            ->toArray();/*  $statistic = self::where(function ($query) use ($company_id, $canteen_id) {
-            if (!empty($canteen_id)) {
-                $query->where('canteen_id', $canteen_id);
-            } else {
-                if (strpos($company_id, ',') !== false) {
-                    $query->whereIn('company_id', $company_id);
-                } else {
-                    $query->where('company_id', $company_id);
-                }
-            }
-        })
-            ->where(function ($query) use ($order_type) {
-                if ($order_type !== 'all') {
-                    $query->where('location', $order_type);
-                }
-            })
-            ->where('consumption_date', '>=', $time_begin)
-            ->where('consumption_date', '<=', $time_end)
-            ->where(function ($query) use (
-                $status, $department_id,
-                $username, $staff_type_id, $phone
-            ) {
-                if (!empty($phone)) {
-                    $query->where('phone', $phone);
-                }
-                if (!empty($status)) {
-                    $query->where('status', $status);
-                }
-                if (!empty($department_id)) {
-                    $query->where('department_id', $department_id);
-                }
-                if (!empty($username)) {
-                    $query->where('username', 'like', '%' . $username . '%');
-                }
-                if (!empty($staff_type_id)) {
-                    $query->where('staff_type_id', $staff_type_id);
-                }
-
-            })
-            ->field('status as statistic_id,status,department,dinner_id,dinner,sum(order_count) as order_count,sum(order_money) as order_money')
-            ->group('status,dinner')
-            ->select()
-            ->toArray();*/
-        return $statistic;
-    }
-
-    public static function consumptionStatisticByDay($canteen_id, $status, $department_id,
-                                                     $username, $staff_type_id, $time_begin,
-                                                     $time_end, $company_id, $phone, $order_type)
-    {
-        $sql = self::getBuildSql($company_id, $canteen_id, $time_begin, $time_end, $department_id,
-            $username, $staff_type_id, $phone);
-
-        $statistic = Db::table($sql . 'a')
-            ->where(function ($query) use ($order_type) {
-                if ($order_type !== 'all') {
-                    $query->where('location', $order_type);
-                }
-            })
-            ->where(function ($query) use ($status) {
-                if (!empty($status)) {
-                    $query->where('status', $status);
-                }
-            })
-            ->field('consumption_date as statistic_id,status,consumption_date,department,dinner_id,dinner,sum(order_count) as order_count,sum(order_money) as order_money')
-            ->group('consumption_date,dinner')
-            ->select()
-            ->toArray();
-        return $statistic;
-    }
-
-    public static function consumptionStatisticByDayPage($canteen_id, $status, $department_id,
-                                                         $username, $staff_type_id, $time_begin,
-                                                         $time_end, $company_id, $phone, $order_type)
-    {
-        $sql = self::getBuildSql($company_id, $canteen_id, $time_begin, $time_end, $department_id,
-            $username, $staff_type_id, $phone);
-
-        $statistic = Db::table($sql . 'a')
-            ->where(function ($query) use ($order_type) {
-                if ($order_type !== 'all') {
-                    $query->where('location', $order_type);
-                }
-            })
-            ->where(function ($query) use ($status) {
-                if (!empty($status)) {
-                    $query->where('status', $status);
-                }
-            })
-            ->field('consumption_date as statistic_id,status,consumption_date,department,dinner_id,dinner,sum(order_count) as order_count,sum(order_money) as order_money')
-            ->group('consumption_date,dinner')
-            ->order('consumption_date')
-            // ->paginate($size, false, ['page' => $page])
-            ->select()
-            ->toArray();/*  $statistic = self::where(function ($query) use ($company_id, $canteen_id) {
-            if (!empty($canteen_id)) {
-                $query->where('canteen_id', $canteen_id);
-            } else {
-                if (strpos($company_id, ',') !== false) {
-                    $query->whereIn('company_id', $company_id);
-                } else {
-                    $query->where('company_id', $company_id);
-                }
-            }
-        })
-            ->where(function ($query) use ($order_type) {
-                if ($order_type !== 'all') {
-                    $query->where('location', $order_type);
-                }
-            })
-            ->where('consumption_date', '>=', $time_begin)
-            ->where('consumption_date', '<=', $time_end)
-            ->where(function ($query) use (
-                $status, $department_id,
-                $username, $staff_type_id, $phone
-            ) {
-                if (!empty($phone)) {
-                    $query->where('phone', $phone);
-                }
-                if (!empty($status)) {
-                    $query->where('status', $status);
-                }
-                if (!empty($department_id)) {
-                    $query->where('department_id', $department_id);
-                }
-                if (!empty($username)) {
-                    $query->where('username', 'like', '%' . $username . '%');
-                }
-                if (!empty($staff_type_id)) {
-                    $query->where('staff_type_id', $staff_type_id);
-                }
-
-            })
-            ->field('status as statistic_id,status,department,dinner_id,dinner,sum(order_count) as order_count,sum(order_money) as order_money')
-            ->group('status,dinner')
-            ->select()
-            ->toArray();*/
-        return $statistic;
-    }
-
-    public static function consumptionStatisticInfo($canteen_id, $status, $department_id,
-                                                         $username, $staff_type_id, $time_begin,
-                                                         $time_end, $company_id, $phone, $order_type)
-    {
-        $sql = self::getBuildSql($company_id, $canteen_id, $time_begin, $time_end, $department_id,
-            $username, $staff_type_id, $phone);
-
-        $statistic = Db::table($sql . 'a')
-            ->where(function ($query) use ($order_type) {
-                if ($order_type !== 'all') {
-                    $query->where('location', $order_type);
-                }
-            })
-            ->where(function ($query) use ($status) {
-                if (!empty($status)) {
-                    $query->where('status', $status);
-                }
-            })
-            ->field('sum(order_count) as allCount,format(sum(order_money),2) as allMoney')
-            ->find();
-
-        return $statistic;
-    }
-
-
-
-    public static function consumptionStatisticByCanteen($canteen_id, $status, $department_id,
-                                                         $username, $staff_type_id, $time_begin,
-                                                         $time_end, $company_id, $phone, $order_type)
-    {
-        // $time_end = addDay(1, $time_end);
-        $sql = self::getBuildSql($company_id, $canteen_id, $time_begin, $time_end, $department_id,
-            $username, $staff_type_id, $phone);
-
-        $statistic = Db::table($sql . 'a')
-            ->where(function ($query) use ($order_type) {
-                if ($order_type !== 'all') {
-                    $query->where('location', $order_type);
-                }
-            })
-            ->where(function ($query) use ($status) {
-                if (!empty($status)) {
-                    $query->where('status', $status);
-                }
-            })
-            ->field('canteen_id as statistic_id,canteen,dinner_id,dinner,sum(order_count) as order_count,sum(order_money) as order_money')
-            ->group('canteen_id,dinner')
-            ->select()
-            ->toArray();
-
-        /*  $statistic = self::where(function ($query) use ($company_id, $canteen_id) {
-            if (!empty($canteen_id)) {
-                $query->where('canteen_id', $canteen_id);
-            } else {
-                if (strpos($company_id, ',') !== false) {
-                    $query->whereIn('company_id', $company_id);
-                } else {
-                    $query->where('company_id', $company_id);
-                }
-            }
-        })
-            ->where(function ($query) use ($order_type) {
-                if ($order_type !== 'all') {
-                    $query->where('location', $order_type);
-                }
-            })
-            ->where('consumption_date', '>=', $time_begin)
-            ->where('consumption_date', '<=', $time_end)
-            ->where(function ($query) use (
-                $status, $department_id,
-                $username, $staff_type_id, $phone
-            ) {
-                if (!empty($status)) {
-                    $query->where('status', $status);
-                }
-                if (!empty($phone)) {
-                    $query->where('phone', $phone);
-                }
-                if (!empty($department_id)) {
-                    $query->where('department_id', $department_id);
-                }
-                if (!empty($username)) {
-                    $query->where('username', 'like', '%' . $username . '%');
-                }
-                if (!empty($staff_type_id)) {
-                    $query->where('staff_type_id', $staff_type_id);
-                }
-
-            })
-            ->field('canteen_id as statistic_id,canteen,dinner_id,dinner,sum(order_count) as order_count,sum(order_money) as order_money')
-            ->group('canteen_id,dinner')
-            ->select()
-            ->toArray();*/
-        return $statistic;
-    }
-
-    public static function consumptionStatisticByStaff($canteen_id, $status, $department_id,
-                                                       $username, $staff_type_id, $time_begin,
-                                                       $time_end, $company_id, $phone, $order_type)
-    {
-        $sql = self::getBuildSql($company_id, $canteen_id, $time_begin, $time_end, $department_id,
-            $username, $staff_type_id, $phone);
-        $statistic = Db::table($sql . 'a')
-            ->where(function ($query) use ($order_type) {
-                if ($order_type !== 'all') {
-                    $query->where('location', $order_type);
-                }
-            })
-            ->where(function ($query) use ($status) {
-                if (!empty($status)) {
-                    $query->where('status', $status);
-                }
-            })
-            ->field('staff_type_id as statistic_id,staff_type,dinner_id,dinner,sum(order_count) as order_count,sum(order_money) as order_money')
-            ->group('staff_type_id,dinner')
-            ->select()
-            ->toArray();
-        return $statistic;
-    }
-
-    public static function userDinnerStatistic($canteen_id, $status, $department_id,
-                                               $username, $staff_type_id, $time_begin,
-                                               $time_end, $company_id, $phone, $order_type, $page, $size)
-    {
-        $sql = self::getBuildSql($company_id, $canteen_id, $time_begin, $time_end, $department_id,
-            $username, $staff_type_id, $phone);
-        $statistic = Db::table($sql . 'a')
-            ->where(function ($query) use ($order_type) {
-                if ($order_type !== 'all') {
-                    $query->where('location', $order_type);
-                }
-            })
-            ->where(function ($query) use ($status) {
-                if (!empty($status)) {
-                    $query->where('status', $status);
-                }
-            })
-            ->field('staff_id as statistic_id,staff_id,username,department,dinner_id,dinner,sum(order_count) as order_count,sum(order_money) as order_money')
-            ->group('staff_id,dinner')
+            ->field('dinner_id as d_id,used,booking,sum(count) as count')
+            ->group('dinner_id,used,booking')
             ->select()->toArray();
         return $statistic;
+        $statistic = self::where('c_id', $canteen_id)
+            ->where('pay', PayEnum::PAY_SUCCESS)
+            ->where('ordering_date', $consumption_time)
+            ->where(function ($query) use ($key) {
+                if ($key) {
+                    $keyRes = (int)$key;
+                    if ($keyRes == 0) {
+                        $query->where('username|sort_code', 'like', $key);
+                    } else {
+                        $query->whereOr('parent_id', 'like', $keyRes)
+                            ->whereOr('phone', 'like', '%' . $keyRes . '%');
 
-        /*return self::where(function ($query) use ($company_id, $canteen_id) {
-            if (!empty($canteen_id)) {
-                $query->where('canteen_id', $canteen_id);
-            } else {
-                if (strpos($company_id, ',') !== false) {
-                    $query->whereIn('company_id', $company_id);
-                } else {
-                    $query->where('company_id', $company_id);
+                    }
+
                 }
-            }
-        })->where(function ($query) use ($order_type) {
-            if ($order_type !== 'all') {
-                $query->where('location', $order_type);
-            }
-        })
-            ->where(function ($query) use (
-                $department_id,
-                $username, $staff_type_id, $phone
-            ) {
-                if (!empty($department_id)) {
+            })
+            ->where(function ($query) use ($department_id) {
+                if ($department_id) {
                     $query->where('department_id', $department_id);
                 }
-                if (!empty($phone)) {
-                    $query->where('phone', $phone);
-                }
-                if (!empty($username)) {
-                    $query->where('username', 'like', '%' . $username . '%');
-                }
-                if (!empty($status)) {
-                    $query->where('staff_type_id', $staff_type_id);
-                }
-
             })
-            ->where('consumption_date', '>=', $time_begin)
-            ->where('consumption_date', '<=', $time_end)
-            ->where(function ($query2) use (
-                $status
-            ) {
-                if (!empty($status)) {
-                    $query2->where('status', $status);
-
-                }
-            })
-            ->field('staff_id as statistic_id,staff_id,username,department,dinner_id,dinner,sum(order_count) as order_count,sum(order_money) as order_money')
-            ->group('staff_id,dinner')
-            ->select()->toArray();*/
-    }
-
-    public static function userStatistic($canteen_id, $status, $department_id,
-                                         $username, $staff_type_id, $time_begin,
-                                         $time_end, $company_id, $phone, $order_type, $page, $size)
-    {
-        $sql = self::getBuildSql($company_id, $canteen_id, $time_begin, $time_end, $department_id,
-            $username, $staff_type_id, $phone);
-        $statistic = Db::table($sql . 'a')
-            ->where(function ($query) use ($order_type) {
-                if ($order_type !== 'all') {
-                    $query->where('location', $order_type);
-                }
-            })
-            ->where(function ($query) use ($status) {
-                if (!empty($status)) {
-                    $query->where('status', $status);
-                }
-            })
-            ->field('staff_id as statistic_id,staff_id,username, username as statistic,department')
-            ->group('staff_id')
-            ->paginate($size, false, ['page' => $page])->toArray();
+            ->field('dinner_id as d_id,used,booking,sum(count) as count')
+            ->group('dinner_id,used,booking')
+            ->select()->toArray();
         return $statistic;
-        /*return self::where(function ($query) use ($company_id, $canteen_id) {
-            if (!empty($canteen_id)) {
-                $query->where('canteen_id', $canteen_id);
-            } else {
-                if (strpos($company_id, ',') !== false) {
-                    $query->whereIn('company_id', $company_id);
-                } else {
-                    $query->where('company_id', $company_id);
-                }
-            }
-        })->where(function ($query) use ($order_type) {
-            if ($order_type !== 'all') {
-                $query->where('location', $order_type);
-            }
-        })
-            ->where(function ($query) use (
-                $department_id,
-                $username, $staff_type_id, $phone
-            ) {
-                if (!empty($department_id)) {
-                    $query->where('department_id', $department_id);
-                }
-                if (!empty($phone)) {
-                    $query->where('phone', $phone);
-                }
-                if (!empty($username)) {
-                    $query->where('username', 'like', '%' . $username . '%');
-                }
-                if (!empty($staff_type_id)) {
-                    $query->where('staff_type_id', $staff_type_id);
-                }
-
-            })
-            ->where('consumption_date', '>=', $time_begin)
-            ->where('consumption_date', '<=', $time_end)
-            ->where(function ($query2) use (
-                $status
-            ) {
-                if (!empty($status)) {
-                    $query2->where('status', $status);
-
-                }
-            })
-            ->field('staff_id as statistic_id,staff_id,username, username as statistic,department')
-            ->group('staff_id')
-            ->paginate($size, false, ['page' => $page])->toArray();*/
-
     }
 
-
-    /*  public static function userDinnerStatistic($staff_id, $status,
-                                                 $time_begin, $time_end)
-      {
-          return self::where('staff_id', $staff_id)
-              ->where('consumption_date', '>=', $time_begin)
-              ->where('consumption_date', '<=', $time_end)
-              ->where(function ($query2) use (
-                  $status
-              ) {
-                  if (!empty($status)) {
-                      $query2->where('status', $status);
-                  }
-              })
-              ->field('staff_id,dinner_id,dinner,sum(order_count) as order_count,sum(order_money) as order_money')
-              ->group('dinner')->select();
-      }*/
-    public function getOrderConsumption($c_id, $consumption_date)
-    {
-        $dateArr = explode('-', $consumption_date);
-        $list = self::where('company_id', $c_id)
-            ->where('year(consumption_date) =' . $dateArr[0])
-            ->where('month(consumption_date) =' . $dateArr[1])
-            ->select()
-            ->toArray();
-        return $list;
-    }
 
 }

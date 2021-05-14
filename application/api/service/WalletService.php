@@ -281,10 +281,18 @@ class WalletService
         $company_id = Token::getCurrentTokenVar('company_id');
         $records = RechargeV::rechargeRecords($time_begin, $time_end,
             $page, $size, $type, $admin_id, $username, $company_id, $department_id, $money_type);
+        $data = $records['data'];
+        if (count($data)) {
+            foreach ($data as $k => $v) {
+                $data[$k]['money'] = abs($v['money']);
+            }
+            $records['data'] = $data;
+        }
+
         $money = RechargeV::rechargeStatistic($time_begin, $time_end,
             $type, $admin_id, $username, $company_id, $department_id, $money_type);
 
-        $records['statistic'] = $money;
+        $records['statistic'] = $money_type ? $money : abs($money);
         return $records;
 
     }
