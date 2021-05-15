@@ -854,6 +854,7 @@ class Order extends BaseController
      * @apiSuccess (返回参数说明) {int} current_page 当前页码
      * @apiSuccess (返回参数说明) {int} last_page 最后页码
      * @apiSuccess (返回参数说明) {int} order_id 订单id
+     * @apiSuccess (返回参数说明) {int} order_type 餐次类型：1｜普通订餐；2｜接待票订餐；
      * @apiSuccess (返回参数说明) {int} consumption_type 消费策略消费模式：one：一次性消费；more:逐次消费
      * @apiSuccess (返回参数说明) {string} ordering_date 订餐日期
      * @apiSuccess (返回参数说明) {string} type 订单类型

@@ -163,7 +163,7 @@ class OrderUsersStatisticV extends Model
 	'4' AS `pay_way`,
 	`c`.`staff_id` AS `staff_id`,
 	`c`.`dinner_id` AS `d_id`,
-	`f`.`status` AS `state`,
+	'1' AS `state`,
 	'1' AS `wx_confirm`,
 	'1' AS `take`,
 	`c`.`code_number` AS `parent_order_num`,
@@ -189,7 +189,6 @@ class OrderUsersStatisticV extends Model
             ->buildSql();
         return $subQuery;
     }
-
 
     public static function getBuildSql2($canteen_id, $dinner_id, $consumption_time, $consumption_type, $department_id)
     {
