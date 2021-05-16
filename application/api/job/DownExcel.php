@@ -525,6 +525,9 @@ class DownExcel
             if ($money_type) {
                 $allMoney = abs($allMoney);
             }
+            foreach ($records as $k => $v) {
+                $records[$k]['money']=abs($v['money']) ;
+            }
         }
         array_push($records, [
             'create_time' => $moneyTypeArr[$money_type],
@@ -571,7 +574,13 @@ class DownExcel
             if ($money_type) {
                 $allMoney = abs($allMoney);
             }
+            foreach ($records as $k => $v) {
+                $records[$k]['money']=abs($v['money']) ;
+            }
+
         }
+
+
         array_push($records, [
             'create_time' => $moneyTypeArr[$money_type],
             'department' => '',
