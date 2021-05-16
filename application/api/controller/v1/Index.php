@@ -93,8 +93,9 @@ Index extends BaseController
 
     public function index()
     {
-     /*   $accounts = (new AccountService())
-            ->getAccountBalance(95, $staffId, $staff->d_id);*/
+        return json(new SuccessMessage());
+        /*   $accounts = (new AccountService())
+               ->getAccountBalance(95, $staffId, $staff->d_id);*/
 
         /* $data = Request::param();
          $data['SCRIPT_FILENAME'] = '';

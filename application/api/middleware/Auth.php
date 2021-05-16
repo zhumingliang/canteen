@@ -17,6 +17,7 @@ class Auth extends Controller
     public function handle($request, \Closure $next)
     {
         $allowAction = [
+            'index',
             'test',
             'getadmintoken',
             'getofficialtoken',

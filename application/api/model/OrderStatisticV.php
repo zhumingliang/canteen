@@ -139,16 +139,10 @@ class OrderStatisticV extends Model
             ->where('state', CommonEnum::STATE_IS_OK)
             ->field('ordering_date,company,canteen,dinner,sum(count) as count')
             ->order('ordering_date DESC')
-            ->group('ordering_date,dinner_id')
+            ->group('ordering_date,dinner')
             ->paginate($size, false, ['page' => $page]);
-        return $list;
-
-    }
-
-    public static function exportStatistic($time_begin, $time_end, $company_ids, $canteen_id)
-    {
-        //$time_end = addDay(1, $time_end);
-        $list = self::whereBetweenTime('ordering_date', $time_begin, $time_end)
+        /*        $list = self::where('ordering_date', '>=', $time_begin)
+            ->where('ordering_date', '<=', $time_end)
             ->where(function ($query) use ($company_ids, $canteen_id) {
                 if (empty($canteen_id)) {
                     if (strpos($company_ids, ',') !== false) {
@@ -157,12 +151,7 @@ class OrderStatisticV extends Model
                         $query->where('company_id', $company_ids);
                     }
                 } else {
-                    //  $query->where('canteen_id', $canteen_id);
-                    if (strpos($company_ids, ',') !== false) {
-                        $query->whereIn('canteen_id', $canteen_id);
-                    } else {
-                        $query->where('canteen_id', $canteen_id);
-                    }
+                    $query->where('canteen_id', $canteen_id);
                 }
             })
             ->where('booking', CommonEnum::STATE_IS_OK)
@@ -170,10 +159,11 @@ class OrderStatisticV extends Model
             ->field('ordering_date,company,canteen,dinner,sum(count) as count')
             ->order('ordering_date DESC')
             ->group('ordering_date,dinner_id')
-            ->select()->toArray();
+            ->paginate($size, false, ['page' => $page]);*/
         return $list;
 
     }
+
     public static function detail($company_ids, $time_begin,
                                   $time_end, $page, $size, $name,
                                   $phone, $canteen_id, $department_id,
@@ -224,7 +214,7 @@ class OrderStatisticV extends Model
                 $query->where('type', $type);
             }
         })
-            ->field('order_id,order_type,consumption_type,ordering_date,username,canteen,department,phone,count,dinner,type,ordering_type,order_money,1 as status,state,meal_time_end,used,fixed')
+            ->field('order_id,order_type,consumption_type,ordering_date,username,canteen,department,phone,sum(count) as count,dinner,type,ordering_type,order_money,1 as status,state,meal_time_end,used,fixed')
             ->where('booking', CommonEnum::STATE_IS_OK)
             ->where(function ($query) use ($name, $phone, $department_id) {
                 if (strlen($name)) {
@@ -238,11 +228,42 @@ class OrderStatisticV extends Model
                 }
             })
             ->order('ordering_date DESC')
-            ->group('ordering_date,order_id')
+            ->group('ordering_date,dinner')
             ->paginate($size, false, ['page' => $page])->toArray();
         return $list;
 
     }
+
+    public static function exportStatistic($time_begin, $time_end, $company_ids, $canteen_id)
+    {
+        //$time_end = addDay(1, $time_end);
+        $list = self::whereBetweenTime('ordering_date', $time_begin, $time_end)
+            ->where(function ($query) use ($company_ids, $canteen_id) {
+                if (empty($canteen_id)) {
+                    if (strpos($company_ids, ',') !== false) {
+                        $query->whereIn('company_id', $company_ids);
+                    } else {
+                        $query->where('company_id', $company_ids);
+                    }
+                } else {
+                    //  $query->where('canteen_id', $canteen_id);
+                    if (strpos($company_ids, ',') !== false) {
+                        $query->whereIn('canteen_id', $canteen_id);
+                    } else {
+                        $query->where('canteen_id', $canteen_id);
+                    }
+                }
+            })
+            ->where('booking', CommonEnum::STATE_IS_OK)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->field('ordering_date,company,canteen,dinner,sum(count) as count')
+            ->order('ordering_date DESC')
+            ->group('ordering_date,dinner_id')
+            ->select()->toArray();
+        return $list;
+
+    }
+
 
     public static function exportDetail($company_ids, $time_begin,
                                         $time_end, $name,
