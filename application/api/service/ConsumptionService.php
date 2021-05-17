@@ -479,7 +479,7 @@ class ConsumptionService
         }
         $sortCode = $this->saveRedisOrderCode($canteenID, $returnDinnerID, $orderID);
         //推送消息给显示器
-        $this->sortTask($canteenID, $outsider, $orderID, $sortCode, $consumptionType);
+       // $this->sortTask($canteenID, $outsider, $orderID, $sortCode, $consumptionType);
         //启动打印机打印信息
         $printRes = (new Printer())->printOrderDetail($canteenID, $orderID, $sortCode, $consumptionType);
         if ($printRes) {
