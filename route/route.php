@@ -244,7 +244,7 @@ Route::post('api/:version/outsider/order/money', 'api/:version.Order/getOutsider
 Route::post('api/:version/order/money/check', 'api/:version.Order/checkOrderMoney');
 Route::post('api/:version/order/pre/count/change', 'api/:version.Order/updatePrepareOrderCount');
 Route::post('api/:version/order/pre/submit', 'api/:version.Order/submitOrder');
-
+Route::get('api/:version/order/managerOrderStatistic', 'api/:version.Order/managerOrderStatistic');
 
 Route::post('api/:version/address/save', 'api/:version.Address/save');
 Route::post('api/:version/address/update', 'api/:version.Address/update');

@@ -3421,4 +3421,29 @@ class OrderService extends BaseService
         }
     }
 
+    public
+    function managerOrderStatistic($canteen_id, $consumption_time, $key, $department_id)
+    {
+        //获取饭堂餐次信息
+        $dinner = (new CanteenService())->getDinnerNames($canteen_id);
+        if (!$dinner) {
+            throw new ParameterException(['msg' => '参数异常，该饭堂未设置餐次信息']);
+        }
+        //获取饭堂订餐信息
+        $orderInfo = OrderUsersStatisticV::orderStatistic($canteen_id, $consumption_time, $key, $department_id);
+        foreach ($dinner as $k => $v) {
+            $all = 0;
+            if (!empty($orderInfo)) {
+                foreach ($orderInfo as $k2 => $v2) {
+                    if ($v['id'] == $v2['dinner_id']) {
+                        $all += $v2['count'];
+                    }
+                }
+            }
+            $dinner[$k]['all'] = $all;
+        }
+        return $dinner;
+    }
+
+
 }
