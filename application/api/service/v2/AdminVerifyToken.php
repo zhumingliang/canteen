@@ -5,6 +5,7 @@ namespace app\api\service\v2;
 
 
 use app\api\model\AdminT;
+use app\api\service\Token;
 use app\lib\enum\CommonEnum;
 use app\lib\exception\ParameterException;
 use app\lib\exception\TokenException;
@@ -12,7 +13,7 @@ use think\captcha\Captcha;
 use think\Exception;
 use zml\tp_tools\Redis;
 
-class AdminVerifyToken
+class AdminVerifyToken extends Token
 {
     protected $account;
     protected $passwd;
@@ -23,7 +24,7 @@ class AdminVerifyToken
     {
         $this->account = $account;
         $this->passwd = $passwd;
-        $this->passwd = $code;
+        $this->code = $code;
     }
 
     /**
@@ -33,7 +34,6 @@ class AdminVerifyToken
     public function get()
     {
         try {
-            echo $this->code;
             $this->check_verify();
             $admin = AdminT::where('account', '=', $this->account)
                 ->where('state', CommonEnum::STATE_IS_OK)

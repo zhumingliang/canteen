@@ -56,7 +56,6 @@ class  Token extends Controller
     public function getAdminToken()
     {
         $params = $this->request->param();
-        $code = Request::param('code');
         $at = new AdminToken($params['account'], $params['passwd']);
         $token = $at->get();
         return json(new SuccessMessageWithData(['data' => $token]));
