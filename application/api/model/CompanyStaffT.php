@@ -291,9 +291,12 @@ class CompanyStaffT extends Model
                         ->whereIn('state', '1,2');
                 }, 'department' => function ($query) {
                     $query->field('id,name');
+                },
+                'punishment' => function ($query) {
+                    $query->field('id,staff_id,no_meal,no_booking');
                 }
             ])
-            ->field('id,d_id,username,t_id as staff_type_id,face_code')
+            ->field('id,d_id,username,t_id as staff_type_id,face_code,status')
             ->order('id')
             ->select();
 

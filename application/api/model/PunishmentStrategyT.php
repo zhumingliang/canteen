@@ -71,4 +71,19 @@ class PunishmentStrategyT extends Model
 
     }
 
+    public static function companyStrategy($companyId)
+    {
+        return self::where('company_id', $companyId)
+            ->with(
+                [
+                    'detail' => function ($query) {
+                        $query->where('state', CommonEnum::STATE_IS_OK)
+                            ->field('id,strategy_id,type,count');
+                    }
+                ]
+            )
+            ->find();
+
+    }
+
 }
