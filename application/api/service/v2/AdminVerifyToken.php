@@ -33,6 +33,7 @@ class AdminVerifyToken
     public function get()
     {
         try {
+            echo $this->code;
             $this->check_verify();
             $admin = AdminT::where('account', '=', $this->account)
                 ->where('state', CommonEnum::STATE_IS_OK)
