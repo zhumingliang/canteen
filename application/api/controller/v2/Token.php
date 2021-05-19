@@ -37,6 +37,7 @@ class Token extends BaseController
     {
         $params = $this->request->param();
         $code = Request::param('code');
+        echo $code;
         if (empty($code)) {
             throw  new ParameterException(['msg' => "验证码不能为空"]);
         }
