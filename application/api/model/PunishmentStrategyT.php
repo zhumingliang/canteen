@@ -82,7 +82,7 @@ class PunishmentStrategyT extends Model
                     }
                 ]
             )
-            ->find();
+            ->select();
 
     }
 
