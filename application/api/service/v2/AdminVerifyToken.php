@@ -65,9 +65,7 @@ class AdminVerifyToken extends Token
     private function check_verify()
     {
         $captcha = new Captcha();
-        echo $this->code;
         if (!$captcha->check($this->code)) {
-
             // 验证失败
             throw  new  ParameterException(['msg' => "验证码不正确"]);
         }
