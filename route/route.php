@@ -21,6 +21,7 @@ Route::rule('api/:version/token/official', 'api/:version.Token/getOfficialToken'
 Route::rule('api/:version/token/machine', 'api/:version.Token/getMachineToken');
 Route::rule('api/:version/token/login/out', 'api/:version.Token/loginOut');
 Route::post('api/:version/token/supplier', 'api/:version.Token/getSupplierToken');
+Route::rule('api/:version/token/verify', 'api/:version.Token/verify');
 
 Route::post('api/:version/module/system/save', 'api/:version.Module/saveSystem');;
 Route::post('api/:version/module/system/canteen/save', 'api/:version.Module/saveSystemCanteen');

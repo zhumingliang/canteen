@@ -26,6 +26,7 @@ use app\lib\exception\SuccessMessage;
 use app\lib\exception\SuccessMessageWithData;
 use app\lib\exception\TokenException;
 use GatewayClient\Gateway;
+use think\captcha\Captcha;
 use think\Controller;
 use think\Exception;
 use think\facade\Cache;
@@ -55,8 +56,8 @@ class  Token extends Controller
     public function getAdminToken()
     {
         $params = $this->request->param();
-        $client_id = Request::param('client_id');
-        $at = new AdminToken($params['account'], $params['passwd'], $client_id);
+        $code = Request::param('code');
+        $at = new AdminToken($params['account'], $params['passwd']);
         $token = $at->get();
         return json(new SuccessMessageWithData(['data' => $token]));
     }
@@ -191,6 +192,20 @@ class  Token extends Controller
         }
 
         return json(new SuccessMessage());
+    }
+    /**
+     * @api {GET} /api/v1/token/verify  CMS管理端-获取登录验证码
+     * @apiGroup  CMS
+     * @apiVersion 3.0.0
+     * @apiDescription  消费机-获取登录token
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/token/verify
+     */
+    public function verify()
+    {
+        $captcha = new Captcha();
+        return $captcha->entry();
+
     }
 
 }
