@@ -7,6 +7,7 @@ namespace app\api\controller\v2;
 use app\api\controller\BaseController;
 use app\api\service\AdminToken;
 use app\api\service\v2\AdminVerifyToken;
+use app\lib\exception\ParameterException;
 use app\lib\exception\SuccessMessageWithData;
 use think\facade\Request;
 
@@ -36,7 +37,10 @@ class Token extends BaseController
     {
         $params = $this->request->param();
         $code = Request::param('code');
-        $at = new AdminVerifyToken($params['account'], $params['passwd'],$code);
+        if (empty($code)) {
+            throw  new ParameterException(['msg' => "验证码不能为空"]);
+        }
+        $at = new AdminVerifyToken($params['account'], $params['passwd'], $code);
         $token = $at->get();
         return json(new SuccessMessageWithData(['data' => $token]));
     }
