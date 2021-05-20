@@ -39,7 +39,7 @@ class StaffPunishmentT extends Model
             })
             ->where('a.state', CommonEnum::STATE_IS_OK)
             ->where('c.state',CommonEnum::STATE_IS_OK)
-            ->field('b.id as company_id,b.name as company_name,group_concat(d.id) as canteen_ids,group_concat(d.name) as canteen_name,a.t_id,e.name as staff_type,a.id as staff_id,username,phone,status,COALESCE(f.no_meal,0) as no_meal,COALESCE(f.no_booking,0) as no_booking')
+            ->field('b.id as company_id,b.name as company_name,group_concat(d.id order by d.id) as canteen_ids,group_concat(d.name order by d.name) as canteen_name,a.t_id,e.name as staff_type,a.id as staff_id,username,phone,status,COALESCE(f.no_meal,0) as no_meal,COALESCE(f.no_booking,0) as no_booking')
             ->group('a.id')
             ->paginate($size, false, ['page' => $page])->toArray();
         return $list;
@@ -75,7 +75,7 @@ class StaffPunishmentT extends Model
             })
             ->where('a.state', CommonEnum::STATE_IS_OK)
             ->where('c.state',CommonEnum::STATE_IS_OK)
-            ->field('b.id as company_id,b.name as company_name,group_concat(d.id) as canteen_ids,group_concat(d.name) as canteen_name,a.t_id,e.name as staff_type,a.id as staff_id,username,phone,status,COALESCE(f.no_meal,0) as no_meal,COALESCE(f.no_booking,0) as no_booking')
+            ->field('b.id as company_id,b.name as company_name,group_concat(d.id order by d.id) as canteen_ids,group_concat(d.name order by d.name) as canteen_name,a.t_id,e.name as staff_type,a.id as staff_id,username,phone,status,COALESCE(f.no_meal,0) as no_meal,COALESCE(f.no_booking,0) as no_booking')
             ->group('a.id')
             ->select()->toArray();
         return $list;
