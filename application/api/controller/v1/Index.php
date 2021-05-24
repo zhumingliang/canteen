@@ -93,7 +93,7 @@ Index extends BaseController
 
     public function index()
     {
-        return json(new SuccessMessage());
+        // return json(new SuccessMessage());
         /*   $accounts = (new AccountService())
                ->getAccountBalance(95, $staffId, $staff->d_id);*/
 
@@ -180,21 +180,22 @@ Index extends BaseController
          $b = implode(',', $a);*/
 
 
-        /* $day = date('Y-m-d H:i:s', strtotime('+10 year',
-             time()));
-        // return $day;
-         $staffs = CompanyStaffT::where('company_id', 140)->where('state',CommonEnum::STATE_IS_OK)
-             ->select();
+        $day = date('Y-m-d H:i:s', strtotime('+30 minute',
+            time()));
+        $page = Request::param('page');
+        $size = 100;
+        $data = CompanyStaffT::where('company_id', 150)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->paginate($size, false, ['page' => $page])->toArray();
 
-
-         foreach ($staffs as $k => $v) {
-             StaffQrcodeT::update([
-                 'year' => 10,
-                 'minute' => 0,
-                 'expiry_date' => $day
-             ], ['s_id' => $v['id']]
-             );
-         }*/
+        $staffs = $data['data'];
+        foreach ($staffs as $k => $v) {
+            StaffQrcodeT::update([
+                'minute' => 30,
+                'expiry_date' => $day
+            ], ['s_id' => $v['id']]
+            );
+        }
 
     }
 

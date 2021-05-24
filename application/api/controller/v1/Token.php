@@ -202,7 +202,17 @@ class  Token extends Controller
      */
     public function verify()
     {
-        $captcha = new Captcha();
+        $config = [
+            // 验证码字体大小
+            'fontSize' => 30,
+            // 验证码位数
+            'length' => 4,
+            // 关闭验证码杂点
+            'useNoise' => true,
+            // 验证码过期时间（s）
+            'expire'  => 1800,
+        ];
+        $captcha = new Captcha($config);
         return $captcha->entry();
 
     }
