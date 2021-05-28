@@ -54,8 +54,9 @@ class PunishmentUpdateT extends Model
             ->where('a.create_time', '<=', $time_end)
             ->leftJoin('company_staff_t b', 'a.staff_id=b.id')
             ->leftJoin('company_t c', 'b.company_id=c.id')
-            ->leftJoin('canteen_canteen_t d', 'FIND_IN_SET(d.id,b.canteen_ids)')
-            ->leftJoin('staff_type_t e', 'b.t_id=e.id')
+            ->leftJoin('canteen_staff_canteen_t d', 'd.staff_id=b.id')
+            ->leftJoin('canteen_canteen_t e', 'd.canteen_id=e.id')
+            ->leftJoin('staff_type_t f', 'b.t_id=f.id')
             ->where(function ($query) use ($key) {
                 if ($key) {
                     $query->whereLike('username|phone', "%$key%");
@@ -69,7 +70,7 @@ class PunishmentUpdateT extends Model
                 }
             })->where(function ($query) use ($canteen_id) {
                 if ($canteen_id != 0) {
-                    $query->where('d.id', $canteen_id);
+                    $query->where('e.id', $canteen_id);
                 }
             })
             ->where('d.state',CommonEnum::STATE_IS_OK)
