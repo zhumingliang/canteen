@@ -213,6 +213,7 @@ class  Token extends Controller
             'expire'  => 1800,
         ];
         $captcha = new Captcha($config);
+       // return $captcha->entry();
         return $captcha->entry();
 
     }

@@ -75,6 +75,7 @@ use app\lib\Num;
 use app\lib\printer\Printer;
 use app\lib\weixin\Template;
 use GatewayClient\Gateway;
+use think\captcha\Captcha;
 use think\Db;
 use think\db\Where;
 use think\Exception;
@@ -93,6 +94,15 @@ Index extends BaseController
 
     public function index()
     {
+
+        $data = $this->request->param();
+        $captcha = new Captcha();
+        if (!$captcha->checkByCache($data['verify_code'])) {
+            return json(['code' => -1, 'msg' => '无效验证码']);
+        } else {
+            echo 1;
+        }
+
         // return json(new SuccessMessage());
         /*   $accounts = (new AccountService())
                ->getAccountBalance(95, $staffId, $staff->d_id);*/

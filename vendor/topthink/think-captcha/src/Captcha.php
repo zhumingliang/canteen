@@ -11,7 +11,9 @@
 
 namespace think\captcha;
 
+use think\facade\Cache;
 use think\facade\Session;
+use zml\tp_tools\Redis;
 
 class Captcha
 {
@@ -200,7 +202,11 @@ class Captcha
         $secode['verify_time'] = time(); // 验证码创建时间
         Session::set($key . $id, $secode, '');
 
-        cache('session_id_' . $id, session_id());
+        //把验证码也保存到缓存中，只有这句是我扩展的，上下都是这个类库原本的代码
+        // Cache::set($code, 1, $this->expire);
+
+        Redis::instance()->set($code, 1, $this->expire);
+
 
         ob_start();
         // 输出图像
@@ -318,5 +324,25 @@ class Captcha
         $key = substr(md5($this->seKey), 5, 8);
         $str = substr(md5($str), 8, 10);
         return md5($key . $str);
+    }
+
+    /**
+     * 验证验证码是否正确
+     * @access public
+     * @param string $code 用户验证码
+     * @return bool 用户验证码是否正确
+     */
+    public function checkByCache($code)
+    {
+        $key = $this->authcode(strtoupper($code));
+        // 验证码不能为空
+        $secode = Redis::instance()->get($key);
+        if (empty($code) || empty($secode)) {
+            Cache::set($key, '');
+            return false;
+        }
+
+        Cache::set($key, '');
+        return true;
     }
 }
