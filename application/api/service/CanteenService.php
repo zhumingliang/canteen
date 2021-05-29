@@ -400,10 +400,50 @@ class CanteenService
         if (empty($company_id)) {
             $company_id = Token::getCurrentTokenVar('company_id');
         }
-        $canteens = CanteenT::where('c_id', $company_id)
-            ->where('state', CommonEnum::STATE_IS_OK)
-            ->field('id,name')->select()->toArray();
+
+        $grade = Token::getCurrentTokenVar('grade');
+        if ($grade == AdminEnum::COMPANY_OTHER) {
+            $adminId = Token::getCurrentUid();
+            $canteens = AdminCanteenT::canteens($adminId);
+
+        } else {
+            $canteens = CanteenT::where('c_id', $company_id)
+                ->where('state', CommonEnum::STATE_IS_OK)
+                ->field('id,name,"canteen" as type')->select()
+                ->toArray();
+
+        }
         return $canteens;
+    }
+
+
+    public function companyCanteens2($company_id)
+    {
+            $canteens = CanteenT::where('c_id', $company_id)
+                ->where('state', CommonEnum::STATE_IS_OK)
+                ->field('id,name,"canteen" as type')->select()
+                ->toArray();
+        return $canteens;
+    }
+
+
+    public function checkCanteens($canteen_id)
+    {
+        return $canteen_id;
+        $grade = Token::getCurrentTokenVar('grade');
+        if ($canteen_id || $grade != AdminEnum::COMPANY_OTHER) {
+            return $canteen_id;
+        }
+
+        $adminId = Token::getCurrentUid();
+        $canteens = AdminCanteenT::canteens($adminId);
+        $canteenIds = [];
+        foreach ($canteens as $k => $v) {
+            array_push($canteenIds, $v['id']);
+        }
+        return implode(',', $canteenIds);
+
+
     }
 
     public function consumptionPlace($company_id)
@@ -411,9 +451,19 @@ class CanteenService
         if (empty($company_id)) {
             $company_id = Token::getCurrentTokenVar('company_id');
         }
-        $canteens = CanteenT::where('c_id', $company_id)
-            ->where('state', CommonEnum::STATE_IS_OK)
-            ->field('id,name,"canteen" as type')->select()->toArray();
+
+        $grade = Token::getCurrentTokenVar('grade');
+        if ($grade == AdminEnum::COMPANY_OTHER) {
+            $adminId = Token::getCurrentUid();
+            $canteens = AdminCanteenT::canteens($adminId);
+
+        } else {
+            $canteens = CanteenT::where('c_id', $company_id)
+                ->where('state', CommonEnum::STATE_IS_OK)
+                ->field('id,name,"canteen" as type')->select()
+                ->toArray();
+
+        }
 
         //获取企业小卖部
         $shop = ShopT::where('c_id', $company_id)

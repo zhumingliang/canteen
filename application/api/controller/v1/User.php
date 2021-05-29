@@ -157,5 +157,28 @@ class User extends BaseController
         return json(new SuccessMessageWithData(['data' => $user]));
     }
 
+    /**
+     * @api {GET} /api/v1/user/punishment 微信端-获取当前惩罚策略信息
+     * @apiGroup  Official
+     * @apiVersion 3.0.0
+     * @apiDescription   微信端-获取当前惩罚策略信息
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/user/punishment
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"punishment":1,"staff_status":1,"config":{"no_meal":3,"no_booking":3}}}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     * @apiSuccess (返回参数说明) {int} punishment 当前企业是否开启惩罚消费策略 1 ： 开启；2 未开启
+     * @apiSuccess (返回参数说明) {int} staff_status 用户状态  1 ： 正常；2 黑名单
+     * @apiSuccess (返回参数说明) {string} config  饭堂惩罚消费策略配置
+     * @apiSuccess (返回参数说明) {int} no_meal  订餐未就餐限制次数
+     * @apiSuccess (返回参数说明) {int} no_booking  未订餐就餐限制次数
+     */
+    public function punishment()
+    {
+        $punishment = (new UserService())->checkUserPunishment();
+        return json(new SuccessMessageWithData(['data' => $punishment]));
+    }
+
 
 }

@@ -14,13 +14,14 @@ Route::rule('api/:version/index', 'api/:version.Index/index');
 Route::rule('api/:version/token', 'api/:version.Index/token');
 Route::rule('api/:version/test', 'api/:version.Index/test');
 
-Route::post('api/:version/token/admin', 'api/:version.Token/getAdminToken');
-Route::post('api/:version/token/admin/bind', 'api/:version.Token/bindSocket');
+Route::rule('api/:version/token/admin', 'api/:version.Token/getAdminToken');
+Route::rule('api/:version/token/admin/bind', 'api/:version.Token/bindSocket');
 //Route::rule('api/:version/token/official', 'api/:version.Token/getOfficialToken')->middleware(\Naixiaoxin\ThinkWechat\Middleware\OauthMiddleware::class);
 Route::rule('api/:version/token/official', 'api/:version.Token/getOfficialToken');
 Route::rule('api/:version/token/machine', 'api/:version.Token/getMachineToken');
 Route::rule('api/:version/token/login/out', 'api/:version.Token/loginOut');
 Route::post('api/:version/token/supplier', 'api/:version.Token/getSupplierToken');
+Route::rule('api/:version/token/verify', 'api/:version.Token/verify');
 
 Route::post('api/:version/module/system/save', 'api/:version.Module/saveSystem');;
 Route::post('api/:version/module/system/canteen/save', 'api/:version.Module/saveSystemCanteen');
@@ -195,6 +196,8 @@ Route::get('api/:version/user/canteenMenus', 'api/:version.User/userCanteenMenus
 Route::get('api/:version/user/canteens', 'api/:version.User/userCanteens');
 Route::get('api/:version/user/card', 'api/:version.User/mealCard');
 Route::get('api/:version/user/phone', 'api/:version.User/userPhone');
+Route::get('api/:version/user/punishment', 'api/:version.User/punishment');
+
 
 Route::post('api/:version/order/personChoice/save', 'api/:version.Order/personChoice');
 Route::post('api/:version/order/personChoice/outside/save', 'api/:version.Order/personChoiceOutsider');
@@ -214,6 +217,7 @@ Route::post('api/:version/order/changeAddress', 'api/:version.Order/changeOrderA
 Route::post('api/:version/order/handelOrderedNoMeal', 'api/:version.Order/handelOrderedNoMeal');
 Route::get('api/:version/order/userOrderings', 'api/:version.Order/userOrderings');
 Route::get('api/:version/order/consumptionRecords', 'api/:version.Order/consumptionRecords');
+Route::get('api/:version/order/consumptionRecords/statistic', 'api/:version.Order/officialConsumptionStatistic');
 Route::get('api/:version/order/detail', 'api/:version.Order/orderDetail');
 Route::get('api/:version/order/consumptionRecords/detail', 'api/:version.Order/recordsDetail');
 Route::get('api/:version/order/managerOrders', 'api/:version.Order/managerOrders');
@@ -241,7 +245,7 @@ Route::post('api/:version/outsider/order/money', 'api/:version.Order/getOutsider
 Route::post('api/:version/order/money/check', 'api/:version.Order/checkOrderMoney');
 Route::post('api/:version/order/pre/count/change', 'api/:version.Order/updatePrepareOrderCount');
 Route::post('api/:version/order/pre/submit', 'api/:version.Order/submitOrder');
-
+Route::get('api/:version/order/managerOrderStatistic', 'api/:version.Order/managerOrderStatistic');
 
 Route::post('api/:version/address/save', 'api/:version.Address/save');
 Route::post('api/:version/address/update', 'api/:version.Address/update');
@@ -319,6 +323,8 @@ Route::post('api/:version/wallet/pay', 'api/:version.Wallet/saveOrder');
 Route::get('api/:version/wallet/pay/getPreOrder', 'api/:version.Wallet/getPreOrder');
 Route::get('api/:version/wallet/pay/nonghang/link', 'api/:version.Wallet/payLink');
 Route::rule('api/:version/wallet/WXNotifyUrl', 'api/:version.Wallet/WXNotifyUrl');
+Route::get('api/:version/wallet/rechargeStatistic', 'api/:version.Wallet/rechargeStatistic');
+Route::get('api/:version/wallet/rechargeStatistic/export', 'api/:version.Wallet/exportRechargeStatistic');
 
 
 Route::rule('api/:version/service/printer', 'api/:version.Service/printer');
@@ -383,6 +389,16 @@ Route::post('api/:version/nextmonthpay/payMoneyAll', 'api/:version.NextMonthPay/
 Route::post('api/:version/nextmonthpay/selectPaySetting', 'api/:version.NextMonthPay/selectPaySetting');
 Route::post('api/:version/nextmonthpay/nextMonthOutput', 'api/:version.NextMonthPay/nextMonthOutput');
 
+Route::get('api/:version/punishment/strategyDetail', 'api/:version.Punishment/strategyDetail');
+Route::post('api/:version/punishment/updateStrategy', 'api/:version.Punishment/updateStrategy');
+Route::get('api/:version/punishment/getPunishmentStaffInfo', 'api/:version.Punishment/getPunishmentStaffInfo');
+Route::get('api/:version/punishment/exportPunishmentStaffInfo', 'api/:version.Punishment/exportPunishmentStaffInfo');
+Route::post('api/:version/punishment/updatePunishmentStatus', 'api/:version.Punishment/updatePunishmentStatus');
+Route::get('api/:version/punishment/getPunishmentEditDetails', 'api/:version.Punishment/getPunishmentEditDetails');
+Route::get('api/:version/punishment/getStaffMaxPunishment', 'api/:version.Punishment/getStaffMaxPunishment');
+Route::get('api/:version/punishment/exportPunishmentEditDetails', 'api/:version.Punishment/exportPunishmentEditDetails');
+Route::get('api/:version/punishment/penaltyDetails', 'api/:version.Punishment/penaltyDetails');
+Route::get('api/:version/punishment/exportPunishmentRecord', 'api/:version.Punishment/exportPunishmentRecord');
 
 Route::get('api/:version/excels', 'api/:version.Excel/excels');
 Route::post('api/:version/excel/delete', 'api/:version.Excel/delete');

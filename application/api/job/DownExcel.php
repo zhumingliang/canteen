@@ -17,6 +17,7 @@ use app\api\model\OrderMaterialV;
 use app\api\model\OrderSettlementV;
 use app\api\model\OrderStatisticV;
 use app\api\model\OrderTakeoutStatisticV;
+use app\api\model\RechargeCashT;
 use app\api\model\RechargeV;
 use app\api\model\ShopOrderStatisticV;
 use app\api\model\ShopOrderV;
@@ -31,6 +32,7 @@ use app\api\service\GatewayService;
 use app\api\service\LogService;
 use app\api\service\MaterialService;
 use app\api\service\NextMonthPayService;
+use app\api\service\PunishmentService;
 use app\api\service\ShopService;
 use app\api\service\Token;
 use app\api\service\WalletService;
@@ -70,15 +72,6 @@ class DownExcel
                 $job->delete();
             } else {
                 $job->delete();
-                /*       if ($job->attempts() > 3) {
-                           //通过这个方法可以检查这个任务已经重试了几次了
-                           $code = $data['company_id'] . ":" . $data['u_id'] . ":" . $data['type'];
-                           LogService::saveJob("<warn>导入excel已经重试超过3次，现在已经删除该任务编号：$code" . "</warn>\n");
-                           $this->clearUploading($data['company_id'], $data['u_id'], $data['type']);
-                           $job->delete();
-                       } else {
-                           $job->release(3); //重发任务
-                       }*/
             }
         } catch (\Exception $e) {
             LogService::saveJob("<warn>导出Excel任务执行失败：" . $e->getMessage());
@@ -180,6 +173,18 @@ class DownExcel
                 case 'staff';
                     $this->exportStaffs($data);
                     break;
+                case 'rechargeTotal';
+                    $this->exportRechargeTotal($data);
+                    break;
+                case 'punishmentStaffInfo';
+                    $this->exportpunishmentStaffInfo($data);
+                    break;
+                case 'punishmentEditDetails';
+                    $this->exportpunishmentEditDetails($data);
+                    break;
+                case 'exportPunishmentRecord';
+                    $this->exportPunishmentRecord($data);
+                    break;
             }
             return true;
         } catch (Exception $e) {
@@ -189,7 +194,85 @@ class DownExcel
 
     }
 
-    public function exportStaffs($data)
+    public function exportRechargeTotal($data)
+    {
+
+        $company_id = $data['company_id'];
+        $time_begin = $data['time_begin'];
+        $time_end = $data['time_end'];
+        $downId = $data['down_id'];
+        $phone = $data['phone'];
+        $username = $data['username'];
+        $department_id = $data['department_id'];
+        $SCRIPT_FILENAME = $data['SCRIPT_FILENAME'];
+        $records = RechargeCashT::exportRechargeTotal($time_begin, $time_end, $username, $department_id, $phone, $company_id);
+        if (count($records)) {
+            foreach ($records as $k => $v) {
+                $records[$k]['time'] = $time_begin . '-' . $time_end;
+            }
+        }
+        $header = ['时间段', '部门', '姓名', '手机号码', '充值金额'];
+        $file_name = "充值统计";
+        $url = (new ExcelService())->makeExcel2($header, $records, $file_name, $SCRIPT_FILENAME);
+        $this->saveExcel($downId, $url, $file_name);
+    }
+
+    public
+    function exportpunishmentStaffInfo($data)
+    {
+        $key = $data['key'];
+        $company_id = $data['company_id'];
+        $company_name = $data['company_name'];
+        $status = $data['status'];
+        $downId = $data['down_id'];
+        $SCRIPT_FILENAME = $data['SCRIPT_FILENAME'];
+        $punishmentStaffInfo = (new PunishmentService())->prefixExportPunishmentStaffInfo($key, $company_id, $company_name, $status);
+        $header = ['企业名称', '饭堂', '人员类型', '姓名', '手机号码', '状态', '订餐未就餐违规次数', '未订餐就餐违规次数'];
+        $file_name = "惩罚管理";
+        $url = (new ExcelService())->makeExcel2($header, $punishmentStaffInfo, $file_name, $SCRIPT_FILENAME);
+        $this->saveExcel($downId, $url, $file_name);
+    }
+
+    public
+    function exportpunishmentEditDetails($data)
+    {
+        $key = $data['key'];
+        $company_id = $data['company_id'];
+        $company_name = $data['company_name'];
+        $canteen_id = $data['canteen_id'];
+        $time_begin = $data['time_begin'];
+        $time_end = $data['time_end'];
+        $downId = $data['down_id'];
+        $SCRIPT_FILENAME = $data['SCRIPT_FILENAME'];
+        $punishmentStaffInfo = (new PunishmentService())->prefixExportPunishmentEditDetails($key, $company_id, $company_name, $canteen_id,
+            $time_begin, $time_end);
+        $header = ['日期', '企业名称', '饭堂', '人员类型', '姓名', '手机号码', '旧状态', '订餐未就餐违规次数(旧)', '未订餐就餐违规次数(旧)', '新状态', '订餐未就餐违规次数(新)', '未订餐就餐违规次数(新)'];
+        $file_name = "惩罚编辑详情";
+        $url = (new ExcelService())->makeExcel2($header, $punishmentStaffInfo, $file_name, $SCRIPT_FILENAME);
+        $this->saveExcel($downId, $url, $file_name);
+    }
+
+    public function exportPunishmentRecord($data)
+    {
+        $time_begin = $data['time_begin'];
+        $time_end = $data['time_end'];
+        $company_id = $data['company_id'];
+        $canteen_id = $data['canteen_id'];
+        $department_id = $data['department_id'];
+        $staff_name = $data['staff_name'];
+        $meal = $data['meal'];
+        $downId = $data['down_id'];
+        $SCRIPT_FILENAME = $data['SCRIPT_FILENAME'];
+        $punishmentRecord = (new PunishmentService())->ExportPenaltyDetails($time_begin, $time_end, $company_id
+            , $canteen_id, $department_id, $staff_name, $meal);
+        $header = ['违规日期', '违规地点', '部门', '姓名', '餐次', '类型', '金额', '状态'];
+        $file_name = "惩罚明细";
+        $url = (new ExcelService())->makeExcel2($header, $punishmentRecord, $file_name, $SCRIPT_FILENAME);
+        $this->saveExcel($downId, $url, $file_name);
+    }
+
+    public
+    function exportStaffs($data)
     {
 
         $company_id = $data['company_id'];
@@ -220,7 +303,8 @@ class DownExcel
 
     }
 
-    public function exportMaterials($data)
+    public
+    function exportMaterials($data)
     {
         $params = $data['params'];
         $key = $data['key'];
@@ -235,7 +319,8 @@ class DownExcel
 
     }
 
-    public function exportOrderMaterials($data)
+    public
+    function exportOrderMaterials($data)
     {
         $company_id = $data['company_id'];
         $canteen_id = $data['canteen_id'];
@@ -254,7 +339,8 @@ class DownExcel
 
     }
 
-    public function exportFoodMaterials($data)
+    public
+    function exportFoodMaterials($data)
     {
         $params = $data['params'];
         $downId = $data['down_id'];
@@ -269,7 +355,8 @@ class DownExcel
 
     }
 
-    public function exportSalesReportToManager($data)
+    public
+    function exportSalesReportToManager($data)
     {
         $supplier_id = $data['supplier_id'];
         $time_begin = $data['time_begin'];
@@ -286,7 +373,8 @@ class DownExcel
 
     }
 
-    public function exportShopConsumptionStatistic($data)
+    public
+    function exportShopConsumptionStatistic($data)
     {
         $category_id = $data['category_id'];
         $status = $data['status'];
@@ -343,7 +431,8 @@ class DownExcel
 
     }
 
-    public function exportOrderStatisticToManager($data)
+    public
+    function exportOrderStatisticToManager($data)
     {
         $name = $data['name'];
         $phone = $data['phone'];
@@ -363,7 +452,8 @@ class DownExcel
         $this->saveExcel($downId, $url, $file_name);
     }
 
-    public function exportUserBalance($data)
+    public
+    function exportUserBalance($data)
     {
         $department_id = $data['department_id'];
         $user = $data['user'];
@@ -384,7 +474,8 @@ class DownExcel
 
     }
 
-    public function exportUserBalanceWithAccount($data)
+    public
+    function exportUserBalanceWithAccount($data)
     {
         $department_id = $data['department_id'];
         $user = $data['user'];
@@ -409,7 +500,8 @@ class DownExcel
 
     }
 
-    public function exportRechargeRecordsWithAccount($data)
+    public
+    function exportRechargeRecordsWithAccount($data)
     {
         $admin_id = $data['admin_id'];
         $department_id = $data['department_id'];
@@ -420,17 +512,47 @@ class DownExcel
         $downId = $data['down_id'];
         $SCRIPT_FILENAME = $data['SCRIPT_FILENAME'];
         $type = $data['type'];
-        $records = RechargeV::exportRechargeRecordsWithAccount($time_begin, $time_end, $type, $admin_id, $username, $company_id, $department_id);
-        $header = ['创建时间', '部门', '姓名', "手机号", '账户名称', '充值金额', '充值途径', '充值人员', '备注'];
+        $money_type = $data['money_type'];
+        $moneyTypeArr = [
+            0 => "合计金额",
+            1 => "总充值金额",
+            2 => "总退款金额"
+        ];
+        $allMoney = 0;
+        $records = RechargeV::exportRechargeRecordsWithAccount($time_begin, $time_end, $type, $admin_id, $username, $company_id, $department_id, $money_type);
+        if (count($records)) {
+            $allMoney = array_sum(array_column($records, 'money'));
+            if ($money_type) {
+                $allMoney = abs($allMoney);
+            }
+            foreach ($records as $k => $v) {
+                $records[$k]['money']=abs($v['money']) ;
+            }
+        }
+        array_push($records, [
+            'create_time' => $moneyTypeArr[$money_type],
+            'department' => '',
+            'username' => '',
+            'phone' => '',
+            'account' => '',
+            'money' => $allMoney,
+            'money_type' => '',
+            'type' => '',
+            'admin' => '',
+            'remark' => ''
+        ]);
+        $header = ['创建时间', '部门', '姓名', "手机号", '账户名称', '金额', '状态', '充值途径', '充值人员', '备注'];
         $file_name = "充值记录明细-" . $time_begin . "-" . $time_end;
         $url = (new ExcelService())->makeExcel2($header, $records, $file_name, $SCRIPT_FILENAME);
         $this->saveExcel($downId, $url, $file_name);
 
     }
 
-    private function exportRechargeRecords($data)
+    private
+    function exportRechargeRecords($data)
     {
         $type = $data['type'];
+        $money_type = $data['money_type'];
         $admin_id = $data['admin_id'];
         $department_id = $data['department_id'];
         $time_begin = $data['time_begin'];
@@ -439,15 +561,45 @@ class DownExcel
         $company_id = $data['company_id'];
         $downId = $data['down_id'];
         $SCRIPT_FILENAME = $data['SCRIPT_FILENAME'];
+        $moneyTypeArr = [
+            0 => "合计金额",
+            1 => "总充值金额",
+            2 => "总退款金额"
+        ];
+        $allMoney = 0;
         $records = RechargeV::exportRechargeRecords($time_begin, $time_end, $type,
-            $admin_id, $username, $company_id, $department_id);
-        $header = ['创建时间', '部门', '姓名', '手机号', '充值金额', '充值途径', '充值人员', '备注'];
-        $file_name = "充值记录明细-".$time_begin . "-" . $time_end ;
+            $admin_id, $username, $company_id, $department_id, $money_type);
+        if (count($records)) {
+            $allMoney = array_sum(array_column($records, 'money'));
+            if ($money_type) {
+                $allMoney = abs($allMoney);
+            }
+            foreach ($records as $k => $v) {
+                $records[$k]['money']=abs($v['money']) ;
+            }
+
+        }
+
+
+        array_push($records, [
+            'create_time' => $moneyTypeArr[$money_type],
+            'department' => '',
+            'username' => '',
+            'phone' => '',
+            'money' => $allMoney,
+            'money_type' => '',
+            'type' => '',
+            'admin' => '',
+            'remark' => ''
+        ]);
+        $header = ['创建时间', '部门', '姓名', '手机号', '金额', "类型", '途径', '充值人员', '备注'];
+        $file_name = "充值记录明细-" . $time_begin . "-" . $time_end;
         $url = (new ExcelService())->makeExcel2($header, $records, $file_name, $SCRIPT_FILENAME);
         $this->saveExcel($downId, $url, $file_name);
     }
 
-    private function receptionsForCMSOutput($data)
+    private
+    function receptionsForCMSOutput($data)
     {
         $whereStr = '';
         $ordering_date = $data['ordering_date'];
@@ -461,8 +613,10 @@ class DownExcel
         $downId = $data['down_id'];
         $SCRIPT_FILENAME = $data['SCRIPT_FILENAME'];
         if (!empty($company_id)) {
-            if ($company_id !== "ALL") {
-                $whereStr .= 'and t7.id =' . $company_id . ' ';
+            if (strpos($company_id, ',') !== false) {
+                $whereStr .= 'and FIND_IN_SET(t7.id,"' . $company_id . '")';
+            } else {
+                $whereStr .= 'and t7.id = ' . $company_id . ' ';
             }
         }
         if (!empty($canteen_id)) {
@@ -508,7 +662,8 @@ class DownExcel
 
     }
 
-    private function receptionsForApplyOutput($data)
+    private
+    function receptionsForApplyOutput($data)
     {
         $ordering_date = $data['ordering_date'];
         $apply_name = $data['apply_name'];
@@ -568,7 +723,8 @@ class DownExcel
 
     }
 
-    private function exportNextMonthPayStatistic($data)
+    private
+    function exportNextMonthPayStatistic($data)
     {
         $pay_method = $data['pay_method'];
         $status = $data['status'];
@@ -591,7 +747,8 @@ class DownExcel
 
     }
 
-    public function exportFace($data)
+    public
+    function exportFace($data)
     {
         $canteen_id = $data['canteen_id'];
         $dinner_id = $data['dinner_id'];
@@ -664,7 +821,8 @@ class DownExcel
 
     }
 
-    public function exportTakeoutStatistic($data)
+    public
+    function exportTakeoutStatistic($data)
     {
         $canteen_id = $data['canteen_id'];
         $dinner_id = $data['dinner_id'];
@@ -687,7 +845,8 @@ class DownExcel
 
     }
 
-    public function exportConsumptionStatistic($data)
+    public
+    function exportConsumptionStatistic($data)
     {
         $canteen_id = $data['canteen_id'];
         $status = $data['status'];
@@ -731,6 +890,9 @@ class DownExcel
             case OrderEnum::STATISTIC_BY_STATUS:
                 $info = (new  OrderStatisticServiceV1())->consumptionStatisticByStatus($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id, $phone, $order_type, $version);
                 break;
+            case OrderEnum::STATISTIC_BY_DAY:
+                $info = (new  OrderStatisticServiceV1())->exportConsumptionStatisticByDay($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id, $phone, $order_type, $version);
+                break;
             default:
                 throw new ParameterException();
         }
@@ -767,7 +929,8 @@ class DownExcel
 
     }
 
-    private function exportConsumptionStatisticWithAccount($data)
+    public
+    function exportConsumptionStatisticWithAccount($data)
     {
         $canteen_id = $data['canteen_id'];
         $status = $data['status'];
@@ -782,6 +945,7 @@ class DownExcel
         $order_type = $data['order_type'];
         $downId = $data['down_id'];
         $SCRIPT_FILENAME = $data['SCRIPT_FILENAME'];
+        $version = $data['version'];
         $locationName = (new  OrderStatisticServiceV1())->getLocationName($order_type, $canteen_id);
         $fileNameArr = [
             0 => $locationName . "消费总报表",
@@ -793,7 +957,6 @@ class DownExcel
             6 => $locationName . "小卖部消费总报表",
             7 => $locationName . "小卖部退款总报表"
         ];
-        $version = \think\facade\Request::param('version');
         switch ($data['type']) {
             case OrderEnum::STATISTIC_BY_DEPARTMENT:
                 $info = (new  OrderStatisticServiceV1())->consumptionStatisticByDepartment($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id, $phone, $order_type, $version);
@@ -809,6 +972,9 @@ class DownExcel
                 break;
             case OrderEnum::STATISTIC_BY_STATUS:
                 $info = (new  OrderStatisticServiceV1())->consumptionStatisticByStatus($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id, $phone, $order_type, $version);
+                break;
+            case OrderEnum::STATISTIC_BY_DAY:
+                $info = (new  OrderStatisticServiceV1())->exportConsumptionStatisticByDay($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id, $phone, $order_type, $version);
                 break;
             default:
                 throw new ParameterException();
@@ -845,7 +1011,8 @@ class DownExcel
         $this->saveExcel($downId, $url, $file_name);
     }
 
-    private function exportOrderStatisticDetail($data)
+    private
+    function exportOrderStatisticDetail($data)
     {
         $canteen_id = $data['canteen_id'];
         $dinner_id = $data['dinner_id'];
@@ -870,7 +1037,8 @@ class DownExcel
 
     }
 
-    private function exportOrderSettlement($data)
+    private
+    function exportOrderSettlement($data)
     {
         $canteen_id = $data['canteen_id'];
         $dinner_id = $data['dinner_id'];
@@ -895,7 +1063,8 @@ class DownExcel
 
     }
 
-    private function exportOrderSettlementWithAccount($data)
+    private
+    function exportOrderSettlementWithAccount($data)
     {
         $canteen_id = $data['canteen_id'];
         $dinner_id = $data['dinner_id'];
@@ -919,7 +1088,8 @@ class DownExcel
         $this->saveExcel($downId, $url, $file_name);
     }
 
-    public function exportOrderStatistic($data)
+    public
+    function exportOrderStatistic($data)
     {
 
         $canteen_id = $data['canteen_id'];
@@ -937,7 +1107,8 @@ class DownExcel
     }
 
 
-    private function saveExcel($downId, $url, $file_name)
+    private
+    function saveExcel($downId, $url, $file_name)
     {
         $url = config('setting.excelSSL') . $url;
         $excel = DownExcelT::get($downId);

@@ -4,6 +4,7 @@
 namespace app\api\service;
 
 
+use app\api\job\UploadExcel;
 use app\api\model\CanteenT;
 use app\api\model\CompanyAccountT;
 use app\api\model\CompanyDepartmentT;
@@ -24,6 +25,7 @@ use app\lib\exception\UpdateException;
 use http\Params;
 use think\Db;
 use think\Exception;
+use think\Queue;
 use think\Request;
 use function GuzzleHttp\Promise\each_limit;
 use function GuzzleHttp\Psr7\str;
@@ -251,16 +253,18 @@ class DepartmentService
     public
     function uploadStaffs($company_id, $staffs_excel)
     {
-        $date = (new ExcelService())->saveExcel($staffs_excel);
-        $res = $this->prefixStaffs($company_id, $date);
+        //$date = (new ExcelService())->saveExcel($staffs_excel);
+        $fileName = (new ExcelService())->saveExcelReturnName($staffs_excel);
+        $res = $this->prefixStaffs($company_id, $fileName);
+
         return $res;
     }
 
     private
-    function prefixStaffs($company_id, $data)
+    function prefixStaffs($company_id, $fileName)
     {
         try {
-            Db::startTrans();
+            $data = (new ExcelService())->importExcel($fileName);
             $types = (new AdminService())->allTypes();
             $canteens = (new CanteenService())->companyCanteens($company_id);
             $departments = $this->companyDepartments($company_id);
@@ -318,25 +322,121 @@ class DepartmentService
                 }
 
             }
+
             if (count($fail)) {
                 return [
+                    'res' => false,
                     'fail' => $fail
+                ];
+            } else {
+
+                $this->uploadExcelTask($company_id, $fileName, 'staff');
+                return [
+                    'res' => true,
+                    'fail' => []
                 ];
             }
 
-            if (count($success)) {
-                $all = (new CompanyStaffT())->saveAll($success);
-                if (!$all) {
-                    throw  new SaveException();
-                }
-            }
-            Db::commit();
         } catch (Exception $e) {
-            Db::rollback();
             throw $e;
         }
 
 
+    }
+
+    /* private
+      function prefixStaffs($company_id, $fileName)
+      {
+          try {
+              $data = (new ExcelService())->importExcel($fileName);
+              $types = (new AdminService())->allTypes();
+              $canteens = (new CanteenService())->companyCanteens($company_id);
+              $departments = $this->companyDepartments($company_id);
+              $staffs = $this->getCompanyStaffs($company_id);
+              //获取企业消费方式
+              $consumptionType = (new CompanyService())->consumptionType($company_id);
+              $consumptionTypeArr = explode(',', $consumptionType['consumptionType']);
+              $phones = $staffs['phones'];
+              $faceCodes = $staffs['faceCodes'];
+              $cardNums = $staffs['cardNums'];
+              $fail = array();
+              $success = array();
+              $param_key = array();
+              if (count($data) < 2) {
+                  return [];
+              }
+
+              foreach ($data as $k => $v) {
+                  if ($k == 2) {
+                      $param_key = $data[$k];
+                  } else if ($k > 2 && !empty($data[$k])) {
+
+                      //检测手机号是否已经存在
+                      if (in_array($v[5], $phones)) {
+                          $fail[] = "第" . $k . "数据有问题：手机号" . $v[5] . "系统已经存在";
+                          break;
+                      } else if (!$this->isMobile($v[5])) {
+                          $fail[] = "第" . $k . "数据有问题：手机号格式错误";
+                          break;
+                      } else {
+                          array_push($phones, $v[5]);
+                      }
+                      $faceCode = trim($v[9]);
+                      //检测人脸识别id是否存在
+                      if (in_array('face', $consumptionTypeArr)) {
+                          if (!empty($faceCode) && in_array($faceCode, $faceCodes)) {
+                              $fail[] = "第" . $k . "数据有问题：人脸识别ID" . $faceCode . "系统已经存在";
+                              break;
+                          } else {
+                              if (!empty($faceCode)) {
+                                  array_push($faceCodes, $faceCode);
+                              }
+                          }
+
+                      }
+                      $check = $this->validateParams($company_id, $param_key, $data[$k], $types, $canteens, $departments, $consumptionTypeArr, $cardNums);
+                      if (!$check['res']) {
+                          $fail[] = "第" . $k . "数据有问题：" . $check['info']['msg'];
+                          continue;
+                      }
+                      if (in_array('card', $consumptionTypeArr) && strlen($v[6])) {
+                          array_push($cardNums, $v[6]);
+                      }
+                      $success[] = $check['info'];
+                  }
+
+              }
+              return [
+                  'res' => false,
+                  'fail' => $fail
+              ];
+
+             // Db::commit();
+          } catch (Exception $e) {
+             // Db::rollback();
+              throw $e;
+          }
+
+
+      }*/
+
+
+    public function uploadExcelTask($company_id, $fileName, $type)
+    {
+        //设置限制未上传完成不能继续上传
+        $jobHandlerClassName = 'app\api\job\UploadExcel';//负责处理队列任务的类
+        $jobQueueName = "uploadQueue";//队列名称
+        $jobData = [
+            'type' => $type,
+            'u_id' => Token::getCurrentUid(),
+            'company_id' => $company_id,
+            'fileName' => $fileName,
+        ];//当前任务的业务数据
+        $isPushed = Queue::push($jobHandlerClassName, $jobData, $jobQueueName);
+        //将该任务推送到消息队列
+        if ($isPushed == false) {
+            throw new SaveException(['msg' => '上传excel失败']);
+        }
     }
 
     private
@@ -520,6 +620,93 @@ class DepartmentService
             'res' => true,
             'info' => $data
         ];
+    }
+
+
+    public function uploadStaff($company_id, $fileName)
+    {
+        try {
+            Db::startTrans();
+            $staffsData = [];
+            $excelData = (new ExcelService())->importExcel($fileName);
+            $types = (new AdminService())->allTypes();
+            $canteens = (new CanteenService())->companyCanteens2($company_id);
+            $departments = $this->companyDepartments($company_id);
+            //获取企业消费方式
+            $consumptionType = (new CompanyService())->consumptionType($company_id);
+            $consumptionTypeArr = explode(',', $consumptionType['consumptionType']);
+
+            foreach ($excelData as $k2 => $data) {
+                if ($k2 < 3) {
+                    continue;
+                }
+                $canteen = trim($data[0]);
+                $department = trim($data[1]);
+                $staffType = trim($data[2]);
+                $code = trim($data[3]);
+                $name = trim($data[4]);
+                $phone = trim($data[5]);
+                $card_num = trim($data[6]);
+                $face_code = trim($data[9]);
+                $birthday = trim($data[8]);
+                $canteen_ids = [];
+                $state = trim($data[7]) == "启用" ? 1 : 2;
+                $canteen_arr = explode('|', $canteen);
+                foreach ($canteen_arr as $k => $v) {
+                    if (!strlen($v)) {
+                        continue;
+                    }
+                    $c_id = $this->checkParamExits($canteens, $v);
+                    array_push($canteen_ids, $c_id);
+                }
+                $d_id = $this->checkParamExits($departments, $department);
+                $t_id = $this->checkParamExits($types, $staffType);
+
+                if ($d_id && $t_id) {
+
+                    $staffData = [
+                        'd_id' => $d_id,
+                        't_id' => $t_id,
+                        'code' => $code,
+                        'username' => $name,
+                        'phone' => $phone,
+                        'company_id' => $company_id,
+                        'canteen_ids' => implode(',', $canteen_ids),
+                        'state' => $state
+                    ];
+
+                    if (in_array('card', $consumptionTypeArr)) {
+                        $staffData['card_num'] = $card_num;
+                        if (count(explode('-', $birthday)) == 3 || count(explode('/', $birthday)) == 3) {
+                            $staffData['birthday'] = $birthday;
+                        } else {
+                            $staffData['birthday'] = gmdate("Y-m-d", ($birthday - 25569) * 86400);
+                        }
+                    }
+
+                    if (in_array('face', $consumptionTypeArr)) {
+                        $staffData['face_code'] = $face_code;
+
+                    }
+                    array_push($staffsData, $staffData);
+
+                }
+            }
+
+
+            $res = (new CompanyStaffT())->saveAll($staffsData);
+            Db::commit();
+            if (!$res) {
+                throw new SaveException();
+            }
+            return true;
+
+        } catch (Exception $e) {
+            Db::rollback();
+            return false;
+
+        }
+
     }
 
     private
@@ -855,8 +1042,9 @@ class DepartmentService
     function staffsForRecharge($page, $size, $department_id, $key)
     {
         $company_id = Token::getCurrentTokenVar('company_id');
+        $canteen_id = (new CanteenService())->checkCanteens(0);
         $accounts = CompanyAccountT::accountsWithSortsAndDepartmentId($company_id);
-        $staffs = CompanyStaffV:: staffsForRecharge($page, $size, $department_id, $key, $company_id);
+        $staffs = CompanyStaffV::staffsForRecharge2($page, $size, $department_id, $key, $company_id, $canteen_id);
         $data = $staffs['data'];
         if (count($data)) {
             foreach ($data as $k => $v) {

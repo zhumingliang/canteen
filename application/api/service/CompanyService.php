@@ -11,6 +11,7 @@ use app\api\model\ConsumptionStrategyT;
 use app\api\model\DinnerT;
 use app\api\model\PayNonghangConfigT;
 use app\api\model\PayWxConfigT;
+use app\api\model\PunishmentStrategyT;
 use app\api\model\ShopT;
 use app\api\model\StaffCardV;
 use app\api\model\StaffV;
@@ -395,16 +396,20 @@ class CompanyService
     {
 
         $canteenId = Token::getCurrentTokenVar('belong_id');
+        $companyId = Token::getCurrentTokenVar('company_id');
         //1.获取饭堂所有餐次设置
         $dinners = DinnerT::dinners($canteenId);
         //2.获取饭堂消费策略
         $strategies = ConsumptionStrategyT::infoToOffLine($canteenId);
         //获取饭堂配置
         $accountConfig = CanteenAccountT::accountForOffLine($canteenId);
+        //获取企业惩罚策略配置
+        $punishmentConfig = PunishmentStrategyT::companyStrategy($companyId);
         return [
             'dinners' => $dinners,
             'strategies' => $strategies,
-            'canteen_config' => $accountConfig
+            'canteen_config' => $accountConfig,
+            'punishment_config' => $punishmentConfig
         ];
 
 

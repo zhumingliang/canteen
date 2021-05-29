@@ -5,6 +5,7 @@ namespace app\api\service\v2;
 
 
 use app\api\model\CanteenAccountT;
+use app\api\model\CompanyStaffT;
 use app\api\model\OrderingV;
 use app\api\model\OrderPrepareFoodT;
 use app\api\model\OrderPrepareSubT;
@@ -12,12 +13,14 @@ use app\api\model\OrderPrepareT;
 use app\api\model\PayT;
 use app\api\service\CanteenService;
 use app\api\service\Token;
+use app\api\service\UserService;
 use app\api\service\WalletService;
 use app\lib\enum\CommonEnum;
 use app\lib\enum\OrderEnum;
 use app\lib\enum\PayEnum;
 use app\lib\enum\StrategyEnum;
 use app\lib\enum\UserEnum;
+use app\lib\exception\AuthException;
 use app\lib\exception\ParameterException;
 use app\lib\exception\SaveException;
 use app\lib\exception\UpdateException;
@@ -26,6 +29,7 @@ use think\Exception;
 
 class OrderService
 {
+    private $blacklist = 4;
     public function getOrderMoney($params)
     {
 
@@ -34,8 +38,16 @@ class OrderService
             $canteenId = Token::getCurrentTokenVar('current_canteen_id');
             $phone = Token::getCurrentTokenVar('phone');
             $companyId = Token::getCurrentTokenVar('current_company_id');
+            (new UserService())->getUserCompanyInfo($phone, $companyId);
+
             $staffId = Token::getCurrentTokenVar('staff_id');
             $outsider = Token::getCurrentTokenVar('outsiders');
+            if ($outsider==UserEnum::INSIDE){
+                $staff=CompanyStaffT::get($staffId);
+                if ($staff->status == $this->blacklist) {
+                    throw new AuthException(['msg' => "用户已进入黑名单，不能订餐"]);
+                }
+            }
             $uId = Token::getCurrentUid();
             $orderType = $params['type'];
             if (!empty($params['orders'])) {
@@ -496,6 +508,10 @@ class OrderService
     {
         $canteenId = Token::getCurrentTokenVar('current_canteen_id');
         $staffId = Token::getCurrentTokenVar('staff_id');
+        $staff=CompanyStaffT::get($staffId);
+        if ($staff->status == $this->blacklist) {
+            throw new AuthException(['msg' => "用户已进入黑名单，不能订餐"]);
+        }
 
         $outsider = Token::getCurrentTokenVar('outsiders');
         try {

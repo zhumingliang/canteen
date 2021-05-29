@@ -5,12 +5,14 @@ namespace app\api\service\v2;
 
 
 use app\api\model\PayT;
+use app\api\model\RechargeCashT;
 use app\api\service\LogService;
 use app\api\service\Token;
 use app\api\service\WeiXinPayService;
 use app\lib\enum\CommonEnum;
 use app\lib\enum\PayEnum;
 use app\lib\exception\ParameterException;
+use app\lib\exception\SaveException;
 
 class WalletService
 {
@@ -76,6 +78,24 @@ class WalletService
         ];
 
         return $status;
+    }
+
+
+    public function rechargeCash($params)
+    {
+        $detail = json_decode($params['detail'], true);
+        if (empty($detail)) {
+            throw new ParameterException(['msg' => '充值用户信息格式错误']);
+        }
+        $money = $params['type'] == 1 ? abs($params['money']) : 0 - abs($params['money']);
+        $company_id = Token::getCurrentTokenVar('company_id');
+        $admin_id = Token::getCurrentUid();
+        $account_id = empty($params['account_id']) ? 0 : $params['account_id'];
+        $data = (new \app\api\service\WalletService())->prefixDetail($company_id, $admin_id, $detail, $account_id, $money, $params['remark'], $params['type']);
+        $cash = (new RechargeCashT())->saveAll($data);
+        if (!$cash) {
+            throw new SaveException();
+        }
     }
 
 }

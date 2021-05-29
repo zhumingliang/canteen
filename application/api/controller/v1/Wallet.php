@@ -8,6 +8,7 @@ use app\api\controller\BaseController;
 use app\api\model\OrderT;
 use app\api\model\PayT;
 use app\api\model\PayWxT;
+use app\api\model\RechargeCashT;
 use app\api\service\AdminService;
 use app\api\service\v2\DownExcelService;
 use app\api\service\WalletService;
@@ -130,6 +131,7 @@ class Wallet extends BaseController
      * http://canteen.tonglingok.com/api/v1/wallet/recharges?time_begin=2019-09-01&time_end=2019-11-01&admin_id=0&username&type=all&page=1&size=10&department_id
      * @apiParam (请求参数说明) {int} page 当前页码
      * @apiParam (请求参数说明) {int} size 每页多少条数据
+     * @apiParam (请求参数说明) {int} money_type 金额类型：0 全部；1：充值；2：退款
      * @apiParam (请求参数说明) {string} time_begin 查询开始时间
      * @apiParam (请求参数说明) {string} time_end 查询截止时间
      * @apiParam (请求参数说明) {String} username 被充值用户
@@ -137,24 +139,26 @@ class Wallet extends BaseController
      * @apiParam (请求参数说明) {int} department_id 部门id，全部传入0
      * @apiParam (请求参数说明) {String} type 充值途径:目前有：cash：现金；1:微信；2:农行；all：全部
      * @apiSuccessExample {json} 返回样例:
-     * {"msg":"ok","errorCode":0,"code":200,"data":{"total":2,"per_page":20,"current_page":1,"last_page":1,"data":[{"create_time":"2019-10-31 18:32:47","username":null,"money":"200.00","type":"cash","admin":"系统超级管理员","remark":""},{"create_time":"2019-10-31 18:32:48","username":null,"money":"200.00","type":"cash","admin":"系统超级管理员","remark":""}]}}
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"total":1039,"per_page":"1","current_page":1,"last_page":1039,"data":[{"id":164055,"create_time":"2021-05-10 11:54:28","username":"陈思祺","money":28,"type":"现金","admin":"财务部","remark":"","phone":"13421519824","account":"个人账户","department_id":230,"department":"外一科","money_type":1}],"statistic":219964}}
      * @apiSuccess (返回参数说明) {int} total 数据总数
      * @apiSuccess (返回参数说明) {int} per_page 每页多少条数据
      * @apiSuccess (返回参数说明) {int} current_page 当前页码
      * @apiSuccess (返回参数说明) {int} last_page 最后页码
+     * @apiSuccess (返回参数说明) {int} statistic  金额统计
      * @apiSuccess (返回参数说明) {String} create_time 创建时间
      * @apiSuccess (返回参数说明) {String} username  姓名
      * @apiSuccess (返回参数说明) {int} money 充值金额
      * @apiSuccess (返回参数说明) {int} account 账户名称
      * @apiSuccess (返回参数说明) {string} admin 充值人员
      * @apiSuccess (返回参数说明) {string} remark 备注
+     * @apiSuccess (返回参数说明) {string} money_type 金额状态：1：充值；2：退款
      */
-    public function rechargeRecords($page = 1, $size = 20, $type = 'all', $admin_id = 0, $username = '', $department_id = 0)
+    public function rechargeRecords($page = 1, $size = 20, $type = 'all', $admin_id = 0, $username = '', $department_id = 0, $money_type = 0)
     {
         $time_begin = Request::param('time_begin');
         $time_end = Request::param('time_end');
         $records = (new WalletService())->rechargeRecords($time_begin, $time_end,
-            $page, $size, $type, $admin_id, $username, $department_id);
+            $page, $size, $type, $admin_id, $username, $department_id, $money_type);
         return json(new SuccessMessageWithData(['data' => $records]));
 
     }
@@ -171,6 +175,7 @@ class Wallet extends BaseController
      * @apiParam (请求参数说明) {String} username 被充值用户
      * @apiParam (请求参数说明) {int} admin_id 充值人员id，全部传入0
      * @apiParam (请求参数说明) {int} department_id 部门id，全部传入0
+     * @apiParam (请求参数说明) {int} money_type 金额类型：0 全部；1：充值；2：退款
      * @apiParam (请求参数说明) {String} type 充值途径:目前有：cash：现金；1:微信；2:农行；all：全部
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200,"data":{"url":"http:\/\/canteen.tonglingok.com\/static\/excel\/download\/材料价格明细_20190817005931.xls"}}
@@ -178,12 +183,12 @@ class Wallet extends BaseController
      * @apiSuccess (返回参数说明) {string} msg 操作结果描述
      * @apiSuccess (返回参数说明) {string} url 下载地址
      */
-    public function exportRechargeRecords($type = 'all', $admin_id = 0, $username = '', $department_id = 0)
+    public function exportRechargeRecords($type = 'all', $admin_id = 0, $username = '', $department_id = 0, $money_type = 0)
     {
         $time_begin = Request::param('time_begin');
         $time_end = Request::param('time_end');
         (new DownExcelService())->exportRechargeRecords($time_begin, $time_end, $type,
-            $admin_id, $username, $department_id, 'rechargeRecords');
+            $admin_id, $username, $department_id, $money_type, 'rechargeRecords');
         return json(new  SuccessMessage());
         /*        $records = (new WalletService())->exportRechargeRecords($time_begin, $time_end, $type, $admin_id, $username, $department_id);
                 return json(new SuccessMessageWithData(['data' => $records]));*/
@@ -432,5 +437,106 @@ class Wallet extends BaseController
         $data = (new WalletService())->payLink();
         return json(new SuccessMessageWithData(['data' => $data]));
     }
+
+
+    /*www.canteen1.com/api/v1/recharge/monthRechargeMoney?consumption_time=2020-05&phone=13630434754&company_id=95
+   *{"msg":"ok","errorCode":0,"code":200,"data":1000.1}
+   * （请求参数）{string}consumption_time消费日期
+   * (返回参数）{int}data月充值总金额
+   */
+    //月充值合计
+    public function monthRechargeMoney()
+    {
+        $consumption_time = Request::param('consumption_time');
+        $staffId = \app\api\service\Token::getCurrentTokenVar('staff_id');
+        $rechargeMoney = (new WalletService())->monthRechargeMoney($staffId, $consumption_time);
+        return json(new SuccessMessageWithData(['data' => $rechargeMoney]));
+
+    }
+
+    /**
+     * @api {GET} /api/v1/wallet/rechargeStatistic CMS管理端-充值管理-充值记录统计
+     * @apiGroup  CMS管理端
+     * @apiVersion 3.0.0
+     * @apiDescription CMS管理端-充值管理-充值记录统计
+     * @apiExample {get}  请求样例:
+     * http://www.canteen1.com/api/v1/wallet/rechargeStatistic?begin_time=2020-01-01&end_time=2020-01-30&department_id=0&username=李君凤&page=1&size=10
+     * @apiParam (请求参数说明) {int} page 当前页码
+     * @apiParam (请求参数说明) {int} size 每页多少条数据
+     * @apiParam (请求参数说明) {string} begin_time  查询开始时间
+     * @apiParam (请求参数说明) {string} end_time  查询结束时间
+     * @apiParam (请求参数说明) {string} department_id  部门：传0代表全部
+     * @apiParam (请求参数说明) {string} username  员工姓名
+     * @apiParam (请求参数说明) {string} phone  员工手机号
+     * @apiParam (请求参数说明) {string} company_id  企业id
+     * @apiSuccessExample {json}返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"total":4,"per_page":"10","current_page":1,"last_page":1,"data":[{"department":"饭堂维护","username":"10","phone":"","money":"153.95","time":"2021-04-01-2021-04-30"},{"department":"饭堂维护","username":"黎灿嫦","phone":"","money":"12.03","time":"2021-04-01-2021-04-30"},{"department":"饭堂维护","username":"美东","phone":"","money":"101.00","time":"2021-04-01-2021-04-30"},{"department":"饭堂维护","username":"林志强","phone":"","money":"224.01","time":"2021-04-01-2021-04-30"}]}}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {String} msg 信息描述
+     * @apiSuccess (返回参数说明) {int} total 数据总数
+     * @apiSuccess (返回参数说明) {int} per_page 每页多少条数据
+     * @apiSuccess (返回参数说明) {int} current_page 当前页码
+     * @apiSuccess (返回参数说明) {int} last_page 最后页码
+     * @apiSuccess (返回参数说明) {string} department 部门
+     * @apiSuccess (返回参数说明) {string} username 姓名
+     * @apiSuccess (返回参数说明) {string} phone 电话号码
+     * @apiSuccess (返回参数说明) {string} money 充值金额统计
+     * @apiSuccess (返回参数说明) {string} time 时间段
+     */
+    public function rechargeStatistic($page = 1, $size = 20)
+    {
+        //开始时间
+        $begin_time = Request::param('begin_time');
+        //结束时间
+        $end_time = Request::param('end_time');
+        //部门
+        $department_id = Request::param('department_id');
+        //姓名
+        $username = Request::param('username');
+        //电话号码
+        $phone = Request::param('phone');
+        //企业id
+        $company_id = \app\api\service\Token::getCurrentTokenVar('company_id');
+        $records = RechargeCashT::rechargeTotal($page, $size, $begin_time, $end_time, $username, $department_id, $phone, $company_id);
+        return json(new SuccessMessageWithData(['data' => $records]));
+
+    }
+
+    /**
+     * @api {GET} /api/v1/rechargeStatistic/export CMS管理端-充值管理-充值记录统计-导出报表
+     * @apiGroup  CMS管理端
+     * @apiVersion 3.0.0
+     * @apiDescription CMS管理端-充值管理-充值记录统计-导出报表
+     * @apiExample {get}  请求样例:
+     * http://www.cnt.com/api/v1/rechargeStatistic/export?begin_time=2021-01-01&end_time=2021-01-30&department_id=0
+     * @apiParam (请求参数说明) {int} page 当前页码
+     * @apiParam (请求参数说明) {int} size 每页多少条数据
+     * @apiParam (请求参数说明) {string} begin_time  查询开始时间
+     * @apiParam (请求参数说明) {string} end_time  查询结束时间
+     * @apiParam (请求参数说明) {string} department  部门：传0代表全部,具体为部门id
+     * @apiParam (请求参数说明) {string} username  员工姓名
+     * @apiParam (请求参数说明) {string} phone  员工手机号
+     * @apiSuccessExample {json}返回样例:
+     * {"msg":"下载 excel失败","errorCode":40001}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {String} msg 信息描述
+     */
+    public function exportRechargeStatistic()
+    {
+        //开始时间
+        $begin_time = Request::param('begin_time');
+        //结束时间
+        $end_time = Request::param('end_time');
+        //部门
+        $department = Request::param('department');
+        //姓名
+        $username = Request::param('username');
+        //电话号码
+        $phone = Request::param('phone');
+        (new \app\api\service\v2\DownExcelService())->exportRechargeTotal($begin_time, $end_time, $username, $department, $phone);
+        return json(new SuccessMessage());
+
+    }
+
 
 }

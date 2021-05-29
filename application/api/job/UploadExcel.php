@@ -40,20 +40,15 @@ class UploadExcel
         $isJobDone = $this->doJob($data);
         if ($isJobDone) {
             // 如果任务执行成功，删除任务
-            $code = $data['company_id'] . ":" . $data['u_id'] . ":" . $data['type'];
-            $this->clearUploading($data['company_id'], $data['u_id'], $data['type']);
+            // $code = $data['company_id'] . ":" . $data['u_id'] . ":" . $data['type'];
+            $code = $data['company_id'] . ":" . $data['type'];
+            // $this->clearUploading($data['company_id'], $data['u_id'], $data['type']);
             LogService::saveJob("<warn>导入Excel任务执行成功！编号：$code" . "</warn>\n");
             $job->delete();
         } else {
-            if ($job->attempts() > 3) {
-                //通过这个方法可以检查这个任务已经重试了几次了
-                $code = $data['company_id'] . ":" . $data['u_id'] . ":" . $data['type'];
-                LogService::saveJob("<warn>导入excel已经重试超过3次，现在已经删除该任务编号：$code" . "</warn>\n");
-                $this->clearUploading($data['company_id'], $data['u_id'], $data['type']);
-                $job->delete();
-            } else {
-                $job->release(3); //重发任务
-            }
+            $job->delete();
+            LogService::saveJob("<warn>导入Excel任务执行失败" . "</warn>\n");
+
         }
     }
 
@@ -91,8 +86,11 @@ class UploadExcel
                 return $this->uploadRechargeCashWithAccount($data);
             } else if ($type == "supplement") {
                 return $this->uploadSupplement($data);
-            }else if  ($type == "supplementWithAccount") {
+            } else if ($type == "supplementWithAccount") {
                 return $this->uploadSupplementWithAccount($data);
+            } else if ($type == "staff") {
+                return $this->uploadStaff($data);
+
             }
             return true;
         } catch (Exception $e) {
@@ -100,6 +98,17 @@ class UploadExcel
             return false;
         }
 
+    }
+
+    public function uploadStaff($data)
+    {
+        $company_id = $data['company_id'];
+        $fileName = $data['fileName'];
+        $staffs = (new DepartmentService())->uploadStaff($company_id, $fileName);
+        if (!$staffs) {
+            return false;
+        }
+        return true;
     }
 
     public function uploadSupplement($data)

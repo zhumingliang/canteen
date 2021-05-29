@@ -530,13 +530,13 @@ class Order extends BaseController
      * @apiSuccess (返回参数说明) {int} dinner 名称
      * @apiSuccess (返回参数说明) {int} all_money 可用金额
      * @apiSuccess (返回参数说明) {int} effective_money 实际金额
-     */
-    public function consumptionRecords($page = 1, $size = 20)
+     */    public function consumptionRecords($page = 1, $size = 20)
     {
         $consumption_time = Request::param('consumption_time');
-        $records = (new OrderService())->consumptionRecords($consumption_time, $page, $size);
+        $records = (new OrderService())->consumptioconnRecords($consumption_time, $page, $size);
         return json(new SuccessMessageWithData(['data' => $records]));
     }
+
 
     /**
      * @api {GET} /api/v1/order/consumptionRecords/detail 微信端-消费查询-获取订单详情
@@ -854,6 +854,7 @@ class Order extends BaseController
      * @apiSuccess (返回参数说明) {int} current_page 当前页码
      * @apiSuccess (返回参数说明) {int} last_page 最后页码
      * @apiSuccess (返回参数说明) {int} order_id 订单id
+     * @apiSuccess (返回参数说明) {int} order_type 餐次类型：1｜普通订餐；2｜接待票订餐；
      * @apiSuccess (返回参数说明) {int} consumption_type 消费策略消费模式：one：一次性消费；more:逐次消费
      * @apiSuccess (返回参数说明) {string} ordering_date 订餐日期
      * @apiSuccess (返回参数说明) {string} type 订单类型
@@ -944,6 +945,7 @@ class Order extends BaseController
         $time_begin = Request::param('time_begin');
         $time_end = Request::param('time_end');
         $company_ids = Request::param('company_ids');
+
         (new \app\api\service\v2\DownExcelService())->exportOrderStatisticDetail($company_ids, $time_begin,
             $time_end, $name,
             $phone, $canteen_id, $department_id,
@@ -1272,7 +1274,7 @@ class Order extends BaseController
      * @apiParam (请求参数说明) {int} canteen_ids  消费地点，饭堂id/小卖部id：全部传入0
      * @apiParam (请求参数说明) {int} company_ids  企业id：全部，将所有ID用逗号分隔
      * @apiParam (请求参数说明) {int} status  消费类型：全部传入0；1：订餐就餐；2：订餐未就餐；3：未订餐就餐；4：补充操作；5：补扣操作；6：小卖部消费；7：小卖部退款
-     * @apiParam (请求参数说明) {int} type  汇总类型：1：按部门进行汇总；2：按姓名进行汇总；3：按人员类型进行汇总；4：按消费地点进行汇总；5：按消费类型进行汇总
+     * @apiParam (请求参数说明) {int} type  汇总类型：1：按部门进行汇总；2：按姓名进行汇总；3：按人员类型进行汇总；4：按消费地点进行汇总；5：按消费类型进行汇总;6 按照日期进行汇总
      * @apiParam (请求参数说明) {string} time_begin  查询开始时间
      * @apiParam (请求参数说明) {string} time_end  查询结束时间
      * @apiParam (请求参数说明) {string} phone  手机号
@@ -1324,7 +1326,7 @@ class Order extends BaseController
      * @apiParam (请求参数说明) {int} canteen_ids  消费地点，饭堂id/小卖部id：全部传入0
      * @apiParam (请求参数说明) {int} company_ids  企业id：全部，将所有ID用逗号分隔
      * @apiParam (请求参数说明) {int} status  消费类型：全部传入0；1：订餐就餐；2：订餐未就餐；3：未订餐就餐；4：补充操作；5：补扣操作;
-     * @apiParam (请求参数说明) {int} type  汇总类型：1：按部门进行汇总；2：按姓名进行汇总；3：按人员类型进行汇总；4：按消费地点进行汇总；5：按消费类型进行汇总
+     * @apiParam (请求参数说明) {int} type  汇总类型：1：按部门进行汇总；2：按姓名进行汇总；3：按人员类型进行汇总；4：按消费地点进行汇总；5：按消费类型进行汇总;6 按照日期进行汇总
      * @apiParam (请求参数说明) {string} time_begin  查询开始时间
      * @apiParam (请求参数说明) {string} time_end  查询结束时间
      * @apiParam (请求参数说明) {string} phone  手机号
@@ -1497,6 +1499,38 @@ class Order extends BaseController
         $data = (new OrderStatisticService())->getDinnerOrderedCount($dinnerId, $orderingDate);
         return json(new SuccessMessageWithData(['data' => $data]));
     }
+
+
+    /**
+     * * @api {GET} /api/v1/order/managerOrderStatistic 微信端-总订餐查询-订餐统计
+     * @apiGroup  Official
+     * @apiVersion 3.0.0
+     * @apiDescription 微信端-总订餐查询-订餐统计
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/order/managerOrderStatistic?canteen_id=1&consumption_time=2020-07-08&key=
+     * @apiParam (请求参数说明) {string} canteen_id  饭堂id
+     * @apiParam (请求参数说明) {string} consumption_time  消费日期
+     * @apiParam (请求参数说明) {int} department_id  部门id，全部传入0
+     * @apiParam (请求参数说明) {string} key  关键字
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":[{"id":521,"name":"早餐","all":2},{"id":528,"name":"晚餐","all":15}]}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {String} msg 信息描述
+     * @apiSuccess (返回参数说明) {int} id 餐次id
+     * @apiSuccess (返回参数说明) {string} name 餐次名称
+     * @apiSuccess (返回参数说明) {int} all  订餐数量
+
+     */
+    public function managerOrderStatistic($department_id = 0)
+    {
+        $canteen_id = Request::param('canteen_id');
+        $consumption_time = Request::param('consumption_time');
+        $key = Request::param('key');
+        $orders = (new OrderService())->managerOrderStatistic($canteen_id, $consumption_time, $key, $department_id);
+        return json(new SuccessMessageWithData(['data' => $orders]));
+
+    }
+
 
 
 }

@@ -32,6 +32,7 @@ use app\api\model\OrderUnusedV;
 use app\api\model\PayNonghangConfigT;
 use app\api\model\PayT;
 use app\api\model\PayWxT;
+use app\api\model\PunishmentStrategyT;
 use app\api\model\RechargeCashT;
 use app\api\model\RechargeSupplementT;
 use app\api\model\RechargeV;
@@ -51,6 +52,7 @@ use app\api\service\LogService;
 use app\api\service\NextMonthPayService;
 use app\api\service\NoticeService;
 use app\api\service\OrderService;
+use app\api\service\OrderStatisticService;
 use app\api\service\QrcodeService;
 use app\api\service\SendSMSService;
 use app\api\service\ShopService;
@@ -73,12 +75,13 @@ use app\lib\Num;
 use app\lib\printer\Printer;
 use app\lib\weixin\Template;
 use GatewayClient\Gateway;
+use think\captcha\Captcha;
 use think\Db;
 use think\db\Where;
 use think\Exception;
 use think\facade\Env;
+use think\facade\Request;
 use think\Queue;
-use think\Request;
 use zml\tp_tools\Aes;
 use zml\tp_tools\Redis;
 use function GuzzleHttp\Psr7\str;
@@ -91,7 +94,30 @@ Index extends BaseController
 
     public function index()
     {
-        echo $prepareOrderId = QRcodeNUmber() ;
+
+       /* $data = $this->request->param();
+        $captcha = new Captcha();
+        if (!$captcha->checkByCache($data['verify_code'])) {
+            return json(['code' => -1, 'msg' => '无效验证码']);
+        } else {
+            echo 1;
+        }*/
+
+        // return json(new SuccessMessage());
+        /*   $accounts = (new AccountService())
+               ->getAccountBalance(95, $staffId, $staff->d_id);*/
+
+        /* $data = Request::param();
+         $data['SCRIPT_FILENAME'] = '';
+         $data['down_id'] = '';
+         $data['version'] = 'v2';
+         (new DownExcel())->exportConsumptionStatisticWithAccount($data);*/
+        //  (new WalletService())->checkSupplementData(144, dirname($_SERVER['SCRIPT_FILENAME']) . '/static/excel/upload/test.xlsx');
+        /* $data['company_id'] = 134;
+         $data['u_id'] = 1;
+         $data['fileName'] = dirname($_SERVER['SCRIPT_FILENAME']) . '/static/excel/upload/test.xlsx';
+
+         (new UploadExcel())->uploadSupplement($data);*/
 
         //  (new OrderT())->saveAll($data3);
 
@@ -164,21 +190,22 @@ Index extends BaseController
          $b = implode(',', $a);*/
 
 
-        /* $day = date('Y-m-d H:i:s', strtotime('+10 year',
-             time()));
-        // return $day;
-         $staffs = CompanyStaffT::where('company_id', 140)->where('state',CommonEnum::STATE_IS_OK)
-             ->select();
+        $day = date('Y-m-d H:i:s', strtotime('+30 minute',
+            time()));
+        $page = Request::param('page');
+        $size = 100;
+        $data = CompanyStaffT::where('company_id', 150)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->paginate($size, false, ['page' => $page])->toArray();
 
-
-         foreach ($staffs as $k => $v) {
-             StaffQrcodeT::update([
-                 'year' => 10,
-                 'minute' => 0,
-                 'expiry_date' => $day
-             ], ['s_id' => $v['id']]
-             );
-         }*/
+        $staffs = $data['data'];
+        foreach ($staffs as $k => $v) {
+            StaffQrcodeT::update([
+                'minute' => 30,
+                'expiry_date' => $day
+            ], ['s_id' => $v['id']]
+            );
+        }
 
     }
 

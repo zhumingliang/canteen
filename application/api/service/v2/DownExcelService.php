@@ -28,7 +28,6 @@ class DownExcelService
                                         $time_begin, $time_end, $company_id,
                                         $phone, $order_type, $excel_type)
     {
-
         $jobData = [
             'excel_type' => $excel_type,
             'canteen_id' => $canteen_id,
@@ -165,7 +164,7 @@ class DownExcelService
     public function exportTakeoutStatistic($ordering_date, $company_ids,
                                            $canteen_id, $dinner_id,
                                            $status, $department_id,
-                                           $user_type,$username)
+                                           $user_type, $username)
     {
         $jobData = [
             'excel_type' => 'takeoutStatistic',
@@ -261,11 +260,12 @@ class DownExcelService
         $this->saveDownExcelJob($jobData);
     }
 
-    public function exportRechargeRecords($time_begin, $time_end, $type, $admin_id, $username, $department_id, $excel_type)
+    public function exportRechargeRecords($time_begin, $time_end, $type, $admin_id, $username, $department_id, $money_type, $excel_type)
     {
         $jobData = [
             'excel_type' => $excel_type,
             'type' => $type,
+            'money_type' => $money_type,
             'admin_id' => $admin_id,
             'company_id' => Token::getCurrentTokenVar('company_id'),
             'username' => $username,
@@ -348,6 +348,52 @@ class DownExcelService
         $this->saveDownExcelJob($jobData);
     }
 
+    public function exportPunishmentStaffInfo($key, $company_id, $company_name, $status)
+    {
+        $jobData = [
+            'excel_type' => 'punishmentStaffInfo',
+            'key' => $key,
+            'company_id' => $company_id,
+            'company_name' => $company_name,
+            'status' => $status,
+            'version' => \think\facade\Request::param('version')
+        ];
+        $this->saveDownExcelJob($jobData);
+    }
+
+    public function exportPunishmentEditDetails($key, $company_id, $company_name,
+                                                $canteen_id, $time_begin, $time_end)
+    {
+        $jobData = [
+            'excel_type' => 'punishmentEditDetails',
+            'key' => $key,
+            'company_id' => $company_id,
+            'company_name' => $company_name,
+            'canteen_id' => $canteen_id,
+            'time_begin' => $time_begin,
+            'time_end' => $time_end,
+            'version' => \think\facade\Request::param('version')
+        ];
+        $this->saveDownExcelJob($jobData);
+    }
+
+    public function exportPunishmentRecord($company_id, $meal, $time_begin, $time_end,
+                                           $canteen_id, $department_id, $staff_name)
+    {
+        $jobData = [
+            'excel_type' => 'exportPunishmentRecord',
+            'company_id' => $company_id,
+            'meal' => $meal,
+            'canteen_id' => $canteen_id,
+            'department_id' => $department_id,
+            'staff_name' => $staff_name,
+            'time_begin' => $time_begin,
+            'time_end' => $time_end,
+            'version' => \think\facade\Request::param('version')
+        ];
+        $this->saveDownExcelJob($jobData);
+    }
+
 
     private
     function saveDownExcelJob($jobData)
@@ -373,6 +419,21 @@ class DownExcelService
             $down->save();
             throw new SaveException(['msg' => '下载 excel失败']);
         }
+    }
+
+    public function exportRechargeTotal($begin_time, $end_time, $username, $departmentId, $phone)
+    {
+        $jobData = [
+            'excel_type' => 'rechargeTotal',
+            'time_begin' => $begin_time,
+            'time_end' => $end_time,
+            'username' => $username,
+            'department_id' => $departmentId,
+            'phone' => $phone,
+            'company_id' => Token::getCurrentTokenVar('company_id'),
+            'version' => \think\facade\Request::param('version')
+        ];
+        $this->saveDownExcelJob($jobData);
     }
 
 

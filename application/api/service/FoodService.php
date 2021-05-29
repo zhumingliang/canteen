@@ -565,7 +565,8 @@ class FoodService extends BaseService
             if (!FoodDayStateT::create($data)) {
                 throw new SaveException(['msg' => '新增菜品信息状态失败']);
             }
-        } else {
+        }
+        else {
             $dayFood->status = $params['status'];
             if (empty($up)&&$auto){
                 $autoWeek = $auto['auto_week'];
