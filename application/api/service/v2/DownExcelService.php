@@ -406,7 +406,7 @@ class DownExcelService
             'prams' => json_encode($jobData)
         ]);
         if (!$down) {
-            throw new SaveException(['msg' => '上传excel失败']);
+            throw new SaveException(['msg' => '下载excel失败']);
         }
         $jobData['down_id'] = $down->id;
         $jobData['SCRIPT_FILENAME'] = $_SERVER['SCRIPT_FILENAME'];
@@ -414,11 +414,11 @@ class DownExcelService
         $jobQueueName = "downExcelQueue";//队列名称
         $isPushed = Queue::push($jobHandlerClassName, $jobData, $jobQueueName);
         //将该任务推送到消息队列
-        if ($isPushed == false) {
+     /*   if ($isPushed == false) {
             $down->status = DownEnum::DOWN_FAIL;
             $down->save();
             throw new SaveException(['msg' => '下载 excel失败']);
-        }
+        }*/
     }
 
     public function exportRechargeTotal($begin_time, $end_time, $username, $departmentId, $phone)

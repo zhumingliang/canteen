@@ -30,6 +30,7 @@ use think\Exception;
 class OrderService
 {
     private $blacklist = 4;
+
     public function getOrderMoney($params)
     {
 
@@ -38,12 +39,10 @@ class OrderService
             $canteenId = Token::getCurrentTokenVar('current_canteen_id');
             $phone = Token::getCurrentTokenVar('phone');
             $companyId = Token::getCurrentTokenVar('current_company_id');
-            (new UserService())->getUserCompanyInfo($phone, $companyId);
-
             $staffId = Token::getCurrentTokenVar('staff_id');
             $outsider = Token::getCurrentTokenVar('outsiders');
-            if ($outsider==UserEnum::INSIDE){
-                $staff=CompanyStaffT::get($staffId);
+            if ($outsider == UserEnum::INSIDE) {
+                $staff = CompanyStaffT::get($staffId);
                 if ($staff->status == $this->blacklist) {
                     throw new AuthException(['msg' => "用户已进入黑名单，不能订餐"]);
                 }
@@ -507,13 +506,16 @@ class OrderService
     public function submitOrder($prepareId, $addressId, $deliveryFee, $remark)
     {
         $canteenId = Token::getCurrentTokenVar('current_canteen_id');
+        $outsider = Token::getCurrentTokenVar('outsiders');
         $staffId = Token::getCurrentTokenVar('staff_id');
-        $staff=CompanyStaffT::get($staffId);
-        if ($staff->status == $this->blacklist) {
-            throw new AuthException(['msg' => "用户已进入黑名单，不能订餐"]);
+        if ($outsider == UserEnum::INSIDE) {
+            $staff = CompanyStaffT::get($staffId);
+            if ($staff->status == $this->blacklist) {
+                throw new AuthException(['msg' => "用户已进入黑名单，不能订餐"]);
+            }
+
         }
 
-        $outsider = Token::getCurrentTokenVar('outsiders');
         try {
             Db::startTrans();
             Db::query('call submitPrepareOrder(:in_prepareId,:in_userCanteenId,:in_userStaffId,:in_addressId,:in_deliveryFee,:in_orderRemark,@resCode,@resMessage,@balanceType,@returnOrderMoney,@returnConsumptionType)', [

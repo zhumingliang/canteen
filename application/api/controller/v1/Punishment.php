@@ -147,7 +147,8 @@ class Punishment extends BaseController
         $company_id = Request::param('company_id');
         $company_name = Request::param('company_name');
         $status = Request::param('status');
-        (new \app\api\service\v2\DownExcelService())->exportPunishmentStaffInfo($key, $company_id, $company_name, $status);
+        (new \app\api\service\v2\DownExcelService())
+            ->exportPunishmentStaffInfo($key, $company_id, $company_name, $status);
         return json(new SuccessMessage());
     }
 

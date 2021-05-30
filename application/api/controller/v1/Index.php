@@ -95,23 +95,16 @@ Index extends BaseController
     public function index()
     {
 
-       /* $data = $this->request->param();
-        $captcha = new Captcha();
-        if (!$captcha->checkByCache($data['verify_code'])) {
-            return json(['code' => -1, 'msg' => '无效验证码']);
-        } else {
-            echo 1;
-        }*/
 
         // return json(new SuccessMessage());
         /*   $accounts = (new AccountService())
                ->getAccountBalance(95, $staffId, $staff->d_id);*/
 
-        /* $data = Request::param();
-         $data['SCRIPT_FILENAME'] = '';
-         $data['down_id'] = '';
-         $data['version'] = 'v2';
-         (new DownExcel())->exportConsumptionStatisticWithAccount($data);*/
+        $data = Request::param();
+        $data['SCRIPT_FILENAME'] = '';
+        $data['down_id'] = '';
+        $data['version'] = 'v1';
+        (new DownExcel())->exportConsumptionStatistic($data);
         //  (new WalletService())->checkSupplementData(144, dirname($_SERVER['SCRIPT_FILENAME']) . '/static/excel/upload/test.xlsx');
         /* $data['company_id'] = 134;
          $data['u_id'] = 1;
