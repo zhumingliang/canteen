@@ -9,6 +9,7 @@ use app\api\service\AccountService;
 use app\api\service\CompanyService;
 use app\api\service\ConsumptionService;
 use app\api\service\LogService;
+use app\api\service\MachineService;
 use app\api\service\NoticeService;
 use app\api\service\OffLineService;
 use app\api\service\OrderService;
@@ -171,6 +172,16 @@ class Service extends BaseController
         (new AccountService())->sendTemplate($type, $accountId);
         return json(new SuccessMessage());
 
+    }
+
+    /**
+     * 离线数据成功接受
+     */
+    public function offlineReceive()
+    {
+        $code = Request::param('code');
+        (new MachineService())->offlineReceive($code);
+        return json(new SuccessMessage());
     }
 
 }

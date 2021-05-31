@@ -214,7 +214,8 @@ class TimeSwitch
             }
             $switch = Db::table('canteen_machine_timeswitch_t')
                 ->where('id', $id)
-                ->update(['status' => '1','update_time' => date('Y-m-d H:i:s')]);
+                ->update(['status' => '1',
+                    'update_time' => date('Y-m-d H:i:s')]);
             if ($switch) {
                 return json(new SuccessMessage());
             } else {

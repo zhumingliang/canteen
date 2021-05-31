@@ -9,5 +9,11 @@ use app\api\controller\BaseController;
 class Machine extends BaseController
 {
 
+    public function receiveOfflineDataSuccess()
+    {
+
+
+    }
+
 
 }

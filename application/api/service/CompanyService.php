@@ -9,6 +9,7 @@ use app\api\model\CanteenAccountT;
 use app\api\model\CompanyT;
 use app\api\model\ConsumptionStrategyT;
 use app\api\model\DinnerT;
+use app\api\model\OfflineReceiveT;
 use app\api\model\PayNonghangConfigT;
 use app\api\model\PayWxConfigT;
 use app\api\model\PunishmentStrategyT;
@@ -20,6 +21,7 @@ use app\lib\enum\CanteenEnum;
 use app\lib\enum\CommonEnum;
 use app\lib\exception\AuthException;
 use app\lib\exception\SaveException;
+use app\lib\Num;
 use think\Db;
 use think\Exception;
 use zml\tp_tools\Redis;
@@ -397,6 +399,8 @@ class CompanyService
 
         $canteenId = Token::getCurrentTokenVar('belong_id');
         $companyId = Token::getCurrentTokenVar('company_id');
+        $machineId = Token::getCurrentUid();
+        $machineName = Token::getCurrentTokenVar('name');
         //1.获取饭堂所有餐次设置
         $dinners = DinnerT::dinners($canteenId);
         //2.获取饭堂消费策略
@@ -405,7 +409,17 @@ class CompanyService
         $accountConfig = CanteenAccountT::accountForOffLine($canteenId);
         //获取企业惩罚策略配置
         $punishmentConfig = PunishmentStrategyT::companyStrategy($companyId);
+        //记录离线数据下发
+        $code = getRandChar(12);
+        OfflineReceiveT::create([
+            'company_id' => $companyId,
+            'canteen_id' => $canteenId,
+            'machine_id' => $machineId,
+            'name' => $machineName,
+            'code' => $code
+        ]);
         return [
+            'code' => $code,
             'dinners' => $dinners,
             'strategies' => $strategies,
             'canteen_config' => $accountConfig,
