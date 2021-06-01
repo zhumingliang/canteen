@@ -4,6 +4,7 @@
 namespace app\api\service;
 
 
+use app\api\model\MachineT;
 use app\api\model\OfflineReceiveT;
 use app\lib\exception\ParameterException;
 
@@ -18,9 +19,41 @@ class MachineService
         if (!$record) {
             throw new ParameterException(['msg' => "记录不存在"]);
         }
-        $record->state = 2;
+        $record->state = 0;
         $record->save();
 
+    }
+
+
+    public function records($company_id, $day, $machine_id, $status)
+    {
+        $records = OfflineReceiveT::records($company_id, $day, $machine_id, $status);
+        if ($records) {
+            foreach ($records as $k => $v) {
+                $records[$k]['status'] = $v['status'] ? 2 : 1;
+
+                if ($status == 1 && $v['status']) {
+                    unset($records[$k]);
+                    continue;
+                }
+                if ($status == 2 && !$v['status']) {
+                    unset($records[$k]);
+                    continue;
+                }
+            }
+        }
+        return $records;
+    }
+
+
+    public function detail($machineId, $day)
+    {
+        return OfflineReceiveT::detail($machineId, $day);
+    }
+
+    public function machines($companyId)
+    {
+        return MachineT::companyMachinesForOffline($companyId);
     }
 
 }

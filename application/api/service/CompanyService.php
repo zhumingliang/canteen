@@ -401,6 +401,7 @@ class CompanyService
         $companyId = Token::getCurrentTokenVar('company_id');
         $machineId = Token::getCurrentUid();
         $machineName = Token::getCurrentTokenVar('name');
+        $company = Token::getCurrentTokenVar('company');
         //1.获取饭堂所有餐次设置
         $dinners = DinnerT::dinners($canteenId);
         //2.获取饭堂消费策略
@@ -413,10 +414,13 @@ class CompanyService
         $code = getRandChar(12);
         OfflineReceiveT::create([
             'company_id' => $companyId,
+            'company' => $company,
             'canteen_id' => $canteenId,
             'machine_id' => $machineId,
             'name' => $machineName,
-            'code' => $code
+            'day' => date('Y-m-d'),
+            'code' => $code,
+            'state' => 1
         ]);
         return [
             'code' => $code,

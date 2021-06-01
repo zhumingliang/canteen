@@ -51,4 +51,21 @@ class MachineT extends Model
         return $machine;
 
     }
+
+
+    public static function companyMachinesForOffline($company_id)
+    {
+        $machines = self::where(function ($query) use ($company_id) {
+            if ($company_id) {
+                $query->where('company_id', $company_id);
+            }
+        })
+            ->where('machine_type','canteen')
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->field('id,machine_type,name')
+            ->select();
+        return $machines;
+    }
+
+
 }

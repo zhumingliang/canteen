@@ -5,6 +5,7 @@ namespace app\api\controller\v1;
 
 
 use app\api\controller\BaseController;
+use app\api\model\CompanyT;
 use app\api\service\CompanyService;
 use app\lib\exception\SuccessMessage;
 use app\lib\exception\SuccessMessageWithData;
@@ -338,6 +339,26 @@ class Company extends BaseController
         $consumption_type = Request::param('consumption_type');
         (new CompanyService())->updateConsumptionType($company_id, $consumption_type);
         return json(new SuccessMessage());
+    }
+
+
+    /**
+     * @api {GET} /api/v1/offline/companies 微信端-获取系统所有企业
+     * @apiGroup  Official
+     * @apiVersion 3.0.0
+     * @apiDescription 微信端-获取系统所有企业
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/offline/companies
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":[{"id":67,"name":"测试","parent_id":0}]}
+     * @apiSuccess (返回参数说明) {int} id 企业id
+     * @apiSuccess (返回参数说明) {String} name  企业名称
+     */
+    public function companiesForOffline()
+    {
+        $companies = CompanyT::systemManagerGetCompanies();
+        return json(new  SuccessMessageWithData(['data' => $companies]));
+
     }
 
 

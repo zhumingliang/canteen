@@ -45,6 +45,7 @@ Route::get('api/:version/company/wxConfig', 'api/:version.Company/wxConfig');
 Route::post('api/:version/company/nhConfig/save', 'api/:version.Company/saveCompanyNHConfig');
 Route::get('api/:version/company/nhConfig', 'api/:version.Company/nhConfig');
 Route::get('api/:version/companies', 'api/:version.Company/companies');
+Route::get('api/:version/offline/companies', 'api/:version.Company/companiesForOffline');
 Route::get('api/:version/company/consumptionLocation', 'api/:version.Company/consumptionLocation');
 Route::get('api/:version/manager/companies', 'api/:version.Company/managerCompanies');
 Route::get('api/:version/user/companies', 'api/:version.Company/userCompanies');
@@ -78,6 +79,7 @@ Route::get('api/:version/canteen/diningMode', 'api/:version.Canteen/diningMode')
 Route::get('api/:version/canteen/order/delivery_fee', 'api/:version.Canteen/deliveryFee');
 Route::get('api/:version/machines/company', 'api/:version.Canteen/companyMachines');
 Route::get('api/:version/machines', 'api/:version.Canteen/machines');
+Route::get('api/:version/offline/machines', 'api/:version.Machine/machines');
 Route::get('api/:version/consumption/place', 'api/:version.Canteen/consumptionPlace');
 
 Route::post('api/:version/printer/save', 'api/:version.Printer/save');
@@ -403,3 +405,7 @@ Route::get('api/:version/punishment/exportPunishmentRecord', 'api/:version.Punis
 
 Route::get('api/:version/excels', 'api/:version.Excel/excels');
 Route::post('api/:version/excel/delete', 'api/:version.Excel/delete');
+
+Route::get('api/:version/machine/records', 'api/:version.Machine/records');
+Route::get('api/:version/machine/records/detail', 'api/:version.Machine/detail');
+
