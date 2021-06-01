@@ -217,6 +217,86 @@ class Captcha
         return response($content, 200, ['Content-Length' => strlen($content)])->contentType('image/png');
     }
 
+    public function entryCode($checkCode, $id = '')
+    {
+        // 图片宽(px)
+        $this->imageW || $this->imageW = $this->length * $this->fontSize * 1.5 + $this->length * $this->fontSize / 2;
+        // 图片高(px)
+        $this->imageH || $this->imageH = $this->fontSize * 2.5;
+        // 建立一幅 $this->imageW x $this->imageH 的图像
+        $this->im = imagecreate($this->imageW, $this->imageH);
+        // 设置背景
+        imagecolorallocate($this->im, $this->bg[0], $this->bg[1], $this->bg[2]);
+
+        // 验证码字体随机颜色
+        $this->color = imagecolorallocate($this->im, mt_rand(1, 150), mt_rand(1, 150), mt_rand(1, 150));
+        // 验证码使用随机字体
+        $ttfPath = __DIR__ . '/../assets/' . ($this->useZh ? 'zhttfs' : 'ttfs') . '/';
+
+        if (empty($this->fontttf)) {
+            $dir = dir($ttfPath);
+            $ttfs = [];
+            while (false !== ($file = $dir->read())) {
+                if ('.' != $file[0] && substr($file, -4) == '.ttf') {
+                    $ttfs[] = $file;
+                }
+            }
+            $dir->close();
+            $this->fontttf = $ttfs[array_rand($ttfs)];
+        }
+        $this->fontttf = $ttfPath . $this->fontttf;
+
+        if ($this->useImgBg) {
+            $this->background();
+        }
+
+        if ($this->useNoise) {
+            // 绘杂点
+            $this->writeNoise();
+        }
+        if ($this->useCurve) {
+            // 绘干扰线
+            $this->writeCurve();
+        }
+
+        // 绘验证码
+        $code = []; // 验证码
+        $codeNX = 0; // 验证码第N个字符的左边距
+        if ($this->useZh) {
+            // 中文验证码
+            for ($i = 0; $i < $this->length; $i++) {
+                $code[$i] = iconv_substr($this->zhSet, floor(mt_rand(0, mb_strlen($this->zhSet, 'utf-8') - 1)), 1, 'utf-8');
+                imagettftext($this->im, $this->fontSize, mt_rand(-40, 40), $this->fontSize * ($i + 1) * 1.5, $this->fontSize + mt_rand(10, 20), $this->color, $this->fontttf, $code[$i]);
+            }
+        } else {
+            for ($i = 0; $i < $this->length; $i++) {
+                $code[$i] = $this->codeSet[mt_rand(0, strlen($this->codeSet) - 1)];
+                $codeNX += mt_rand($this->fontSize * 1.2, $this->fontSize * 1.6);
+                imagettftext($this->im, $this->fontSize, mt_rand(-40, 40), $codeNX, $this->fontSize * 1.6, $this->color, $this->fontttf, $code[$i]);
+            }
+        }
+
+        // 保存验证码
+        $key = $this->authcode($this->seKey);
+        $code = $this->authcode(strtoupper(implode('', $code)));
+        $secode = [];
+        $secode['verify_code'] = $code; // 把校验码保存到session
+        $secode['verify_time'] = time(); // 验证码创建时间
+        Session::set($key . $id, $secode, '');
+
+        //把验证码也保存到缓存中，只有这句是我扩展的，上下都是这个类库原本的代码
+        // Cache::set($code, 1, $this->expire);
+
+        Redis::instance()->set($code, $checkCode, $this->expire);
+        ob_start();
+        // 输出图像
+        imagepng($this->im);
+        $content = ob_get_clean();
+        imagedestroy($this->im);
+
+        return response($content, 200, ['Content-Length' => strlen($content)])->contentType('image/png');
+    }
+
     /**
      * 画一条由两条连在一起构成的随机正弦函数曲线作干扰线(你可以改成更帅的曲线函数)
      *

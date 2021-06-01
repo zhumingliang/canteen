@@ -192,15 +192,16 @@ class  Token extends Controller
 
         return json(new SuccessMessage());
     }
+
     /**
      * @api {GET} /api/v1/token/verify  CMS管理端-获取登录验证码
      * @apiGroup  CMS
      * @apiVersion 3.0.0
      * @apiDescription  消费机-获取登录token
      * @apiExample {get}  请求样例:
-     * http://canteen.tonglingok.com/api/v1/token/verify
+     * http://canteen.tonglingok.com/api/v1/token/verify?code="1asdd"
      */
-    public function verify()
+    public function verify($code = "")
     {
         $config = [
             // 验证码字体大小
@@ -210,12 +211,12 @@ class  Token extends Controller
             // 关闭验证码杂点
             'useNoise' => true,
             // 验证码过期时间（s）
-            'expire'  => 1800,
-            'codeSet'=>'0123456789'
+            'expire' => 1800,
+            'codeSet' => '0123456789'
         ];
         $captcha = new Captcha($config);
-       // return $captcha->entry();
-        return $captcha->entry();
+        // return $captcha->entry();
+        return $captcha->entryCode($code);
 
     }
 

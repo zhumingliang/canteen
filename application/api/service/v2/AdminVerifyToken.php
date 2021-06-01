@@ -18,13 +18,15 @@ class AdminVerifyToken extends Token
     protected $account;
     protected $passwd;
     protected $code;
+    protected $randCode;
 
 
-    function __construct($account, $passwd, $code)
+    function __construct($account, $passwd, $code, $randCode)
     {
         $this->account = $account;
         $this->passwd = $passwd;
         $this->code = $code;
+        $this->randCode = $randCode;
     }
 
     /**
@@ -66,7 +68,8 @@ class AdminVerifyToken extends Token
     {
 
         $captcha = new Captcha();
-        if (!$captcha->checkByCache($this->code)) {
+        $checkCode = Redis::instance()->get($this->code);
+        if ($checkCode != $this->randCode || !$captcha->checkByCache($this->code)) {
             // 验证失败
             throw  new  ParameterException(['msg' => "验证码不正确"]);
         }
