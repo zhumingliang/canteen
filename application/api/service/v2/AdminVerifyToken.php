@@ -69,6 +69,7 @@ class AdminVerifyToken extends Token
 
         $captcha = new Captcha();
         $checkCode = Redis::instance()->get($this->code);
+        echo $checkCode;
         if ($checkCode != $this->randCode || !$captcha->checkByCache($this->code)) {
             // 验证失败
             throw  new  ParameterException(['msg' => "验证码不正确"]);
