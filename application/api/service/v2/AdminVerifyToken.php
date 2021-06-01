@@ -70,6 +70,7 @@ class AdminVerifyToken extends Token
             // 验证失败
             throw  new  ParameterException(['msg' => "验证码不正确"]);
         }
+        Redis::instance()->set($this->code, 1, 1);
     }
 
 
