@@ -412,17 +412,24 @@ class Captcha
      * @param string $code 用户验证码
      * @return bool 用户验证码是否正确
      */
-    public function checkByCache($code)
+    public function checkByCache($code, $checkCode)
     {
         $key = $this->authcode(strtoupper($code));
         // 验证码不能为空
         $secode = Redis::instance()->get($key);
+        if ($secode !== $checkCode) {
+            Cache::set($key, '');
+            Redis::instance()->set($key, '');
+            return false;
+        }
         if (empty($code) || empty($secode)) {
             Cache::set($key, '');
+            Redis::instance()->set($key, '');
             return false;
         }
 
         Cache::set($key, '');
+        Redis::instance()->set($key, '');
         return true;
     }
 }
