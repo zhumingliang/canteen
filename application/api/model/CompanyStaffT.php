@@ -102,7 +102,7 @@ class CompanyStaffT extends Model
             } else {
                 $query->where('d_id', $d_ids);
             }
-        })->where('state', CommonEnum::STATE_IS_OK)
+        })->where('state', '<', CommonEnum::STATE_IS_DELETE)
             ->field('id,username')->select()->toArray();
         return $staffs;
     }

@@ -45,7 +45,6 @@ class Food extends BaseController
         return json(new SuccessMessageWithData(['data' => $foods]));
     }
 
-
     /**
      * @api {GET} /api/v2/food/day 微信端-个人选菜-查看餐次有选菜日期
      * @apiGroup  Official

@@ -179,7 +179,7 @@ class CompanyStaffV extends BaseModel
     public static function searchStaffs($page, $size, $company_id, $department_id, $key)
     {
         $list = self::where('company_id', '=', $company_id)
-            ->where('state', CommonEnum::STATE_IS_OK)
+            ->where('state', '<', CommonEnum::STATE_IS_DELETE)
             ->where(function ($query) use ($department_id) {
                 if ($department_id) {
                     $query->where('d_id', '=', $department_id);

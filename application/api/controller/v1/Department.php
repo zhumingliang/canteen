@@ -66,10 +66,7 @@ class Department extends BaseController
     public function update()
     {
         $params = Request::only('id,name');
-        $id = CompanyDepartmentT::update($params);
-        if (!$id) {
-            throw  new UpdateException();
-        }
+        (new DepartmentService())->update($params);
         return json(new SuccessMessage());
     }
 

@@ -1080,5 +1080,24 @@ class DepartmentService
         }
     }
 
+    public function update($params)
+    {
+        $department = CompanyDepartmentT::get($params['id']);
+        if (!$department) {
+            throw new ParameterException(['msg' => "部门不存在"]);
+        }
+        $check = CompanyDepartmentT::where('name', $params['name'])
+            ->where('c_id', $department->c_id)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->count();
+        if ($check) {
+            throw new ParameterException(['msg' => "部门已经存在"]);
+        }
+        $id = CompanyDepartmentT::update($params);
+        if (!$id) {
+            throw  new UpdateException();
+        }
+    }
+
 
 }

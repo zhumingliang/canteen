@@ -141,7 +141,7 @@ Route::get('api/:version/foods/personChoice', 'api/:version.Food/foodsForOfficia
 Route::get('api/:version/foods/menu', 'api/:version.Food/foodsForOfficialMenu');
 Route::get('api/:version/food', 'api/:version.Food/food');
 Route::get('api/:version/food/info/comment', 'api/:version.Food/infoToComment');
-Route::post('api/:version/food/material/update', 'api/:version.Food/updateMaterial');
+//Route::post('api/:version/food/material/update', 'api/:version.Food/updateMaterial');
 Route::post('api/:version/food/automatic/save', 'api/:version.Food/saveAutoConfig');
 Route::post('api/:version/food/automatic/update', 'api/:version.Food/updateAutoConfig');
 Route::get('api/:version/food/automatic', 'api/:version.Food/automatic');
@@ -409,3 +409,6 @@ Route::post('api/:version/excel/delete', 'api/:version.Excel/delete');
 Route::get('api/:version/machine/records', 'api/:version.Machine/records');
 Route::get('api/:version/machine/records/detail', 'api/:version.Machine/detail');
 
+Route::post('api/:version/food/material/save', 'api/:version.Material/saveFoodMaterial');
+Route::post('api/:version/food/material/update', 'api/:version.Material/updateFoodMaterial');
+Route::post('api/:version/material/order/save', 'api/:version.Material/saveOrderMaterial');

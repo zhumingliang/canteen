@@ -4,13 +4,25 @@
 namespace app\api\service;
 
 
+use app\api\model\DinnerT;
+use app\api\model\FoodMaterialT;
+use app\api\model\MaterialOrderT;
 use app\api\model\MaterialPriceT;
 use app\api\model\MaterialPriceV;
+use app\api\model\OrderParentT;
+use app\api\model\OrderT;
+use app\api\validate\Order;
 use app\lib\enum\CommonEnum;
+use app\lib\exception\ParameterException;
 use app\lib\exception\SaveException;
+use app\lib\exception\UpdateException;
+use function GuzzleHttp\Promise\each_limit;
 
 class MaterialService extends BaseService
 {
+    private $orderOnline = "online";
+    private $orderChoice = "choice";
+
     public function save($params)
     {
         $params['state'] = CommonEnum::STATE_IS_OK;
@@ -68,6 +80,123 @@ class MaterialService extends BaseService
         $materials = MaterialPriceV::exportMaterials($key, $selectField['field'], $selectField['value']);
         $header = ['序号', '企业名称', '饭堂名称', '材料名称', '单位', '金额-元'];
         $url = (new ExcelService())->makeExcel($header, $materials, "材料价格明细");
-        return config('setting.domain').$url;
+        return config('setting.domain') . $url;
+    }
+
+    public function saveFoodMaterial($params)
+    {
+
+        //检测是否重复添加
+        $check = FoodMaterialT::checkFoodMaterialExits($params['f_id'], $params['name']);
+        if ($check) {
+            throw new ParameterException(['msg' => "菜品材料已存在，不能重复添加"]);
+        }
+        $params['state'] = CommonEnum::STATE_IS_OK;
+        $material = FoodMaterialT::create($params);
+        if (!$material) {
+            throw new SaveException();
+        }
+
+    }
+
+    public function updateFoodMaterial($params)
+    {
+        $material = FoodMaterialT::update($params);
+        if (!$material) {
+            throw new UpdateException();
+        }
+
+    }
+
+    public function saveOrderMaterial($params)
+    {
+        //检测饭堂就餐类别：预定餐/个人选菜
+        $companyId = $params['company_id'];
+        $canteenId = $params['canteen_id'];
+        $day = date('Y-m-d');
+        $material = $params['material'];
+        $type = $this->checkCanteenOrderType($canteenId);
+        if (MaterialOrderT::checkExits($canteenId, $day, $material)) {
+            throw new ParameterException(['msg' => "材料已经新增，不能重复新增"]);
+        }
+        if ($type == $this->orderOnline) {
+            //检测材料是否已经新增
+            $data = [
+                'company_id' => $companyId,
+                'canteen_id' => $canteenId,
+                'material' => $material,
+                'day' => $day,
+                'count' => $params['count'],
+                'price' => $params['price'],
+                'status' => CommonEnum::STATE_IS_OK,
+                'type' => $type
+            ];
+            if (!MaterialOrderT::create($data)) {
+                throw new SaveException();
+            }
+
+        } else if ($type == $this->orderChoice) {
+            //获取所有餐次
+            $dinners = DinnerT::dinners($canteenId);
+            if (!$dinners) {
+                throw new ParameterException(['msg' => "餐次设置异常"]);
+            }
+            $dataList = [];
+            foreach ($dinners as $k => $v) {
+                array_push($dataList, [
+                    'company_id' => $companyId,
+                    'canteen_id' => $canteenId,
+                    'dinner_id' => $v['id'],
+                    'material' => $material,
+                    'day' => $day,
+                    'count' => $params['count'],
+                    'price' => $params['price'],
+                    'status' => CommonEnum::STATE_IS_FAIL,
+                    'type' => $type
+                ]);
+
+            }
+            if (!(new MaterialOrderT())->saveAll($dataList)) {
+                throw new SaveException();
+            }
+
+        } else {
+            throw new ParameterException(['msg' => "订餐类型异常"]);
+        }
+    }
+
+    private function checkCanteenOrderType($canteenId)
+    {
+        $order = OrderT::where('c_id', $canteenId)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->where('booking', CommonEnum::STATE_IS_OK)
+            ->order('create_time desc')
+            ->find();
+        if ($order) {
+            return $order->ordering_type == "online" ? "online" : "choice";
+        }
+        $order = OrderParentT::where('canteen_id', $canteenId)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->where('booking', CommonEnum::STATE_IS_OK)
+            ->order('create_time desc')
+            ->find();
+        if (!$order) {
+            throw new SaveException(['msg' => "订餐方式未知"]);
+        }
+        return $order->ordering_type == "online" ? "online" : "choice";
+    }
+
+    public function updateOrderMaterial($params)
+    {
+        $info = MaterialOrderT::get($params['id']);
+        if (!$info) {
+            throw new ParameterException(['msg' =>""]);
+        }
+
+    }
+
+    public function orderMaterials()
+    {
+
     }
 }
