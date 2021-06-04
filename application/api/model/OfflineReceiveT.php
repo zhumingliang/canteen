@@ -22,9 +22,9 @@ class OfflineReceiveT extends Model
                     $query->where('machine_id', $machine_id);
                 }
             })->where(function ($query) use ($status) {
-                /* if ($status < 2) {
+                 if ($status < 2) {
                      $query->where('status', $status);
-                 }*/
+                 }
             })
             ->order('status desc')
             ->field('company_id,company,machine_id,name,day,sum(state) as status')

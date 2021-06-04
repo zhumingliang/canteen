@@ -412,3 +412,6 @@ Route::get('api/:version/machine/records/detail', 'api/:version.Machine/detail')
 Route::post('api/:version/food/material/save', 'api/:version.Material/saveFoodMaterial');
 Route::post('api/:version/food/material/update', 'api/:version.Material/updateFoodMaterial');
 Route::post('api/:version/material/order/save', 'api/:version.Material/saveOrderMaterial');
+Route::post('api/:version/material/order/update', 'api/:version.Material/updateOrderMaterial');
+Route::post('api/:version/material/order/delete', 'api/:version.Material/deleteOrderMaterial');
+Route::get('api/:version/material/order/list', 'api/:version.Material/orderMaterials');

@@ -190,12 +190,45 @@ class MaterialService extends BaseService
     {
         $info = MaterialOrderT::get($params['id']);
         if (!$info) {
-            throw new ParameterException(['msg' =>""]);
+            throw new ParameterException(['msg' => "材料不存在"]);
+        }
+        unset($params['id']);
+        if (!MaterialOrderT::where('canteen_id', $info->canteen_id)
+            ->where('day', $info->day)
+            ->where('material', $info->material)
+            ->update($params)) {
+            throw new UpdateException();
         }
 
     }
 
-    public function orderMaterials()
+    public function deleteOrderMaterial($id)
+    {
+        $info = MaterialOrderT::get($id);
+        if (!$info) {
+            throw new ParameterException(['msg' => "材料不存在"]);
+        }
+        if (!MaterialOrderT::where('canteen_id', $info->canteen_id)
+            ->where('day', $info->day)
+            ->where('material', $info->material)
+            ->update([
+                'state' => CommonEnum::STATE_IS_FAIL
+            ])) {
+            throw new UpdateException();
+        }
+    }
+
+    public function orderMaterials($timeBegin, $timeEnd, $companyId, $canteenId, $page, $size)
+    {
+        if (!$canteenId && !$companyId) {
+            throw new ParameterException(['msg' => "未选择企业和饭堂"]);
+        }
+        $data = MaterialOrderT::orderMaterials($timeBegin, $timeEnd, $companyId, $canteenId, $page, $size);
+        return $data;
+
+    }
+
+    public function orderMaterialReport($title, $ids)
     {
 
     }
