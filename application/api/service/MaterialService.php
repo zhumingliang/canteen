@@ -230,6 +230,10 @@ class MaterialService extends BaseService
 
     public function orderMaterialReport($title, $ids)
     {
+        $materials = MaterialOrderT::materials($ids);
+        if (!$materials) {
+            throw new ParameterException();
 
+        }
     }
 }

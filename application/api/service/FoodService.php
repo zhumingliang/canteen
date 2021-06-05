@@ -553,7 +553,7 @@ class FoodService extends BaseService
 
             ];
             $data['status'] = $params['status'];
-            if (empty($up)&&$auto){
+            if (empty($up) && $auto) {
                 $autoWeek = $auto['auto_week'];
                 $repeatWeek = $auto['repeat_week'];
 
@@ -565,10 +565,9 @@ class FoodService extends BaseService
             if (!FoodDayStateT::create($data)) {
                 throw new SaveException(['msg' => '新增菜品信息状态失败']);
             }
-        }
-        else {
+        } else {
             $dayFood->status = $params['status'];
-            if (empty($up)&&$auto){
+            if (empty($up) && $auto) {
                 $autoWeek = $auto['auto_week'];
                 $repeatWeek = $auto['repeat_week'];
                 if (!$this->checkUpTime($autoWeek, $repeatWeek, $day)) {

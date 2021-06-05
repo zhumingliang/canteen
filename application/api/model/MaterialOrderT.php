@@ -54,10 +54,17 @@ class MaterialOrderT extends Model
                     $query->where('company_id', $companyId);
                 }
             })
-            ->where('state',CommonEnum::STATE_IS_OK)
+            ->where('state', CommonEnum::STATE_IS_OK)
             ->field('id,DATE_FORMAT(create_time, "%Y-%m-%d %H:%i") as create_time,dinner,canteen,material,order_count,count,price,report')
             ->paginate($size, false, ['page' => $page])
             ->toArray();
+    }
+
+
+    public static function materials($ids)
+    {
+        return self::whereIn('id', $ids)
+            ->selec();
     }
 
 
