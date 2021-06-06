@@ -9,6 +9,8 @@ use app\api\model\FoodMaterialT;
 use app\api\model\MaterialOrderT;
 use app\api\model\MaterialPriceT;
 use app\api\model\MaterialPriceV;
+use app\api\model\MaterialReportDetailT;
+use app\api\model\MaterialReportT;
 use app\api\model\OrderParentT;
 use app\api\model\OrderT;
 use app\api\validate\Order;
@@ -16,6 +18,8 @@ use app\lib\enum\CommonEnum;
 use app\lib\exception\ParameterException;
 use app\lib\exception\SaveException;
 use app\lib\exception\UpdateException;
+use think\Db;
+use think\Exception;
 use function GuzzleHttp\Promise\each_limit;
 
 class MaterialService extends BaseService
@@ -230,10 +234,115 @@ class MaterialService extends BaseService
 
     public function orderMaterialReport($title, $ids)
     {
-        $materials = MaterialOrderT::materials($ids);
-        if (!$materials) {
-            throw new ParameterException();
+        Db::startTrans();
+        try {
+            $materials = MaterialOrderT::materials($ids);
+            if (!$materials) {
+                throw new ParameterException();
+            }
+            $companyId = 0;
+            $canteenId = 0;
+            //生成报表
+            $report = MaterialReportT::create([
+                'title' => $title,
+                'state' => CommonEnum::STATE_IS_OK,
+                'admin_id' => 1// Token::getCurrentUid()
+            ]);
+            if (!$report) {
+                throw new SaveException();
+            }
+            //检测是否有已经生成报表参数
+            $data = [];
+            foreach ($materials as $k => $v) {
+                if (!$companyId || !$canteenId) {
+                    $companyId = $v['company_id'];
+                    $canteenId = $v['canteen_id'];
+                }
+                if ($v['report'] == CommonEnum::STATE_IS_OK) {
+                    throw new ParameterException([
+                        'msg' => "材料：" . $v['material'] . '已经生成报表'
+                    ]);
+                }
+                array_push($data, [
+                    'report_id' => $report->id,
+                    'material' => $v['material'],
+                    'company_id' => $companyId,
+                    'canteen_id' => $canteenId,
+                    'dinner_id' => $v['dinner_id'],
+                    'count' => $v['count'],
+                    'price' => $v['price'],
+                    'order_count' => $v['order_count'],
+                    'ordering_date' => $v['create_time']
 
+                ]);
+            }
+
+            $detail = (new MaterialReportDetailT())->saveAll($data);
+            if (!$detail) {
+                throw new SaveException();
+            }
+            $report->company_id = $companyId;
+            $report->canteen_id = $canteenId;
+            if (!$report->save()) {
+                throw new UpdateException();
+            }
+
+            $update = MaterialOrderT::where('id', 'in', $ids)
+                ->update([
+                    'report_id' => $report->id,
+                    'report' => CommonEnum::STATE_IS_OK
+                ]);
+            if (!$update) {
+                throw new UpdateException();
+            }
+            Db::commit();
+        } catch (Exception $e) {
+            Db::rollback();
+            throw $e;
         }
+
+    }
+
+    public function orderMaterialReportCancel($id)
+    {
+        Db::startTrans();
+        try {
+            if (!MaterialReportT::update([
+                'id' => $id,
+                'state' => CommonEnum::STATE_IS_FAIL
+            ])) {
+                throw new UpdateException();
+            }
+            //恢复材料明细状态
+            if (!MaterialOrderT::where('report_id', $id)->update([
+                'report' => CommonEnum::STATE_IS_FAIL,
+                'report_id' => 0
+            ])) {
+                throw new UpdateException();
+            }
+
+            Db::commit();
+        } catch (Exception $e) {
+            Db::rollback();
+            throw $e;
+        }
+    }
+
+    public function orderMaterialReports($timeBegin, $timeEnd, $companyId, $canteenId, $page, $size)
+    {
+        if (!$canteenId && !$companyId) {
+            throw new ParameterException(['msg' => "未选择企业和饭堂"]);
+        }
+        return MaterialReportT::reports($timeBegin, $timeEnd, $companyId, $canteenId, $page, $size);
+    }
+
+    public function orderMaterialReportDetail($id)
+    {
+        $report = MaterialReportT::get($id);
+        $info = MaterialReportDetailT::info($id);
+        return [
+            'title' => $report->title,
+            'detail' => $info
+        ];
     }
 }

@@ -147,7 +147,7 @@ class Material extends BaseController
     }
 
     /**
-     * @api {GET} /api/v1/material/order/list CMS管理端-材料下单报表-材料信息列表
+     * @api {GET} /api/v2/material/order/list CMS管理端-材料下单报表-材料信息列表
      * @apiGroup  CMS
      * @apiVersion 3.0.0
      * @apiDescription CMS管理端-材料下单报表-材料信息列表
@@ -189,11 +189,120 @@ class Material extends BaseController
         return json(new SuccessMessageWithData(['data' => $data]));
     }
 
+    /**
+     * @api {POST} /api/v2/material/order/report CMS管理端-材料下单报表-提交报表
+     * @apiGroup   CMS
+     * @apiVersion 3.0.0
+     * @apiDescription    CMS管理端-材料下单报表-提交报表
+     * @apiExample {post}  请求样例:
+     *    {
+     *       "title": 6,
+     *       "ids": 6,7,8
+     *     }
+     * @apiParam (请求参数说明) {string} title 报表名称
+     * @apiParam (请求参数说明) {int} ids 材料id，多个用逗号分隔
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     */
     public function orderMaterialReport()
     {
         $ids = Request::param('ids');
         $title = Request::param('title');
-        (new MaterialService())->orderMaterialReport($title,$ids);
+        (new MaterialService())->orderMaterialReport($title, $ids);
         return json(new SuccessMessage());
+    }
+
+    /**
+     * @api {POST} /api/v2/material/order/report/cancel CMS管理端-材料下单报表-作废报表
+     * @apiGroup   CMS
+     * @apiVersion 3.0.0
+     * @apiDescription    CMS管理端-材料下单报表-作废报表
+     * @apiExample {post}  请求样例:
+     *    {
+     *       "id": 6
+     *     }
+     * @apiParam (请求参数说明) {int} id 报表id
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     */
+    public function orderMaterialReportCancel()
+    {
+        $id = Request::param('id');
+        (new MaterialService())->orderMaterialReportCancel($id);
+        return json(new SuccessMessage());
+    }
+
+    /**
+     * @api {GET} /api/v2/material/order/reports CMS管理端-入库材料管理-报表列表
+     * @apiGroup  CMS
+     * @apiVersion 3.0.0
+     * @apiDescription CMS管理端-材料下单报表-材料信息列表
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v2/material/order/reports?company_id=134&canteen_id=342&time_begin=2021-06-04&time_end=2021-06-04&page=1&size=1
+     * @apiParam (请求参数说明) {int} page 当前页码
+     * @apiParam (请求参数说明) {int} size 每页多少条数据
+     * @apiParam (请求参数说明) {int} company_id  企业id
+     * @apiParam (请求参数说明) {int} canteen_id  饭堂ID，全部为0
+     * @apiParam (请求参数说明) {string} time_begin  查询开始时间
+     * @apiParam (请求参数说明) {string} time_end  查询结束时间
+     * @apiParam (请求参数说明) {int} page  查询页码
+     * @apiParam (请求参数说明) {int} size  每页数据条数
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"total":1,"per_page":10,"current_page":1,"last_page":1,"data":[{"id":21,"canteen_id":342,"title":"报表","create_time":"2021-06-06 09:03:26","canteen":{"id":342,"name":"饭堂X"}}]}}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     * @apiSuccess (返回参数说明) {int} total 数据总数
+     * @apiSuccess (返回参数说明) {int} per_page 每页多少条数据
+     * @apiSuccess (返回参数说明) {int} current_page 当前页码
+     * @apiSuccess (返回参数说明) {int} last_page 最后页码
+     * @apiSuccess (返回参数说明) {int} id  列表id
+     * @apiSuccess (返回参数说明) {string} create_time 日期
+     * @apiSuccess (返回参数说明) {string} title 报表名称
+     * @apiSuccess (返回参数说明) {obj} canteen 地点信息
+     * @apiSuccess (返回参数说明) {string} name 地点名称
+     */
+    public function orderMaterialReports($page = 1, $size = 10)
+    {
+        $companyId = Request::param('company_id');
+        $canteenId = Request::param('canteen_id');
+        $timeBegin = Request::param('time_begin');
+        $timeEnd = Request::param('time_end');
+        $data = (new MaterialService())->orderMaterialReports($timeBegin, $timeEnd, $companyId, $canteenId, $page, $size);
+        return json(new SuccessMessageWithData(['data' => $data]));
+
+    }
+
+    /**
+     * @api {GET} /api/v2/material/order/report/detail CMS管理端-入库材料管理-报表详情
+     * @apiGroup  CMS
+     * @apiVersion 3.0.0
+     * @apiDescription CMS管理端-入库材料管理-报表详情
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v2/material/order/report/detail?company_id=134&canteen_id=342&time_begin=2021-06-04&time_end=2021-06-04&page=1&size=1
+     * @apiParam (请求参数说明) {int} id 报表id
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"title":"报表","detail":[{"id":43,"create_time":"2021-06-06 09:03","dinner":"晚餐","canteen":"饭堂X","material":"牛肉","order_count":"0.000","count":"1.000","price":"40.00"},{"id":42,"create_time":"2021-06-06 09:03","dinner":"早餐","canteen":"饭堂X","material":"牛肉","order_count":"0.000","count":"1.000","price":"40.00"}]}}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     * @apiSuccess (返回参数说明) {string} title 报表名称
+     * @apiSuccess (返回参数说明) {obj} detail 报表详情
+     * @apiSuccess (返回参数说明) {int} id  信息id
+     * @apiSuccess (返回参数说明) {string} create_time 日期
+     * @apiSuccess (返回参数说明) {string} dinner 餐次
+     * @apiSuccess (返回参数说明) {string} canteen 地点
+     * @apiSuccess (返回参数说明) {string} material 材料名称
+     * @apiSuccess (返回参数说明) {int} order_count  材料数量
+     * @apiSuccess (返回参数说明) {int} count 订货数量
+     * @apiSuccess (返回参数说明) {int} price  单价
+     */
+    public function orderMaterialReportDetail()
+    {
+        $id = Request::param('id');
+        $info = (new MaterialService())->orderMaterialReportDetail($id);
+        return json(new SuccessMessageWithData(['data' => $info]));
     }
 }

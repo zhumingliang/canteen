@@ -7,6 +7,7 @@ namespace app\api\service;
 use app\api\model\MachineT;
 use app\api\model\OfflineReceiveT;
 use app\lib\exception\ParameterException;
+use app\lib\exception\UpdateException;
 
 class MachineService
 {
@@ -55,5 +56,27 @@ class MachineService
     {
         return MachineT::companyMachinesForOffline($companyId);
     }
+
+    public function updateMachineConfig($params)
+    {
+        $config = MachineConfigT::update($params);
+        if (!$config) {
+            throw new UpdateException();
+        }
+    }
+    public function updateFaceConfig($params)
+    {
+        $config = FaceConfigT::update($params);
+        if (!$config) {
+            throw new UpdateException();
+        }
+    }
+
+    public function getMachineConfig($company_id,$page,$size,$canteen_id,$type,$name,$code)
+    {
+        $list=MachineT::machineConfig($company_id,$page,$size,$canteen_id,$type,$name,$code);
+        return $list;
+    }
+
 
 }

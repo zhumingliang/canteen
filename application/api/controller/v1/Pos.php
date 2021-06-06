@@ -11,8 +11,11 @@ use app\api\model\StaffCardV;
 use app\api\service\ShopService;
 use app\api\service\WalletService;
 use app\api\model\UserBalanceV;
+use app\lib\Date;
 use app\lib\enum\CommonEnum;
 use app\lib\exception\DeleteException;
+use app\lib\exception\SaveException;
+use app\lib\exception\UpdateException;
 use think\Db;
 use think\facade\Request;
 use think\exception\DbException;
@@ -409,7 +412,6 @@ class Pos extends BaseController
         $birthday = $params['birthday'];
         $phone = $params['phone'];
         $company_id = $params['company_id'];
-        $date = date('Y-m-d H:i:s');
         $phoneInfo = db('company_staff_t')
             ->where('company_id', $company_id)
             ->where('phone', $phone)
@@ -431,25 +433,32 @@ class Pos extends BaseController
         if (StaffCardV::checkCardExits($company_id, $card_code)) {
             throw new ParameterException(['msg' => '卡号已经存在，不能重复绑定']);
         }
+        $staffId =  $user['id'];
         //获取用户是否存在已经绑定的卡
-        $card = StaffCardT::where('staff_id', $user['id'])->order('create_time desc')->find();
-        if ($card) {
+        $card = StaffCardT::where('staff_id', $staffId)->order('create_time desc')->find();
+        if($card) {
             if (in_array($card->state, [1, 2])) {
                 throw new ParameterException(['msg' => '用户已经绑定卡，不能重复绑定']);
             }
+            $card->state = CommonEnum::STATE_IS_OK;
+            $card->card_code = $card_code;
+            $res = $card->save();
+            if (!$res) {
+                throw new UpdateException(['msg' => "绑卡失败"]);
+            }
+            return $user['username'];
         }
+        //未绑定卡
         $data = [
-            'staff_id' => $user['id'],
+            'staff_id' => $staffId,
             'card_code' => $card_code,
-            'state' => 1,
-            'create_time' => $date,
-            'update_time' => $date
+            'state' => CommonEnum::STATE_IS_OK,
+            'create_time'=>\date('Y-m-d H:i:s'),
+            'update_time'=>\date('Y-m-d H:i:s')
         ];
-        $save = db('staff_card_t')
-            ->data($data)
-            ->insert();
-        if ($save < 0) {
-            throw  new  AuthException(['msg' => '绑卡失败']);
+        $card = StaffCardT::create($data);
+        if (!$card) {
+            throw new SaveException();
         }
         return $user['username'];
     }

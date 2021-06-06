@@ -34,7 +34,8 @@ class CardService
             throw new ParameterException(['msg' => "卡号已存在，不能重复绑定"]);
         }
         //获取用户是否存在已经绑定的卡
-        $card = StaffCardT::where('staff_id', $staffId)->order('create_time desc')->find();
+        $card = StaffCardT::where('staff_id', $staffId)
+            ->order('create_time desc')->find();
         if ($card) {
             if (in_array($card->state, [1, 2])) {
                 throw new ParameterException(['msg' => '用户已经绑定卡，不能重复绑定']);
