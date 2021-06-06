@@ -414,11 +414,11 @@ class DownExcelService
         $jobQueueName = "downExcelQueue";//队列名称
         $isPushed = Queue::push($jobHandlerClassName, $jobData, $jobQueueName);
         //将该任务推送到消息队列
-     /*   if ($isPushed == false) {
-            $down->status = DownEnum::DOWN_FAIL;
-            $down->save();
-            throw new SaveException(['msg' => '下载 excel失败']);
-        }*/
+        /*   if ($isPushed == false) {
+               $down->status = DownEnum::DOWN_FAIL;
+               $down->save();
+               throw new SaveException(['msg' => '下载 excel失败']);
+           }*/
     }
 
     public function exportRechargeTotal($begin_time, $end_time, $username, $departmentId, $phone)
@@ -431,6 +431,16 @@ class DownExcelService
             'department_id' => $departmentId,
             'phone' => $phone,
             'company_id' => Token::getCurrentTokenVar('company_id'),
+            'version' => \think\facade\Request::param('version')
+        ];
+        $this->saveDownExcelJob($jobData);
+    }
+
+    public function exportOrderMaterialReport($id)
+    {
+        $jobData = [
+            'excel_type' => 'oderMaterial',
+            'reportId' => $id,
             'version' => \think\facade\Request::param('version')
         ];
         $this->saveDownExcelJob($jobData);

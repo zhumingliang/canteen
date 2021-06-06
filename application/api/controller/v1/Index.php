@@ -100,11 +100,11 @@ Index extends BaseController
         /*   $accounts = (new AccountService())
                ->getAccountBalance(95, $staffId, $staff->d_id);*/
 
-        $data = Request::param();
+        $data['reportId'] = "21";
         $data['SCRIPT_FILENAME'] = '';
         $data['down_id'] = '';
         $data['version'] = 'v1';
-        (new DownExcel())->exportConsumptionStatistic($data);
+        (new DownExcel())->exportOderMaterialReport($data);
         //  (new WalletService())->checkSupplementData(144, dirname($_SERVER['SCRIPT_FILENAME']) . '/static/excel/upload/test.xlsx');
         /* $data['company_id'] = 134;
          $data['u_id'] = 1;

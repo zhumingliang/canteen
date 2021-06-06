@@ -13,6 +13,8 @@ use app\api\model\DinnerV;
 use app\api\model\DownExcelT;
 use app\api\model\FoodV;
 use app\api\model\MaterialPriceV;
+use app\api\model\MaterialReportDetailT;
+use app\api\model\MaterialReportT;
 use app\api\model\OrderMaterialV;
 use app\api\model\OrderSettlementV;
 use app\api\model\OrderStatisticV;
@@ -185,6 +187,9 @@ class DownExcel
                 case 'exportPunishmentRecord';
                     $this->exportPunishmentRecord($data);
                     break;
+                case'oderMaterial';
+                    $this->exportOderMaterialReport($data);
+                    break;
             }
             return true;
         } catch (Exception $e) {
@@ -194,7 +199,51 @@ class DownExcel
 
     }
 
-    public function exportRechargeTotal($data)
+    public function exportOderMaterialReport($data)
+    {
+        $reportId = $data['reportId'];
+        $SCRIPT_FILENAME = $data['SCRIPT_FILENAME'];
+        $downId = $data['down_id'];
+        $header = ['序号', '日期', '餐次', '消费地点', '材料名称', '材料数量', '订货数量（kg）', '单价', '总价'];
+        $report = MaterialReportT::get($reportId);
+        $info = MaterialReportDetailT::info($reportId);
+        $exportData = [];
+        $allMoney = 0;
+        if (count($info)) {
+            foreach ($info as $k => $v) {
+                $allMoney += $v['count'] * $v['price'];
+                array_push($exportData, [
+                    'num' => $k + 1,
+                    'create_time' => $v['create_time'],
+                    'dinner' => $v['dinner'],
+                    'canteen' => $v['canteen'],
+                    'material' => $v['material'],
+                    'order_count' => $v['order_count'],
+                    'count' => $v['count'],
+                    'price' => $v['price'],
+                    'all' => $v['count'] * $v['price'],
+                ]);
+            }
+        }
+        array_push($exportData, [
+            'num' => "合计",
+            'create_time' => '',
+            'dinner' => '',
+            'canteen' => '',
+            'material' => '',
+            'order_count' => '',
+            'count' => '',
+            'price' => '',
+            'all' => $allMoney,
+        ]);
+        $file_name = $report->title;
+        print_r($exportData);
+        $url = (new ExcelService())->makeExcel2($header, $exportData, $file_name, $SCRIPT_FILENAME);
+        $this->saveExcel($downId, $url, $file_name);
+    }
+
+    public
+    function exportRechargeTotal($data)
     {
 
         $company_id = $data['company_id'];
@@ -252,7 +301,8 @@ class DownExcel
         $this->saveExcel($downId, $url, $file_name);
     }
 
-    public function exportPunishmentRecord($data)
+    public
+    function exportPunishmentRecord($data)
     {
         $time_begin = $data['time_begin'];
         $time_end = $data['time_end'];
@@ -526,7 +576,7 @@ class DownExcel
                 $allMoney = abs($allMoney);
             }
             foreach ($records as $k => $v) {
-                $records[$k]['money']=abs($v['money']) ;
+                $records[$k]['money'] = abs($v['money']);
             }
         }
         array_push($records, [
@@ -575,7 +625,7 @@ class DownExcel
                 $allMoney = abs($allMoney);
             }
             foreach ($records as $k => $v) {
-                $records[$k]['money']=abs($v['money']) ;
+                $records[$k]['money'] = abs($v['money']);
             }
 
         }

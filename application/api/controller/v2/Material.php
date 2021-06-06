@@ -7,6 +7,7 @@ namespace app\api\controller\v2;
 use app\api\controller\BaseController;
 use app\api\service\MachineService;
 use app\api\service\MaterialService;
+use app\api\service\v2\DownExcelService;
 use app\lib\exception\SuccessMessage;
 use app\lib\exception\SuccessMessageWithData;
 use think\facade\Request;
@@ -304,5 +305,12 @@ class Material extends BaseController
         $id = Request::param('id');
         $info = (new MaterialService())->orderMaterialReportDetail($id);
         return json(new SuccessMessageWithData(['data' => $info]));
+    }
+
+    public function orderMaterialReportExport()
+    {
+        $id = Request::param('id');
+        (new DownExcelService())->exportOrderMaterialReport($id);
+        return json(new SuccessMessage());
     }
 }
