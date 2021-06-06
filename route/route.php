@@ -419,6 +419,7 @@ Route::post('api/:version/material/order/report', 'api/:version.Material/orderMa
 Route::post('api/:version/material/order/report/cancel', 'api/:version.Material/orderMaterialReportCancel');
 Route::get('api/:version/material/order/reports', 'api/:version.Material/orderMaterialReports');
 Route::get('api/:version/material/order/report/detail', 'api/:version.Material/orderMaterialReportDetail');
+Route::get('api/:version/material/order/report/export', 'api/:version.Material/orderMaterialReportExport');
 
 Route::get('api/:version/machine/getMachineConfig', 'api/:version.Machine/getMachineConfig');
 Route::post('api/:version/machine/machineConfig', 'api/:version.Machine/machineConfig');

@@ -20,6 +20,7 @@ use app\lib\exception\SaveException;
 use app\lib\exception\UpdateException;
 use think\Db;
 use think\Exception;
+use think\Queue;
 use function GuzzleHttp\Promise\each_limit;
 
 class MaterialService extends BaseService
@@ -36,37 +37,85 @@ class MaterialService extends BaseService
         }
     }
 
-    public function uploadMaterials($canteen_id, $materials_excel)
+    public function uploadMaterials($materials_excel)
     {
-        $date = (new ExcelService())->saveExcel($materials_excel);
-        $this->prefixMaterials($canteen_id, $date);
+        $fileName = (new ExcelService())->saveExcelReturnName($materials_excel);
+        $res = $this->prefixMaterials($fileName);
+        return $res;
     }
 
 
-    public function prefixMaterials($canteen_id, $data)
+    public function prefixMaterials($fileName)
     {
+        $companyId = Token::getCurrentTokenVar('company_id');
+        $day = date('Y-m-d');
+        $adminId = Token::getCurrentUid();
+        $data = (new ExcelService())->importExcel($fileName);
+        $canteens = (new CanteenService())->companyCanteens($companyId);
+        $canteenArr = [];
+        $materialArr = [];
+        $fail = [];
+        foreach ($canteens as $k => $v) {
+            $canteenArr[$v['name']] = $v['id'];
+        }
+        $orderMaterials = MaterialOrderT::companyMaterials($companyId, $day);
 
-        $materials = [];
+        foreach ($orderMaterials as $k => $v) {
+            array_push($materialArr, $v['canteen_id'] . '-' . $v['material']);
+        }
+
         foreach ($data as $k => $v) {
-            if ($k == 1) {
+            if ($k < 2) {
                 continue;
             }
-            $materials[] = [
-                'name' => $v[0],
-                'price' => $v[1],
-                'unit' => $v[2],
-                'state' => CommonEnum::STATE_IS_OK,
-                'admin_id' => Token::getCurrentUid(),
-                'c_id' => $canteen_id,
+            $canteen = $v[0];
+            $material = $v[1];
+            if (empty($canteen) || !key_exists($canteen, $canteenArr)) {
+                array_push($fail, '第' . $k . '行数据有问题');
+            }
+            if (empty($material)) {
+                array_push($fail, '第' . $k . '行数据有问题');
+            }
+            $canteenId = $canteenArr[$canteen];
+            if (in_array($canteenId . '-' . $material, $materialArr)) {
+                array_push($fail, '第' . $k . '行数据有问题');
+            }
+
+        }
+        if (count($fail)) {
+            return [
+                'res' => false,
+                'fail' => $fail
             ];
         }
-        if (empty($materials)) {
-            throw new SaveException(['msg' => '上传文件为空']);
-        }
-        $res = (new MaterialPriceT())->saveAll($materials);
-        if (!$res) {
-            throw  new SaveException();
-        }
+        $this->uploadExcelTask($companyId, $adminId, $fileName, "orderMaterial");
+        return [
+            'res' => true
+        ];
+
+
+    }
+
+    public function uploadExcelTask($company_id, $u_id, $fileName, $type)
+    {
+        //设置限制未上传完成不能继续上传
+        /* if (!$this->checkUploading($company_id, $u_id, $type)) {
+             throw new SaveException(["msg" => '有文件正在上传，请稍等']);
+         }*/
+        $jobHandlerClassName = 'app\api\job\UploadExcel';//负责处理队列任务的类
+        $jobQueueName = "uploadQueue";//队列名称
+        $jobData = [
+            'type' => $type,
+            'company_id' => $company_id,
+            'u_id' => $u_id,
+            'fileName' => $fileName,
+        ];//当前任务的业务数据
+        $isPushed = Queue::push($jobHandlerClassName, $jobData, $jobQueueName);
+        //将该任务推送到消息队列
+        /*if ($isPushed == false) {
+            (new UploadExcel())->clearUploading($company_id, $u_id, $type);
+            throw new SaveException(['msg' => '上传excel失败']);
+        }*/
     }
 
 
@@ -169,7 +218,7 @@ class MaterialService extends BaseService
         }
     }
 
-    private function checkCanteenOrderType($canteenId)
+    public function checkCanteenOrderType($canteenId)
     {
         $order = OrderT::where('c_id', $canteenId)
             ->where('state', CommonEnum::STATE_IS_OK)

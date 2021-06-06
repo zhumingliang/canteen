@@ -4,15 +4,20 @@
 namespace app\api\job;
 
 
+use app\api\model\DinnerT;
+use app\api\model\MaterialOrderT;
 use app\api\model\NoticeUserT;
 use app\api\model\RechargeCashT;
 use app\api\model\RechargeSupplementT;
+use app\api\service\CanteenService;
 use app\api\service\DepartmentService;
 use app\api\service\ExcelService;
 use app\api\service\LogService;
+use app\api\service\MaterialService;
 use app\api\service\Token;
 use app\api\service\WalletService;
 use app\lib\enum\CommonEnum;
+use app\lib\exception\ParameterException;
 use app\lib\exception\SaveException;
 use think\Db;
 use think\Exception;
@@ -22,6 +27,10 @@ use zml\tp_tools\Redis;
 
 class UploadExcel
 {
+
+    private $orderOnline = "online";
+    private $orderChoice = "choice";
+
     /**
      * fire方法是消息队列默认调用的方法
      * @param Job $job 当前的任务对象
@@ -90,7 +99,8 @@ class UploadExcel
                 return $this->uploadSupplementWithAccount($data);
             } else if ($type == "staff") {
                 return $this->uploadStaff($data);
-
+            } else if ($type == "orderMaterial") {
+                return $this->uploadOrderMaterial($data);
             }
             return true;
         } catch (Exception $e) {
@@ -100,7 +110,72 @@ class UploadExcel
 
     }
 
-    public function uploadStaff($data)
+    public function uploadOrderMaterial($data)
+    {
+        $companyId = $data['company_id'];
+        $day = date('Y-m-d');
+        $fileName = $data['fileName'];
+        $data = (new ExcelService())->importExcel($fileName);
+        $canteens = (new CanteenService())->companyCanteens($companyId);
+        $canteenArr = [];
+        foreach ($canteens as $k => $v) {
+            $canteenArr[$v['name']] = $v['id'];
+        }
+        $dataList = [];
+        foreach ($data as $k => $v) {
+            if ($k < 2) {
+                continue;
+            }
+            $canteen = $v[0];
+            $material = $v[1];
+            $count = empty($v[2]) ? 0 : $v[2];
+            $price = empty($v[3]) ? 0 : $v[3];
+            $canteenId = $canteenArr[$canteen];
+            $type = (new MaterialService())->checkCanteenOrderType($canteenId);
+            if ($type == $this->orderOnline) {
+                //检测材料是否已经新增
+                array_push($dataList, [
+                    'company_id' => $companyId,
+                    'canteen_id' => $canteenId,
+                    'material' => $material,
+                    'day' => $day,
+                    'count' => $count,
+                    'price' => $price,
+                    'status' => CommonEnum::STATE_IS_OK,
+                    'type' => $type
+                ]);
+
+            } else if ($type == $this->orderChoice) {
+                //获取所有餐次
+                $dinners = DinnerT::dinners($canteenId);
+                if ($dinners) {
+                    foreach ($dinners as $k2 => $v2) {
+                        array_push($dataList, [
+                            'company_id' => $companyId,
+                            'canteen_id' => $canteenId,
+                            'dinner_id' => $v2['id'],
+                            'material' => $material,
+                            'day' => $day,
+                            'count' => $count,
+                            'price' => $price,
+                            'status' => CommonEnum::STATE_IS_FAIL,
+                            'type' => $type
+                        ]);
+
+                    }
+                }
+
+            }
+        }
+        $res = (new MaterialOrderT())->saveAll($dataList);
+        if (!$res) {
+            return false;
+        }
+        return true;
+    }
+
+    public
+    function uploadStaff($data)
     {
         $company_id = $data['company_id'];
         $fileName = $data['fileName'];
@@ -111,7 +186,8 @@ class UploadExcel
         return true;
     }
 
-    public function uploadSupplement($data)
+    public
+    function uploadSupplement($data)
     {
         $company_id = $data['company_id'];
         $admin_id = $data['u_id'];
@@ -125,7 +201,8 @@ class UploadExcel
         return true;
     }
 
-    public function uploadSupplementWithAccount($data)
+    public
+    function uploadSupplementWithAccount($data)
     {
         $company_id = $data['company_id'];
         $admin_id = $data['u_id'];
@@ -139,7 +216,8 @@ class UploadExcel
         return true;
     }
 
-    public function uploadRechargeCashWithAccount($data)
+    public
+    function uploadRechargeCashWithAccount($data)
     {
         $company_id = $data['company_id'];
         $admin_id = $data['u_id'];
@@ -153,7 +231,8 @@ class UploadExcel
         return true;
     }
 
-    public function uploadRechargeCash($data)
+    public
+    function uploadRechargeCash($data)
     {
         $company_id = $data['company_id'];
         $admin_id = $data['u_id'];

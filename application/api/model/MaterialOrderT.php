@@ -64,8 +64,18 @@ class MaterialOrderT extends Model
     public static function materials($ids)
     {
         return self::whereIn('id', $ids)
-            ->where('state',CommonEnum::STATE_IS_OK)
+            ->where('state', CommonEnum::STATE_IS_OK)
             ->select();
+    }
+
+    public static function companyMaterials($companyId, $day)
+    {
+        return self::where('company_id', $companyId)
+            ->where('day', $day)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->select()->toArray();
+
+
     }
 
 

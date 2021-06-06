@@ -8,6 +8,7 @@ use app\api\controller\BaseController;
 use app\api\service\MachineService;
 use app\api\service\MaterialService;
 use app\api\service\v2\DownExcelService;
+use app\lib\exception\ParameterException;
 use app\lib\exception\SuccessMessage;
 use app\lib\exception\SuccessMessageWithData;
 use think\facade\Request;
@@ -307,10 +308,45 @@ class Material extends BaseController
         return json(new SuccessMessageWithData(['data' => $info]));
     }
 
+    /**
+     * @api {GET} /api/v2/material/order/report/export CMS管理端-入库材料管理-报表导出
+     * @apiGroup  CMS
+     * @apiVersion 3.0.0
+     * @apiDescription  CMS管理端-入库材料管理-报表导出
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/material/order/report/export?id=6
+     * @apiParam (请求参数说明) {String} id 报表id
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"url":"http:\/\/canteen.tonglingok.com\/static\/excel\/download\/材料价格明细_20190817005931.xls"}}     * @apiSuccess (返回参数说明) {int} total 数据总数
+     * @apiSuccess (返回参数说明) {int} error_code 错误代码 0 表示没有错误
+     * @apiSuccess (返回参数说明) {string} msg 操作结果描述
+     * @apiSuccess (返回参数说明) {string} url 下载地址
+     */
     public function orderMaterialReportExport()
     {
         $id = Request::param('id');
         (new DownExcelService())->exportOrderMaterialReport($id);
         return json(new SuccessMessage());
+    }
+
+
+    /**
+     * @api {POST}  /api/v2/material/upload CMS管理端-材料明细下单表-批量导入材料明细
+     * @apiGroup  CMS
+     * @apiVersion 3.0.0
+     * @apiDescription  用file控件上传excel ，文件名称为：materials
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200}
+     * @apiSuccess (返回参数说明) {int} error_code 错误代码 0 表示没有错误
+     * @apiSuccess (返回参数说明) {String} msg 操作结果描述
+     */
+    public function uploadOrderMaterials()
+    {
+        $materials_excel = request()->file('materials');
+        if (is_null($materials_excel)) {
+            throw  new ParameterException(['msg' => '缺少excel文件']);
+        }
+        $res = (new MaterialService())->uploadMaterials($materials_excel);
+        return json(new SuccessMessageWithData(['data' => $res]));
     }
 }
