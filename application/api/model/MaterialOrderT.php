@@ -60,6 +60,24 @@ class MaterialOrderT extends Model
             ->toArray();
     }
 
+    public static function exportOrderMaterials($timeBegin, $timeEnd, $companyId, $canteenId)
+    {
+        $sql = self::getSql();
+        return Db::table($sql . ' a')->where('day', '>=', $timeBegin)
+            ->where('day', '<=', $timeEnd)
+            ->where(function ($query) use ($companyId, $canteenId) {
+                if (!$canteenId) {
+                    $query->where('canteen_id', $canteenId);
+                } else {
+                    $query->where('company_id', $companyId);
+                }
+            })
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->field('DATE_FORMAT(create_time, "%Y-%m-%d %H:%i") as create_time,dinner,canteen,material,order_count,count,price')
+           ->select()
+            ->toArray();
+    }
+
 
     public static function materials($ids)
     {

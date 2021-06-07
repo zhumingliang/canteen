@@ -192,6 +192,33 @@ class Material extends BaseController
     }
 
     /**
+     * @api {GET} /api/v2/material/order/export CMS管理端-材料下单报表-导出信息列表
+     * @apiGroup  CMS
+     * @apiVersion 3.0.0
+     * @apiDescription CMS管理端-材料下单报表-导出信息列表
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v2/material/order/export?company_id=134&canteen_id=342&time_begin=2021-06-04&time_end=2021-06-04
+     * @apiParam (请求参数说明) {int} company_id  企业id
+     * @apiParam (请求参数说明) {int} canteen_id  饭堂ID，全部为0
+     * @apiParam (请求参数说明) {string} time_begin  查询开始时间
+     * @apiParam (请求参数说明) {string} time_end  查询结束时间
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"url":"http:\/\/canteen.tonglingok.com\/static\/excel\/download\/材料价格明细_20190817005931.xls"}}     * @apiSuccess (返回参数说明) {int} total 数据总数
+     * @apiSuccess (返回参数说明) {int} error_code 错误代码 0 表示没有错误
+     * @apiSuccess (返回参数说明) {string} msg 操作结果描述
+     * @apiSuccess (返回参数说明) {string} url 下载地址
+     */
+    public function exportOrderMaterials()
+    {
+        $timeBegin = Request::param('time_begin');
+        $timeEnd = Request::param('time_end');
+        $companyId = Request::param('company_id');
+        $canteenId = Request::param('canteen_id');
+        (new DownExcelService())->exportOrderMaterials($timeBegin, $timeEnd, $companyId, $canteenId);
+        return json(new SuccessMessage());
+    }
+
+    /**
      * @api {POST} /api/v2/material/order/report CMS管理端-材料下单报表-提交报表
      * @apiGroup   CMS
      * @apiVersion 3.0.0

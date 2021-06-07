@@ -415,6 +415,7 @@ Route::post('api/:version/material/order/save', 'api/:version.Material/saveOrder
 Route::post('api/:version/material/order/update', 'api/:version.Material/updateOrderMaterial');
 Route::post('api/:version/material/order/delete', 'api/:version.Material/deleteOrderMaterial');
 Route::get('api/:version/material/order/list', 'api/:version.Material/orderMaterials');
+Route::get('api/:version/material/order/export', 'api/:version.Material/exportOrderMaterials');
 Route::post('api/:version/material/order/report', 'api/:version.Material/orderMaterialReport');
 Route::post('api/:version/material/order/report/cancel', 'api/:version.Material/orderMaterialReportCancel');
 Route::get('api/:version/material/order/reports', 'api/:version.Material/orderMaterialReports');

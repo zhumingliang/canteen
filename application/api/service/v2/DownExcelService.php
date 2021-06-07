@@ -69,14 +69,14 @@ class DownExcelService
         $this->saveDownExcelJob($jobData);
     }
 
-    public function exportOrderMaterials($time_begin, $time_end, $canteen_id)
+    public function exportOrderMaterials($timeBegin, $timeEnd, $companyId, $canteenId)
     {
         $jobData = [
             'excel_type' => 'orderMaterials',
-            'company_id' => Token::getCurrentTokenVar('company_id'),
-            'canteen_id' => $canteen_id,
-            'time_begin' => $time_begin,
-            'time_end' => $time_end,
+            'company_id' => $companyId,
+            'canteen_id' => $canteenId,
+            'time_begin' => $timeBegin,
+            'time_end' => $timeEnd,
             'version' => \think\facade\Request::param('version')
         ];
         $this->saveDownExcelJob($jobData);
@@ -445,6 +445,5 @@ class DownExcelService
         ];
         $this->saveDownExcelJob($jobData);
     }
-
 
 }

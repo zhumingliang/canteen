@@ -12,6 +12,7 @@ use app\api\model\DinnerT;
 use app\api\model\DinnerV;
 use app\api\model\DownExcelT;
 use app\api\model\FoodV;
+use app\api\model\MaterialOrderT;
 use app\api\model\MaterialPriceV;
 use app\api\model\MaterialReportDetailT;
 use app\api\model\MaterialReportT;
@@ -237,7 +238,6 @@ class DownExcel
             'all' => $allMoney,
         ]);
         $file_name = $report->title;
-        print_r($exportData);
         $url = (new ExcelService())->makeExcel2($header, $exportData, $file_name, $SCRIPT_FILENAME);
         $this->saveExcel($downId, $url, $file_name);
     }
@@ -372,19 +372,48 @@ class DownExcel
     public
     function exportOrderMaterials($data)
     {
-        $company_id = $data['company_id'];
-        $canteen_id = $data['canteen_id'];
-        $time_begin = $data['time_begin'];
-        $time_end = $data['time_end'];
+        $companyId = $data['company_id'];
+        $canteenId = $data['canteen_id'];
+        $timeBegin = $data['time_begin'];
+        $timeEnd = $data['time_end'];
         $downId = $data['down_id'];
         $SCRIPT_FILENAME = $data['SCRIPT_FILENAME'];
-        $statistic = OrderMaterialV::exportOrderMaterials($time_begin, $time_end, $canteen_id, $company_id);
-        //获取该企业/饭堂下所有材料价格
-        $materials = MaterialPriceV::materialsForOrder($canteen_id, $company_id);
-        $statistic = (new OrderStatisticServiceV1())->prefixMaterials($statistic, $materials, true);
-        $header = ['序号', '日期', '餐次', '材料名称', '材料数量', '订货数量', '单价', '总价'];
-        $file_name = "材料明细下单表(" . $time_begin . "-" . $time_end . ")";
-        $url = (new ExcelService())->makeExcel2($header, $statistic, $file_name, $SCRIPT_FILENAME);
+        $info = MaterialOrderT::exportOrderMaterials($timeBegin, $timeEnd, $companyId, $canteenId);
+
+        $exportData = [];
+        $allMoney = 0;
+        if (count($info)) {
+            foreach ($info as $k => $v) {
+                $allMoney += $v['count'] * $v['price'];
+                array_push($exportData, [
+                    'num' => $k + 1,
+                    'create_time' => $v['create_time'],
+                    'dinner' => $v['dinner'],
+                    'canteen' => $v['canteen'],
+                    'material' => $v['material'],
+                    'order_count' => $v['order_count'],
+                    'count' => $v['count'],
+                    'price' => $v['price'],
+                    'all' => $v['count'] * $v['price'],
+                ]);
+            }
+        }
+        array_push($exportData, [
+            'num' => "合计",
+            'create_time' => '',
+            'dinner' => '',
+            'canteen' => '',
+            'material' => '',
+            'order_count' => '',
+            'count' => '',
+            'price' => '',
+            'all' => $allMoney,
+        ]);
+
+
+        $header = ['序号', '日期', '餐次', '消费地点','材料名称', '材料数量', '订货数量(kg)', '单价', '总价'];
+        $file_name = "材料明细下单表(" . $timeBegin . "-" . $timeEnd . ")";
+        $url = (new ExcelService())->makeExcel2($header, $exportData, $file_name, $SCRIPT_FILENAME);
         $this->saveExcel($downId, $url, $file_name);
 
     }
