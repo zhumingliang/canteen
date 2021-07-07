@@ -46,6 +46,7 @@ class DinnerT extends Model
         return $info;
     }
 
+
     public static function canteenDinnerMenus($canteen_id)
     {
         $menus = self::where('c_id', $canteen_id)
@@ -57,6 +58,22 @@ class DinnerT extends Model
                 }
             ])
             ->field('id,name,fixed,type,type_number,limit_time')
+            ->select();
+
+        return $menus;
+    }
+
+    public static function canteenDinnerMenus2($canteen_id)
+    {
+        $menus = self::where('c_id', $canteen_id)
+            ->where('state', CommonEnum::STATE_IS_OK)
+            ->with([
+                'menus' => function ($query) {
+                    $query->where('state', '=', CommonEnum::STATE_IS_OK)
+                        ->field('id,d_id,category,status,count');
+                }
+            ])
+            ->field('id,name')
             ->select();
 
         return $menus;

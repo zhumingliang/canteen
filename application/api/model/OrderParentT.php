@@ -126,7 +126,7 @@ class OrderParentT extends Model
                     $query->field('id,name');
                 }
             ])
-            ->field('id,address_id,company_id,outsider,dinner_id,fixed,type,count,money,sub_money,delivery_fee,create_time,ordering_date,remark,ordering_type')
+            ->field('id,state,address_id,company_id,outsider,dinner_id,fixed,type,count,money,sub_money,delivery_fee,create_time,ordering_date,remark,ordering_type')
             ->find();
 
         return $info;
@@ -168,7 +168,7 @@ class OrderParentT extends Model
                     $query->field('id,name');
                 }
             ])
-            ->field('id,u_id,dinner_id,canteen_id,ordering_date')
+            ->field('id,state,u_id,dinner_id,canteen_id,ordering_date')
             ->find();
         return $info;
     }
@@ -220,9 +220,10 @@ class OrderParentT extends Model
             ->field('id,dinner_id,count as order_count,"more" as strategy_type,staff_id,fixed')
             ->select();
     }
-    public static function dinnerStatistic($dinnerId,$orderingDate)
+    public static function dinnerStatistic($dinnerId,$orderingDate,$staffId)
     {
-        return self::where('dinner_id', $dinnerId)
+        return self::where('staff_id', $staffId)
+            ->where('d_id', $dinnerId)
             ->where('ordering_date',$orderingDate)
             ->where('state', CommonEnum::STATE_IS_OK)
             ->where('pay', PayEnum::PAY_SUCCESS)

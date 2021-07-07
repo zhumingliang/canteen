@@ -60,6 +60,11 @@ class CompanyStaffT extends Model
         return $this->belongsTo('UserT', 'phone', 'phone');
     }
 
+    public function punishment()
+    {
+        return $this->hasOne('StaffPunishmentT', 'staff_id', 'id');
+    }
+
     public static function staff($phone, $company_id = '')
     {
         return self::where('phone', $phone)
@@ -97,7 +102,7 @@ class CompanyStaffT extends Model
             } else {
                 $query->where('d_id', $d_ids);
             }
-        })->where('state', CommonEnum::STATE_IS_OK)
+        })->where('state', '<', CommonEnum::STATE_IS_DELETE)
             ->field('id,username')->select()->toArray();
         return $staffs;
     }
@@ -286,9 +291,12 @@ class CompanyStaffT extends Model
                         ->whereIn('state', '1,2');
                 }, 'department' => function ($query) {
                     $query->field('id,name');
+                },
+                'punishment' => function ($query) {
+                    $query->field('id,staff_id,no_meal,no_booking');
                 }
             ])
-            ->field('id,d_id,username,t_id as staff_type_id')
+            ->field('id,d_id,username,t_id as staff_type_id,face_code,status')
             ->order('id')
             ->select();
 
@@ -366,22 +374,34 @@ class CompanyStaffT extends Model
 
         })->where('state', CommonEnum::STATE_IS_OK)
             ->with([
-            'user' => function ($query) {
-                $query->field('phone,openid');
+                'user' => function ($query) {
+                    $query->field('phone,openid');
 
-            },
-            'account' => function ($query) use ($accountId) {
-                $query->where('account_id', $accountId)->where('state', CommonEnum::STATE_IS_OK)
-                    ->field('staff_id,account_id,sum(money) as money')
-                    ->group('staff_id');
-            }
+                },
+                'account' => function ($query) use ($accountId) {
+                    $query->where('account_id', $accountId)->where('state', CommonEnum::STATE_IS_OK)
+                        ->field('staff_id,account_id,sum(money) as money')
+                        ->group('staff_id');
+                }
 
-        ]) ->field('id,phone,username')
+            ])->field('id,phone,username')
             ->select()->toArray();
 
         return $staffs;
 
     }
 
+
+    public static function staffWithPunishment($staffId)
+    {
+        return self::where('id', $staffId)
+            ->with([
+                'punishment' => function ($query) {
+                    $query->field('id,staff_id,no_meal,no_booking');
+                }
+            ])
+            ->field('id,t_id,status')
+            ->find()->toArray();
+    }
 
 }

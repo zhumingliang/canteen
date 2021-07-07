@@ -15,6 +15,7 @@ use app\api\service\NextMonthPayService;
 use app\lib\enum\CommonEnum;
 use app\lib\exception\ParameterException;
 use app\lib\weixin\Template;
+use app\lib\weixin\Template2;
 use think\Exception;
 use think\queue\Job;
 
@@ -41,13 +42,15 @@ class SendTemplate
             $job->delete();
         } else {
             LogService::saveJob("<warn>微信通知队列任务执行失败！" . "</warn>\n", json_encode($data));
-            if ($job->attempts() > 3) {
-                //通过这个方法可以检查这个任务已经重试了几次了
-                LogService::saveJob("<warn>微信通知队列已经重试超过3次，现在已经删除该任务" . "</warn>\n");
-                $job->delete();
-            } else {
-                $job->release(3); //重发任务
-            }
+            $job->delete();
+
+            /* if ($job->attempts() > 3) {
+                 //通过这个方法可以检查这个任务已经重试了几次了
+                 LogService::saveJob("<warn>微信通知队列已经重试超过3次，现在已经删除该任务" . "</warn>\n");
+                 $job->delete();
+             } else {
+                 $job->release(1); //重发任务
+             }*/
         }
     }
 
@@ -120,25 +123,27 @@ class SendTemplate
 
     public function sendPaymentTemplate($companyId, $templateId, $url)
     {
-
         $info = (new NextMonthPayService())->getPayRemindInfo($companyId);
         if (count($info)) {
             $fail = [];
             foreach ($info as $k => $v) {
-                $data = [
-                    'first' => "您好，" . $v['pay_date'] . "月份缴费账单已经生成",
-                    'keyword1' => abs($v['pay_money']) . "元",
-                    'keyword2' =>date('Y') . '年' .date('m') . '月' .$v['pay_begin_date'].'日' . '到' .date('Y') . '年' .date('m') . '月' .$v['pay_end_date'].'日',
-                    'remark' => "请您及时缴费"
-                ];
-                $res = (new Template())->send($v['openid'], $templateId, $url, $data);
-                if ($res['errcode'] != 0) {
-                    $data['res'] = $res;
-                    array_push($fail, $data);
+
+                if (!empty($v['openid'])) {
+                    $data = [
+                        'first' => "您好，" . $v['pay_date'] . "月份缴费账单已经生成",
+                        'keyword1' => abs($v['pay_money']) . "元",
+                        'keyword2' => date('Y') . '年' . date('m') . '月' . $v['pay_begin_date'] . '日' . '到' . date('Y') . '年' . date('m') . '月' . $v['pay_end_date'] . '日',
+                        'remark' => "请您及时缴费"
+                    ];
+                    $res = (new Template2())->send($v['openid'], $templateId, $url, $data);
+                    if ($res['errcode'] != 0||$res['errmsg']!="ok") {
+                        $data['res'] = $res;
+                        array_push($fail, $data);
+                    }
                 }
             }
             if (count($fail)) {
-                LogService::saveJob('账户清零微信通知失败:', json_encode($fail));
+                LogService::saveJob('次月缴费微信通知失败:', json_encode($fail));
             }
         }
 
@@ -164,7 +169,7 @@ class SendTemplate
                             'keyword3' => date('Y-m-d H:i'),
                             'remark' => "建议现场查看消费机的异常提示。"
                         ];
-                        $res = (new Template())->send($v['openid'], $templateId, $url, $data);
+                        $res = (new Template2())->send($v['openid'], $templateId, $url, $data);
                         if ($res['errcode'] != 0) {
                             $data['res'] = $res;
                             array_push($fail, $data);
@@ -220,7 +225,7 @@ class SendTemplate
                 'remark' => "建议您及时消费。"
             ];
             $openid = $v['user']['openid'];
-            $res = (new Template())->send($openid, $templateId, $url, $data);
+            $res = (new Template2())->send($openid, $templateId, $url, $data);
             if ($res['errcode'] !== 0) {
                 $data['res'] = $res;
                 array_push($fail, $data);

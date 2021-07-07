@@ -14,12 +14,14 @@ Route::rule('api/:version/index', 'api/:version.Index/index');
 Route::rule('api/:version/token', 'api/:version.Index/token');
 Route::rule('api/:version/test', 'api/:version.Index/test');
 
-Route::post('api/:version/token/admin', 'api/:version.Token/getAdminToken');
+Route::rule('api/:version/token/admin', 'api/:version.Token/getAdminToken');
+Route::rule('api/:version/token/admin/bind', 'api/:version.Token/bindSocket');
 //Route::rule('api/:version/token/official', 'api/:version.Token/getOfficialToken')->middleware(\Naixiaoxin\ThinkWechat\Middleware\OauthMiddleware::class);
 Route::rule('api/:version/token/official', 'api/:version.Token/getOfficialToken');
 Route::rule('api/:version/token/machine', 'api/:version.Token/getMachineToken');
 Route::rule('api/:version/token/login/out', 'api/:version.Token/loginOut');
 Route::post('api/:version/token/supplier', 'api/:version.Token/getSupplierToken');
+Route::rule('api/:version/token/verify', 'api/:version.Token/verify');
 
 Route::post('api/:version/module/system/save', 'api/:version.Module/saveSystem');;
 Route::post('api/:version/module/system/canteen/save', 'api/:version.Module/saveSystemCanteen');
@@ -43,6 +45,7 @@ Route::get('api/:version/company/wxConfig', 'api/:version.Company/wxConfig');
 Route::post('api/:version/company/nhConfig/save', 'api/:version.Company/saveCompanyNHConfig');
 Route::get('api/:version/company/nhConfig', 'api/:version.Company/nhConfig');
 Route::get('api/:version/companies', 'api/:version.Company/companies');
+Route::get('api/:version/offline/companies', 'api/:version.Company/companiesForOffline');
 Route::get('api/:version/company/consumptionLocation', 'api/:version.Company/consumptionLocation');
 Route::get('api/:version/manager/companies', 'api/:version.Company/managerCompanies');
 Route::get('api/:version/user/companies', 'api/:version.Company/userCompanies');
@@ -73,8 +76,10 @@ Route::get('api/:version/canteen/dinners/user', 'api/:version.Canteen/currentCan
 Route::get('api/:version/canteen/dinners', 'api/:version.Canteen/canteenDinners');
 Route::get('api/:version/canteen/check/confirm', 'api/:version.Canteen/checkConfirm');
 Route::get('api/:version/canteen/diningMode', 'api/:version.Canteen/diningMode');
+Route::get('api/:version/canteen/order/delivery_fee', 'api/:version.Canteen/deliveryFee');
 Route::get('api/:version/machines/company', 'api/:version.Canteen/companyMachines');
 Route::get('api/:version/machines', 'api/:version.Canteen/machines');
+Route::get('api/:version/offline/machines', 'api/:version.Machine/machines');
 Route::get('api/:version/consumption/place', 'api/:version.Canteen/consumptionPlace');
 
 Route::post('api/:version/printer/save', 'api/:version.Printer/save');
@@ -136,7 +141,14 @@ Route::get('api/:version/foods/personChoice', 'api/:version.Food/foodsForOfficia
 Route::get('api/:version/foods/menu', 'api/:version.Food/foodsForOfficialMenu');
 Route::get('api/:version/food', 'api/:version.Food/food');
 Route::get('api/:version/food/info/comment', 'api/:version.Food/infoToComment');
-Route::post('api/:version/food/material/update', 'api/:version.Food/updateMaterial');
+//Route::post('api/:version/food/material/update', 'api/:version.Food/updateMaterial');
+Route::post('api/:version/food/automatic/save', 'api/:version.Food/saveAutoConfig');
+Route::post('api/:version/food/automatic/update', 'api/:version.Food/updateAutoConfig');
+Route::get('api/:version/food/automatic', 'api/:version.Food/automatic');
+Route::post('api/:version/food/auto/upAll', 'api/:version.Food/upAll');
+Route::post('api/:version/food/auto/downAll', 'api/:version.Food/downAll');
+Route::get('api/:version/food/auto/ready', 'api/:version.Food/readyUpFoods');
+Route::get('api/:version/food/day', 'api/:version.Food/haveFoodDay');
 
 Route::post('api/:version/material/save', 'api/:version.Material/save');
 Route::post('api/:version/material/update', 'api/:version.Material/update');
@@ -186,6 +198,8 @@ Route::get('api/:version/user/canteenMenus', 'api/:version.User/userCanteenMenus
 Route::get('api/:version/user/canteens', 'api/:version.User/userCanteens');
 Route::get('api/:version/user/card', 'api/:version.User/mealCard');
 Route::get('api/:version/user/phone', 'api/:version.User/userPhone');
+Route::get('api/:version/user/punishment', 'api/:version.User/punishment');
+
 
 Route::post('api/:version/order/personChoice/save', 'api/:version.Order/personChoice');
 Route::post('api/:version/order/personChoice/outside/save', 'api/:version.Order/personChoiceOutsider');
@@ -205,6 +219,7 @@ Route::post('api/:version/order/changeAddress', 'api/:version.Order/changeOrderA
 Route::post('api/:version/order/handelOrderedNoMeal', 'api/:version.Order/handelOrderedNoMeal');
 Route::get('api/:version/order/userOrderings', 'api/:version.Order/userOrderings');
 Route::get('api/:version/order/consumptionRecords', 'api/:version.Order/consumptionRecords');
+Route::get('api/:version/order/consumptionRecords/statistic', 'api/:version.Order/officialConsumptionStatistic');
 Route::get('api/:version/order/detail', 'api/:version.Order/orderDetail');
 Route::get('api/:version/order/consumptionRecords/detail', 'api/:version.Order/recordsDetail');
 Route::get('api/:version/order/managerOrders', 'api/:version.Order/managerOrders');
@@ -229,6 +244,10 @@ Route::get('api/:version/order/consumptionStatistic/export', 'api/:version.Order
 Route::post('api/:version/order/handel', 'api/:version.Takeout/handel');
 Route::post('api/:version/order/money', 'api/:version.Order/getOrderMoney');
 Route::post('api/:version/outsider/order/money', 'api/:version.Order/getOutsiderOrderMoney');
+Route::post('api/:version/order/money/check', 'api/:version.Order/checkOrderMoney');
+Route::post('api/:version/order/pre/count/change', 'api/:version.Order/updatePrepareOrderCount');
+Route::post('api/:version/order/pre/submit', 'api/:version.Order/submitOrder');
+Route::get('api/:version/order/managerOrderStatistic', 'api/:version.Order/managerOrderStatistic');
 
 Route::post('api/:version/address/save', 'api/:version.Address/save');
 Route::post('api/:version/address/update', 'api/:version.Address/update');
@@ -304,7 +323,10 @@ Route::post('api/:version/wallet/supplement', 'api/:version.Wallet/rechargeSuppl
 Route::post('api/:version/wallet/supplement/upload', 'api/:version.Wallet/rechargeSupplementUpload');
 Route::post('api/:version/wallet/pay', 'api/:version.Wallet/saveOrder');
 Route::get('api/:version/wallet/pay/getPreOrder', 'api/:version.Wallet/getPreOrder');
+Route::get('api/:version/wallet/pay/nonghang/link', 'api/:version.Wallet/payLink');
 Route::rule('api/:version/wallet/WXNotifyUrl', 'api/:version.Wallet/WXNotifyUrl');
+Route::get('api/:version/wallet/rechargeStatistic', 'api/:version.Wallet/rechargeStatistic');
+Route::get('api/:version/wallet/rechargeStatistic/export', 'api/:version.Wallet/exportRechargeStatistic');
 
 
 Route::rule('api/:version/service/printer', 'api/:version.Service/printer');
@@ -312,6 +334,7 @@ Route::rule('api/:version/service/canteen/config', 'api/:version.Service/configF
 Route::rule('api/:version/service/canteen/orders', 'api/:version.Service/orderForOffline');
 Route::rule('api/:version/service/company/staffs', 'api/:version.Service/staffsForOffline');
 Route::rule('api/:version/service/template', 'api/:version.Service/sendTemplate');
+Route::rule('api/:version/service/offline/receive', 'api/:version.Service/offlineReceive');
 
 Route::post('api/:version/outsider/save', 'api/:version.Outsider/saveCanteen');
 Route::get('api/:version/outsiders', 'api/:version.Outsider/outsiders');
@@ -366,3 +389,39 @@ Route::get('api/:version/nextmonthpay/remind', 'api/:version.NextMonthPay/remind
 Route::post('api/:version/nextmonthpay/payMoney', 'api/:version.NextMonthPay/payMoney');
 Route::post('api/:version/nextmonthpay/payMoney', 'api/:version.NextMonthPay/payMoney');
 Route::post('api/:version/nextmonthpay/payMoneyAll', 'api/:version.NextMonthPay/payMoneyAll');
+Route::post('api/:version/nextmonthpay/selectPaySetting', 'api/:version.NextMonthPay/selectPaySetting');
+Route::post('api/:version/nextmonthpay/nextMonthOutput', 'api/:version.NextMonthPay/nextMonthOutput');
+
+Route::get('api/:version/punishment/strategyDetail', 'api/:version.Punishment/strategyDetail');
+Route::post('api/:version/punishment/updateStrategy', 'api/:version.Punishment/updateStrategy');
+Route::get('api/:version/punishment/getPunishmentStaffInfo', 'api/:version.Punishment/getPunishmentStaffInfo');
+Route::get('api/:version/punishment/exportPunishmentStaffInfo', 'api/:version.Punishment/exportPunishmentStaffInfo');
+Route::post('api/:version/punishment/updatePunishmentStatus', 'api/:version.Punishment/updatePunishmentStatus');
+Route::get('api/:version/punishment/getPunishmentEditDetails', 'api/:version.Punishment/getPunishmentEditDetails');
+Route::get('api/:version/punishment/getStaffMaxPunishment', 'api/:version.Punishment/getStaffMaxPunishment');
+Route::get('api/:version/punishment/exportPunishmentEditDetails', 'api/:version.Punishment/exportPunishmentEditDetails');
+Route::get('api/:version/punishment/penaltyDetails', 'api/:version.Punishment/penaltyDetails');
+Route::get('api/:version/punishment/exportPunishmentRecord', 'api/:version.Punishment/exportPunishmentRecord');
+
+Route::get('api/:version/excels', 'api/:version.Excel/excels');
+Route::post('api/:version/excel/delete', 'api/:version.Excel/delete');
+
+Route::get('api/:version/machine/records', 'api/:version.Machine/records');
+Route::get('api/:version/machine/records/detail', 'api/:version.Machine/detail');
+
+Route::post('api/:version/food/material/save', 'api/:version.Material/saveFoodMaterial');
+Route::post('api/:version/food/material/update', 'api/:version.Material/updateFoodMaterial');
+Route::post('api/:version/material/order/save', 'api/:version.Material/saveOrderMaterial');
+Route::post('api/:version/material/order/update', 'api/:version.Material/updateOrderMaterial');
+Route::post('api/:version/material/order/delete', 'api/:version.Material/deleteOrderMaterial');
+Route::get('api/:version/material/order/list', 'api/:version.Material/orderMaterials');
+Route::get('api/:version/material/order/export', 'api/:version.Material/exportOrderMaterials');
+Route::post('api/:version/material/order/report', 'api/:version.Material/orderMaterialReport');
+Route::post('api/:version/material/order/report/cancel', 'api/:version.Material/orderMaterialReportCancel');
+Route::get('api/:version/material/order/reports', 'api/:version.Material/orderMaterialReports');
+Route::get('api/:version/material/order/report/detail', 'api/:version.Material/orderMaterialReportDetail');
+Route::get('api/:version/material/order/report/export', 'api/:version.Material/orderMaterialReportExport');
+
+Route::get('api/:version/machine/getMachineConfig', 'api/:version.Machine/getMachineConfig');
+Route::post('api/:version/machine/machineConfig', 'api/:version.Machine/machineConfig');
+Route::post('api/:version/machine/faceConfig', 'api/:version.Machine/faceConfig');

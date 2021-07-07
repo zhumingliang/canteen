@@ -228,36 +228,35 @@ class Food extends BaseController
      * @apiVersion 3.0.0
      * @apiDescription 微信端-菜品管理-菜品信息
      * @apiExample {get}  请求样例:
-     * http://canteen.tonglingok.com/api/v1/foods/officialManager?$page=1&size=100&menu_id=1&food_type=2&day=2019-09-02&canteen_id=3
-     * @apiParam (请求参数说明) {int} page 当前页码
-     * @apiParam (请求参数说明) {int} size 每页多少条数据
-     * @apiParam (请求参数说明) {int} food_type  菜品是否为无选菜：1|是；2|否
-     * @apiParam (请求参数说明) {int} menu_id 类型id
-     * @apiParam (请求参数说明) {String} day 日期
+     * http://canteen.tonglingok.com/api/v1/foods/officialManager?dinner_id=1&day=2019-09-02&canteen_id=3&&food_type=1
      * @apiParam (请求参数说明) {String} canteen_id 饭堂ID
+     * @apiParam (请求参数说明) {int} dinner_id 餐次id
+     * @apiParam (请求参数说明) {String} day 日期
+     * @apiParam (请求参数说明) {int} food_type  菜品是否为无选菜：1:是；2:否
      * @apiSuccessExample {json} 返回样例:
-     * {"msg":"ok","errorCode":0,"code":200,"data":{"total":2,"per_page":100,"current_page":1,"last_page":1,"data":[{"id":1,"name":"红烧牛肉","img_url":"http:\/\/canteen.tonglingok.com\/static\/image\/20190810\/ab9ce8ff0e2c5adb40263641b24f36d4.png","price":5,"external_price":5,"status":2,"default":2}]}
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"fixed":2,"nextAuto":"2021-01-11 00:00","foodData":[{"id":82,"name":"包子","foods":[]},{"id":109,"name":"测试0021","foods":[]}]}}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
      * @apiSuccess (返回参数说明) {String} msg 信息描述
-     * @apiSuccess (返回参数说明) {int} total 数据总数
-     * @apiSuccess (返回参数说明) {int} per_page 每页多少条数据
-     * @apiSuccess (返回参数说明) {int} current_page 当前页码
-     * @apiSuccess (返回参数说明) {int} last_page 最后页码
-     * @apiSuccess (返回参数说明) {int} id 菜品id
+     * @apiSuccess (返回参数说明) {int} fixed 是否为固定消费：1：是；2：否
+     * @apiSuccess (返回参数说明) {string} nextAuto 下次自动上架时间：为0 则未设置自动上架
+     * @apiSuccess (返回参数说明) {obj} foodData 菜品信息
+     * @apiSuccess (返回参数说明) {int} id 菜类id
+     * @apiSuccess (返回参数说明) {int} name 菜类名称
+     * @apiSuccess (返回参数说明) {obj} foods 菜品信息
+     * @apiSuccess (返回参数说明) {int} food_id 菜品id
      * @apiSuccess (返回参数说明) {string} name  菜品名称
      * @apiSuccess (返回参数说明) {float} price  菜品价格
      * @apiSuccess (返回参数说明) {float} external_price  对外价格
      * @apiSuccess (返回参数说明) {string} img_url 菜品图片地址
-     * @apiSuccess (返回参数说明) {int} status 菜品上架状态：1|上架；2|下架
-     * @apiSuccess (返回参数说明) {int} default 菜品默认状态：1|默认；2|非默认
+     * @apiSuccess (返回参数说明) {int} status 菜品上架状态：1：上架；2：待上架；3：未上架
      */
-    public function foodsForOfficialManager($page = 1, $size = 100)
+    public function foodsForOfficialManager()
     {
-        $menu_id = Request::param('menu_id');
-        $food_type = Request::param('food_type');
+        $canteenId = Request::param('canteen_id');
+        $dinnerId = Request::param('dinner_id');
         $day = Request::param('day');
-        $canteen_id = Request::param('canteen_id');
-        $foods = (new FoodService())->foodsForOfficialManager($menu_id, $food_type, $day, $canteen_id, $page, $size);
+        $foodType = Request::param('food_type');
+        $foods = (new FoodService())->foodsForOfficialManager($canteenId, $dinnerId, $day, $foodType);
         return json(new SuccessMessageWithData(['data' => $foods]));
     }
 
@@ -268,16 +267,18 @@ class Food extends BaseController
      * @apiDescription   微信端-菜品管理-菜品状态操作
      * @apiExample {post}  请求样例:
      *    {
-     *       "food_id": 1，
      *       "canteen_id": 1，
+     *       "dinner_id": 1，
+     *       "food_id": 1，
      *       "day": 2019-09-01，
-     *       "status": 1，
-     *       "default": 1，
+     *       "status": 1
+     *       "default": 1
      *     }
-     * @apiParam (请求参数说明) {int} food_id  菜品ID
      * @apiParam (请求参数说明) {int} canteen_id  饭堂ID
+     * @apiParam (请求参数说明) {int} dinner_id  餐次id
+     * @apiParam (请求参数说明) {int} food_id  菜品ID
      * @apiParam (请求参数说明) {String} day 日期
-     * @apiParam (请求参数说明) {int} status 菜品状态：1|上架；2|下架
+     * @apiParam (请求参数说明) {int} status 菜品状态：1:上架；3:下架
      * @apiParam (请求参数说明) {int} default 菜品默认状态：1|默认；2|非默认
      * @apiSuccessExample {json} 返回样例:
      *{"msg":"ok","errorCode":0}
@@ -390,8 +391,9 @@ class Food extends BaseController
      * @apiVersion 3.0.0
      * @apiDescription 微信端-菜谱查询-菜品列表
      * @apiExample {get}  请求样例:
-     * http://canteen.tonglingok.com/api/v1/foods/foods/menu?dinner_id=6
+     * http://canteen.tonglingok.com/api/v1/foods/foods/menu?dinner_id=6&day=2021-10-26
      * @apiParam (请求参数说明) {int} dinner_id 餐次ID
+     * @apiParam (请求参数说明) {string} day 指定日期
      * @apiSuccessExample {json} 返回样例:
      * {"msg":"ok","errorCode":0,"code":200,"data":[{"id":1,"category":"荤菜","status":1,"count":3,"foods":[{"id":3,"day":"2019-09-07","f_id":1,"status":1,"default":2,"m_id":1,"d_id":6,"name":"红烧牛肉","price":5,"img_url":"\/static\/image\/20190810\/ab9ce8ff0e2c5adb40263641b24f36d4.png","f_type":2,"chef":"李大厨","des":"适合**人群，有利于***不适合***人群","materials":[{"id":1,"f_id":3,"name":"牛肉","count":15,"unit":"kg"},{"id":2,"f_id":3,"name":"土豆","count":10,"unit":"kg"},{"id":3,"f_id":3,"name":"西红柿","count":10,"unit":"kg"}]}]},{"id":2,"category":"汤","status":2,"count":0,"foods":[]}]}
      * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
@@ -415,10 +417,37 @@ class Food extends BaseController
     public function foodsForOfficialMenu()
     {
         $d_id = Request::param('dinner_id');
-        $foods = (new FoodService())->foodsForOfficialMenu($d_id);
+        $day = Request::param('day');
+        $foods = (new FoodService())->foodsForOfficialMenu($day, $d_id);
         return json(new SuccessMessageWithData(['data' => $foods]));
     }
 
+    /**
+     * @api {POST} /api/v1/food/automatic/save  微信端--自动上架--新增配置
+     * @apiGroup   Official
+     * @apiVersion 3.0.0
+     * @apiDescription    微信端--自动上架--新增配置
+     * @apiExample {post}  请求样例:
+     *    {
+     *       "canteen_id": 1,
+     *       "dinner_id": 5,
+     *       "auto_week": 5,
+     *       "repeat_week": 1,
+     *       "detail":{"add":[{"menu_id":1,"foods":[1,2,3]}]}
+     *     }
+     * @apiParam (请求参数说明) {int} canteen_id  饭堂id
+     * @apiParam (请求参数说明) {int} dinner_id   餐次id
+     * @apiParam (请求参数说明) {int} auto_week 每周菜品上架时间：0-6：周日-周六
+     * @apiParam (请求参数说明) {int} repeat_week 每周菜品重复上架时间：0-6：周日-周六
+     * @apiParam (请求参数说明) {string} detail  上架菜品内容
+     * @apiParam (请求参数说明) {string} add  上架菜品信息
+     * @apiParam (请求参数说明) {int} menu_id  菜品id
+     * @apiParam (请求参数说明) {string} foods  菜品信息：菜品id集合
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     */
     public function saveAutoConfig()
     {
         $params = Request::param();
@@ -427,5 +456,137 @@ class Food extends BaseController
 
     }
 
+    /**
+     * @api {POST} /api/v1/food/automatic/update  微信端--自动上架--修改配置
+     * @apiGroup   Official
+     * @apiVersion 3.0.0
+     * @apiDescription    微信端--自动上架--修改配置
+     * @apiExample {post}  请求样例:
+     *    {
+     *       "id": 1,
+     *       "auto_week": 5,
+     *       "repeat_week": 1,
+     *       "detail":{"add":[{"menu_id":1,"foods":[1,2,3]}],"cancel":[1,2]}
+     *     }
+     * @apiParam (请求参数说明) {int} id 配置id
+     * @apiParam (请求参数说明) {int} auto_week 每周菜品上架时间：0-6：周日-周六
+     * @apiParam (请求参数说明) {int} repeat_week 每周菜品重复上架时间：0-6：周日-周六
+     * @apiParam (请求参数说明) {string} detail  上架菜品内容
+     * @apiParam (请求参数说明) {string} add  上架菜品信息
+     * @apiParam (请求参数说明) {int} menu_id  菜品id
+     * @apiParam (请求参数说明) {string} foods  菜品信息：菜品id集合
+     * @apiParam (请求参数说明) {string} cancel  取消菜品集合：注意不是菜品id 是菜品和配置关联id
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     */
+    public function updateAutoConfig()
+    {
+        $params = Request::param();
+        (new FoodService())->updateAutoConfig($params);
+        return json(new SuccessMessage());
+
+    }
+
+    /**
+     * @api {GET} /api/v1/food/automatic 微信端-自动上架-获取饭堂所有配置
+     * @apiGroup  Official
+     * @apiVersion 3.0.0
+     * @apiDescription 微信端-自动上架-获取饭堂所有配置
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/food/automatic?canteen_id=107
+     * @apiParam (请求参数说明) {int} canteen_id 饭堂id
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":[{"id":1,"canteen_id":107,"dinner_id":107,"auto_week":1,"repeat_week":2,"state":1,"foods":[{"id":1,"food_id":86,"auto_id":1,"menu_id":82,"state":1,"create_time":"2021-01-07 11:09:22","update_time":"2021-01-07 11:09:22"},{"id":2,"food_id":90,"auto_id":1,"menu_id":82,"state":1,"create_time":"2021-01-07 11:09:22","update_time":"2021-01-07 11:09:22"}]}]}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {String} msg 信息描述
+     * @apiSuccess (返回参数说明) {int} id 配置id
+     * @apiSuccess (返回参数说明) {int} canteen_id  饭堂id
+     * @apiSuccess (返回参数说明) {int} dinner_id   餐次id
+     * @apiSuccess (返回参数说明) {int} auto_week 每周菜品上架时间：0-6：周日-周六
+     * @apiSuccess (返回参数说明) {int} repeat_week 每周菜品重复上架时间：0-6：周日-周六
+     * @apiSuccess (返回参数说明) {obj} foods  自动上架菜品
+     * @apiSuccess (返回参数说明) {int} id  自动配置和菜品关联id
+     * @apiSuccess (返回参数说明) {int} id  自动配置和菜品关联id
+     * @apiSuccess (返回参数说明) {int} menu_id  菜品归属菜单id
+     * @apiSuccess (返回参数说明) {int} food_id  菜品id
+     */
+    public function automatic()
+    {
+        $canteenId = Request::param('canteen_id');
+        $info = (new FoodService())->automatic($canteenId);
+        return json(new SuccessMessageWithData(['data' => $info]));
+    }
+
+    /**
+     * @api {POST} /api/v1/food/auto/upAll  微信端--自动上架--立即批量上架
+     * @apiGroup   Official
+     * @apiVersion 3.0.0
+     * @apiDescription    微信端--自动上架--立即批量上架
+     * @apiExample {post}  请求样例:
+     *    {
+     *       "canteen_id": 1,
+     *       "dinner_id": 5,
+     *       "day": 2021-01-10
+     *     }
+     * @apiParam (请求参数说明) {int} canteen_id  饭堂id
+     * @apiParam (请求参数说明) {int} dinner_id   餐次id
+     * @apiParam (请求参数说明) {string} day 上架日期
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     */
+    public function upAll()
+    {
+        $canteenId = Request::param('canteen_id');
+        $dinnerId = Request::param('dinner_id');
+        $day = Request::param('day');
+        (new FoodService())->upAll($canteenId, $dinnerId, $day);
+        return json(new SuccessMessage());
+    }
+
+
+    /**
+     * @api {POST} /api/v1/food/auto/downAll  微信端--自动上架--立即全部下架
+     * @apiGroup   Official
+     * @apiVersion 3.0.0
+     * @apiDescription    微信端--自动上架--立即全部下架
+     * @apiExample {post}  请求样例:
+     *    {
+     *       "canteen_id": 1,
+     *       "dinner_id": 5,
+     *       "day": 2021-01-10
+     *     }
+     * @apiParam (请求参数说明) {int} canteen_id  饭堂id
+     * @apiParam (请求参数说明) {int} dinner_id   餐次id
+     * @apiParam (请求参数说明) {string} day 上架日期
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     */
+    public function downAll()
+    {
+        $canteenId = Request::param('canteen_id');
+        $dinnerId = Request::param('dinner_id');
+        $day = Request::param('day');
+        (new FoodService())->downAll($canteenId, $dinnerId, $day);
+        return json(new SuccessMessage());
+    }
+
+
+    public function handleAutoAll()
+    {
+
+        $canteenId = Request::param('canteen_id');
+        $dinnerId = Request::param('dinner_id');
+        $type = Request::param('type');
+        $day = Request::param('day');
+        $foods = Request::param('foods');
+        (new FoodService())->handleAutoAll($type,$canteenId, $dinnerId, $day,$foods);
+        return json(new SuccessMessage());
+    }
 
 }

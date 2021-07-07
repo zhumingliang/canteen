@@ -58,11 +58,10 @@ function guid()
 
 function QRcodeNUmber()
 {
-    $yCode = array('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J','K','L','M',"N",'O','P','Q','R','S','T');
+    $yCode = array('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', "N", 'O', 'P', 'Q', 'R', 'S', 'T');
     $orderSn = $yCode[intval(date('Y')) - 2019] . strtoupper(dechex(date('m'))) . date('d') . substr(time(), -5) . substr(microtime(), 2, 5) . sprintf('%02d', rand(0, 99));
     return $orderSn;
 }
-
 
 
 /**
@@ -184,6 +183,23 @@ function getTree($list, $pid = 0)
         }
     }
     return $tree;
+}
+
+
+function getQrCodeWithStaffId($staffId)
+{
+
+    $code = QRcodeNUmber();
+   // return $code;
+    $str = substr($code, -4);
+    $s_id = $str + $staffId;
+    $qrCode = '';
+    $sId = sprintf("%08d", $s_id);
+    $EEEsId = base64_encode($sId);
+    for ($x = 0; $x < strlen($code); $x++) {
+        $qrCode .= substr($code, $x, 1) . substr($EEEsId, $x, 1);
+    }
+    return $qrCode;
 }
 
 

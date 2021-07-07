@@ -6,12 +6,16 @@ namespace app\api\controller\v1;
 
 use app\api\controller\BaseController;
 use app\api\model\ShopOrderT;
+use app\api\model\StaffCardT;
 use app\api\model\StaffCardV;
 use app\api\service\ShopService;
 use app\api\service\WalletService;
 use app\api\model\UserBalanceV;
+use app\lib\Date;
 use app\lib\enum\CommonEnum;
 use app\lib\exception\DeleteException;
+use app\lib\exception\SaveException;
+use app\lib\exception\UpdateException;
 use think\Db;
 use think\facade\Request;
 use think\exception\DbException;
@@ -35,7 +39,7 @@ class Pos extends BaseController
         if (empty($cardCode)) {
             throw new AuthException(['msg' => '请刷卡登录']);
         }
-        $sql = "select t1.state as card_state,t2.state as staff_state,t3.name from canteen_staff_card_t t1 left join canteen_company_staff_t t2 on t1.staff_id=t2.id left join canteen_staff_type_t t3 on t2.t_id=t3.id where t2.company_id='" . $companyId . "' and t1.card_code='" . $cardCode . "' and t2.state=1";
+        $sql = "select t1.state as card_state,t2.state as staff_state,t3.name from canteen_staff_card_t t1 left join canteen_company_staff_t t2 on t1.staff_id=t2.id left join canteen_staff_type_t t3 on t2.t_id=t3.id where t2.company_id='" . $companyId . "' and t1.card_code='" . $cardCode . "' and t2.state=1 order by t1.create_time desc";
         $name = Db::query($sql);
         if (empty($name)) {
             throw new AuthException(['msg' => '找不到管理员信息']);
@@ -90,7 +94,7 @@ class Pos extends BaseController
         if (empty($cardCode)) {
             throw new AuthException(['msg' => '未接收到卡号']);
         }
-        $sql = "select t1.username ,t2.name as department_name ,t1.phone ,t3.state,t1.birthday from canteen_company_staff_t t1 left join canteen_company_department_t t2 on t1.d_id=t2.id left join canteen_staff_card_t t3 on t1.id=t3.staff_id where t3.card_code='" . $cardCode . "' and t1.company_id='" . $companyId . "' and t1.state=1";
+        $sql = "select t1.username ,t2.name as department_name ,t1.phone ,t3.state,t1.birthday from canteen_company_staff_t t1 left join canteen_company_department_t t2 on t1.d_id=t2.id left join canteen_staff_card_t t3 on t1.id=t3.staff_id where t3.card_code='" . $cardCode . "' and t1.company_id='" . $companyId . "' and t1.state=1 order by t3.create_time desc";
         $data = Db::query($sql);
 
         return json(new SuccessMessageWithData(['data' => $data]));
@@ -151,13 +155,13 @@ class Pos extends BaseController
         $birthday = Request::param('birthday');
         $companyId = Request::param('company_id');
         if (empty($phone)) {
-            throw new Exception("手机号码不能为空！！");
+            throw new AuthException(['msg' => '手机号码不能为空！！']);
         }
         if (empty($birthday)) {
-            throw new Exception("出生日期不能为空！！");
+            throw new AuthException(['msg' => '出生日期不能为空！！']);
         }
         if (empty($companyId)) {
-            throw new Exception("企业id不能为空！！");
+            throw new AuthException(['msg' => '企业id不能为空！！']);
         }
         $data = db('company_staff_t')->where('phone', $phone)
             ->where('birthday', $birthday)
@@ -169,7 +173,7 @@ class Pos extends BaseController
         if (empty($data)) {
             throw new AuthException(['msg' => '查询信息错误，未找到卡号']);
         } else {
-            $data2 = db('staff_card_t')->where('staff_id', $uId)->find();
+            $data2 = db('staff_card_t')->where('staff_id', $uId)->order('create_time desc')->find();
             $cardCode = $data2['card_code'];
             return json(new SuccessMessageWithData(['data' => ['username' => $username, 'card_code' => $cardCode, 'state' => $state]]));
         }
@@ -398,7 +402,7 @@ class Pos extends BaseController
         }
         if ($type == 'refund') {
             $newId = $save->id;
-            (new ShopService())->handleReduceOrder($id, $newId, $company_id, $staff_id, $money,$refundData);
+            (new ShopService())->handleReduceOrder($id, $newId, $company_id, $staff_id, $money, $refundData);
         }
     }
 
@@ -408,7 +412,6 @@ class Pos extends BaseController
         $birthday = $params['birthday'];
         $phone = $params['phone'];
         $company_id = $params['company_id'];
-        $date = date('Y-m-d H:i:s');
         $phoneInfo = db('company_staff_t')
             ->where('company_id', $company_id)
             ->where('phone', $phone)
@@ -427,32 +430,35 @@ class Pos extends BaseController
         if ($user['state'] != 1) {
             throw new AuthException(['msg' => '绑卡失败，账号已停用']);
         }
-//        $staff_id = $user['id'];
         if (StaffCardV::checkCardExits($company_id, $card_code)) {
             throw new ParameterException(['msg' => '卡号已经存在，不能重复绑定']);
         }
-//        $sql = "select id from canteen_staff_card_t where (state = 1 or state = 2) and (staff_id = '" . $staff_id . "' or card_code = '" . $card_code . "')";
-//        $cardInfo = Db::query($sql);
-//
-//        if (!empty($cardInfo)) {
-//            throw new AuthException(['msg' => '该卡或账号已被绑定，请先注销后再绑卡']);
-//        }
-        db('staff_card_t')
-            ->whereOr('staff_id', $user['id'])
-            ->whereOr('card_code', $card_code)
-            ->delete();
+        $staffId =  $user['id'];
+        //获取用户是否存在已经绑定的卡
+        $card = StaffCardT::where('staff_id', $staffId)->order('create_time desc')->find();
+        if($card) {
+            if (in_array($card->state, [1, 2])) {
+                throw new ParameterException(['msg' => '用户已经绑定卡，不能重复绑定']);
+            }
+            $card->state = CommonEnum::STATE_IS_OK;
+            $card->card_code = $card_code;
+            $res = $card->save();
+            if (!$res) {
+                throw new UpdateException(['msg' => "绑卡失败"]);
+            }
+            return $user['username'];
+        }
+        //未绑定卡
         $data = [
-            'staff_id' => $user['id'],
+            'staff_id' => $staffId,
             'card_code' => $card_code,
-            'state' => 1,
-            'create_time' => $date,
-            'update_time' => $date
+            'state' => CommonEnum::STATE_IS_OK,
+            'create_time'=>\date('Y-m-d H:i:s'),
+            'update_time'=>\date('Y-m-d H:i:s')
         ];
-        $save = db('staff_card_t')
-            ->data($data)
-            ->insert();
-        if ($save < 0) {
-            throw  new  AuthException(['msg' => '绑卡失败']);
+        $card = StaffCardT::create($data);
+        if (!$card) {
+            throw new SaveException();
         }
         return $user['username'];
     }

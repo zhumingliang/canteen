@@ -47,6 +47,8 @@ class OrderEnum
 
     const STATISTIC_BY_STATUS = 5;
 
+    const STATISTIC_BY_DAY = 6;
+
     const STATUS_PAID = 1;
 
     const STATUS_CANCEL = 2;

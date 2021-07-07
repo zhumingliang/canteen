@@ -38,6 +38,7 @@ use app\lib\enum\OrderEnum;
 use app\lib\enum\PayEnum;
 use app\lib\enum\StrategyEnum;
 use app\lib\enum\UserEnum;
+use app\lib\exception\AuthException;
 use app\lib\exception\ParameterException;
 use app\lib\exception\SaveException;
 use app\lib\exception\UpdateException;
@@ -49,6 +50,7 @@ use think\Model;
 
 class OrderService extends BaseService
 {
+    private $blacklist = 4;
 
     public function personChoice($params)
     {
@@ -65,6 +67,9 @@ class OrderService extends BaseService
             $company_id = Token::getCurrentTokenVar('current_company_id');
             $phone = Token::getCurrentPhone();
             $staff = (new UserService())->getUserCompanyInfo($phone, $company_id);
+            if ($staff->status == $this->blacklist) {
+                throw new AuthException(['msg' => "用户已进入黑名单，不能订餐"]);
+            }
             $this->checkEatingOutsider($params['type'], $params['address_id']);
             //获取餐次信息
             $dinner = DinnerT::dinnerInfo($dinner_id);
@@ -199,6 +204,7 @@ class OrderService extends BaseService
         foreach ($orderMoney as $k => $v) {
             $data = [
                 'order_id' => $orderId,
+                'staff_id' => $staff->id,
                 'ordering_date' => $ordering_date,
                 'consumption_sort' => $v['number'],
                 'count' => 1,
@@ -324,7 +330,7 @@ class OrderService extends BaseService
             }
             //生成微信支付订单
             $payMoney = $orderMoney * $count + $delivery_fee;
-            $payOrder = $this->savePayOrder($orderId, $company_id, $openid, $u_id, $payMoney, $phone, $username, 'more');
+            $payOrder = $this->savePayOrder($orderId, $company_id, $openid, $u_id, $payMoney, $phone, $username, $consumptionType);
             Db::commit();
             return $payOrder;
         } catch (Exception $e) {
@@ -494,6 +500,10 @@ class OrderService extends BaseService
 
             }
         }
+        if (!count($data_list)) {
+            throw new ParameterException(['msg' => '菜品明细为空']);
+        }
+
         if ($consumptionTimes == 'one') {
             $res = (new OrderDetailT())->saveAll($data_list);
         } else {
@@ -808,7 +818,7 @@ class OrderService extends BaseService
         return $returnMoney;
     }
 
-    private
+    public
     function checkConsumptionStrategyTimesMore($strategies, $orderCount, $consumptionCount)
     {
         if ($orderCount > $strategies->ordered_count) {
@@ -935,6 +945,9 @@ class OrderService extends BaseService
             $company_id = Token::getCurrentTokenVar('current_company_id');
             $phone = Token::getCurrentPhone();
             $staff = (new UserService())->getUserCompanyInfo($phone, $company_id);
+            if ($staff->status == $this->blacklist) {
+                throw new AuthException(['msg' => "用户已进入黑名单，不能订餐"]);
+            }
             $staff_type_id = $staff->t_id;
             $department_id = $staff->d_id;
             $staff_id = $staff->id;
@@ -1041,6 +1054,7 @@ class OrderService extends BaseService
                     foreach ($orderMoney as $k3 => $v3) {
                         $data = [
                             'order_id' => $orderId,
+                            'staff_id' => $staff_id,
                             'ordering_date' => $v2['ordering_date'],
                             'consumption_sort' => $v3['number'],
                             'order_sort' => $v3['number'],
@@ -1149,6 +1163,9 @@ class OrderService extends BaseService
                         continue;
                     } else {
                         array_push($checkExits, $key);
+                    }
+                    if ($v2['count'] <= 0) {
+                        throw new ParameterException(['msg' => "订单份数不能为0"]);
                     }
                     $checkOrder = $this->checkUserCanOrderForOnline($canteen_id, $dinner,
                         $v2['ordering_date'],
@@ -1979,7 +1996,7 @@ class OrderService extends BaseService
                 $order->sub_money = $check_money['new_sub_money'];
 
             }
-
+            //检测余额
             $order->count = $updateCount;
             $order->update_time = date('Y-m-d H:i:s');
             $res = $order->save();
@@ -2007,10 +2024,6 @@ class OrderService extends BaseService
             if (!$order) {
                 throw new ParameterException(['msg' => '订单不存在']);
             }
-            //处理订单明细
-            /* if (!empty($detail)) {
-                 $this->prefixUpdateOrderDetail($id, $detail, 'more');
-             }*/
             //检测订单是否可操作
             $this->checkOrderCanHandel($order->dinner_id, $order->ordering_date);
             //处理菜品信息
@@ -2037,6 +2050,17 @@ class OrderService extends BaseService
                     throw new ParameterException(['msg' => '数据异常：数量未变且修改后菜品金额为零']);
                 }
                 if ($orderMoneyFixed == CommonEnum::STATE_IS_FAIL) {
+                    //检测余额
+                    $balance = (new WalletService())->getUserBalanceWithProcedure($order->staff_id);
+                    $oldMoney = $this->getOrderFoodsMoney($id);
+                    if ($balance < $updateFoodsMoney - $oldMoney) {
+                        //获取账户设置，检测是否可预支消费
+                        $canteenAccount = CanteenAccountT::where('c_id', $order->canteen_id)->find();
+                        if (!$canteenAccount || $canteenAccount->type == OrderEnum::OVERDRAFT_NO
+                            || $canteenAccount->limit_money < ($updateFoodsMoney - $oldMoney - $balance)) {
+                            throw new ParameterException(['msg' => "余额不足"]);
+                        }
+                    }
                     //动态金额模式-修改子订单对应金额
                     $updateSub = OrderSubT::update(['money' => $updateFoodsMoney], ['order_id' => $id]);
                     if (!$updateSub) {
@@ -2136,6 +2160,7 @@ class OrderService extends BaseService
             $money = $orderMoneyFixed == CommonEnum::STATE_IS_FAIL ? $updateFoodsMoney : $v['money'];
             $data = [
                 'order_id' => $orderId,
+                'staff_id' => $staff_id,
                 'ordering_date' => $ordering_date,
                 'consumption_sort' => $v['number'],
                 'order_sort' => $v['number'],
@@ -2327,6 +2352,10 @@ class OrderService extends BaseService
         $new_meal_sub_money = $old_meal_sub_money / $old_count * $count;
         if ($new_money > $old_money) {
             $pay_way = $this->checkBalance($staff_id, $canteen_id, $new_money + $new_sub_money - $old_money - $old_sub_money);
+            if (!$pay_way) {
+                throw new
+                ParameterException(['msg' => "余额不足"]);
+            }
         }
         return [
             'new_money' => $new_money,
@@ -2340,7 +2369,6 @@ class OrderService extends BaseService
     private
     function getMenuCount($menuId, $detail)
     {
-        LogService::save(json_encode($detail));
         $count = 0;
         if (!count($detail)) {
             return 0;
@@ -2510,6 +2538,61 @@ class OrderService extends BaseService
         ];
     }
 
+
+    //用户查询消费记录
+    public
+    function consumptionRecordsV2($consumption_time, $page, $size)
+    {
+        $outsiders = Token::getCurrentTokenVar('outsiders');
+        $phone = Token::getCurrentPhone();
+        $company_id = Token::getCurrentTokenVar('current_company_id');
+        if ($outsiders == UserEnum::INSIDE) {
+            $staffId = Token::getCurrentTokenVar('staff_id');
+            if (!$staffId) {
+                $staff = CompanyStaffT::staffName($phone, $company_id);
+                $staffId = $staff->id;
+            }
+            $records = ConsumptionRecordsV::recordsByStaffIdWithRecharge($staffId, $consumption_time, $page, $size);
+            $records['data'] = $this->prefixConsumptionRecords($records['data']);
+
+        } else {
+            $records = ConsumptionRecordsV::recordsByPhoneWithRecharge($phone, $company_id, $consumption_time, $page, $size);
+            $records['data'] = $this->prefixConsumptionRecords($records['data']);
+        }
+
+        return $records;
+    }
+
+    public function officialConsumptionStatistic($consumption_time)
+    {
+        $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
+        $outsiders = Token::getCurrentTokenVar('outsiders');
+        $phone = Token::getCurrentPhone();
+        $company_id = Token::getCurrentTokenVar('current_company_id');
+        if ($outsiders == UserEnum::INSIDE) {
+            $staffId = Token::getCurrentTokenVar('staff_id');
+            if (!$staffId) {
+                $staff = CompanyStaffT::staffName($phone, $company_id);
+                $staffId = $staff->id;
+            }
+            $consumptionMoney = ConsumptionRecordsV::monthConsumptionMoneyByStaffId($staffId, $consumption_time);
+            $rechargeMoney = (new WalletService())->monthRechargeMoney($staffId, $consumption_time);
+            $balance = $this->getUserBalanceByStaffId($canteen_id, $staffId);
+        } else {
+            $rechargeMoney = (new WalletService())->outsiderMonthRechargeMoney($company_id, $phone, $consumption_time);
+            $consumptionMoney = ConsumptionRecordsV::monthConsumptionMoneyByPhone($phone, $consumption_time, $company_id);
+            $balance = 0;
+        }
+
+        return [
+            'consumptionMoney' => $consumptionMoney,
+            'rechargeMoney' => $rechargeMoney,
+            'balance' => $balance
+
+        ];
+    }
+
+
     private
     function prefixConsumptionRecords($data)
     {
@@ -2540,6 +2623,20 @@ class OrderService extends BaseService
 
                 } else if ($v['order_type'] == "shop") {
                     $data[$k]['used_type'] = $v['money'] < 0 ? "小卖部消费" : "小卖部退款";
+                } else if ($v['order_type'] == "pay") {
+                    $method = [
+                        1 => "微信充值",
+                        2 => "农行充值",
+                        3 => "中行H5充值",
+                        4 => "中行APP充值",
+                        'cash' => "现金充值"
+                    ];
+
+                    $data[$k]['used_type'] = $method[$v['supplement_type']];
+                    $data[$k]['money'] = abs($v['money']);
+                } else if ($v['order_type'] == "refund") {
+                    $data[$k]['used_type'] = "现金退款";
+                    $data[$k]['money'] = abs($v['money']);
                 }
             }
         }
@@ -2604,8 +2701,8 @@ class OrderService extends BaseService
         }
         return [
             'hidden' => $hidden,
-            'all_money' => $all,
-            'effective_money' => $effective
+            'all_money' => round($all, 2),
+            'effective_money' => round($effective, 2)
         ];
 
     }
@@ -2624,7 +2721,7 @@ class OrderService extends BaseService
     }
 
     public
-    function managerOrders($canteen_id, $consumption_time, $key)
+    function managerOrders($canteen_id, $consumption_time, $key, $department_id)
     {
         //获取饭堂餐次信息
         $dinner = (new CanteenService())->getDinnerNames($canteen_id);
@@ -2632,7 +2729,7 @@ class OrderService extends BaseService
             throw new ParameterException(['msg' => '参数异常，该饭堂未设置餐次信息']);
         }
         //获取饭堂订餐信息
-        $orderInfo = OrderUsersStatisticV::statisticToOfficial($canteen_id, $consumption_time, $key);
+        $orderInfo = OrderUsersStatisticV::statisticToOfficial($canteen_id, $consumption_time, $key, $department_id);
         foreach ($dinner as $k => $v) {
             $all = 0;
             $used = 0;
@@ -2667,9 +2764,9 @@ class OrderService extends BaseService
 
 //微信端总订餐查询-点击订餐数量，获取菜品统计信息
     public
-    function managerDinnerStatistic($dinner_id, $consumption_time, $page, $size)
+    function managerDinnerStatistic($dinner_id, $consumption_time, $page, $size, $department_id)
     {
-        $statistic = DinnerStatisticV::managerDinnerStatistic($dinner_id, $consumption_time, $page, $size);
+        $statistic = DinnerStatisticV::managerDinnerStatistic($dinner_id, $consumption_time, $page, $size, $department_id);
         if ($statistic->isEmpty()) {
             return [
                 'haveFoods' => CommonEnum::STATE_IS_FAIL,
@@ -2683,14 +2780,15 @@ class OrderService extends BaseService
     }
 
     public
-    function orderUsersStatistic($canteen_id, $dinner_id, $consumption_time, $consumption_type, $key, $page, $size)
+    function orderUsersStatistic($canteen_id, $dinner_id, $consumption_time, $consumption_type, $key, $page, $size, $department_id)
     {
-        $statistic = OrderUsersStatisticV::orderUsers($canteen_id, $dinner_id, $consumption_time, $consumption_type, $key, $page, $size);
+        $statistic = OrderUsersStatisticV::orderUsers($canteen_id, $dinner_id, $consumption_time, $consumption_type, $key, $page, $size, $department_id);
         $statistic['data'] = $this->prefixUsersStatisticStatus($statistic['data']);
         return $statistic;
     }
 
-    private function prefixUsersStatisticStatus($data)
+    private
+    function prefixUsersStatisticStatus($data)
     {
         if (count($data)) {
             foreach ($data as $k => $v) {
@@ -2715,9 +2813,9 @@ class OrderService extends BaseService
     }
 
     public
-    function foodUsersStatistic($dinner_id, $food_id, $consumption_time, $page, $size)
+    function foodUsersStatistic($dinner_id, $food_id, $consumption_time, $page, $size, $department_id)
     {
-        $statistic = FoodsStatisticV::foodUsersStatistic($dinner_id, $food_id, $consumption_time, $page, $size);
+        $statistic = FoodsStatisticV::foodUsersStatistic($dinner_id, $food_id, $consumption_time, $page, $size, $department_id);
         return $statistic;
     }
 
@@ -2870,6 +2968,9 @@ class OrderService extends BaseService
             Db::startTrans();
             if ($consumptionType == "one") {
                 $order = OrderT::get($order_id);
+                if ($order->used == CommonEnum::STATE_IS_OK) {
+                    return true;
+                }
                 $staffId = $order->staff_id;
                 if ($staffId == 0) {
                     //外来人员就餐
@@ -2905,6 +3006,9 @@ class OrderService extends BaseService
                     ->where('state', CommonEnum::STATE_IS_OK)
                     ->select();
                 $parentOrder = OrderParentT::get($order_id);
+                if ($parentOrder->used == CommonEnum::STATE_IS_OK) {
+                    return true;
+                }
                 $dinnerId = $parentOrder->dinner_id;
                 $usedTime = date('Y-m-d H:i:s');
                 foreach ($subOrder as $k => $v) {
@@ -3145,7 +3249,8 @@ class OrderService extends BaseService
         return $data;
     }
 
-    private function getSubOrderInfo($orderId)
+    private
+    function getSubOrderInfo($orderId)
     {
         $order = OrderSubT::infoWithParent($orderId);
         if (!$order) {
@@ -3201,7 +3306,8 @@ class OrderService extends BaseService
         }
     }
 
-    public function consumptionTimesMoreInfoForPrinter($orderID)
+    public
+    function consumptionTimesMoreInfoForPrinter($orderID)
     {
         $sub = OrderSubT::infoForPrinter($orderID);
         $parentID = $sub->order_id;
@@ -3215,7 +3321,8 @@ class OrderService extends BaseService
         return $parent;
     }
 
-    public function prefixOrderSortWhenUpdateOrder($strategy, $dinnerId, $phone, $orderingDate, $orderID = 0)
+    public
+    function prefixOrderSortWhenUpdateOrder($strategy, $dinnerId, $phone, $orderingDate, $orderID = 0)
     {
         //1.获取用户所有订单
         $orders = OrderingV::getOrderingByWithDinnerID($orderingDate, $dinnerId, $phone, $orderID);
@@ -3313,5 +3420,30 @@ class OrderService extends BaseService
             throw new UpdateException(['msg' => '更新子订单失败']);
         }
     }
+
+    public
+    function managerOrderStatistic($canteen_id, $consumption_time, $key, $department_id)
+    {
+        //获取饭堂餐次信息
+        $dinner = (new CanteenService())->getDinnerNames($canteen_id);
+        if (!$dinner) {
+            throw new ParameterException(['msg' => '参数异常，该饭堂未设置餐次信息']);
+        }
+        //获取饭堂订餐信息
+        $orderInfo = OrderUsersStatisticV::orderStatistic($canteen_id, $consumption_time, $key, $department_id);
+        foreach ($dinner as $k => $v) {
+            $all = 0;
+            if (!empty($orderInfo)) {
+                foreach ($orderInfo as $k2 => $v2) {
+                    if ($v['id'] == $v2['dinner_id']) {
+                        $all += $v2['count'];
+                    }
+                }
+            }
+            $dinner[$k]['all'] = $all;
+        }
+        return $dinner;
+    }
+
 
 }

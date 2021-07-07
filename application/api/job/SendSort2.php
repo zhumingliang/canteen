@@ -4,7 +4,6 @@
 namespace app\api\job;
 
 
-
 use app\api\service\GatewayService;
 use app\api\service\LogService;
 use think\Exception;
@@ -90,6 +89,7 @@ class SendSort2
                 GatewayService::sendToMachine($data['device'], json_encode($sendData));
 
             }
+            return true;
         } catch (Exception $e) {
             LogService::saveJob("发送排序失败：error:" . $e->getMessage(), json_encode($data));
         }

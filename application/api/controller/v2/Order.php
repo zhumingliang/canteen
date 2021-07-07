@@ -4,7 +4,10 @@
 namespace app\api\controller\v2;
 
 
+use app\api\service\OrderService;
+use app\api\service\v2\OrderService as OrderServiceV2;
 use app\api\service\OrderStatisticService;
+use app\lib\exception\SuccessMessage;
 use app\lib\exception\SuccessMessageWithData;
 use think\facade\Request;
 
@@ -94,10 +97,14 @@ class Order
         $time_begin = Request::param('time_begin');
         $time_end = Request::param('time_end');
         $company_ids = Request::param('company_ids');
-        $records = (new OrderStatisticService())->exportOrderSettlementWithAccount(
+        (new \app\api\service\v2\DownExcelService())->exportOrderSettlementWithAccount(
             $name, $phone, $canteen_id, $department_id, $dinner_id,
             $consumption_type, $time_begin, $time_end, $company_ids, $type);
-        return json(new SuccessMessageWithData(['data' => $records]));
+        return json(new SuccessMessage());
+        /* $records = (new DownExcelService())->exportOrderSettlementWithAccount(
+             $name, $phone, $canteen_id, $department_id, $dinner_id,
+             $consumption_type, $time_begin, $time_end, $company_ids, $type);
+         return json(new SuccessMessageWithData(['data' => $records]));*/
     }
 
 
@@ -184,11 +191,241 @@ class Order
         $time_begin = Request::param('time_begin');
         $time_end = Request::param('time_end');
         $company_ids = Request::param('company_ids');
-        $statistic = (new OrderStatisticService())->exportConsumptionStatisticWithAccount($canteen_ids, $status, $type,
-            $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_ids, $phone, $order_type);
-        return json(new SuccessMessageWithData(['data' => $statistic]));
+        (new \app\api\service\v2\DownExcelService())->exportConsumptionStatistic($canteen_ids, $status, $type,
+            $department_id, $username, $staff_type_id, $time_begin,
+            $time_end, $company_ids, $phone, $order_type,
+            'consumptionStatisticWithAccount');
+        return json(new SuccessMessage());
+        /*     $statistic = (new DownExcelService())->exportConsumptionStatisticWithAccount($canteen_ids, $status, $type,
+                 $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_ids, $phone, $order_type);
+             return json(new SuccessMessageWithData(['data' => $statistic]));
+         */
+    }
+
+    /**
+     * @api {POST} /api/v2/order/money 微信端-个人选菜-提交订单时查看金额信息
+     * @apiGroup   Official
+     * @apiVersion 3.0.0
+     * @apiDescription    微信端-个人选菜-提交订单时查看金额信息
+     * @apiExample {post}  请求样例:
+     *    {
+     *       "type": 1,
+     *       "orders": [{"ordering_date":"2021-03-07","order":[{"dinner_id":135,"dinner":"早餐","count":1,"foods":[{"menu_id":101,"food_id":999,"name":"商品1","price":5,"count":1}]},{"dinner_id":136,"dinner":"午餐","count":1,"foods":[{"menu_id":102,"food_id":343,"name":"cs","price":1,"count":1},{"menu_id":102,"food_id":128,"name":"清炒苦瓜","price":3,"count":1}]}]}]
+     * }
+     * @apiParam (请求参数说明) {int} type 就餐类别：1|食堂；2|外卖
+     * @apiParam (请求参数说明) {obj} orders  订单信息
+     * @apiParam (请求参数说明) {string} ordering_date  订餐日期
+     * @apiParam (请求参数说明) {int} dinner_id 餐次id
+     * @apiParam (请求参数说明) {int} dinner 餐次名称
+     * @apiParam (请求参数说明) {int} count 订餐数量
+     * @apiParam (请求参数说明) {obj} foods 订餐菜品明细
+     * @apiParam (请求参数说明) {string} menu_id 菜品类别id
+     * @apiParam (请求参数说明) {string} food_id 菜品id
+     * @apiParam (请求参数说明) {string} price 菜品实时单价
+     * @apiParam (请求参数说明) {string} count 菜品数量
+     * @apiParam (请求参数说明) {string} name 菜品名称
+     * @apiSuccessExample {json} 余额不足返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"type":"balance","outsider":2,"money":"99962","money_type":"overdraw"}}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     * @apiSuccess (返回参数说明) {int} type :order：订单金额;balance:余额提示
+     * @apiSuccess (返回参数说明) {int} money_type :余额类型：overdraw：透支金额；user_balance:余额信息
+     * @apiSuccess (返回参数说明) {int} money 余额
+     * @apiSuccessExample {json} 检测成功返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"type":"order","prepare_id":"C306993891626218","order":[{"id":89,"prepare_order_id":"C306993891626453","type":1,"ordering_date":"2021-03-07","dinner":"早餐","money":"5.00","sub_money":"2.00","delivery_fee":"0.00","foods":[{"prepare_order_id":"C306993891626453","name":"商品1","price":"5.00","count":1}]},{"id":90,"prepare_order_id":"C306993891627657","type":1,"ordering_date":"2021-03-07","dinner":"午餐","money":"4.00","sub_money":"1.00","delivery_fee":"0.00","foods":[{"prepare_order_id":"C306993891627657","name":"cs","price":"1.00","count":1},{"prepare_order_id":"C306993891627657","name":"清炒苦瓜","price":"3.00","count":1}]}]}}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     * @apiSuccess (返回参数说明) {string} type 返回类型信息：order：订单金额;balance:余额提示
+     * @apiSuccess (返回参数说明) {string} outsider 是否外来人员：1是：2：否
+     * @apiSuccess (返回参数说明) {string} prepare_id 预订单ID（提交订单上传）
+     * @apiSuccess (返回参数说明) {obj} order 订单金额信息
+     * @apiSuccess (返回参数说明) {int} type 就餐类别：1|食堂；2|外卖
+     * @apiSuccess (返回参数说明) {string} ordering_date   订餐日期
+     * @apiSuccess (返回参数说明) {string} consumption_type  扣费类别：one 一次扣费；more 多次扣费（多次扣费订单信息在子订单列表：sub中）
+     * @apiSuccess (返回参数说明) {string} dinner 餐次
+     * @apiSuccess (返回参数说明) {int} money 标准金额
+     * @apiSuccess (返回参数说明) {int} sub_money 标准金额
+     * @apiSuccess (返回参数说明) {int} delivery_fee 外卖配送费
+     * @apiSuccess (返回参数说明) {obj} foods 菜品信息
+     * @apiSuccess (返回参数说明) {string} name 菜品名称
+     * @apiSuccess (返回参数说明) {int} count 菜品数量
+     * @apiSuccess (返回参数说明) {int} price 菜品价格
+     * @apiSuccess (返回参数说明) {obj} sub 子订单信息
+     * @apiSuccess (返回参数说明) {int} money 标准金额
+     * @apiSuccess (返回参数说明) {int} sub_money 标准金额
+     * @apiSuccess (返回参数说明) {int} sort_code 第几份
+     */
+    public function getOrderMoney()
+    {
+        $params = Request::param();
+        $money = (new  OrderServiceV2())->getOrderMoney($params);
+        return json(new SuccessMessageWithData(['data' => $money]));
+    }
+
+
+    /**
+     * @api {POST} /api/v2/order/pre/count/change  微信端-个人选菜-修改预订单份数
+     * @apiGroup   Official
+     * @apiVersion 3.0.0
+     * @apiDescription   微信端-个人选菜-修改预订单份数
+     * @apiExample {post}  请求样例:
+     *    {
+     *       "id": 222，
+     *       "count": 2
+     * }
+     * @apiParam (请求参数说明) {string} id  订单ID
+     * @apiParam (请求参数说明) {int} count 修改数量
+     * @apiSuccessExample {json} 余额不足返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"type":"success","money":14}}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     * @apiSuccess (返回参数说明) {int} type  修改是否成功：success：成功 此时返回money为此订单修改后总冻结金额；no_balance：余额不足
+     * @apiSuccess (返回参数说明) {int} money 冻结金额
+     * @apiSuccess (返回参数说明) {int} money_type  余额类型 :冻结金额类型：overdraw：透支金额；user_balance:余额信息
+     * @apiSuccess (返回参数说明) {int} money 当前余额
+     */
+    public function updatePrepareOrderCount()
+    {
+        $id = Request::param('id');
+        $count = Request::param('count');
+        $data = (new OrderServiceV2())->updatePrepareOrderCount($id, $count);
+        return json(new SuccessMessageWithData(['data' => $data]));
+    }
+
+
+    /**
+     * @api {POST} /api/v2/order/money/check 微信端-个人选菜-检查订单金额信息
+     * @apiGroup   Official
+     * @apiVersion 3.0.0
+     * @apiDescription    微信端-个人选菜-检查订单金额信息
+     * @apiExample {post}  请求样例:
+     *    {
+     *       "ordering_date": 2021-03-09,
+     *       "dinner_id": 1,
+     *       "order_money": 10
+     * }
+     * @apiParam (请求参数说明) {string} ordering_date  订餐日期
+     * @apiParam (请求参数说明) {int} dinner_id 餐次id
+     * @apiParam (请求参数说明) {int} order_money 菜品金额
+     * @apiSuccessExample {json} 余额不足返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"check":1,"fixedMoney":"7"}}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     * @apiSuccess (返回参数说明) {int} check 余额是否充足；1：充足；2：不足
+     * @apiSuccess (返回参数说明) {int} fixed_type :冻结金额类型：overdraw：透支金额；user_balance:余额信息
+     * @apiSuccess (返回参数说明) {int} fixed_money 冻结金额
+     */
+    public function checkOrderMoney()
+    {
+        $params = Request::param();
+        $data = (new OrderServiceV2())->checkOrderMoney($params);
+        return json(new SuccessMessageWithData(['data' => $data]));
+    }
+
+
+    /**
+     * @api {POST} /api/v2/order/pre/submit 微信端-个人选菜-提交订单
+     * @apiGroup   Official
+     * @apiVersion 3.0.0
+     * @apiDescription    微信端-个人选菜-检查订单金额信息
+     * @apiExample {post}  请求样例:
+     *    {
+     *       "prepare_id":"C311714394839167",
+     *       "address_id": 1,
+     *       "delivery_fee": 5,
+     *       "remark": "备注"
+     * }
+     * @apiParam (请求参数说明) {string} prepare_id  预订单ID
+     * @apiParam (请求参数说明) {int} address_id  地址id
+     * @apiParam (请求参数说明) {int} delivery_fee 配送费（单次，不是累加）
+     * @apiParam (请求参数说明) {int} remark 备注
+     * @apiSuccessExample {json} 余额不足返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"type":"success","prepare_id":C311714394839167}}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     * @apiSuccess (返回参数说明) {int} type  提交是否成功：success：成功 此时返回prepare_id 外来人员支付； "balance":余额不足
+     * @apiSuccess (返回参数说明) {int} money 冻结金额
+     * @apiSuccess (返回参数说明) {int} money_type  余额类型 :冻结金额类型：overdraw：透支金额；user_balance:余额信息
+     */
+    public function submitOrder($address_id = 0, $delivery_fee = 0)
+    {
+        $prepareId = Request::param('prepare_id');
+        $remark = Request::param('remark');
+        $data = (new OrderServiceV2())->submitOrder($prepareId, $address_id, $delivery_fee, $remark);
+        return json(new SuccessMessageWithData(['data' => $data]));
+    }
+
+
+
+    /**
+     * @api {GET} /api/v2/order/consumptionRecords 微信端-消费查询-订单列表(包含充值通知)
+     * @apiGroup  Official
+     * @apiVersion 3.0.0
+     * @apiDescription 微信端-消费查询-订单列表
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v2/order/consumptionRecords?page=1&size=100&consumption_time=2019-10
+     * @apiParam (请求参数说明) {int} page 当前页码
+     * @apiParam (请求参数说明) {int} size 每页多少条数据
+     * @apiParam (请求参数说明) {string} consumption_time  消费日期
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"total":2,"per_page":20,"current_page":1,"last_page":1,"data":[{"order_id":6,"location":"企业A","order_type":"shop","used_type":"小卖部","create_time":"2019-09-28 08:14:10","ordering_date":"/","dinner":"商品","money":-10},{"order_id":8,"location":"饭堂1","order_type":"canteen","used_type":"就餐","create_time":"2019-09-09 16:34:15","ordering_date":"2019-09-07","dinner":"中餐","money":-10}]}}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {String} msg 信息描述
+     * @apiSuccess (返回参数说明) {int} total 数据总数
+     * @apiSuccess (返回参数说明) {int} per_page 每页多少条数据
+     * @apiSuccess (返回参数说明) {int} current_page 当前页码
+     * @apiSuccess (返回参数说明) {int} last_page 最后页码
+     * @apiSuccess (返回参数说明) {int} order_id  订单id
+     * @apiSuccess (返回参数说明) {string} location  消费地点
+     * @apiSuccess (返回参数说明) {string} order_type  订单类别
+     * @apiSuccess (返回参数说明) {string} order_type  订单类别
+     * @apiSuccess (返回参数说明) {string} used_type  类型
+     * @apiSuccess (返回参数说明) {string} create_time 消费日期
+     * @apiSuccess (返回参数说明) {string} ordering_date 餐次日期
+     * @apiSuccess (返回参数说明) {string} consumption_type 扣费类型：one 一次性扣费；more 多次扣费
+     * @apiSuccess (返回参数说明) {string} dinner 名称
+     * @apiSuccess (返回参数说明) {int} violation_count 本次订单是第几次违规
+     */
+    public function consumptionRecords($page = 1, $size = 20)
+    {
+        $consumption_time = Request::param('consumption_time');
+        $records = (new OrderService())->consumptionRecordsV2($consumption_time, $page, $size);
+        return json(new SuccessMessageWithData(['data' => $records]));
+    }
+
+
+    /**
+     * @api {GET} /api/v2/order/consumptionRecords/statistic 微信端-消费查询-金额统计
+     * @apiGroup  Official
+     * @apiVersion 3.0.0
+     * @apiDescription 微信端-消费查询-金额统计
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v2/order/consumptionRecords/statistic?&consumption_time=2019-10
+     * @apiParam (请求参数说明) {int} page 当前页码
+     * @apiParam (请求参数说明) {int} size 每页多少条数据
+     * @apiParam (请求参数说明) {string} consumption_time  消费日期
+     * @apiSuccessExample {json} 返回样例:
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"balance":{"hidden":2,"money":0},"consumptionMoney":20,"rechargeMoney":20}}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {String} msg 信息描述
+     * @apiSuccess (返回参数说明) {int} total 数据总数
+     * @apiSuccess (返回参数说明) {int} per_page 每页多少条数据
+     * @apiSuccess (返回参数说明) {int} current_page 当前页码
+     * @apiSuccess (返回参数说明) {int} last_page 最后页码
+     * @apiSuccess (返回参数说明) {obj} balance 余额信息
+     * @apiSuccess (返回参数说明) {int} hidden 是否隐藏：1｜是；2｜否
+     * @apiSuccess (返回参数说明) {int} money 余额金额
+     * @apiSuccess (返回参数说明) {int} consumptionMoney 月消费金额
+     * @apiSuccess (返回参数说明) {int} rechargeMoney 月充值金额
+     */
+    public function officialConsumptionStatistic()
+    {
+        $consumption_time = Request::param('consumption_time');
+        $records = (new OrderService())->officialConsumptionStatistic($consumption_time);
+        return json(new SuccessMessageWithData(['data' => $records]));
 
     }
+
 
 
 }

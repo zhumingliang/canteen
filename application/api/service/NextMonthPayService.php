@@ -10,17 +10,18 @@ use app\api\model\OfficialTemplateT;
 use app\api\model\OrderConsumptionV;
 use app\api\model\UserT;
 use app\lib\enum\CommonEnum;
+use app\lib\exception\AuthException;
 use app\lib\exception\SaveException;
 use app\lib\weixin\Template;
 use think\Exception;
 
 class NextMonthPayService
 {
-    public function handle()
+    public function handle($company_id)
     {
         try {
             //查询开启次月缴费功能的企业
-            $isNextMonthPay = NextmonthPaySettingT::where('state', CommonEnum::STATE_IS_OK)->field('c_id')->select();
+            $isNextMonthPay = NextmonthPaySettingT::where('state', CommonEnum::STATE_IS_OK)->where('c_id', $company_id)->field('c_id')->select();
 
             if (!empty($isNextMonthPay)) {
                 $orderConsumptionDate = date("Y-m", strtotime("-1 month"));
@@ -157,8 +158,11 @@ class NextMonthPayService
         $paySetting = NextmonthPaySettingT::where('c_id', $company_id)
             ->where('state', CommonEnum::STATE_IS_OK)
             ->field('is_pay_day')
-            ->find();
-        $payDayArr = explode('-', $paySetting->is_pay_day);
+            ->find()->toArray();
+        if (empty($paySetting['is_pay_day'])) {
+            return [];
+        }
+        $payDayArr = explode('-', $paySetting['is_pay_day']);
         $payBeginDay = $payDayArr[0];
         $payEndDay = $payDayArr[1];
         //判断是否在可缴费时间
@@ -196,5 +200,108 @@ class NextMonthPayService
         } else {
             return $data;
         }
+    }
+
+    //导出
+    public function exportNextMonthPayStatistic($time_begin, $time_end, $company_id,$department_id, $status, $pay_method, $username, $phone){
+
+        $statistic=$this->nextMonthOutput($time_begin, $time_end, $company_id, $department_id, $status, $pay_method, $username, $phone);
+        if(empty($statistic)){
+            throw new AuthException(['msg'=>'导出数据为空']);
+        }
+
+        $header = ['序号', '时间', '部门', '姓名', '手机号码','应缴费用','缴费状态','缴费时间','缴费途径','合计数量','合计金额（元）','备注'];
+
+        $reports = $this->prefixConsumptionStatistic($statistic);
+
+        $file_name="缴费查询报表";
+        $url = (new ExcelService())->makeExcel($header, $reports, $file_name);
+
+        return [
+
+            'url' => 'http://' . $_SERVER['HTTP_HOST'] . $url
+        ];
+    }
+
+    public function prefixConsumptionStatistic($statistic){
+        $dataList=[];
+
+        if(!empty($statistic)){
+
+            $endData = $this->addDinnerToStatistic();
+            foreach ($statistic as $k=>$v){
+                $dinner_statistic = array_key_exists('dinnerStatistic', $v) ? $v['dinnerStatistic'] : $v['dinner_statistic'];
+
+                $data=$this->addDinnerToStatistic();
+                $data['number'] = $k + 1;
+                $data['pay_date']=empty($v['pay_date']) ? '':$v['pay_date'];
+                $data['department']=empty($v['department']) ? '':$v['department'];
+                $data['username']=empty($v['username']) ? '':$v['username'];
+                $data['phone']=empty($v['phone']) ? '':$v['phone'];
+                $data['pay_money']=empty($v['pay_money']) ? '':abs($v['pay_money']);
+                $data['state']=empty($v['state']) ? '':$v['state'];
+                $data['pay_time']=empty($v['pay_time']) ? '':$v['pay_time'];
+                $data['pay_method']=empty($v['pay_method']) ? '':$v['pay_method'];
+                $data['pay_remark']=empty($v['pay_remark']) ?'':$v['pay_remark'];
+                $data['count']=empty($v['count']) ? 0 :$v['count'];
+                $data['allMoney']=empty($v['pay_money']) ? 0 : abs($v['pay_money']);
+                if (empty($dinner_statistic)) {
+                    continue;
+                }
+
+
+                array_push($dataList, $data);
+            }
+
+        }
+        $endData['count']=array_sum(array_column($dataList,'count'));
+        $endData['allMoney']=array_sum(array_column($dataList,'allMoney'));
+        array_push($dataList, $endData);
+        return $dataList;
+
+    }
+
+    private function addDinnerToStatistic()
+    {
+        $data = [
+            'number' => '总合计',
+            'pay_date' => '',
+            'department'=>'',
+            'username'=>'',
+            'phone'=>'',
+            'pay_money'=>'',
+            'state'=>'',
+            'pay_time'=>'',
+            'pay_method'=>'',
+            'count'=>'',
+            'allMoney'=>'',
+            'pay_remark'=>''
+
+        ];
+        return $data;
+
+    }
+
+    public function nextMonthOutput($time_begin, $time_end, $company_id, $department_id, $status,
+                                    $pay_method, $username, $phone)
+    {
+        $userList = (new NextmonthPayT())->consumerList($time_begin, $time_end, $company_id, $department_id, $status,
+            $pay_method, $username, $phone);
+        $statistic = (new NextmonthPayT())->dinnerStatistic($time_begin, $time_end, $company_id, $department_id, $status,
+            $pay_method, $username, $phone);
+        $data = $userList;
+        foreach ($data as $k => $v) {
+            $dinnerStatistic = [];
+            foreach ($statistic as $k2 => $v2) {
+                if ($v['staff_id'] == $v2['staff_id'] && $v['pay_date'] == $v2['pay_date']) {
+
+                    array_push($dinnerStatistic, $statistic[$k2]);
+                    unset($statistic[$k2]);
+                }
+                $data[$k]['dinnerStatistic'] = $dinnerStatistic;
+            }
+        }
+
+        return $data;
     }
 }

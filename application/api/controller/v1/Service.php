@@ -9,6 +9,7 @@ use app\api\service\AccountService;
 use app\api\service\CompanyService;
 use app\api\service\ConsumptionService;
 use app\api\service\LogService;
+use app\api\service\MachineService;
 use app\api\service\NoticeService;
 use app\api\service\OffLineService;
 use app\api\service\OrderService;
@@ -22,17 +23,17 @@ class Service extends BaseController
     //处理订餐未就餐改为订餐就餐
     public function orderStateHandel()
     {
-        (new OrderService())->orderStateHandel();
+        //  (new OrderService())->orderStateHandel();
     }
 
     public function sendMsgHandel()
     {
-        (new SendSMSService())->sendHandel();
+        //   (new SendSMSService())->sendHandel();
     }
 
     public function sendNoticeHandel()
     {
-        (new NoticeService())->sendNoticeHandel();
+        //  (new NoticeService())->sendNoticeHandel();
     }
 
     public function printer()
@@ -52,7 +53,7 @@ class Service extends BaseController
      * @apiExample {get}  请求样例:
      * http://canteen.tonglingok.com/service/canteen/config
      * @apiSuccessExample {json} 返回样例:
-     * {"msg":"ok","errorCode":0,"code":200,"data":{"dinners":[{"id":417,"c_id":296,"name":"早餐","type":"day","create_time":"2020-11-16 15:57:01","type_number":1,"meal_time_begin":"06:00","meal_time_end":"08:30","limit_time":"17:00:00","fixed":1},{"id":418,"c_id":296,"name":"晚餐","type":"day","create_time":"2020-11-16 15:57:01","type_number":1,"meal_time_begin":"17:25","meal_time_end":"18:20","limit_time":"17:00:00","fixed":1}],"strategies":[{"id":714,"c_id":296,"t_id":101,"d_id":417,"unordered_meals":1,"detail":[{"number":1,"strategy":[{"number":1,"status":"ordering_meals","money":"0","sub_money":"0"},{"number":1,"status":"no_meals_ordered","sub_money":"0","money":"0"},{"number":1,"status":"unordered_meals","sub_money":"0","money":"4"}]}],"consumption_count":1,"ordered_count":0,"consumption_type":1},{"id":715,"c_id":296,"t_id":101,"d_id":418,"unordered_meals":1,"detail":[{"number":1,"strategy":[{"number":1,"status":"ordering_meals","sub_money":"0","money":"0"},{"number":1,"status":"no_meals_ordered","sub_money":"0","money":"0"},{"number":1,"status":"unordered_meals","sub_money":"0","money":"5"}]}],"consumption_count":1,"ordered_count":0,"consumption_type":1}],"canteen_config":{"type":2,"limit_money":"0.00"}}}
+     * {"msg":"ok","errorCode":0,"code":200,"data":{"dinners":[{"id":494,"c_id":321,"name":"早餐","type":"day","create_time":"2021-03-11 22:14:07","type_number":0,"meal_time_begin":"07:00","meal_time_end":"08:30","limit_time":"22:00:00","fixed":1},{"id":495,"c_id":321,"name":"午餐","type":"day","create_time":"2021-03-11 22:14:07","type_number":0,"meal_time_begin":"11:50","meal_time_end":"13:30","limit_time":"22:00:00","fixed":1},{"id":496,"c_id":321,"name":"晚餐","type":"day","create_time":"2021-03-11 22:14:07","type_number":0,"meal_time_begin":"16:20","meal_time_end":"18:30","limit_time":"22:00:00","fixed":1}],"strategies":[{"id":841,"c_id":321,"t_id":25,"d_id":494,"unordered_meals":1,"detail":[{"number":1,"strategy":[{"number":1,"status":"ordering_meals","money":"2","sub_money":"1"},{"number":1,"status":"no_meals_ordered","money":"2","sub_money":"2"},{"number":1,"status":"unordered_meals","money":"2","sub_money":"1"}]},{"number":2,"strategy":[{"number":2,"status":"ordering_meals","money":"2","sub_money":"1"},{"number":2,"status":"no_meals_ordered","money":"2","sub_money":"1"},{"number":2,"status":"unordered_meals","money":"2","sub_money":"1"}]}],"consumption_count":2,"ordered_count":3,"consumption_type":1},{"id":842,"c_id":321,"t_id":25,"d_id":495,"unordered_meals":1,"detail":[{"number":1,"strategy":[{"number":1,"status":"ordering_meals","money":"7","sub_money":"1"},{"number":1,"status":"no_meals_ordered","money":"7","sub_money":"3"},{"number":1,"status":"unordered_meals","money":"7","sub_money":"2"}]}],"consumption_count":1,"ordered_count":1,"consumption_type":1},{"id":843,"c_id":321,"t_id":25,"d_id":496,"unordered_meals":1,"detail":[{"number":1,"strategy":[{"number":1,"status":"ordering_meals","type":"订餐就餐","money":"7","sub_money":"1"},{"number":1,"status":"no_meals_ordered","type":"订餐未就餐","money":"7","sub_money":"2"},{"number":1,"status":"unordered_meals","type":"未订餐就餐","money":"7","sub_money":"2"}]},{"number":2,"strategy":[{"number":2,"status":"ordering_meals","money":"4","sub_money":"1"},{"number":2,"status":"no_meals_ordered","money":"4","sub_money":"1"},{"number":2,"status":"unordered_meals","money":"4","sub_money":"1"}]}],"consumption_count":2,"ordered_count":2,"consumption_type":1},{"id":826,"c_id":321,"t_id":52,"d_id":494,"unordered_meals":2,"detail":[{"number":1,"strategy":[{"number":1,"status":"ordering_meals","money":"1","sub_money":"0"},{"number":1,"status":"no_meals_ordered","money":"1","sub_money":"1"},{"number":1,"status":"unordered_meals","money":"1","sub_money":"1"}]},{"number":2,"strategy":[{"number":2,"status":"ordering_meals","money":"1","sub_money":"0"},{"number":2,"status":"no_meals_ordered","money":"1","sub_money":"1"},{"number":2,"status":"unordered_meals","money":"1","sub_money":"1"}]}],"consumption_count":2,"ordered_count":1,"consumption_type":1},{"id":827,"c_id":321,"t_id":52,"d_id":495,"unordered_meals":1,"detail":[{"number":1,"strategy":[{"number":1,"status":"ordering_meals","money":"1","sub_money":"0"},{"number":1,"status":"no_meals_ordered","money":"1","sub_money":"1"},{"number":1,"status":"unordered_meals","money":"1","sub_money":"1"}]}],"consumption_count":1,"ordered_count":1,"consumption_type":1},{"id":828,"c_id":321,"t_id":52,"d_id":496,"unordered_meals":2,"detail":[{"number":1,"strategy":[{"number":1,"status":"ordering_meals","money":"1","sub_money":"0"},{"number":1,"status":"no_meals_ordered","money":"1","sub_money":"1"},{"number":1,"status":"unordered_meals","money":"1","sub_money":"1"}]}],"consumption_count":1,"ordered_count":1,"consumption_type":1}],"canteen_config":{"type":2,"limit_money":"0.00","limit_times":2},"punishment_config":{"id":52,"company_id":144,"staff_type_id":52,"create_time":"2021-05-08 12:38:41","update_time":"2021-05-08 12:38:41","detail":[{"id":103,"strategy_id":52,"type":"","count":0},{"id":104,"strategy_id":52,"type":"","count":0}]}}}
      * @apiSuccess (返回参数说明) {string} dinners  订餐信息json字符串
      * @apiSuccess (返回参数说明) {string} id  餐次id
      * @apiSuccess (返回参数说明) {string} name  餐次名称
@@ -81,6 +82,13 @@ class Service extends BaseController
      * @apiSuccess (返回参数说明) {obj}  canteen_config  饭堂配置信息
      * @apiSuccess (返回参数说明) {int}  type  消费类别：1:可透支消费；2:不可透支消费
      * @apiSuccess (返回参数说明) {float}  limit_money  可预消费金额
+     * @apiSuccess (返回参数说明) {float}  limit_times  是否只可以消费一次：1:是；2:否
+     * @apiSuccess (返回参数说明) {obj}  punishment_config  惩罚策略配置，为空则未配置
+     * @apiSuccess (返回参数说明) {id}  staff_type_id  人员类型ID：和人员数据进行匹配
+     * @apiSuccess (返回参数说明) {obj}  detail  惩罚策略配置明细
+     * @apiSuccess (返回参数说明) {string}  type  违规类型：no_meal 订餐未就餐；no_booking  未订餐就餐
+     * @apiSuccess (返回参数说明) {int}  count  最大违规数量
+     *
      */
     public function configForOffLine()
     {
@@ -133,7 +141,7 @@ class Service extends BaseController
      * @apiExample {get}  请求样例:
      * http://canteen.tonglingok.com/service/company/staffs
      * @apiSuccessExample {json} 返回样例:
-     * {"msg":"ok","errorCode":0,"code":200,"data":[{"id":7242,"username":"测试5","staff_type_id":101,"balance":"32.00","card":{"id":355,"staff_id":7242,"card_code":"103","state":1}}]}
+     * {"msg":"ok","errorCode":0,"code":200,"data":[{"id":7617,"d_id":454,"username":"小李","staff_type_id":52,"face_code":null,"status":1,"balance":"2.30","card":null,"department":{"id":454,"name":"部门G"},"punishment":null},{"id":7618,"d_id":454,"username":"李一","staff_type_id":52,"face_code":null,"status":1,"balance":"2.30","card":null,"department":{"id":454,"name":"部门G"},"punishment":null},{"id":7641,"d_id":454,"username":"wty","staff_type_id":25,"face_code":"22900523","status":4,"balance":"44.40","card":null,"department":{"id":454,"name":"部门G"},"punishment":{"id":35,"staff_id":7641,"no_meal":3,"no_booking":0}}]}
      * @apiSuccess (返回参数说明) {int} id  用户id
      * @apiSuccess (返回参数说明) {string} username  用户姓名
      * @apiSuccess (返回参数说明) {int} staff_type_id  用户人员类型id（匹配消费策略）
@@ -142,6 +150,10 @@ class Service extends BaseController
      * @apiSuccess (返回参数说明) {int} id  IC卡ID
      * @apiSuccess (返回参数说明) {int} card_code  卡号
      * @apiSuccess (返回参数说明) {int} state   卡状态：1:正常；2:挂失
+     * @apiSuccess (返回参数说明) {int} status   用户惩罚状态：1  ｜ 正常；2 ｜ 违规；3 白名单；4 ｜ 黑名单
+     * @apiSuccess (返回参数说明) {obj} punishment   用户惩罚信息
+     * @apiSuccess (返回参数说明) {int} no_meal   订餐未就餐违规次数
+     * @apiSuccess (返回参数说明) {int} no_booking   未订餐就餐违规次数
      */
     public function staffsForOffline()
     {
@@ -157,9 +169,19 @@ class Service extends BaseController
     {
         $accountId = Request::param('id');
         $type = Request::param('type');
-        (new AccountService())->sendTemplate($type,$accountId);
+        (new AccountService())->sendTemplate($type, $accountId);
         return json(new SuccessMessage());
 
+    }
+
+    /**
+     * 离线数据成功接受
+     */
+    public function offlineReceive()
+    {
+        $code = Request::param('code');
+        (new MachineService())->offlineReceive($code);
+        return json(new SuccessMessage());
     }
 
 }

@@ -17,14 +17,18 @@ class Auth extends Controller
     public function handle($request, \Closure $next)
     {
         $allowAction = [
+            'index',
             'test',
             'getadmintoken',
             'getofficialtoken',
             'getmachinetoken',
             'loginout',
             'getsuppliertoken',
-            'printer'
+            'printer',
+            'sendtemplate',
+            'wxnotifyurl',
         ];
+
         $action = $request->action();
         if (!in_array($action, $allowAction)) {
            // Token::getCurrentTokenVar();

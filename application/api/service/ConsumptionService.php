@@ -479,7 +479,7 @@ class ConsumptionService
         }
         $sortCode = $this->saveRedisOrderCode($canteenID, $returnDinnerID, $orderID);
         //推送消息给显示器
-        $this->sortTask($canteenID, $outsider, $orderID, $sortCode, $consumptionType);
+       // $this->sortTask($canteenID, $outsider, $orderID, $sortCode, $consumptionType);
         //启动打印机打印信息
         $printRes = (new Printer())->printOrderDetail($canteenID, $orderID, $sortCode, $consumptionType);
         if ($printRes) {
@@ -550,9 +550,9 @@ class ConsumptionService
         ];;//当前任务的业务数据
         $isPushed = Queue::push($jobHandlerClassName, $jobData, $jobQueueName);
         //将该任务推送到消息队列
-        if ($isPushed == false) {
+        /*if ($isPushed == false) {
             throw new SaveException(['msg' => '发送webSocket推送失败']);
-        }
+        }*/
     }
 
     public function saveRedisSortCode()

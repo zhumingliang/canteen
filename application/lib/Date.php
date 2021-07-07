@@ -26,11 +26,10 @@ class Date
     }
 
 
-
     public static function mFristAndLast2($data)
     {
-        $y = date('Y',strtotime($data));
-        $m =date('m',strtotime($data));
+        $y = date('Y', strtotime($data));
+        $m = date('m', strtotime($data));
         $d = date('t', strtotime($data));
         return array(
             "fist" => date('Y-m-d', strtotime($y . '-' . $m)),
@@ -63,5 +62,25 @@ class Date
             strtotime($time_old)));
         return $time_new;
 
+    }
+
+    /**
+     * 求两个日期之间相差的天数
+     * (针对1970年1月1日之后，求之前可以采用泰勒公式)
+     * @param string $day1
+     * @param string $day2
+     * @return number
+     */
+    public static function diffBetweenTwoDays($day1, $day2)
+    {
+        $second1 = strtotime($day1);
+        $second2 = strtotime($day2);
+
+        if ($second1 < $second2) {
+            $tmp = $second2;
+            $second2 = $second1;
+            $second1 = $tmp;
+        }
+        return ($second1 - $second2) / 86400;
     }
 }

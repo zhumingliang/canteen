@@ -48,7 +48,9 @@ class MachineToken extends Token
             $token = $this->saveToCache('', $cachedValue);
 
             //进行绑定
-            $this->bind($cachedValue['company_id'], $client_id, $cachedValue['u_id']);
+            if ($client_id) {
+                $this->bind($cachedValue['company_id'], $client_id, $cachedValue['u_id']);
+            }
             return $token;
 
         } catch (Exception $e) {
@@ -117,7 +119,7 @@ class MachineToken extends Token
             'code' => $machine->code,
             'number' => $machine->number,
             'type' => $machine->machine_type,
-            'sort_code'=>$machine->sort_code
+            'sort_code' => $machine->sort_code
         ];
         return $cachedValue;
     }

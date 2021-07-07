@@ -8,6 +8,7 @@ use app\api\controller\BaseController;
 use app\api\service\OrderService;
 use app\api\service\OrderStatisticService;
 use app\api\service\TakeoutService;
+use app\api\service\v2\DownExcelService;
 use app\lib\exception\SuccessMessage;
 use app\lib\exception\SuccessMessageWithData;
 use think\facade\Request;
@@ -29,6 +30,7 @@ class Takeout extends BaseController
      * @apiParam (请求参数说明) {string} department_id  部门id，全部传0
      * @apiParam (请求参数说明) {string} user_type  人员类型：1 ：外来人员；2：企业内部人员 ；全部传0
      * @apiParam (请求参数说明) {string} ordering_date  订餐日期
+     * @apiParam (请求参数说明) {string} username  用户姓名
      * @apiParam (请求参数说明) {int} status  状态：1:已经支付；2：已取消；3：已接单；4:已完成 ;5:已退回 ；6 全部
      * @apiSuccessExample {json}返回样例:
      * {"msg":"ok","errorCode":0,"code":200,"data":{"total":1,"per_page":"20","current_page":1,"last_page":1,"data":[{"order_id":233,"money":"6.0","used":2,"ordering_date":"2020-02-15","dinner":"午餐","canteen":"11楼饭堂","username":"宁晓晓","phone":"18219112778","province":"广东省","area":"蓬江区","city":"江门市","address":"。。。","department_id":81,"outsider":2,"receive":1,"pay":"paid","state":1,"status":2,"consumption_type":one}]}}
@@ -49,7 +51,7 @@ class Takeout extends BaseController
      * @apiSuccess (返回参数说明) {string} outsider 是否外来人员订单 1：是；2｜否
      * @apiSuccess (返回参数说明) {int} status 订单状态：1:已经支付；2：已取消；3：已接单；4:已完成 ;5:已退回
      */
-    public function statistic($page = 1, $size = 20)
+    public function statistic($page = 1, $size = 20, $username = '')
     {
         $ordering_date = Request::param('ordering_date');
         $company_ids = Request::param('company_ids');
@@ -59,7 +61,7 @@ class Takeout extends BaseController
         $status = Request::param('status');
         $user_type = Request::param('user_type');
         $statistic = (new OrderStatisticService())->takeoutStatistic($page, $size,
-            $ordering_date, $company_ids, $canteen_id, $dinner_id, $status, $department_id, $user_type);
+            $ordering_date, $company_ids, $canteen_id, $dinner_id, $status, $department_id, $user_type, $username);
         return json(new SuccessMessageWithData(['data' => $statistic]));
     }
 
@@ -124,6 +126,7 @@ class Takeout extends BaseController
      * @apiParam (请求参数说明) {string} canteen_id  饭堂id：选择某一个饭堂时传入饭堂id，此时企业id为0，选择全部时，饭堂id传入0
      * @apiParam (请求参数说明) {string} dinner_id  餐次id：选择饭堂时才可以选择具体的餐次信息，否则传0
      * @apiParam (请求参数说明) {string} ordering_date  订餐日期
+     * @apiParam (请求参数说明) {string} username  用户姓名
      * @apiParam (请求参数说明) {string} user_type  人员类型：1 ：外来人员；2：企业内部人员 ；全部传0
      * @apiParam (请求参数说明) {int} status  状态：1:已经支付；2：已取消；3：已接单；4:已完成 ;5:已退回 ；6 全部
      * @apiParam (请求参数说明) {string} department_id  部门id，全部传0
@@ -133,7 +136,7 @@ class Takeout extends BaseController
      * @apiSuccess (返回参数说明) {string} msg 操作结果描述
      * @apiSuccess (返回参数说明) {string} url 下载地址
      */
-    public function exportStatistic()
+    public function exportStatistic($username = '')
     {
         $ordering_date = Request::param('ordering_date');
         $company_ids = Request::param('company_ids');
@@ -142,8 +145,11 @@ class Takeout extends BaseController
         $status = Request::param('status');
         $department_id = Request::param('department_id');
         $user_type = Request::param('user_type');
-        $statistic = (new OrderStatisticService())->exportTakeoutStatistic($ordering_date, $company_ids, $canteen_id, $dinner_id, $status, $department_id, $user_type);
-        return json(new SuccessMessageWithData(['data' => $statistic]));
+        (new DownExcelService())->exportTakeoutStatistic($ordering_date, $company_ids, $canteen_id, $dinner_id, $status, $department_id, $user_type,$username);
+        return json(new SuccessMessage());
+
+        /*  $statistic = (new OrderStatisticService())->exportTakeoutStatistic($ordering_date, $company_ids, $canteen_id, $dinner_id, $status, $department_id, $user_type);
+          return json(new SuccessMessageWithData(['data' => $statistic]));*/
 
 
     }
@@ -169,7 +175,7 @@ class Takeout extends BaseController
     {
         $order_id = Request::param('id');
         $consumptionType = Request::param('consumption_type');
-        (new OrderService())->used($order_id,$consumptionType);
+        (new OrderService())->used($order_id, $consumptionType);
         return json(new SuccessMessage());
     }
 
@@ -244,7 +250,7 @@ class Takeout extends BaseController
         $type = Request::param('type');
         $canteenID = Request::param('canteen_id');
 
-        (new  TakeoutService())->handelOrder($oneId,$moreId, $type, $canteenID);
+        (new  TakeoutService())->handelOrder($oneId, $moreId, $type, $canteenID);
         return json(new SuccessMessage());
     }
 

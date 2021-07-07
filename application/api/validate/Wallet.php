@@ -9,7 +9,7 @@ class Wallet extends BaseValidate
     protected $rule = [
         'id' => 'require|isPositiveInteger',
         'account_id' => 'require|isPositiveInteger',
-        'order_id' => 'require|isPositiveInteger',
+        'order_id' => 'require|isNotEmpty',
         'module_id' => 'require|isPositiveInteger',
         'canteen_id' => 'require|isPositiveInteger',
         'dinner_id' => 'require|isPositiveInteger',
@@ -23,7 +23,7 @@ class Wallet extends BaseValidate
         'time_end' => 'require|isNotEmpty',
         'consumption_date' => 'require|isNotEmpty',
         'company_id' => 'require|isPositiveInteger',
-        'money' => 'require|isNotEmpty',
+        'money' => 'require',
     ];
 
     protected $scene = [

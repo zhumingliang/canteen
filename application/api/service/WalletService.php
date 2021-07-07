@@ -12,12 +12,14 @@ use app\api\model\CompanyT;
 use app\api\model\DinnerV;
 use app\api\model\OrderParentT;
 use app\api\model\OrderT;
+use app\api\model\PayNonghangConfigT;
 use app\api\model\PayT;
 use app\api\model\RechargeCashT;
 use app\api\model\RechargeSupplementT;
 use app\api\model\RechargeV;
 use app\api\model\UserBalanceV;
 use app\api\validate\Company;
+use app\lib\Date;
 use app\lib\enum\CommonEnum;
 use app\lib\enum\OrderEnum;
 use app\lib\enum\PayEnum;
@@ -32,6 +34,9 @@ use zml\tp_tools\Redis;
 
 class WalletService
 {
+    private $moneyRecharge = 1;
+    private $moneyRefund = 2;
+
     public function rechargeCash($params)
     {
         $detail = json_decode($params['detail'], true);
@@ -116,7 +121,7 @@ class WalletService
             }
 
             $money = trim($v[3]);
-            if ($money == '') {
+            if ($money == '' || $money <= 0) {
                 array_push($fail, '第' . $k . '行数据有问题');
             }
         }
@@ -144,7 +149,7 @@ class WalletService
             }
 
             $money = trim($v[2]);
-            if ($money == '') {
+            if ($money == '' || $money <= 0) {
                 array_push($fail, '第' . $k . '行数据有问题');
             }
         }
@@ -168,10 +173,10 @@ class WalletService
         ];//当前任务的业务数据
         $isPushed = Queue::push($jobHandlerClassName, $jobData, $jobQueueName);
         //将该任务推送到消息队列
-        if ($isPushed == false) {
+        /*if ($isPushed == false) {
             (new UploadExcel())->clearUploading($company_id, $u_id, $type);
             throw new SaveException(['msg' => '上传excel失败']);
-        }
+        }*/
     }
 
 
@@ -245,13 +250,21 @@ class WalletService
 
     }
 
-    private function prefixDetail($company_id, $admin_id, $detail, $account_id, $money, $remark)
+    public function prefixDetail($company_id, $admin_id, $detail, $account_id, $money, $remark, $moneyType = 1)
     {
         $dataList = [];
         foreach ($detail as $k => $v) {
             $data = [];
+            if ($moneyType == $this->moneyRefund) {
+                $balance = $this->getUserBalanceWithProcedure($v['staff_id']);
+                if ($balance < abs($money)) {
+                    throw new ParameterException(['msg' => "退款金额大于余额"]);
+
+                }
+            }
             $data['company_id'] = $company_id;
             $data['account_id'] = $account_id;
+            $data['type'] = $moneyType;
             $data['money'] = $money;
             $data['staff_id'] = $v['staff_id'];
             $data['state'] = CommonEnum::STATE_IS_OK;
@@ -263,11 +276,25 @@ class WalletService
     }
 
     public function rechargeRecords($time_begin, $time_end,
-                                    $page, $size, $type, $admin_id, $username, $department_id)
+                                    $page, $size, $type, $admin_id, $username, $department_id, $money_type)
     {
         $company_id = Token::getCurrentTokenVar('company_id');
         $records = RechargeV::rechargeRecords($time_begin, $time_end,
-            $page, $size, $type, $admin_id, $username, $company_id, $department_id);
+            $page, $size, $type, $admin_id, $username, $company_id, $department_id, $money_type);
+        $data = $records['data'];
+        if (count($data)) {
+            foreach ($data as $k => $v) {
+                $data[$k]['money'] = abs($v['money']);
+            }
+            $records['data'] = $data;
+        }
+
+        $money = RechargeV::rechargeStatistic($time_begin, $time_end,
+            $type, $admin_id, $username, $company_id, $department_id, $money_type);
+        if ($money_type > 0) {
+            $money = abs($money);
+        }
+        $records['statistic'] = $money;
         return $records;
 
     }
@@ -394,7 +421,7 @@ class WalletService
         ];
     }
 
-    private function prefixHeader($accounts, $header)
+    public function prefixHeader($accounts, $header)
     {
         foreach ($accounts as $k => $v) {
             array_push($header, $v['name']);
@@ -405,7 +432,7 @@ class WalletService
     }
 
 
-    private function prefixExportBalanceWithAccount($staffs, $accounts, $checkCard)
+    public function prefixExportBalanceWithAccount($staffs, $accounts, $checkCard)
     {
         $dataList = [];
         if (count($staffs)) {
@@ -462,6 +489,15 @@ class WalletService
 
     }
 
+    public function getUserBalanceWithProcedure($staffId)
+    {
+        Db::query('call getUserBalance(:in_staffId,@userBalance)', [
+            'in_staffId' => $staffId,
+        ]);
+        $resultSet = Db::query('select @userBalance');
+        return round($resultSet[0]['@userBalance'], 2);
+    }
+
     public function getUserBalanceWithStaffId($staff_id)
     {
         $balance = UserBalanceV::userBalance2($staff_id);
@@ -496,7 +532,9 @@ class WalletService
         foreach ($staffs as $k => $v) {
             //检测余额是否充足
             if ($params['type'] == 2) {
-                $this->checkSupplementBalance($v, $params['canteen_id'], $params['money']);
+                if ($params['money'] > 0) {
+                    $this->checkSupplementBalance($v, $params['canteen_id'], $params['money']);
+                }
             }
 
             $data = [
@@ -537,6 +575,27 @@ class WalletService
                 throw new ParameterException(['msg' => "账户余额不足，不能补扣"]);
             }
         }
+
+    }
+
+    private function checkSupplementBalanceForUpload($staffId, $canteenId, $money)
+    {
+        $balance = (new WalletService())->getUserBalanceWithStaffId($staffId);
+        if ($money > $balance) {
+            //获取账户设置，检测是否可预支消费
+            $canteenAccount = CanteenAccountT::where('c_id', $canteenId)->find();
+            if (!$canteenAccount) {
+                return false;
+            }
+
+            if ($canteenAccount->type == OrderEnum::OVERDRAFT_NO) {
+                return false;
+            }
+            if ($canteenAccount->limit_money < ($money - $balance)) {
+                return false;
+            }
+        }
+        return true;
 
     }
 
@@ -688,15 +747,16 @@ class WalletService
     }
 
 
-    private function checkSupplementData($company_id, $fileName)
+    public function checkSupplementData($company_id, $fileName)
     {
         $newCanteen = [];
-        $canteens = (new CanteenService())->companyCanteens($company_id);
+        $canteenIds = [];
+        $canteens = (new CanteenService())->companyCanteens2($company_id);
         $dinners = DinnerV::companyDinners($company_id);
         $staffs = CompanyStaffT::staffs($company_id);
-
         foreach ($canteens as $k => $v) {
             array_push($newCanteen, $v['name']);
+            $canteenIds[$v['name']] = $v['id'];
         }
         if (!count($newCanteen) || !count($dinners)) {
             throw  new  SaveException(['msg' => '企业饭堂或者餐次设置异常']);
@@ -724,20 +784,26 @@ class WalletService
             if ($k < 2) {
                 continue;
             }
-            $checkData = $v[0] . '&' . $v[1];
-            if (!in_array($checkData, $newStaffs) ||
-                !in_array($v[2], $newCanteen) || !$this->checkDinnerInCanteen($v[2], $v[4], $dinners)) {
+
+            if (!$this->checkDinnerInCanteen($v[2], $v[4], $dinners)) {
                 array_push($fail, '第' . $k . '行数据有问题');
                 break;
             }
+
+            $checkData = $v[0] . '&' . $v[1];
+            if (!in_array($checkData, $newStaffs) ||
+                !in_array($v[2], $newCanteen)) {
+                array_push($fail, '第' . $k . '行数据有问题');
+                break;
+            }
+
             //检测饭堂是否合法
             $checkCanteens = $staffCanteens[$checkData];
             if (!in_array($v[2], $checkCanteens)) {
                 array_push($fail, '第' . $k . '行数据有问题');
                 break;
             }
-
-            if (strtotime($v[3]) > strtotime(\date('Y-m-d')) || $v[6] < 0) {
+            if (strtotime($v[3]) > strtotime(\date('Y-m-d'))) {
                 array_push($fail, '第' . $k . '行数据有问题');
                 break;
             }
@@ -745,8 +811,10 @@ class WalletService
             //检测余额是否充足
             if ($v[5] == "补扣") {
                 $staffId = $staffIds[$checkData];
-                $balance = (new WalletService())->getUserBalanceWithStaffId($staffId);
-                if ($balance < $v[6]) {
+                $canteenId = $canteenIds[$v[2]];
+                //$balance = (new WalletService())->getUserBalanceWithStaffId($staffId);
+                $check = (new WalletService())->checkSupplementBalanceForUpload($staffId, $canteenId, $v[6]);
+                if (!$check) {
                     array_push($fail, '第' . $k . '行数据有问题:余额不足');
                     break;
                 }
@@ -771,7 +839,7 @@ class WalletService
     public function prefixSupplementUploadData($company_id, $admin_id, $data)
     {
         $dataList = [];
-        $canteens = (new CanteenService())->companyCanteens($company_id);
+        $canteens = (new CanteenService())->companyCanteens2($company_id);
         $dinners = DinnerV::companyDinners($company_id);
         $staffs = CompanyStaffT::staffs($company_id);
         $newStaffs = [];
@@ -802,7 +870,8 @@ class WalletService
                 'dinner_id' => $this->getDinnerID($dinners, $newCanteen[$v[2]], $v[4]),
                 'dinner' => $v[4],
                 'type' => $v[5] == "补扣" ? 2 : 1,
-                'money' => $v[5] == "补扣" ? 0 - $v[6] : $v[6]
+                'money' => $v[5] == "补扣" ? 0 - $v[6] : $v[6],
+                'remark' => empty($v[7]) ? '' : $v[7]
             ]);
         }
 
@@ -812,7 +881,7 @@ class WalletService
     public function prefixSupplementUploadDataWithAccount($company_id, $admin_id, $data)
     {
         $dataList = [];
-        $canteens = (new CanteenService())->companyCanteens($company_id);
+        $canteens = (new CanteenService())->companyCanteens2($company_id);
         $dinners = DinnerV::companyDinners($company_id);
         $staffs = CompanyStaffT::staffs($company_id);
         $accounts = CompanyAccountT::accountsWithoutNonghang($company_id);
@@ -856,7 +925,8 @@ class WalletService
                 'dinner_id' => $this->getDinnerID($dinners, $newCanteen[$v[2]], $v[4]),
                 'dinner' => $v[4],
                 'type' => $v[5] == "补扣" ? 2 : 1,
-                'money' => $v[5] == "补扣" ? 0 - $v[7] : $v[7]
+                'money' => $v[5] == "补扣" ? 0 - $v[7] : $v[7],
+                'remark' => empty($v[8]) ? '' : $v[8]
             ]);
         }
 
@@ -865,7 +935,12 @@ class WalletService
 
     private function getConsumptionDate($value)
     {
-        return gmdate("Y-m-d", ($value - 25569) * 86400);
+        if (count(explode('/', $value)) == 3 || count(explode('-', $value)) == 3) {
+            return $value;
+        } else {
+            return gmdate("Y-m-d", ($value - 25569) * 86400);
+
+        }
 
     }
 
@@ -1050,5 +1125,53 @@ class WalletService
             ], ['id' => $order_id]);
         }
 
+    }
+
+    public function paySuccessForPre($prepareId, $order_type, $times)
+    {
+        if ($times == 'one') {
+            if ($order_type == "canteen") {
+                OrderT::update([
+                    'pay' => 'paid'
+                ], ['prepare_id' => $prepareId]);
+            }
+        } else if ($times == 'more') {
+            OrderParentT::update([
+                'pay' => 'paid'
+            ], ['prepare_id' => $prepareId]);
+        }
+
+    }
+
+    public function payLink()
+    {
+        $companyId = Token::getCurrentTokenVar('current_company_id');
+        //获取农行支付配置信息
+        $config = PayNonghangConfigT::config($companyId);
+        if (!$config || empty([$config->code])) {
+            throw new ParameterException(['msg' => "农行支付配置异常"]);
+        }
+        return [
+            'url' => "https://enjoy.abchina.com/jf-openweb/wechat/shareEpayItem?code=" . $config->code
+        ];
+    }
+
+    //月充值金额合计
+    public function monthRechargeMoney($staffId, $consumptionTime)
+    {
+        $date = Date::mFristAndLast2($consumptionTime);
+        $timeBegin = $date['fist'];
+        $timeEnd = $date['last'];
+        $rechargeMoney = RechargeCashT::monthRechargeMoney($timeBegin, $timeEnd, $staffId);
+        return $rechargeMoney;
+    }
+
+    public function outsiderMonthRechargeMoney($company_id, $phone, $consumptionTime)
+    {
+        $date = Date::mFristAndLast2($consumptionTime);
+        $timeBegin = $date['fist'];
+        $timeEnd = $date['last'];
+        $rechargeMoney = RechargeCashT::outsiderMonthRechargeMoney($timeBegin, $timeEnd, $company_id, $phone);
+        return $rechargeMoney;
     }
 }

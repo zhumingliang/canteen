@@ -10,6 +10,7 @@ use app\lib\exception\AuthException;
 use app\lib\exception\SaveException;
 use app\lib\exception\SuccessMessage;
 use app\lib\exception\SuccessMessageWithData;
+use app\lib\exception\UpdateException;
 use think\Db;
 use think\Exception;
 use think\facade\Request;
@@ -99,23 +100,6 @@ class TimeSwitch
         $repeat = $param['repeat'];
         $device = $param['device'];
         $devices = explode(',',$device);
-        $company_id = $before['company_id'];
-        $canteen_id = $before['canteen_id'];
-        $exist_devices = Db::table('canteen_machine_timeswitch_t')
-            ->where('canteen_id',$canteen_id)
-            ->where('company_id',$company_id)
-            ->where('status',1)
-            ->field('device')
-            ->select();
-        foreach ($exist_devices as $exist_device){
-            $exist_device = $exist_device['device'];
-            $exist_device = explode(',',$exist_device);
-            foreach ($devices as $device2){
-                if (in_array($device2,$exist_device)){
-                    throw new AuthException(['msg' => $device2."号消费机已设定定时开关"]);
-                }
-            }
-        }
         if (empty($on_time)){
             throw new AuthException(['msg' => '请选择开启时间']);
         }
@@ -230,7 +214,8 @@ class TimeSwitch
             }
             $switch = Db::table('canteen_machine_timeswitch_t')
                 ->where('id', $id)
-                ->update(['status' => '1','update_time' => date('Y-m-d H:i:s')]);
+                ->update(['status' => '1',
+                    'update_time' => date('Y-m-d H:i:s')]);
             if ($switch) {
                 return json(new SuccessMessage());
             } else {
@@ -267,7 +252,6 @@ class TimeSwitch
         $devices = Db::table('canteen_machine_t')->where('belong_id',$canteen_id)
             ->where('company_id',$company_id)->where('state',1)->field('id,name')->select();
         return json(new SuccessMessageWithData(['data' => $devices]));
-
     }
 
 

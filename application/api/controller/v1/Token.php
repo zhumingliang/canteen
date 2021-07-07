@@ -25,7 +25,10 @@ use app\lib\enum\CommonEnum;
 use app\lib\exception\SuccessMessage;
 use app\lib\exception\SuccessMessageWithData;
 use app\lib\exception\TokenException;
+use GatewayClient\Gateway;
+use think\captcha\Captcha;
 use think\Controller;
+use think\Exception;
 use think\facade\Cache;
 use think\facade\Request;
 use zml\tp_tools\Redis;
@@ -159,6 +162,62 @@ class  Token extends Controller
         $client_id = Request::param('client_id');
         $token = (new MachineToken())->get($code, $passwd, $client_id);
         return json(new SuccessMessageWithData(['data' => $token]));
+    }
+
+    /**
+     * @api {POST} /api/v1/token/admin/bind CMS管理端-绑定webSocket
+     * @apiGroup  CMS
+     * @apiVersion 3.0.0
+     * @apiDescription  CMS管理端-绑定webSocket
+     * @apiExample {post}  请求样例:
+     *    {
+     *       "client_id": 1
+     *     }
+     * @apiParam (请求参数说明) {String} client_id   websocket服务返回的登录id
+     * @apiSuccessExample {json} 返回样例:
+     *{"msg":"ok","errorCode":0,"code":200}}
+     * @apiSuccess (返回参数说明) {int} errorCode 错误码： 0表示操作成功无错误
+     * @apiSuccess (返回参数说明) {string} msg 信息描述
+     */
+    public function bindSocket($client_id)
+    {
+        try {
+            $adminId = \app\api\service\Token::getCurrentUid();
+            $group = 'canteen:admin';
+            Gateway::joinGroup($client_id, $group);
+            Gateway::bindUid($client_id, $adminId);
+        } catch (Exception $e) {
+            throw $e;
+        }
+
+        return json(new SuccessMessage());
+    }
+
+    /**
+     * @api {GET} /api/v1/token/verify  CMS管理端-获取登录验证码
+     * @apiGroup  CMS
+     * @apiVersion 3.0.0
+     * @apiDescription  消费机-获取登录token
+     * @apiExample {get}  请求样例:
+     * http://canteen.tonglingok.com/api/v1/token/verify?code="1asdd"
+     */
+    public function verify($code = "")
+    {
+        $config = [
+            // 验证码字体大小
+            'fontSize' => 30,
+            // 验证码位数
+            'length' => 5,
+            // 关闭验证码杂点
+            'useNoise' => true,
+            // 验证码过期时间（s）
+            'expire' => 1800,
+            'codeSet' => '0123456789'
+        ];
+        $captcha = new Captcha($config);
+        // return $captcha->entry();
+        return $captcha->entryCode($code);
+
     }
 
 }

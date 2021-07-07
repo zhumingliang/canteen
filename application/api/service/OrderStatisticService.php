@@ -4,12 +4,14 @@
 namespace app\api\service;
 
 
+use app\api\model\AccountRecordsT;
 use app\api\model\AccountRecordsV;
 use app\api\model\CanteenT;
 use app\api\model\CompanyAccountT;
 use app\api\model\CompanyStaffT;
 use app\api\model\ConsumptionStrategyT;
 use app\api\model\DinnerT;
+use app\api\model\DinnerV;
 use app\api\model\MaterialPriceV;
 use app\api\model\MaterialReportDetailT;
 use app\api\model\MaterialReportDetailV;
@@ -27,6 +29,7 @@ use app\api\model\OrderTakeoutStatisticV;
 use app\api\model\ShopT;
 use app\api\model\StaffCanteenV;
 use app\api\model\SubFoodT;
+use app\lib\Date;
 use app\lib\enum\CommonEnum;
 use app\lib\enum\OrderEnum;
 use app\lib\enum\StrategyEnum;
@@ -38,6 +41,7 @@ use think\Exception;
 use think\Model;
 use think\Request;
 use function Composer\Autoload\includeFile;
+use function GuzzleHttp\Psr7\str;
 
 class OrderStatisticService
 {
@@ -45,6 +49,7 @@ class OrderStatisticService
 
     public function statistic($time_begin, $time_end, $company_ids, $canteen_id, $page, $size)
     {
+        $canteen_id = (new CanteenService())->checkCanteens($canteen_id);
         $list = OrderStatisticV::statistic($time_begin, $time_end, $company_ids, $canteen_id, $page, $size);
         return $list;
 
@@ -52,6 +57,7 @@ class OrderStatisticService
 
     public function exportStatistic($time_begin, $time_end, $company_ids, $canteen_id)
     {
+        $canteen_id = (new CanteenService())->checkCanteens($canteen_id);
         $list = OrderStatisticV::exportStatistic($time_begin, $time_end, $company_ids, $canteen_id);
         $header = ['日期', '公司', '消费地点', '餐次', '订餐份数'];
         $file_name = "订餐统计报表(" . $time_begin . "-" . $time_end . ")";
@@ -67,6 +73,7 @@ class OrderStatisticService
                                          $phone, $canteen_id, $department_id,
                                          $dinner_id, $type)
     {
+        $canteen_id = (new CanteenService())->checkCanteens($canteen_id);
         $list = OrderStatisticV::detail($company_ids, $time_begin,
             $time_end, $page, $size, $name,
             $phone, $canteen_id, $department_id,
@@ -74,6 +81,7 @@ class OrderStatisticService
         $list['data'] = $this->getTypeAttr($list['data']);
         return $list;
     }
+
 
     public function getTypeAttr($data, $value = '')
     {
@@ -107,9 +115,10 @@ class OrderStatisticService
 
     }
 
-    private function prefixOrderStatisticDetail($list)
+    public function prefixOrderStatisticDetail($list)
     {
         $dataList = [];
+        $status = [1 => '堂食', 2 => '外卖'];
         foreach ($list as $k => $v) {
             $consumptionType = $v['consumption_type'];
             $foods = $this->getOrderFoods($v['order_id'], $v['ordering_type'], $v['consumption_type']);
@@ -152,7 +161,7 @@ class OrderStatisticService
                     $data['username'] = $v['username'];
                     $data['phone'] = $v['phone'];
                     $data['dinner'] = $v['dinner'];
-                    $data['type'] = $v['type'];
+                    $data['type'] = $status[$v['type']];
                     $data['count'] = "第" . Num::numToWord($v2['consumption_sort']) . "份";
                     $data['money'] = $v2['money'] + $v2['sub_money'];
                     $data['status'] = $this->getStatus($v['ordering_date'], $v2['state'], $v['meal_time_end'], $v2['used']);
@@ -213,10 +222,10 @@ class OrderStatisticService
                                     $name, $phone, $canteen_id, $department_id, $dinner_id,
                                     $consumption_type, $time_begin, $time_end, $company_ids, $type)
     {
+        $canteen_id = (new CanteenService())->checkCanteens($canteen_id);
         $records = OrderSettlementV::orderSettlement($page, $size,
             $name, $phone, $canteen_id, $department_id, $dinner_id,
             $consumption_type, $time_begin, $time_end, $company_ids, $type);
-
         $records['data'] = $this->prefixSettlementConsumptionType($records['data']);
         return $records;
     }
@@ -225,13 +234,53 @@ class OrderStatisticService
                                                $name, $phone, $canteen_id, $department_id, $dinner_id,
                                                $consumption_type, $time_begin, $time_end, $company_ids, $type)
     {
+        $canteen_id = (new CanteenService())->checkCanteens($canteen_id);
         $records = OrderSettlementV::orderSettlementWithAccount($page, $size,
             $name, $phone, $canteen_id, $department_id, $dinner_id,
             $consumption_type, $time_begin, $time_end, $company_ids, $type);
-        $records['data'] = $this->prefixSettlementConsumptionType($records['data']);
+        $data = $this->prefixOrderSettlementAccount($company_ids, $records['data']);
+        $records['data'] = $this->prefixSettlementConsumptionType($data);
 
         return $records;
     }
+
+    private function prefixOrderSettlementAccount($companyId, $data)
+    {
+        /**
+         * 订单类型
+         * 饭堂订单：1.内部人员+外部人员 一次扣费-堂吃；2.内部人员多次扣费-堂吃；3.外部人员多次扣费堂吃
+         * 小卖部订单
+         * 补录订单
+         */
+        if (count($data)) {
+            $accounts = (new AccountService())->accountsForSearch($companyId);
+            $checkAccount = [];
+            foreach ($accounts as $k => $v) {
+                $checkAccount[$v['id']] = $v['name'];
+            }
+            foreach ($data as $k => $v) {
+                $account = [];
+                $orderType = $v['type'];
+                if ($v['type'] == "canteen") {
+                    $orderType = $v['order_type'];
+                }
+                $consumptionType = 2;
+                if ($v['consumption_type'] == OrderEnum::EAT_OUTSIDER) {
+                    $consumptionType = 1;
+                }
+                $records = AccountRecordsT::orderRecords($orderType, $v['order_id'], $consumptionType);
+                foreach ($records as $k2 => $v2) {
+                    if (key_exists($v2['account_id'], $checkAccount)) {
+                        array_push($account, $checkAccount[$v2['account_id']]);
+                    }
+                }
+                $data[$k]['account'] = implode(',', $account);
+            }
+        }
+        return $data;
+
+    }
+
 
     public function exportOrderSettlement(
         $name, $phone, $canteen_id, $department_id, $dinner_id,
@@ -265,7 +314,7 @@ class OrderStatisticService
         ];
     }
 
-    private function prefixExportOrderSettlementWithAccount($data)
+    public function prefixExportOrderSettlementWithAccount($data)
     {
         ($data);
         $dataList = [];
@@ -301,7 +350,7 @@ class OrderStatisticService
                     'account' => $v['account'],
                     'consumption_type' => $data[$k]['consumption_type'],
                     'dinner' => $v['dinner'],
-                    'money' => sprintf("%.2f", abs($v['money'])),
+                    'money' => $v['type'] == 'recharge' ? 0 - sprintf("%.2f", abs($v['money'])) : sprintf("%.2f", abs($v['money'])),
                     'remark' => $v['remark']
                 ]);
             }
@@ -309,7 +358,7 @@ class OrderStatisticService
         return $dataList;
     }
 
-    private function prefixExportOrderSettlement($data)
+    public function prefixExportOrderSettlement($data)
     {
         ($data);
         $dataList = [];
@@ -344,7 +393,7 @@ class OrderStatisticService
                     'canteen' => $v['canteen'],
                     'consumption_type' => $data[$k]['consumption_type'],
                     'dinner' => $v['dinner'],
-                    'money' => sprintf("%.2f", abs($v['money'])),
+                    'money' => $v['type'] == 'recharge' ? 0 - sprintf("%.2f", abs($v['money'])) : sprintf("%.2f", abs($v['money'])),
                     'remark' => $v['remark']
                 ]);
             }
@@ -386,10 +435,33 @@ class OrderStatisticService
     public
     function takeoutStatistic($page, $size,
                               $ordering_date, $company_ids,
-                              $canteen_id, $dinner_id, $status, $department_id, $user_type)
+                              $canteen_id, $dinner_id, $status, $department_id, $user_type, $username)
     {
+        $canteen_id = (new CanteenService())->checkCanteens($canteen_id);
         $records = OrderTakeoutStatisticV::statistic($page, $size,
-            $ordering_date, $company_ids, $canteen_id, $dinner_id, $status, $department_id, $user_type);
+            $ordering_date, $company_ids, $canteen_id, $dinner_id, $status, $department_id, $user_type, $username);
+        $data = $records['data'];
+        foreach ($data as $k => $v) {
+            if ($v['state'] == CommonEnum::STATE_IS_FAIL) {
+                $data[$k]['status'] = OrderEnum::STATUS_CANCEL;
+            } elseif ($v['state'] == OrderEnum::REFUND) {
+                $data[$k]['status'] = OrderEnum::STATUS_REFUND;
+            } else {
+                if ($v['used'] == CommonEnum::STATE_IS_OK) {
+                    $data[$k]['status'] = OrderEnum::STATUS_COMPLETE;
+                } else
+
+                    if ($v['receive'] == CommonEnum::STATE_IS_OK) {
+                        $data[$k]['status'] = OrderEnum::STATUS_RECEIVE;
+                    } else {
+                        $data[$k]['status'] = OrderEnum::STATUS_PAID;
+
+                    }
+
+            }
+
+        }
+        $records['data'] = $data;
         return $records;
     }
 
@@ -398,8 +470,21 @@ class OrderStatisticService
                                          $ordering_date, $dinner_id, $status, $department_id)
     {
         $canteen_id = Token::getCurrentTokenVar('current_canteen_id');
+
         $records = OrderTakeoutStatisticV::officialStatistic($page, $size,
             $ordering_date, $dinner_id, $status, $department_id, $canteen_id);
+        $data = $records['data'];
+        if (count($data)) {
+            foreach ($data as $k => $v) {
+                if ($v['consumption_type'] == "one") {
+                    $data[$k]['foods'] = OrderDetailT::where('o_id', $v['order_id'])->select();
+                } else {
+                    $data[$k]['foods'] = SubFoodT::where('o_id', $v['order_id'])->select();
+
+                }
+            }
+        }
+        $records['data'] = $data;
         return $records;
     }
 
@@ -418,7 +503,7 @@ class OrderStatisticService
         ];
     }
 
-    private
+    public
     function prefixExportTakeoutStatistic($records)
     {
         $statusText = [
@@ -494,7 +579,7 @@ class OrderStatisticService
         ];
     }
 
-    private
+    public
     function prefixMaterials($data, $materials, $statisticMoney = false)
     {
         $money = 0;
@@ -707,12 +792,12 @@ class OrderStatisticService
                                   $department_id, $username, $staff_type_id, $time_begin,
                                   $time_end, $company_id, $phone, $page, $size, $order_type)
     {
+        $canteen_id = (new CanteenService())->checkCanteens($canteen_id);
         $version = \think\facade\Request::param('version');
         switch ($type) {
             case OrderEnum::STATISTIC_BY_DEPARTMENT:
                 return $this->consumptionStatisticByDepartment($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id, $phone, $order_type, $version);
             case OrderEnum::STATISTIC_BY_USERNAME:
-
                 if ($version == 'v1') {
                     return $this->consumptionStatisticByUsername($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id, $phone, $order_type, $page, $size, $version);
                 } else {
@@ -724,9 +809,121 @@ class OrderStatisticService
                 return $this->consumptionStatisticByCanteen($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id, $phone, $order_type, $version);
             case OrderEnum::STATISTIC_BY_STATUS:
                 return $this->consumptionStatisticByStatus($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id, $phone, $order_type, $version);
+            case OrderEnum::STATISTIC_BY_DAY:
+                return $this->consumptionStatisticByDay($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id, $phone, $order_type, $page, $size, $version);
+
             default:
                 throw new ParameterException();
         }
+    }
+
+    public function consumptionStatisticByDay($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id, $phone, $order_type, $page, $size, $version)
+    {
+
+        $totalBegin = $time_begin;
+        $totalEnd = $time_end;
+        $dayInfo = $this->getPageInfo($page, $size, $time_begin, $time_end);
+        if (empty($dayInfo['start'])) {
+            $dayInfo['data'] = [];
+            return $dayInfo;
+        }
+        $time_begin = $dayInfo['start'];
+        $time_end = $dayInfo['end'];
+
+        if ($version == "v1") {
+            //获取分页数据记录
+            $statistic = OrderConsumptionV::consumptionStatisticByDayPage($canteen_id, $status, $department_id,
+                $username, $staff_type_id, $time_begin,
+                $time_end, $company_id, $phone, $order_type);
+           // if (count($statistic)) {
+                $statistic = $this->prefixStatisticDay($statistic, $time_begin, $time_end);
+          //  }
+            //获取数据统计
+            $dayInfo['data'] = $statistic;
+            //获取数据汇总
+            $allStatistic = OrderConsumptionV::consumptionStatisticInfo($canteen_id, $status, $department_id,
+                $username, $staff_type_id, $totalBegin,
+                $totalEnd, $company_id, $phone, $order_type);
+            $dayInfo['statistic'] = $allStatistic;
+            return $dayInfo;
+        } else if ($version == "v2") {
+            $statistic = OrderConsumptionAccountV::consumptionStatisticByDay($canteen_id, $status, $department_id,
+                $username, $staff_type_id, $time_begin,
+                $time_end, $company_id, $phone, $order_type);
+            $allStatistic = OrderConsumptionAccountV::consumptionStatisticInfo($canteen_id, $status, $department_id,
+                $username, $staff_type_id, $totalBegin,
+                $totalEnd, $company_id, $phone, $order_type);
+            $accountRecords = AccountRecordsV::consumptionStatisticByDay($canteen_id, $status, $department_id,
+                $username, $staff_type_id, $time_begin,
+                $time_end, $company_id, $phone, $order_type);
+           // if (count($statistic)) {
+                $statistic = $this->prefixStatisticDay($statistic, $time_begin, $time_end, $accountRecords);
+          //  }
+            $dayInfo['data'] = $statistic;
+            $dayInfo['statistic'] = $allStatistic;
+            return $dayInfo;
+
+        }
+
+    }
+
+
+    public function exportConsumptionStatisticByDay($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id, $phone, $order_type, $version)
+    {
+
+        if ($version == "v1") {
+            //获取分页数据记录
+            $statistic = OrderConsumptionV::consumptionStatisticByDayPage($canteen_id, $status, $department_id,
+                $username, $staff_type_id, $time_begin,
+                $time_end, $company_id, $phone, $order_type);
+            $statistic = $this->prefixStatistic($statistic, 'consumption_date', $time_begin, $time_end, $status);
+            return $statistic;
+        } else if ($version == "v2") {
+            $statistic = OrderConsumptionAccountV::consumptionStatisticByDay($canteen_id, $status, $department_id,
+                $username, $staff_type_id, $time_begin,
+                $time_end, $company_id, $phone, $order_type);
+            $statistic = $this->prefixStatistic($statistic, 'consumption_date', $time_begin, $time_end, $status);
+
+            $accountRecords = AccountRecordsV::consumptionStatisticByDay($canteen_id, $status, $department_id,
+                $username, $staff_type_id, $time_begin,
+                $time_end, $company_id, $phone, $order_type);
+            return [
+                'consumptionRecords' => $statistic,
+                'accountRecords' => $accountRecords
+            ];
+
+        }
+
+    }
+
+    public function getPageInfo($page, $size, $time_begin, $time_end)
+    {
+
+        $total = Date::diffBetweenTwoDays($time_begin, $time_end) + 1;
+        $last_page = ceil($total / $size);
+        $starNumber = $size * ($page - 1);
+        $start = addDay($starNumber, $time_begin);
+        if (strtotime($start) > strtotime($time_end)) {
+            $start = "";
+            $end = "";
+        } else {
+            $end = addDay($size - 1, $start);
+            if (strtotime($end) > strtotime($time_end)) {
+                $end = $time_end;
+            }
+        }
+
+
+        return [
+            'total' => $total,
+            'per_page' => $size,
+            'current_page' => $page >= $last_page ? $last_page : $page,
+            'last_page' => $last_page,
+            'start' => $start,
+            'end' => $end
+        ];
+
+
     }
 
     public
@@ -750,6 +947,7 @@ class OrderStatisticService
         switch ($type) {
             case OrderEnum::STATISTIC_BY_DEPARTMENT:
                 $info = $this->consumptionStatisticByDepartment($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id, $phone, $order_type, $version);
+                print_r($info);
                 break;
             case OrderEnum::STATISTIC_BY_USERNAME:
                 $info = $this->consumptionStatisticByUsername($canteen_id, $status, $department_id, $username, $staff_type_id, $time_begin, $time_end, $company_id, $phone, $order_type, 1, 10000, $version);
@@ -774,7 +972,11 @@ class OrderStatisticService
 
         $header = ['序号', '统计变量', '开始时间', '结束时间', '姓名', '部门'];
         //获取饭堂对应的餐次设置
-        $dinner = DinnerT::dinnerNames($canteen_id);
+        if (!$canteen_id) {
+            $dinner = DinnerV::companyDinners2($company_id);
+        } else {
+            $dinner = DinnerT::dinnerNames($canteen_id);
+        }
 
         if ($order_type != "canteen") {
             array_push($dinner, [
@@ -786,7 +988,6 @@ class OrderStatisticService
                 'name' => "小卖部退款"
             ]);
         }
-
         $header = $this->addDinnerAndAccountToHeader($header, $dinner);
         $reports = $this->prefixConsumptionStatistic($statistic, $dinner, $time_begin, $time_end);
         $reportName = $fileNameArr[$status];
@@ -872,7 +1073,7 @@ class OrderStatisticService
     }
 
 
-    private function getLocationName($orderType, $locationID)
+    public function getLocationName($orderType, $locationID)
     {
         if ($orderType == "canteen") {
             $location = CanteenT::canteen($locationID);
@@ -886,7 +1087,7 @@ class OrderStatisticService
     }
 
 
-    private
+    public
     function addDinnerAndAccountToHeader($header, $dinner, $accounts = [])
     {
         if (count($dinner)) {
@@ -905,7 +1106,7 @@ class OrderStatisticService
 
     }
 
-    private
+    public
     function prefixConsumptionStatistic($statistic, $dinner, $time_begin, $time_end)
     {
         $dataList = [];
@@ -943,7 +1144,7 @@ class OrderStatisticService
         return $dataList;
     }
 
-    private
+    public
     function prefixConsumptionStatisticWithAccount($statistic, $accountRecords, $accounts, $dinner, $time_begin, $time_end)
     {
         $dataList = [];
@@ -992,6 +1193,7 @@ class OrderStatisticService
                 array_push($dataList, $data);
             }
         }
+        print_r($dataList);
         array_push($dataList, $endData);
         return $dataList;
     }
@@ -1023,7 +1225,7 @@ class OrderStatisticService
 
     }
 
-    private
+    public
     function consumptionStatisticByDepartment($canteen_id, $status, $department_id,
                                               $username, $staff_type_id, $time_begin,
                                               $time_end, $company_id, $phone, $order_type, $version)
@@ -1060,9 +1262,10 @@ class OrderStatisticService
         $data = [];
         $allMoney = 0;
         $allCount = 0;
+        $status = ['1' => '订餐就餐', 2 => '订餐未就餐', 3 => '未订餐就餐', 4 => '系统补充', 5 => '系统补扣', 6 => "小卖部消费", 7 => "小卖部退款"];
         if (count($statistic)) {
             foreach ($statistic as $k => $v) {
-                $orderMoney = $v['order_money'];//$status ? abs($v['order_money']) : $v['order_money'];
+                $orderMoney = round($v['order_money'], 2);
                 $orderCount = $v['order_count'];
                 $allMoney += $orderMoney;
                 $allCount += $orderCount;
@@ -1072,7 +1275,8 @@ class OrderStatisticService
                 if (!key_exists($v['statistic_id'], $fieldArr)) {
                     $fieldArr[$v['statistic_id']] = $v[$field];
                 }
-                // array_push($fieldArr, $v[$field]);
+                $statistic[$k]['order_money'] = $orderMoney;
+                //$statistic[$k]['status']=$status[$v['status']];
 
             }
 
@@ -1086,7 +1290,97 @@ class OrderStatisticService
                             'dinner' => $v2['dinner'],
                             'order_count' => $v2['order_count'],
                             //'order_money' => $status ? abs($v2['order_money']) : $v2['order_money']]);
-                            'order_money' => $v2['order_money']
+                            'order_money' => round($v2['order_money'], 2)
+                        ]);
+                    }
+                }
+                array_push($data, [
+                    'statistic_id' => $k,
+                    'statistic' => $v,
+                    'time_begin' => $time_begin,
+                    'time_end' => $time_end,
+                    $field => $field == "status" ? $status[$v] : $v,
+                    'dinnerStatistic' => $dinnerStatistic
+                ]);
+
+            }
+        }
+        return [
+            'statistic' => $data,
+            'allMoney' => round($allMoney, 2),
+            'allCount' => $allCount
+        ];
+    }
+
+    private
+    function prefixStatisticDay($statistic, $time_begin, $time_end, $accountRecords = [])
+    {
+
+        $data = [];
+        $dayCount = Date::diffBetweenTwoDays($time_begin, $time_end);
+        for ($i = 0; $i <= $dayCount; $i++) {
+            $day = $i ? addDay($i, $time_begin) : $time_begin;
+            $dinnerStatistic = [];
+            foreach ($statistic as $k2 => $v2) {
+                if (strtotime($day) == strtotime($v2["consumption_date"])) {
+                    array_push($dinnerStatistic, [
+                        'statistic_id' => $day,
+                        'dinner_id' => $v2['dinner_id'],
+                        'dinner' => $v2['dinner'],
+                        'order_count' => $v2['order_count'],
+                        'order_money' => round($v2['order_money'], 2)
+                    ]);
+                }
+            }
+            $accountStatistic = [];
+            if (count($accountRecords)) {
+                foreach ($accountRecords as $k3 => $v3) {
+                    if (strtotime($v3['statistic_id']) == strtotime($day)) {
+                        array_push($accountStatistic, $v3);
+                    }
+                }
+
+            }
+            array_push($data, [
+                'statistic_id' => $day,
+                'statistic' => $day,
+                'time_begin' => "/",
+                'time_end' => "/",
+                "consumption_date" => $day,
+                'dinnerStatistic' => $dinnerStatistic,
+                'accountStatistic' => $accountStatistic
+            ]);
+        }
+        return $data;
+
+        if (count($statistic)) {
+            foreach ($statistic as $k => $v) {
+                $orderMoney = round($v['order_money'], 2);
+                $orderCount = $v['order_count'];
+                $allMoney += $orderMoney;
+                $allCount += $orderCount;
+                if (in_array($v[$field], $fieldArr)) {
+                    continue;
+                }
+                if (!key_exists($v['statistic_id'], $fieldArr)) {
+                    $fieldArr[$v['statistic_id']] = $v[$field];
+                }
+                $statistic[$k]['order_money'] = $orderMoney;
+                //$statistic[$k]['status']=$status[$v['status']];
+
+            }
+
+            foreach ($fieldArr as $k => $v) {
+                $dinnerStatistic = [];
+                foreach ($statistic as $k2 => $v2) {
+                    if ($v == $v2[$field]) {
+                        array_push($dinnerStatistic, [
+                            'statistic_id' => $k,
+                            'dinner_id' => $v2['dinner_id'],
+                            'dinner' => $v2['dinner'],
+                            'order_count' => $v2['order_count'],
+                            //'order_money' => $status ? abs($v2['order_money']) : $v2['order_money']]);
+                            'order_money' => round($v2['order_money'], 2)
                         ]);
                     }
                 }
@@ -1101,15 +1395,11 @@ class OrderStatisticService
 
             }
         }
-        return [
-            'statistic' => $data,
-            'allMoney' => round($allMoney, 2),
-            'allCount' => $allCount
-        ];
+        return $data;
     }
 
 
-    private
+    public
     function consumptionStatisticByUsername($canteen_id, $status, $department_id,
                                             $username, $staff_type_id, $time_begin,
                                             $time_end, $company_id, $phone, $order_type, $page, $size, $version)
@@ -1133,6 +1423,7 @@ class OrderStatisticService
             $dinnerStatistic = [];
             foreach ($statistic as $k2 => $v2) {
                 if ($v['staff_id'] == $v2['staff_id']) {
+                    $statistic[$k2]['order_money'] = round($statistic[$k2]['order_money'], 2);
                     array_push($dinnerStatistic, $statistic[$k2]);
                     unset($statistic[$k2]);
                 }
@@ -1146,7 +1437,7 @@ class OrderStatisticService
             $time_end, $company_id);
 
         return [
-            'allMoney' => $statistic['order_money'],
+            'allMoney' => round($statistic['order_money'], 2),
             'allCount' => $statistic['order_count'],
             'statistic' => $users
         ];
@@ -1195,14 +1486,14 @@ class OrderStatisticService
         return [
             'consumptionRecords' => $users,
             'accountRecords' => $accountRecords,
-            'allMoney' => $statistic['order_money'],
+            'allMoney' => round($statistic['order_money'], 2),
             'allCount' => $statistic['order_count']
         ];
 
     }
 
 
-    private
+    public
     function consumptionStatisticByStatus($canteen_id, $status, $department_id,
                                           $username, $staff_type_id, $time_begin,
                                           $time_end, $company_id, $phone, $order_type, $version)
@@ -1231,7 +1522,7 @@ class OrderStatisticService
 
     }
 
-    private
+    public
     function consumptionStatisticByCanteen($canteen_id, $status, $department_id,
                                            $username, $staff_type_id, $time_begin,
                                            $time_end, $company_id, $phone, $order_type, $version)
@@ -1262,7 +1553,7 @@ class OrderStatisticService
 
     }
 
-    private
+    public
     function consumptionStatisticByStaff($canteen_id, $status, $department_id,
                                          $username, $staff_type_id, $time_begin,
                                          $time_end, $company_id, $phone, $order_type, $version)
@@ -1361,19 +1652,20 @@ class OrderStatisticService
         ];
     }
 
-    public function getDinnerOrderedCount($dinnerId,$orderingDate)
+    public function getDinnerOrderedCount($dinnerId, $orderingDate)
     {
         $strategy = ConsumptionStrategyT::where('d_id', $dinnerId)
             ->where('state', CommonEnum::STATE_IS_OK)
             ->find();
+        $staffId = Token::getCurrentTokenVar('staff_id');
         if (!$strategy) {
             throw new ParameterException(['msg' => "餐次消费策略未设置"]);
         }
         $consumptionType = $strategy->consumption_type;
         if ($consumptionType == StrategyEnum::CONSUMPTION_TIMES_ONE) {
-            $count = OrderT::dinnerStatistic($dinnerId,$orderingDate);
+            $count = OrderT::dinnerStatistic($dinnerId, $orderingDate, $staffId);
         } else if ($consumptionType == StrategyEnum::CONSUMPTION_TIMES_MORE) {
-            $count = OrderParentT::dinnerStatistic($dinnerId,$orderingDate);
+            $count = OrderParentT::dinnerStatistic($dinnerId, $orderingDate, $staffId);
 
         } else {
             throw new ParameterException(['msg' => '消费策略异常']);

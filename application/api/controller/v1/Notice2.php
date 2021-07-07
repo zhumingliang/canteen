@@ -22,8 +22,8 @@ class Notice2
     {
         $phone = Token::getCurrentPhone();
         $company_id = Token::getCurrentTokenVar('current_company_id');
-//        $phone = '15018891369';
-//        $company_id = 69;
+//        $phone = '13622577573';
+//        $company_id = 122;
         $staff = (new DepartmentService())->getStaffWithPhone($phone, $company_id);
         if (empty($staff)) {
             return [
@@ -41,6 +41,7 @@ class Notice2
             ->where('a.s_id', $s_id)
             ->field('b.id,a.s_id,a.read,b.title,b.content,b.equity_url,b.equity_title,b.create_time,b.author,b.type,b.state,b.img_path')
             ->order('b.create_time desc')
+            ->group('b.id')
             ->paginate($size, false, ['page' => $page]);
         return json(new SuccessMessageWithData(['data' => $notices]));
     }

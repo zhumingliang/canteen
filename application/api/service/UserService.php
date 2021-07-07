@@ -7,6 +7,7 @@ namespace app\api\service;
 use app\api\model\AdminT;
 use app\api\model\CompanyStaffT;
 use app\api\model\OutsiderCompanyT;
+use app\api\model\PunishmentStrategyT;
 use app\api\model\StaffCanteenT;
 use app\api\model\StaffQrcodeT;
 use app\api\model\UserT;
@@ -170,12 +171,11 @@ class UserService
             return $data;
         }
         $qrcode = $staff->qrcode;
-        echo $qrcode;
         if (strtotime($qrcode->expiry_date) >= time()) {
             return [
                 'usernmae' => $staff->username,
                 'url' => $qrcode->url,
-                'create_time' => $qrcode->create_time,
+                'create_time' => $qrcode->update_time,
                 'expiry_date' => $qrcode->expiry_date
             ];
         }
@@ -268,5 +268,47 @@ class UserService
         }
         return $user->openid;
 
+    }
+
+    public function checkUserPunishment()
+    {
+        $staffId = Token::getCurrentTokenVar('staff_id');
+        $companyId = Token::getCurrentTokenVar('current_company_id');
+        $staff = CompanyStaffT::staffWithPunishment($staffId);
+        $punishment = PunishmentStrategyT::strategy($companyId, $staff['t_id']);
+        if (!$punishment || empty($punishment['detail'])) {
+            return [
+                'punishment' => 2,
+                'staff_status' => 1,
+                'config' => [
+                    'no_meal' => 0,
+                    'no_booking' => 0
+                ]
+            ];
+        }
+
+        $punishmentNoMeal = 0;
+        $punishmentNoBooking = 0;
+        $punishmentDetail = $punishment['detail'];
+        foreach ($punishmentDetail as $k => $v) {
+            if ($v['type'] == "no_meal") {
+                $punishmentNoMeal = $v['count'];
+                continue;
+            }
+            if ($v['type'] == "no_booking") {
+                $punishmentNoBooking = $v['count'];
+                continue;
+            }
+        }
+
+        $staff = CompanyStaffT::staffWithPunishment($staffId);
+        return [
+            'punishment' => 1,
+            'staff_status' => $staff['status'] == 4 ? 2 : 1,
+            'config' => [
+                'no_meal' => $punishmentNoMeal,
+                'no_booking' => $punishmentNoBooking
+            ]
+        ];
     }
 }

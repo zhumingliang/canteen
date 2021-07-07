@@ -22,13 +22,13 @@ class Image extends BaseController
      * @apiSuccess (返回参数说明) {String} msg 操作结果描述
      * @apiSuccess (返回参数说明) {String} url 图片地址
      */
-    public function upload()
+    public function upload($type = "food")
     {
         $image = request()->file('image');
         if (is_null($image)) {
             throw  new ParameterException(['msg' => '上传图片为空']);
         }
-        $url = (new ImageService())->upload($image);
+        $url = (new ImageService())->upload($type,$image);
         return json(new SuccessMessageWithData(['data' => $url]));
     }
 

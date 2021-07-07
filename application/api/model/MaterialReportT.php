@@ -14,15 +14,18 @@ class MaterialReportT extends Model
         return $this->belongsTo('CanteenT', 'canteen_id', 'id');
     }
 
-    public function detail()
-    {
-        return $this->hasMany('MaterialReportDetailT', 'report_id', 'id');
-    }
 
-    public static function reports($page, $size, $time_begin, $time_end, $canteen_id)
+    public static function reports($timeBegin, $timeEnd, $companyId, $canteenId, $page, $size)
     {
-        $list = self::where('canteen_id', $canteen_id)
-            ->whereBetweenTime('create_time', $time_begin, $time_end)
+
+        $list = self::  where(function ($query) use ($companyId, $canteenId) {
+            if (!$canteenId) {
+                $query->where('canteen_id', $canteenId);
+            } else {
+                $query->where('company_id', $companyId);
+            }
+        })
+            ->whereBetweenTime('create_time', $timeBegin, addDay(1, $timeEnd))
             ->where('state', CommonEnum::STATE_IS_OK)
             ->with([
                 'canteen' => function ($query) {
@@ -30,7 +33,7 @@ class MaterialReportT extends Model
                 }
             ])
             ->order('create_time desc')
-            ->field('id,canteen_id,CONCAT(time_begin,"~",time_end,title) as title,create_time')
+            ->field('id,canteen_id,title,create_time')
             ->paginate($size, false, ['page' => $page]);
         return $list;
     }

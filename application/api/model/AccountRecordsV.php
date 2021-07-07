@@ -14,14 +14,16 @@ class AccountRecordsV
 
     public static function getSql()
     {
-        $sql = Db::field('a.account_id,a.staff_id,d.name,a.company_id,a.money,c.phone,c.username,b.department_id as department_id,b.staff_type_id,b.ordering_date as consumption_date ,IF ((b.booking=2),3,IF ((b.used=2),2,1)) AS status,"canteen" as location,b.c_id as location_id')->table('canteen_account_records_t')
+        $sql = Db::field('a.account_id,a.staff_id,d.name,a.company_id,a.money,c.phone,c.username,b.department_id as department_id,b.staff_type_id,b.ordering_date as consumption_date ,IF ((b.booking=2),3,IF ((b.used=2),2,1)) AS status,"canteen" as location,b.c_id as location_id')
+            ->table('canteen_account_records_t')
             ->alias('a')
             ->leftJoin('canteen_order_t b', 'a.order_id=b.id')
             ->leftJoin('canteen_company_staff_t c', 'b.staff_id=c.id')
             ->leftJoin('canteen_company_account_t d', 'a.account_id=d.id')
             ->where('a.type', 'one')
             ->unionAll(function ($query) {
-                $query->field('a.account_id,a.staff_id,e.name,a.company_id,a.money,c.phone,c.username,d.department_id,d.staff_type_id,d.ordering_date as consumption_date ,IF ((b.booking=2),3,IF ((b.used=2),2,1)) AS status,"canteen" as location,d.canteen_id as location_id')->table('canteen_account_records_t')
+                $query->field('a.account_id,a.staff_id,e.name,a.company_id,a.money,c.phone,c.username,d.department_id,d.staff_type_id,d.ordering_date as consumption_date ,IF ((b.booking=2),3,IF ((b.used=2),2,1)) AS status,"canteen" as location,d.canteen_id as location_id')
+                    ->table('canteen_account_records_t')
                     ->alias('a')
                     ->leftJoin('canteen_order_sub_t b', 'a.order_id=b.id')
                     ->leftJoin('canteen_order_parent_t d', 'b.order_id=d.id')
@@ -29,7 +31,8 @@ class AccountRecordsV
                     ->leftJoin('canteen_company_account_t e', 'a.account_id=e.id')
                     ->where('a.type', 'more')
                     ->where('a.outsider', CommonEnum::STATE_IS_FAIL);
-            })->unionAll(function ($query) {
+            })
+            ->unionAll(function ($query){
                 $query->field('a.account_id,a.staff_id,e.name,a.company_id,a.money,c.phone,c.username,d.department_id,d.staff_type_id,d.ordering_date as consumption_date ,1 AS status,"canteen" as location,d.canteen_id as location_id')
                     ->table('canteen_account_records_t')
                     ->alias('a')
@@ -40,14 +43,16 @@ class AccountRecordsV
                     ->where('a.outsider', CommonEnum::STATE_IS_OK);
             })
             ->unionAll(function ($query) {
-                $query->field('a.account_id,a.staff_id,d.name,a.company_id,a.money,c.phone,c.username,c.d_id as department_id,c.t_id as staff_type_id,b.consumption_date,IF ((b.type=1),4,5) AS status,"canteen" as location,b.canteen_id as location_id')->table('canteen_account_records_t')
+                $query->field('a.account_id,a.staff_id,d.name,a.company_id,a.money,c.phone,c.username,c.d_id as department_id,c.t_id as staff_type_id,b.consumption_date,IF ((b.type=1),4,5) AS status,"canteen" as location,b.canteen_id as location_id')
+                    ->table('canteen_account_records_t')
                     ->alias('a')
                     ->leftJoin('canteen_recharge_supplement_t b', 'a.order_id=b.id')
                     ->leftJoin('canteen_company_staff_t c', 'b.staff_id=c.id')
                     ->leftJoin('canteen_company_account_t d', 'a.account_id=d.id')
                     ->where('a.type', 'supplement');
             })->unionAll(function ($query) {
-                $query->field('a.account_id,a.staff_id,d.name,a.company_id,a.money,c.phone,c.username,c.d_id as department_id,b.staff_type_id,date_format(b.create_time, "%Y%-%m%-%d" ) AS consumption_date,IF ((b.money> 0),6,7) AS status,"shop" as location,b.shop_id as location_id')->table('canteen_account_records_t')
+                $query->field('a.account_id,a.staff_id,d.name,a.company_id,a.money,c.phone,c.username,c.d_id as department_id,b.staff_type_id,date_format(b.create_time, "%Y%-%m%-%d" ) AS consumption_date,IF ((b.money> 0),6,7) AS status,"shop" as location,b.shop_id as location_id')
+                    ->table('canteen_account_records_t')
                     ->alias('a')
                     ->leftJoin('canteen_shop_order_t b', 'a.order_id=b.id')
                     ->leftJoin('canteen_company_staff_t c', 'b.staff_id=c.id')
@@ -59,11 +64,280 @@ class AccountRecordsV
     }
 
 
+    public static function getSql2($canteen_id, $department_id,
+                                  $username, $staff_type_id, $time_begin,
+                                  $time_end, $company_id, $phone)
+    {
+        $sql = Db::field('a.account_id,a.staff_id,d.name,a.company_id,a.money,c.phone,c.username,b.department_id as department_id,b.staff_type_id,b.ordering_date as consumption_date ,IF ((b.booking=2),3,IF ((b.used=2),2,1)) AS status,"canteen" as location,b.c_id as location_id')
+            ->table('canteen_account_records_t')
+            ->alias('a')
+            ->leftJoin('canteen_order_t b', 'a.order_id=b.id')
+            ->leftJoin('canteen_company_staff_t c', 'b.staff_id=c.id')
+            ->leftJoin('canteen_company_account_t d', 'a.account_id=d.id')
+            ->where('a.type', 'one')
+            ->where(function ($query) use ($company_id, $canteen_id) {
+                if (!empty($canteen_id)) {
+                    //$query->where('b.c_id', $canteen_id);
+                    if (strpos($canteen_id, ',') !== false) {
+                        $query->whereIn('b.c_id', $canteen_id);
+                    } else {
+                        $query->where('b.c_id', $canteen_id);
+                    }
+                } else {
+                    if (strpos($company_id, ',') !== false) {
+                        $query->whereIn('b.company_id', $company_id);
+                    } else {
+                        $query->where('b.company_id', $company_id);
+                    }
+                }
+            })
+            ->where('b.ordering_date', '>=', $time_begin)
+            ->where('b.ordering_date', '<=', $time_end)
+            ->where(function ($query) use (
+                $department_id,
+                $username, $staff_type_id, $phone
+            ) {
+                if (!empty($department_id)) {
+                    $query->where('b.department_id', $department_id);
+                }
+                if (!empty($staff_type_id)) {
+                    $query->where('b.staff_type_id', $staff_type_id);
+                }
+                if (!empty($phone)) {
+                    $query->where('c.phone', $phone);
+                }
+                if (!empty($username)) {
+                    $query->where('c.username', 'like', '%' . $username . '%');
+                }
+
+
+            })
+            ->unionAll(function ($query) use (
+                $canteen_id, $department_id,
+                $username, $staff_type_id, $time_begin,
+                $time_end, $company_id, $phone
+            ) {
+                $query->field('a.account_id,a.staff_id,e.name,a.company_id,a.money,c.phone,c.username,d.department_id,d.staff_type_id,d.ordering_date as consumption_date ,IF ((b.booking=2),3,IF ((b.used=2),2,1)) AS status,"canteen" as location,d.canteen_id as location_id')
+                    ->table('canteen_account_records_t')
+                    ->alias('a')
+                    ->leftJoin('canteen_order_sub_t b', 'a.order_id=b.id')
+                    ->leftJoin('canteen_order_parent_t d', 'b.order_id=d.id')
+                    ->leftJoin('canteen_company_staff_t c', 'd.staff_id=c.id')
+                    ->leftJoin('canteen_company_account_t e', 'a.account_id=e.id')
+                    ->where('a.type', 'more')
+                    ->where('a.outsider', CommonEnum::STATE_IS_FAIL)
+                    ->where(function ($query2) use ($company_id, $canteen_id) {
+                        if (!empty($canteen_id)) {
+                            //$query2->where('d.canteen_id', $canteen_id);
+                            if (strpos($canteen_id, ',') !== false) {
+                                $query2->whereIn('d.canteen_id', $canteen_id);
+                            } else {
+                                $query2->where('d.canteen_id', $canteen_id);
+                            }
+                        } else {
+                            if (strpos($company_id, ',') !== false) {
+                                $query2->whereIn('d.company_id', $company_id);
+                            } else {
+                                $query2->where('d.company_id', $company_id);
+                            }
+                        }
+                    })
+                    ->where('d.ordering_date', '>=', $time_begin)
+                    ->where('d.ordering_date', '<=', $time_end)
+                    ->where(function ($query2) use (
+                        $department_id,
+                        $username, $staff_type_id, $phone
+                    ) {
+                        if (!empty($department_id)) {
+                            $query2->where('d.department_id', $department_id);
+                        }
+                        if (!empty($staff_type_id)) {
+                            $query2->where('d.staff_type_id', $staff_type_id);
+                        }
+                        if (!empty($phone)) {
+                            $query2->where('c.phone', $phone);
+                        }
+                        if (!empty($username)) {
+                            $query2->where('c.username', 'like', '%' . $username . '%');
+                        }
+
+
+                    });
+            })->unionAll(function ($query) use (
+                $canteen_id, $department_id,
+                $username, $staff_type_id, $time_begin,
+                $time_end, $company_id, $phone
+            ) {
+                $query->field('a.account_id,a.staff_id,e.name,a.company_id,a.money,c.phone,c.username,d.department_id,d.staff_type_id,d.ordering_date as consumption_date ,1 AS status,"canteen" as location,d.canteen_id as location_id')
+                    ->table('canteen_account_records_t')
+                    ->alias('a')
+                    ->leftJoin('canteen_order_parent_t d', 'a.order_id=d.id')
+                    ->leftJoin('canteen_company_staff_t c', 'd.staff_id=c.id')
+                    ->leftJoin('canteen_company_account_t e', 'a.account_id=e.id')
+                    ->where('a.type', 'more')
+                    ->where('a.outsider', CommonEnum::STATE_IS_OK)
+                    ->where(function ($query2) use ($company_id, $canteen_id) {
+                        if (!empty($canteen_id)) {
+                           // $query2->where('d.canteen_id', $canteen_id);
+                            if (strpos($canteen_id, ',') !== false) {
+                                $query2->whereIn('d.canteen_id', $canteen_id);
+                            } else {
+                                $query2->where('d.canteen_id', $canteen_id);
+                            }
+                        } else {
+                            if (strpos($company_id, ',') !== false) {
+                                $query2->whereIn('d.company_id', $company_id);
+                            } else {
+                                $query2->where('d.company_id', $company_id);
+                            }
+                        }
+                    })
+                    ->where('d.ordering_date', '>=', $time_begin)
+                    ->where('d.ordering_date', '<=', $time_end)
+                    ->where(function ($query2) use (
+                        $department_id,
+                        $username, $staff_type_id, $phone
+                    ) {
+                        if (!empty($department_id)) {
+                            $query2->where('d.department_id', $department_id);
+                        }
+                        if (!empty($staff_type_id)) {
+                            $query2->where('d.staff_type_id', $staff_type_id);
+                        }
+                        if (!empty($phone)) {
+                            $query2->where('c.phone', $phone);
+                        }
+                        if (!empty($username)) {
+                            $query2->where('c.username', 'like', '%' . $username . '%');
+                        }
+
+
+                    });
+            })
+            ->unionAll(function ($query) use (
+                $canteen_id, $department_id,
+                $username, $staff_type_id, $time_begin,
+                $time_end, $company_id, $phone
+            ) {
+                $query->field('a.account_id,a.staff_id,d.name,a.company_id,a.money,c.phone,c.username,c.d_id as department_id,c.t_id as staff_type_id,b.consumption_date,IF ((b.type=1),4,5) AS status,"canteen" as location,b.canteen_id as location_id')
+                    ->table('canteen_account_records_t')
+                    ->alias('a')
+                    ->leftJoin('canteen_recharge_supplement_t b', 'a.order_id=b.id')
+                    ->leftJoin('canteen_company_staff_t c', 'b.staff_id=c.id')
+                    ->leftJoin('canteen_company_account_t d', 'a.account_id=d.id')
+                    ->where('a.type', 'supplement')
+                    ->where(function ($query2) use ($company_id, $canteen_id) {
+                        if (!empty($canteen_id)) {
+                            //$query2->where('b.canteen_id', $canteen_id);
+                            if (strpos($canteen_id, ',') !== false) {
+                                $query2->whereIn('b.canteen_id', $canteen_id);
+                            } else {
+                                $query2->where('b.canteen_id', $canteen_id);
+                            }
+                        } else {
+                            if (strpos($company_id, ',') !== false) {
+                                $query2->whereIn('b.company_id', $company_id);
+                            } else {
+                                $query2->where('b.company_id', $company_id);
+                            }
+                        }
+                    })
+                    ->where('b.consumption_date', '>=', $time_begin)
+                    ->where('b.consumption_date', '<=', $time_end)
+                    ->where(function ($query2) use (
+                        $department_id,
+                        $username, $staff_type_id, $phone
+                    ) {
+                        if (!empty($department_id)) {
+                            $query2->where('c.d_id', $department_id);
+                        }
+                        if (!empty($staff_type_id)) {
+                            $query2->where('c.t_id', $staff_type_id);
+                        }
+                        if (!empty($phone)) {
+                            $query2->where('c.phone', $phone);
+                        }
+                        if (!empty($username)) {
+                            $query2->where('c.username', 'like', '%' . $username . '%');
+                        }
+
+
+                    });;
+            })->unionAll(function ($query) use (
+                $canteen_id, $department_id,
+                $username, $staff_type_id, $time_begin,
+                $time_end, $company_id, $phone
+            ) {
+                $query->field('a.account_id,a.staff_id,d.name,a.company_id,a.money,c.phone,c.username,c.d_id as department_id,b.staff_type_id,date_format(b.create_time, "%Y%-%m%-%d" ) AS consumption_date,IF ((b.money> 0),6,7) AS status,"shop" as location,b.shop_id as location_id')
+                    ->table('canteen_account_records_t')
+                    ->alias('a')
+                    ->leftJoin('canteen_shop_order_t b', 'a.order_id=b.id')
+                    ->leftJoin('canteen_company_staff_t c', 'b.staff_id=c.id')
+                    ->leftJoin('canteen_company_account_t d', 'a.account_id=d.id')
+                    ->where('a.type', 'shop')
+                    ->where(function ($query2) use ($company_id, $canteen_id) {
+                        if (!empty($canteen_id)) {
+                            $query2->where('b.shop_id', $canteen_id);
+                        } else {
+                            if (strpos($company_id, ',') !== false) {
+                                $query2->whereIn('b.company_id', $company_id);
+                            } else {
+                                $query2->where('b.company_id', $company_id);
+                            }
+                        }
+                    })
+                    ->where('b.create_time', '>=', $time_begin)
+                    ->where('b.create_time', '<=', addDay(1,$time_end))
+                    ->where(function ($query2) use (
+                        $department_id,
+                        $username, $staff_type_id, $phone
+                    ) {
+                        if (!empty($department_id)) {
+                            $query2->where('c.d_id', $department_id);
+                        }
+                        if (!empty($staff_type_id)) {
+                            $query2->where('c.t_id', $staff_type_id);
+                        }
+                        if (!empty($phone)) {
+                            $query2->where('c.phone', $phone);
+                        }
+                        if (!empty($username)) {
+                            $query2->where('c.username', 'like', '%' . $username . '%');
+                        }
+
+
+                    });
+            })->buildSql();
+        return $sql;
+
+    }
+
+
     public static function consumptionStatisticByDepartment($canteen_id, $status, $department_id,
                                                             $username, $staff_type_id, $time_begin,
                                                             $time_end, $company_id, $phone, $order_type)
     {
-        $sql = self::getSql();
+        $sql = self::getSql2($canteen_id, $department_id,
+            $username, $staff_type_id, $time_begin,
+            $time_end, $company_id, $phone);
+        $statistic = Db::table($sql . ' a')
+            ->where(function ($query) use ($order_type) {
+                if ($order_type !== 'all') {
+                    $query->where('location', $order_type);
+                }
+            })
+            ->where(function ($query) use ($status) {
+                if (!empty($status)) {
+                    $query->where('status', $status);
+                }
+            })
+            ->field('account_id,name,department_id as statistic_id,sum(0-money) as money')
+            ->group('account_id,department_id')
+            ->select()
+            ->toArray();
+        return $statistic;
+
+       /* $sql = self::getSql();
         $statistic = Db::table($sql . ' a')->where(function ($query) use ($company_id, $canteen_id) {
             if (!empty($canteen_id)) {
                 $query->where('location_id', $canteen_id);
@@ -107,7 +381,7 @@ class AccountRecordsV
             ->group('account_id,department_id')
             ->select()
             ->toArray();
-        return $statistic;
+        return $statistic;*/
     }
 
 
@@ -115,7 +389,27 @@ class AccountRecordsV
                                                        $username, $staff_type_id, $time_begin,
                                                        $time_end, $company_id, $phone, $order_type)
     {
-        $sql = self::getSql();
+        $sql = self::getSql2($canteen_id, $department_id,
+            $username, $staff_type_id, $time_begin,
+            $time_end, $company_id, $phone);
+
+        $statistic = Db::table($sql . 'a')
+            ->where(function ($query) use ($status) {
+                if (!empty($status)) {
+                    $query->where('a.status', $status);
+                }
+            })
+            ->where(function ($query) use ($order_type) {
+                if ($order_type !== 'all') {
+                    $query->where('location', $order_type);
+                }
+            })
+            ->field('account_id,name,staff_type_id as statistic_id,sum(0-money) as money')
+            ->group('account_id,staff_type_id')
+            ->select()
+            ->toArray();
+        return $statistic;
+        /*      $sql = self::getSql();
         $statistic = Db::table($sql . ' a')
             ->where(function ($query) use ($company_id, $canteen_id) {
                 if (!empty($canteen_id)) {
@@ -159,8 +453,7 @@ class AccountRecordsV
             ->field('account_id,name,staff_type_id as statistic_id,sum(0-money) as money')
             ->group('account_id,staff_type_id')
             ->select()
-            ->toArray();
-        return $statistic;
+            ->toArray();*/
     }
 
 
@@ -168,7 +461,27 @@ class AccountRecordsV
                                                          $username, $staff_type_id, $time_begin,
                                                          $time_end, $company_id, $phone, $order_type)
     {
-        $sql = self::getSql();
+        $sql = self::getSql2($canteen_id, $department_id,
+            $username, $staff_type_id, $time_begin,
+            $time_end, $company_id, $phone);
+
+        $statistic = Db::table($sql . 'a')
+            ->where(function ($query) use ($status) {
+                if (!empty($status)) {
+                    $query->where('a.status', $status);
+                }
+            })
+            ->where(function ($query) use ($order_type) {
+                if ($order_type !== 'all') {
+                    $query->where('location', $order_type);
+                }
+            })
+            ->field('account_id,name,location_id as statistic_id,sum(0-money) as money')
+            ->group('account_id,location_id')
+            ->select()
+            ->toArray();
+
+        /*   $sql = self::getSql();
         $statistic = Db::table($sql . ' a')
             ->where(function ($query) use ($company_id, $canteen_id) {
                 if (!empty($canteen_id)) {
@@ -212,7 +525,7 @@ class AccountRecordsV
             ->field('account_id,name,location_id as statistic_id,sum(0-money) as money')
             ->group('account_id,location_id')
             ->select()
-            ->toArray();
+            ->toArray();*/
         return $statistic;
     }
 
@@ -220,7 +533,27 @@ class AccountRecordsV
                                                         $username, $staff_type_id, $time_begin,
                                                         $time_end, $company_id, $phone, $order_type)
     {
-        $sql = self::getSql();
+        $sql = self::getSql2($canteen_id, $department_id,
+            $username, $staff_type_id, $time_begin,
+            $time_end, $company_id, $phone);
+        $statistic = Db::table($sql . ' a')
+            ->where(function ($query) use ($order_type) {
+                if ($order_type !== 'all') {
+                    $query->where('location', $order_type);
+                }
+            })
+            ->where(function ($query2) use (
+                $status
+            ) {
+                if (!empty($status)) {
+                    $query2->where('status', $status);
+
+                }
+            })
+            ->field('account_id,name,status as statistic_id,sum(0-money) as money')
+            ->group('account_id,status')
+            ->select();
+        /* $sql = self::getSql();
         $statistic = Db::table($sql . ' a')
             ->where(function ($query) use ($company_id, $canteen_id) {
                 if (!empty($canteen_id)) {
@@ -263,7 +596,77 @@ class AccountRecordsV
             })
             ->field('account_id,name,status as statistic_id,sum(0-money) as money')
             ->group('account_id,status')
+            ->select();*/
+        return $statistic;
+    }
+    public static function consumptionStatisticByDay($canteen_id, $status, $department_id,
+                                                        $username, $staff_type_id, $time_begin,
+                                                        $time_end, $company_id, $phone, $order_type)
+    {
+        $sql = self::getSql2($canteen_id, $department_id,
+            $username, $staff_type_id, $time_begin,
+            $time_end, $company_id, $phone);
+        $statistic = Db::table($sql . ' a')
+            ->where(function ($query) use ($order_type) {
+                if ($order_type !== 'all') {
+                    $query->where('location', $order_type);
+                }
+            })
+            ->where(function ($query2) use (
+                $status
+            ) {
+                if (!empty($status)) {
+                    $query2->where('status', $status);
+
+                }
+            })
+            ->field('account_id,name,consumption_date as statistic_id,sum(0-money) as money')
+            ->group('account_id,consumption_date')
             ->select();
+        /* $sql = self::getSql();
+        $statistic = Db::table($sql . ' a')
+            ->where(function ($query) use ($company_id, $canteen_id) {
+                if (!empty($canteen_id)) {
+                    $query->where('location_id', $canteen_id);
+                } else {
+                    if (strpos($company_id, ',') !== false) {
+                        $query->whereIn('company_id', $company_id);
+                    } else {
+                        $query->where('company_id', $company_id);
+                    }
+                }
+            })
+            ->where(function ($query) use ($order_type) {
+                if ($order_type !== 'all') {
+                    $query->where('location', $order_type);
+                }
+            })
+            ->where('consumption_date', '>=', $time_begin)
+            ->where('consumption_date', '<=', $time_end)
+            ->where(function ($query) use (
+                $status, $department_id,
+                $username, $staff_type_id, $phone
+            ) {
+                if (!empty($phone)) {
+                    $query->where('phone', $phone);
+                }
+                if (!empty($status)) {
+                    $query->where('status', $status);
+                }
+                if (!empty($department_id)) {
+                    $query->where('department_id', $department_id);
+                }
+                if (!empty($username)) {
+                    $query->where('username', 'like', '%' . $username . '%');
+                }
+                if (!empty($staff_type_id)) {
+                    $query->where('staff_type_id', $staff_type_id);
+                }
+
+            })
+            ->field('account_id,name,status as statistic_id,sum(0-money) as money')
+            ->group('account_id,status')
+            ->select();*/
         return $statistic;
     }
 
@@ -271,7 +674,28 @@ class AccountRecordsV
                                                $username, $staff_type_id, $time_begin,
                                                $time_end, $company_id, $phone, $order_type)
     {
-        $sql = self::getSql();
+        $sql = self::getSql2($canteen_id, $department_id,
+            $username, $staff_type_id, $time_begin,
+            $time_end, $company_id, $phone);
+        $statistic = Db::table($sql . ' a')
+            ->where(function ($query) use ($order_type) {
+                if ($order_type !== 'all') {
+                    $query->where('location', $order_type);
+                }
+            })
+            ->where(function ($query2) use (
+                $status
+            ) {
+                if (!empty($status)) {
+                    $query2->where('status', $status);
+
+                }
+            })
+            ->field('account_id,name,staff_id as statistic_id,sum(0-money) as money')
+            ->group('account_id,staff_id')
+            ->select()->toArray();
+        return $statistic;
+        /*        $sql = self::getSql();
         $statistic = Db::table($sql . ' a')
             ->where(function ($query) use ($company_id, $canteen_id) {
                 if (!empty($canteen_id)) {
@@ -319,7 +743,7 @@ class AccountRecordsV
             ->field('account_id,name,staff_id as statistic_id,sum(0-money) as money')
             ->group('account_id,staff_id')
             ->select()->toArray();
-        return $statistic;
+        return $statistic;*/
     }
 
 
